@@ -1,0 +1,262 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { createPageUrl } from '../utils';
+import FactFindLayout from '../components/factfind/FactFindLayout';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { 
+  MessageSquare, RefreshCw, Info, Upload, 
+  TrendingUp, ArrowRight, CheckCircle2, FileText, Mic
+} from 'lucide-react';
+
+export default function FactFindWelcome() {
+  const navigate = useNavigate();
+  const [factFind, setFactFind] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+
+        if (id) {
+          const finds = await base44.entities.FactFind.filter({ id });
+          if (finds[0]) {
+            setFactFind(finds[0]);
+          }
+        } else {
+          const existingFinds = await base44.entities.FactFind.filter(
+            { created_by: currentUser.email, status: { $ne: 'submitted' } },
+            '-updated_date',
+            1
+          );
+          if (existingFinds[0]) {
+            setFactFind(existingFinds[0]);
+            window.history.replaceState({}, '', `?id=${existingFinds[0].id}`);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading fact find:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  const handleBegin = async () => {
+    setLoading(true);
+    try {
+      let currentFactFind = factFind;
+      
+      if (!currentFactFind) {
+        currentFactFind = await base44.entities.FactFind.create({
+          status: 'in_progress',
+          current_section: 'about_you',
+          completion_percentage: 0
+        });
+        setFactFind(currentFactFind);
+      }
+
+      navigate(createPageUrl('FactFindAboutYou') + `?id=${currentFactFind.id}`);
+    } catch (error) {
+      console.error('Error starting fact find:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <FactFindLayout currentSection="welcome" factFind={factFind}>
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </FactFindLayout>
+    );
+  }
+
+  return (
+    <FactFindLayout currentSection="welcome" factFind={factFind}>
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between flex-shrink-0">
+        <div>
+          <h3 className="text-xl font-extrabold text-slate-800 mb-1">
+            Welcome to your Fact Find
+          </h3>
+          <p className="text-sm text-slate-600">
+            We'll guide you step-by-step to capture the information needed to prepare personalised advice.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-slate-300 text-slate-700 hover:bg-slate-50"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh Data
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-slate-300 text-slate-700 hover:bg-slate-50"
+          >
+            <Info className="w-4 h-4 mr-2" />
+            Key Assumptions
+          </Button>
+          <Button
+            size="sm"
+            className="bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-lg shadow-orange-500/30"
+          >
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Talk to Assistant
+          </Button>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
+        <div className="max-w-5xl mx-auto space-y-4">
+          {/* Video Card */}
+          <Card className="border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+              <h2 className="text-xl font-bold text-white mb-1">
+                Watch this quick guide to get started
+              </h2>
+              <p className="text-blue-50 text-sm">
+                This video walks you through each section of the Fact Find and shows you how to use our AI assistant to complete it faster.
+              </p>
+            </div>
+            <CardContent className="p-0">
+              <div className="aspect-video bg-slate-900 flex items-center justify-center">
+                <div className="text-center text-slate-400">
+                  <FileText className="w-16 h-16 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">Video player would appear here</p>
+                  <p className="text-xs mt-1">Synthesia video embed</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tools Section */}
+          <div>
+            <h2 className="text-lg font-bold text-slate-800 mb-3">Tools to help you along the way</h2>
+            <div className="grid md:grid-cols-3 gap-4">
+              <Card className="border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer">
+                <CardContent className="p-5">
+                  <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center mb-4">
+                    <Upload className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <h3 className="font-bold text-slate-800 mb-2">Smart Document Upload</h3>
+                  <p className="text-sm text-slate-600 mb-4">
+                    Upload tax returns, super statements, and policies. Our AI extracts the key information automatically.
+                  </p>
+                  <Button variant="link" className="text-blue-600 p-0 h-auto font-semibold text-sm">
+                    Upload documents →
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer relative overflow-hidden">
+                <div className="absolute top-3 right-3 px-2 py-0.5 bg-orange-500 text-white text-xs font-bold rounded">
+                  New
+                </div>
+                <CardContent className="p-5">
+                  <div className="w-12 h-12 rounded-lg bg-orange-50 flex items-center justify-center mb-4">
+                    <Mic className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <h3 className="font-bold text-slate-800 mb-2">AI Assistant</h3>
+                  <p className="text-sm text-slate-600 mb-4">
+                    Get help anytime. Ask questions, get explanations, or complete sections entirely by voice conversation.
+                  </p>
+                  <Button variant="link" className="text-orange-600 p-0 h-auto font-semibold text-sm">
+                    Talk to assistant →
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer">
+                <CardContent className="p-5">
+                  <div className="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center mb-4">
+                    <TrendingUp className="w-6 h-6 text-green-600" />
+                  </div>
+                  <h3 className="font-bold text-slate-800 mb-2">Progress Dashboard</h3>
+                  <p className="text-sm text-slate-600 mb-4">
+                    Track your completion in real-time. See what's done, what's left, and your overall progress at a glance.
+                  </p>
+                  <Button variant="link" className="text-green-600 p-0 h-auto font-semibold text-sm">
+                    View dashboard →
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* How it Works */}
+          <Card className="border-slate-200 shadow-sm">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-bold text-slate-800 mb-6">How it works</h2>
+              <div className="flex items-center justify-between gap-6">
+                <div className="flex-1 text-center">
+                  <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
+                    <span className="text-2xl font-bold text-blue-600">1</span>
+                  </div>
+                  <h4 className="font-semibold text-slate-800 mb-1">Provide your information</h4>
+                  <p className="text-xs text-slate-600">Complete each section at your own pace</p>
+                </div>
+                
+                <ArrowRight className="w-6 h-6 text-slate-300 flex-shrink-0" />
+                
+                <div className="flex-1 text-center">
+                  <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
+                    <span className="text-2xl font-bold text-blue-600">2</span>
+                  </div>
+                  <h4 className="font-semibold text-slate-800 mb-1">AI processes & pre-fills</h4>
+                  <p className="text-xs text-slate-600">Smart automation saves you time</p>
+                </div>
+                
+                <ArrowRight className="w-6 h-6 text-slate-300 flex-shrink-0" />
+                
+                <div className="flex-1 text-center">
+                  <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
+                    <span className="text-2xl font-bold text-blue-600">3</span>
+                  </div>
+                  <h4 className="font-semibold text-slate-800 mb-1">Review & submit</h4>
+                  <p className="text-xs text-slate-600">Get personalized advice</p>
+                </div>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-slate-200 flex justify-center">
+                <Button
+                  onClick={handleBegin}
+                  disabled={loading}
+                  size="lg"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 shadow-lg shadow-blue-600/30"
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      Starting...
+                    </>
+                  ) : (
+                    <>
+                      {factFind ? 'Continue Fact Find' : 'Get Started'}
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </FactFindLayout>
+  );
+}

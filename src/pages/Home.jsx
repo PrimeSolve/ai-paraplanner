@@ -70,11 +70,11 @@ export default function Home() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link to={createPageUrl('FactFindStart')}>
-              <Button className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold">
-                Get Started
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+            <Link to={createPageUrl('FactFindWelcome')}>
+            <Button className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold">
+              Get Started
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
             </Link>
           </CardContent>
         </Card>
@@ -111,7 +111,7 @@ export default function Home() {
       <div>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-slate-800">Your Fact Finds</h2>
-          <Link to={createPageUrl('FactFindStart')}>
+          <Link to={createPageUrl('FactFindWelcome')}>
             <Button variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50">
               <Plus className="w-4 h-4 mr-2" />
               New Fact Find
@@ -127,7 +127,7 @@ export default function Home() {
               <p className="text-slate-600 mb-6 text-center max-w-md">
                 Start your financial planning journey by completing your first Fact Find assessment.
               </p>
-              <Link to={createPageUrl('FactFindStart')}>
+              <Link to={createPageUrl('FactFindWelcome')}>
                 <Button className="bg-slate-800 hover:bg-slate-700 text-white">
                   Create Your First Fact Find
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -168,8 +168,8 @@ export default function Home() {
                           <span className={`text-sm font-medium ${status.color}`}>{status.label}</span>
                         </div>
                         
-                        {factFind.status !== 'completed' && (
-                          <Link to={createPageUrl(`FactFindStep${factFind.current_step || 1}`)}>
+                        {factFind.status !== 'submitted' && (
+                          <Link to={createPageUrl('FactFindWelcome') + `?id=${factFind.id}`}>
                             <Button size="sm" className="bg-slate-800 hover:bg-slate-700 text-white">
                               Continue
                               <ArrowRight className="w-4 h-4 ml-2" />
