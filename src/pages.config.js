@@ -7,6 +7,7 @@ import FactFindPrefill from './pages/FactFindPrefill';
 import FactFindDependants from './pages/FactFindDependants';
 import FactFindTrusts from './pages/FactFindTrusts';
 import FactFindSMSF from './pages/FactFindSMSF';
+import FactFindSuperannuation from './pages/FactFindSuperannuation';
 import __Layout from './Layout.jsx';
 
 
@@ -20,6 +21,7 @@ export const PAGES = {
     "FactFindDependants": FactFindDependants,
     "FactFindTrusts": FactFindTrusts,
     "FactFindSMSF": FactFindSMSF,
+    "FactFindSuperannuation": FactFindSuperannuation,
 }
 
 export const pagesConfig = {
