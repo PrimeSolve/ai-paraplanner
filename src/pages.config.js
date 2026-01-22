@@ -2,7 +2,7 @@ import Home from './pages/Home';
 import AdminDashboard from './pages/AdminDashboard';
 import FactFindWelcome from './pages/FactFindWelcome';
 import FactFindAboutYou from './pages/FactFindAboutYou';
-import FactFindHousehold from './pages/FactFindHousehold';
+import FactFindPersonal from './pages/FactFindPersonal';
 import __Layout from './Layout.jsx';
 
 
@@ -11,7 +11,7 @@ export const PAGES = {
     "AdminDashboard": AdminDashboard,
     "FactFindWelcome": FactFindWelcome,
     "FactFindAboutYou": FactFindAboutYou,
-    "FactFindHousehold": FactFindHousehold,
+    "FactFindPersonal": FactFindPersonal,
 }
 
 export const pagesConfig = {

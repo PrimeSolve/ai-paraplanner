@@ -64,7 +64,7 @@ export default function FactFindWelcome() {
         setFactFind(currentFactFind);
       }
 
-      navigate(createPageUrl('FactFindAboutYou') + `?id=${currentFactFind.id}`);
+      navigate(createPageUrl('FactFindPersonal') + `?id=${currentFactFind.id}`);
     } catch (error) {
       console.error('Error starting fact find:', error);
     } finally {

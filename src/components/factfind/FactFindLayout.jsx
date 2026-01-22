@@ -2,25 +2,69 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
-import { 
-  Home, User, Users, DollarSign, Building2, CreditCard, 
-  TrendingUp, Target, Shield, FileText, Upload, CheckCircle2, 
-  LayoutDashboard, RefreshCw, Info
-} from 'lucide-react';
+import { LayoutDashboard } from 'lucide-react';
 
-const sections = [
-  { id: 'welcome', label: 'Welcome', icon: Home, path: 'FactFindWelcome' },
-  { id: 'about_you', label: 'About You', icon: User, path: 'FactFindAboutYou' },
-  { id: 'household', label: 'Your Household', icon: Users, path: 'FactFindHousehold' },
-  { id: 'income', label: 'Your Income', icon: DollarSign, path: 'FactFindIncome' },
-  { id: 'property', label: 'Your Property', icon: Building2, path: 'FactFindProperty' },
-  { id: 'debts', label: 'Your Debts & Expenses', icon: CreditCard, path: 'FactFindDebts' },
-  { id: 'assets', label: 'Your Assets & Investments', icon: TrendingUp, path: 'FactFindAssets' },
-  { id: 'goals', label: 'Your Goals & Objectives', icon: Target, path: 'FactFindGoals' },
-  { id: 'protection', label: 'Protection', icon: Shield, path: 'FactFindProtection' },
-  { id: 'adviser', label: 'Adviser Notes', icon: FileText, path: 'FactFindAdviser' },
-  { id: 'documents', label: 'Supporting Documents', icon: Upload, path: 'FactFindDocuments' },
-  { id: 'review', label: 'Review & Submit', icon: CheckCircle2, path: 'FactFindReview' }
+const sectionGroups = [
+  {
+    title: 'GETTING STARTED',
+    sections: [
+      { id: 'welcome', label: 'Welcome', path: 'FactFindWelcome' },
+      { id: 'prefill', label: 'Pre-fill (upload documents)', path: 'FactFindPrefill' }
+    ]
+  },
+  {
+    title: 'PERSONAL',
+    sections: [
+      { id: 'personal', label: '1. Personal', path: 'FactFindPersonal' },
+      { id: 'dependants', label: '2. Dependants', path: 'FactFindDependants' }
+    ]
+  },
+  {
+    title: 'OTHER ENTITIES',
+    sections: [
+      { id: 'trusts', label: '3. Trusts & Companies', path: 'FactFindTrusts' },
+      { id: 'smsf', label: '4. SMSF', path: 'FactFindSMSF' }
+    ]
+  },
+  {
+    title: 'FINANCIAL PRODUCTS',
+    sections: [
+      { id: 'superannuation', label: '5. Superannuation', path: 'FactFindSuperannuation' },
+      { id: 'investment', label: '6. Investment', path: 'FactFindInvestment' }
+    ]
+  },
+  {
+    title: 'NET WORTH POSITION',
+    sections: [
+      { id: 'assets_liabilities', label: '7. Assets & Liabilities', path: 'FactFindAssetsLiabilities' }
+    ]
+  },
+  {
+    title: 'CASHFLOW',
+    sections: [
+      { id: 'income_expenses', label: '8. Income & Expenses', path: 'FactFindIncomeExpenses' }
+    ]
+  },
+  {
+    title: 'INSURANCE',
+    sections: [
+      { id: 'insurance', label: '9. Insurance policies', path: 'FactFindInsurance' }
+    ]
+  },
+  {
+    title: 'PLANNING',
+    sections: [
+      { id: 'super_tax', label: '10. Super & Tax', path: 'FactFindSuperTax' },
+      { id: 'advice_reason', label: '11. Reason for seeking advice', path: 'FactFindAdviceReason' },
+      { id: 'risk_profile', label: '12. Risk profile', path: 'FactFindRiskProfile' }
+    ]
+  },
+  {
+    title: 'FINAL STEP',
+    sections: [
+      { id: 'review', label: 'Review & Submit', path: 'FactFindReview' }
+    ]
+  }
 ];
 
 export default function FactFindLayout({ children, currentSection, factFind }) {
@@ -52,35 +96,35 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
 
         {/* Navigation Links */}
         <div className="flex-1 overflow-y-auto px-3 py-4">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 ml-2">
-            Sections
-          </div>
-          {sections.map((section) => {
-            const Icon = section.icon;
-            const completion = getCompletionForSection(section.id);
-            const isActive = currentSection === section.id;
-            
-            return (
-              <Link
-                key={section.id}
-                to={createPageUrl(section.path) + (factFind?.id ? `?id=${factFind.id}` : '')}
-                className={cn(
-                  "flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all text-sm",
-                  isActive 
-                    ? "bg-slate-700 text-white" 
-                    : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className="w-4 h-4" />
-                  <span>{section.label}</span>
-                </div>
-                {completion > 0 && (
-                  <span className="text-xs text-slate-400">{completion}%</span>
-                )}
-              </Link>
-            );
-          })}
+          {sectionGroups.map((group, groupIndex) => (
+            <div key={groupIndex} className="mb-5">
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 ml-2">
+                {group.title}
+              </div>
+              {group.sections.map((section) => {
+                const completion = getCompletionForSection(section.id);
+                const isActive = currentSection === section.id;
+                
+                return (
+                  <Link
+                    key={section.id}
+                    to={createPageUrl(section.path) + (factFind?.id ? `?id=${factFind.id}` : '')}
+                    className={cn(
+                      "flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all text-sm",
+                      isActive 
+                        ? "bg-slate-700 text-white font-medium" 
+                        : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
+                    )}
+                  >
+                    <span>{section.label}</span>
+                    {completion > 0 && (
+                      <span className="text-xs text-slate-400 font-semibold">{completion}%</span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
         {/* Dashboard Toggle */}

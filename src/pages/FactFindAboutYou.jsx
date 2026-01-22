@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft, Save, MessageSquare } from 'lucide-react';
 
-export default function FactFindAboutYou() {
+export default function FactFindPersonal() {
   const navigate = useNavigate();
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -40,8 +40,8 @@ export default function FactFindAboutYou() {
           const finds = await base44.entities.FactFind.filter({ id });
           if (finds[0]) {
             setFactFind(finds[0]);
-            if (finds[0].about_you) {
-              setFormData(finds[0].about_you);
+            if (finds[0].personal) {
+              setFormData(finds[0].personal);
             }
           }
         } catch (error) {
@@ -59,8 +59,8 @@ export default function FactFindAboutYou() {
     setSaving(true);
     try {
       await base44.entities.FactFind.update(factFind.id, {
-        about_you: formData,
-        current_section: 'about_you'
+        personal: formData,
+        current_section: 'personal'
       });
       toast.success('Progress saved successfully');
     } catch (error) {
@@ -79,18 +79,18 @@ export default function FactFindAboutYou() {
     setSaving(true);
     try {
       const sectionsCompleted = factFind.sections_completed || [];
-      if (!sectionsCompleted.includes('about_you')) {
-        sectionsCompleted.push('about_you');
+      if (!sectionsCompleted.includes('personal')) {
+        sectionsCompleted.push('personal');
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        about_you: formData,
-        current_section: 'household',
+        personal: formData,
+        current_section: 'dependants',
         sections_completed: sectionsCompleted,
-        completion_percentage: Math.round((sectionsCompleted.length / 11) * 100)
+        completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
 
-      navigate(createPageUrl('FactFindHousehold') + `?id=${factFind.id}`);
+      navigate(createPageUrl('FactFindDependants') + `?id=${factFind.id}`);
     } catch (error) {
       toast.error('Failed to save data');
     } finally {
@@ -113,11 +113,11 @@ export default function FactFindAboutYou() {
   }
 
   return (
-    <FactFindLayout currentSection="about_you" factFind={factFind}>
+    <FactFindLayout currentSection="personal" factFind={factFind}>
       {/* Header */}
       <div className="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between flex-shrink-0">
         <div>
-          <h3 className="text-xl font-extrabold text-slate-800 mb-1">About You</h3>
+          <h3 className="text-xl font-extrabold text-slate-800 mb-1">1. Personal</h3>
           <p className="text-sm text-slate-600">Tell us about yourself</p>
         </div>
         <div className="flex gap-2">
@@ -347,7 +347,7 @@ export default function FactFindAboutYou() {
                     </>
                   ) : (
                     <>
-                      Next: Your Household
+                      Next: Dependants
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </>
                   )}
