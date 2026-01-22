@@ -131,23 +131,18 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
         <div className="px-4 py-3 border-t border-slate-700 mt-auto">
           <button
             onClick={() => setShowDashboard(!showDashboard)}
-            className="w-full flex items-center justify-between px-3.5 py-3 rounded-lg bg-slate-700/30 hover:bg-slate-700/50 transition-all"
+            className="w-full flex items-center justify-between px-3 py-3 hover:bg-slate-700/30 rounded-lg transition-all"
           >
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center">
-                <LayoutDashboard className="w-3.5 h-3.5 text-blue-700" />
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                <LayoutDashboard className="w-4 h-4 text-slate-700" />
               </div>
               <div className="flex flex-col items-start gap-0.5">
-                <div className="text-xs font-bold text-slate-200">Progress</div>
-                <div className="text-xs text-slate-400">{overallCompletion}% Complete</div>
+                <div className="text-sm font-semibold text-white">Dashboard view</div>
+                <div className="text-xs text-slate-400">View progress summary</div>
               </div>
             </div>
-            <div className="relative w-11 h-6 bg-slate-600 rounded-full">
-              <div className={cn(
-                "absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform",
-                showDashboard ? "left-5" : "left-0.5"
-              )}></div>
-            </div>
+            <div className="w-5 h-5 rounded-full bg-white flex-shrink-0"></div>
           </button>
         </div>
       </div>
