@@ -1,33 +1,35 @@
-import Home from './pages/Home';
 import AdminDashboard from './pages/AdminDashboard';
-import FactFindWelcome from './pages/FactFindWelcome';
 import FactFindAboutYou from './pages/FactFindAboutYou';
+import FactFindAssetsLiabilities from './pages/FactFindAssetsLiabilities';
+import FactFindDependants from './pages/FactFindDependants';
+import FactFindIncomeExpenses from './pages/FactFindIncomeExpenses';
+import FactFindInvestment from './pages/FactFindInvestment';
 import FactFindPersonal from './pages/FactFindPersonal';
 import FactFindPrefill from './pages/FactFindPrefill';
-import FactFindDependants from './pages/FactFindDependants';
-import FactFindTrusts from './pages/FactFindTrusts';
 import FactFindSMSF from './pages/FactFindSMSF';
 import FactFindSuperannuation from './pages/FactFindSuperannuation';
-import FactFindInvestment from './pages/FactFindInvestment';
-import FactFindAssetsLiabilities from './pages/FactFindAssetsLiabilities';
-import FactFindIncomeExpenses from './pages/FactFindIncomeExpenses';
+import FactFindTrusts from './pages/FactFindTrusts';
+import FactFindWelcome from './pages/FactFindWelcome';
+import Home from './pages/Home';
+import FactFindInsurance from './pages/FactFindInsurance';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Home": Home,
     "AdminDashboard": AdminDashboard,
-    "FactFindWelcome": FactFindWelcome,
     "FactFindAboutYou": FactFindAboutYou,
+    "FactFindAssetsLiabilities": FactFindAssetsLiabilities,
+    "FactFindDependants": FactFindDependants,
+    "FactFindIncomeExpenses": FactFindIncomeExpenses,
+    "FactFindInvestment": FactFindInvestment,
     "FactFindPersonal": FactFindPersonal,
     "FactFindPrefill": FactFindPrefill,
-    "FactFindDependants": FactFindDependants,
-    "FactFindTrusts": FactFindTrusts,
     "FactFindSMSF": FactFindSMSF,
     "FactFindSuperannuation": FactFindSuperannuation,
-    "FactFindInvestment": FactFindInvestment,
-    "FactFindAssetsLiabilities": FactFindAssetsLiabilities,
-    "FactFindIncomeExpenses": FactFindIncomeExpenses,
+    "FactFindTrusts": FactFindTrusts,
+    "FactFindWelcome": FactFindWelcome,
+    "Home": Home,
+    "FactFindInsurance": FactFindInsurance,
 }
 
 export const pagesConfig = {
