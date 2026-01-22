@@ -9,6 +9,7 @@ import FactFindTrusts from './pages/FactFindTrusts';
 import FactFindSMSF from './pages/FactFindSMSF';
 import FactFindSuperannuation from './pages/FactFindSuperannuation';
 import FactFindInvestment from './pages/FactFindInvestment';
+import FactFindAssetsLiabilities from './pages/FactFindAssetsLiabilities';
 import __Layout from './Layout.jsx';
 
 
@@ -24,6 +25,7 @@ export const PAGES = {
     "FactFindSMSF": FactFindSMSF,
     "FactFindSuperannuation": FactFindSuperannuation,
     "FactFindInvestment": FactFindInvestment,
+    "FactFindAssetsLiabilities": FactFindAssetsLiabilities,
 }
 
 export const pagesConfig = {
