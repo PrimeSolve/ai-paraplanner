@@ -4,6 +4,7 @@ import FactFindWelcome from './pages/FactFindWelcome';
 import FactFindAboutYou from './pages/FactFindAboutYou';
 import FactFindPersonal from './pages/FactFindPersonal';
 import FactFindPrefill from './pages/FactFindPrefill';
+import FactFindDependants from './pages/FactFindDependants';
 import __Layout from './Layout.jsx';
 
 
@@ -14,6 +15,7 @@ export const PAGES = {
     "FactFindAboutYou": FactFindAboutYou,
     "FactFindPersonal": FactFindPersonal,
     "FactFindPrefill": FactFindPrefill,
+    "FactFindDependants": FactFindDependants,
 }
 
 export const pagesConfig = {
