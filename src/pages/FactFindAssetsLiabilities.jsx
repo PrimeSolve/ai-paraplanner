@@ -368,7 +368,7 @@ export default function FactFindAssetsLiabilities() {
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-12 text-center">
                     <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-                      <Home className="w-8 h-8 text-emerald-600" />
+                      <Home className="w-5 h-5 text-emerald-600" />
                     </div>
                     <h4 className="font-bold text-slate-800 mb-2">No assets added yet</h4>
                     <p className="text-sm text-slate-600 mb-4">
@@ -617,7 +617,7 @@ export default function FactFindAssetsLiabilities() {
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-12 text-center">
                     <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-                      <Briefcase className="w-8 h-8 text-red-600" />
+                      <Briefcase className="w-5 h-5 text-red-600" />
                     </div>
                     <h4 className="font-bold text-slate-800 mb-2">No liabilities added yet</h4>
                     <p className="text-sm text-slate-600 mb-4">
