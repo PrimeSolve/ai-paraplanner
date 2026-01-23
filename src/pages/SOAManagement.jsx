@@ -168,75 +168,56 @@ export default function SOAManagement() {
         <p className="text-lg text-slate-600">Create and manage Statement of Advice (SOA) requests</p>
       </div>
 
-      {/* Create SOA Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogTrigger asChild>
-          <Button className="mb-8 bg-slate-800 hover:bg-slate-900">
-            <Plus className="w-4 h-4 mr-2" />
-            Create SOA Request
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Create SOA Request</DialogTitle>
-            <DialogDescription>Create a new Statement of Advice request for a client</DialogDescription>
-          </DialogHeader>
+      {/* Create SOA Form */}
+      <Card className="border-slate-200 mb-8">
+        <CardHeader className="border-b border-slate-100">
+          <CardTitle className="text-slate-800">Submit SOA Request</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6">
           <form onSubmit={handleSubmitSOA} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="fact-find">Select Client/Fact Find</Label>
-              <Select value={formData.fact_find_id} onValueChange={(value) => setFormData({...formData, fact_find_id: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose a client..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {factFinds.map(ff => (
-                    <SelectItem key={ff.id} value={ff.id}>
-                      {ff.personal?.first_name && ff.personal?.last_name 
-                        ? `${ff.personal.first_name} ${ff.personal.last_name}` 
-                        : `Client #${ff.id.substring(0, 8)}`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="fact-find">Select Client/Fact Find</Label>
+                <Select value={formData.fact_find_id} onValueChange={(value) => setFormData({...formData, fact_find_id: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a client..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {factFinds.map(ff => (
+                      <SelectItem key={ff.id} value={ff.id}>
+                        {ff.personal?.first_name && ff.personal?.last_name 
+                          ? `${ff.personal.first_name} ${ff.personal.last_name}` 
+                          : `Client #${ff.id.substring(0, 8)}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="awaiting_review">Awaiting Review</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="awaiting_review">Awaiting Review</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="notes">Adviser Notes</Label>
-              <Textarea
-                id="notes"
-                placeholder="Add any notes about this SOA request..."
-                value={formData.adviser_notes}
-                onChange={(e) => setFormData({...formData, adviser_notes: e.target.value})}
-                className="h-24"
-              />
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
+            <div className="flex justify-start pt-4">
               <Button type="submit" disabled={submitting} className="bg-slate-800 hover:bg-slate-900">
-                {submitting ? 'Creating...' : 'Create SOA Request'}
+                {submitting ? 'Submitting...' : 'Submit Request'}
               </Button>
             </div>
           </form>
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>
 
       {/* SOA Requests Table */}
       <Card className="border-slate-200">
