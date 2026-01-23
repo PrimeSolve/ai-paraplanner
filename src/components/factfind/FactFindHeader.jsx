@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, RefreshCw, Info, AlertTriangle } from 'lucide-react';
+import { MessageSquare, RefreshCw, Info, AlertTriangle, LayoutDashboard } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -74,6 +74,15 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
                 <span className="text-teal-50 text-xs leading-tight">Get help completing your fact find</span>
               </div>
             </div>
+          </Link>
+
+          {/* Dashboard Button */}
+          <Link to={createPageUrl('Home') + (factFind?.id ? `?id=${factFind.id}` : '')}>
+            <button
+              className="w-11 h-11 rounded-lg bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0"
+            >
+              <LayoutDashboard className="w-5 h-5" />
+            </button>
           </Link>
 
           {/* Refresh Button */}
