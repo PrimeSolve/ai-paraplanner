@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
+import FactFindHeader from '../components/factfind/FactFindHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
