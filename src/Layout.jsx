@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Menu, X, User, LogOut, LayoutDashboard, FileText, Settings } from 'lucide-react';
+import { Menu, X, User, LogOut, LayoutDashboard, FileText, Settings, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function Layout({ children, currentPageName }) {
@@ -91,6 +91,13 @@ export default function Layout({ children, currentPageName }) {
                     </Link>
                   );
                 })}
+                <Link
+                  to={createPageUrl('FactFindAssistant')}
+                  className="ml-2 px-4 py-2 rounded-lg flex items-center space-x-2 bg-orange-500 hover:bg-orange-600 text-white transition-all duration-200 shadow-lg shadow-orange-500/30"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span className="font-medium">AI Assistant</span>
+                </Link>
               </div>
             )}
 
@@ -157,6 +164,14 @@ export default function Layout({ children, currentPageName }) {
                   </Link>
                 );
               })}
+              <Link
+                to={createPageUrl('FactFindAssistant')}
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center space-x-3 px-4 py-3 rounded-lg bg-orange-500 text-white"
+              >
+                <MessageSquare className="w-5 h-5" />
+                <span className="font-medium">AI Assistant</span>
+              </Link>
               <div className="pt-3 mt-3 border-t border-slate-200">
                 <div className="flex items-center justify-between px-4 py-2">
                   <div className="flex items-center space-x-3">
