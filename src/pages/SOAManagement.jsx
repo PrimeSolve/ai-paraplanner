@@ -106,7 +106,6 @@ export default function SOAManagement() {
           : 'Not provided',
         client_email: selectedFF.personal?.email || selectedFF.created_by,
         status: formData.status,
-        adviser_notes: formData.adviser_notes,
         submitted_date: new Date().toISOString()
       };
 
