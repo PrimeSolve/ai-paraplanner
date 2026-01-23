@@ -64,7 +64,7 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
           <Link to={createPageUrl('FactFindAssistant') + (factFind?.id ? `?id=${factFind.id}` : '')}>
             <div className="flex items-center gap-2.5 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 rounded-full px-4 py-2 shadow-md hover:shadow-lg transition-all cursor-pointer">
               <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-                <MessageSquare className="w-5 h-5 text-teal-600" />
+                <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
               </div>
               <div className="flex flex-col items-start">
                 <div className="flex items-center gap-2">
