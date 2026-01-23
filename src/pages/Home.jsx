@@ -151,6 +151,38 @@ export default function Home() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-8 py-6 space-y-6">
+        {/* Next Step Card - Show when Fact Find is complete */}
+        {(factFind?.status === 'completed' || factFind?.status === 'submitted') && (
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+                    <CheckCircle2 className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-xl font-bold text-slate-800">Fact Find Complete!</h2>
+                </div>
+                <p className="text-slate-600 text-sm mb-3">
+                  We've analyzed your data and identified key opportunities for your financial future.
+                </p>
+              </div>
+            </div>
+            <div className="bg-white rounded-lg p-4 mb-4 border border-blue-100">
+              <h3 className="font-semibold text-slate-800 mb-2">Ready for your personalized recommendations:</h3>
+              <ul className="space-y-1 text-sm text-slate-600">
+                <li>• Retirement planning strategies</li>
+                <li>• Investment optimization</li>
+                <li>• Tax planning opportunities</li>
+                <li>• Insurance coverage review</li>
+              </ul>
+            </div>
+            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-6 text-base">
+              Generate My Personalized Recommendations
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
+        )}
+
         {/* Stats Cards */}
         <div className="grid md:grid-cols-3 gap-4">
           <Card className="border-slate-200 shadow-sm">

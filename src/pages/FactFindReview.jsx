@@ -8,8 +8,14 @@ import FactFindHeader from '../components/factfind/FactFindHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowLeft, MessageSquare, RefreshCw, Info, CheckCircle2, AlertCircle, Send } from 'lucide-react';
+import { ArrowLeft, MessageSquare, RefreshCw, Info, CheckCircle2, AlertCircle, Send, Sparkles, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const sectionList = [
   { id: 'welcome', label: 'Welcome', path: 'FactFindWelcome' },
@@ -33,6 +39,7 @@ export default function FactFindReview() {
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -65,13 +72,16 @@ export default function FactFindReview() {
         submitted_date: new Date().toISOString()
       });
 
-      toast.success('Fact Find submitted successfully!');
-      navigate(createPageUrl('Home'));
+      setShowSuccess(true);
     } catch (error) {
       toast.error('Failed to submit fact find');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleContinueToRecommendations = () => {
+    navigate(createPageUrl('Home'));
   };
 
   const handleBack = () => {
@@ -94,7 +104,70 @@ export default function FactFindReview() {
   const allComplete = completedSections.length === totalSections;
 
   return (
-    <FactFindLayout currentSection="review" factFind={factFind}>
+    <>
+      <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="w-10 h-10 text-green-600" />
+              </div>
+            </div>
+            <DialogTitle className="text-center text-2xl font-bold text-slate-800">
+              Fact Find Complete!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-center text-slate-600">
+              Great work! We've analyzed your financial data and identified key opportunities.
+            </p>
+            
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <div className="flex items-start gap-3 mb-3">
+                <Sparkles className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-slate-800 mb-2">What's Next?</h4>
+                  <p className="text-sm text-slate-600 mb-3">
+                    We're ready to generate personalized recommendations for:
+                  </p>
+                  <ul className="space-y-1.5 text-sm text-slate-700">
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
+                      Retirement planning strategies
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
+                      Investment optimization
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
+                      Tax planning opportunities
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
+                      Insurance coverage review
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-center text-sm text-slate-500">
+              This takes approximately 5 minutes
+            </p>
+
+            <Button
+              onClick={handleContinueToRecommendations}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-6 text-base"
+            >
+              Generate My Personalized Recommendations
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <FactFindLayout currentSection="review" factFind={factFind}>
       <FactFindHeader
         title="Review & Submit Your Fact Find"
         description="Review your responses across all sections before submitting to your adviser. You can click any section to review or update your information."
