@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
@@ -229,13 +229,15 @@ export default function FactFindAssetsLiabilities() {
               <Info className="w-4 h-4 mr-2" />
               Key Assumptions
             </Button>
-            <Button
-              size="sm"
-              className="bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-lg shadow-orange-500/30"
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Talk to Assistant
-            </Button>
+            <Link to={createPageUrl('FactFindAssistant') + (factFind?.id ? `?id=${factFind.id}` : '')}>
+              <Button
+                size="sm"
+                className="bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-lg shadow-orange-500/30"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Talk to Assistant
+              </Button>
+            </Link>
           </div>
         </div>
 
