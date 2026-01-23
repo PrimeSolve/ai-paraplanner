@@ -182,8 +182,9 @@ export default function AdminDashboard() {
               <TableRow className="bg-slate-50">
                 <TableHead>Client</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Fact Find Status</TableHead>
                 <TableHead>Progress</TableHead>
+                <TableHead>SOA Requests</TableHead>
                 <TableHead>Last Updated</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
