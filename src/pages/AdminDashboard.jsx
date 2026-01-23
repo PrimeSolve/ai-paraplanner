@@ -226,10 +226,12 @@ export default function AdminDashboard() {
                         {format(new Date(factFind.updated_date), 'MMM d, yyyy')}
                       </TableCell>
                       <TableCell>
-                        <Button size="sm" variant="outline" className="border-slate-300">
-                          <Eye className="w-4 h-4 mr-2" />
-                          View
-                        </Button>
+                        <Link to={createPageUrl('FactFindWelcome') + `?id=${factFind.id}`}>
+                          <Button size="sm" variant="outline" className="border-slate-300">
+                            <Eye className="w-4 h-4 mr-2" />
+                            View
+                          </Button>
+                        </Link>
                       </TableCell>
                     </TableRow>
                   );
