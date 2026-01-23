@@ -119,10 +119,8 @@ export default function SOAManagement() {
       // Reset form
       setFormData({
         fact_find_id: '',
-        status: 'pending',
-        adviser_notes: ''
+        status: 'pending'
       });
-      setIsDialogOpen(false);
       toast.success('SOA request created successfully');
     } catch (error) {
       console.error('Error creating SOA request:', error);
