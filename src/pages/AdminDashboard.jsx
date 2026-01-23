@@ -36,7 +36,9 @@ export default function AdminDashboard() {
         }
         
         const allFinds = await base44.entities.FactFind.list('-updated_date');
+        const allSOARequests = await base44.entities.SOARequest.list('-updated_date');
         setFactFinds(allFinds);
+        setSOARequests(allSOARequests);
         setFilteredFinds(allFinds);
       } catch (error) {
         console.error('Error loading data:', error);
