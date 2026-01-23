@@ -192,7 +192,7 @@ export default function AdminDashboard() {
             <TableBody>
               {filteredFinds.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-slate-500">
+                  <TableCell colSpan={7} className="text-center py-8 text-slate-500">
                     No fact finds found
                   </TableCell>
                 </TableRow>
@@ -200,7 +200,8 @@ export default function AdminDashboard() {
                 filteredFinds.map((factFind) => {
                   const status = statusConfig[factFind.status] || statusConfig.draft;
                   const StatusIcon = status.icon;
-                  
+                  const clientSOAs = soaRequests.filter(soa => soa.fact_find_id === factFind.id);
+
                   return (
                     <TableRow key={factFind.id} className="hover:bg-slate-50">
                       <TableCell className="font-medium">
@@ -222,13 +223,35 @@ export default function AdminDashboard() {
                           <div className="w-24 bg-slate-200 rounded-full h-2">
                             <div
                               className="bg-amber-500 h-2 rounded-full"
-                              style={{ width: `${((factFind.current_step || 1) / 6) * 100}%` }}
+                              style={{ width: `${((factFind.completion_percentage || 0) / 100) * 100}%` }}
                             />
                           </div>
                           <span className="text-sm text-slate-600">
-                            {factFind.current_step || 1}/6
+                            {factFind.completion_percentage || 0}%
                           </span>
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        {clientSOAs.length === 0 ? (
+                          <span className="text-sm text-slate-500">No requests</span>
+                        ) : (
+                          <div className="space-y-1">
+                            {clientSOAs.map(soa => {
+                              const soaStatus = {
+                                pending: { label: 'Pending', color: 'bg-slate-100 text-slate-700' },
+                                in_progress: { label: 'In Progress', color: 'bg-blue-100 text-blue-700' },
+                                completed: { label: 'Completed', color: 'bg-green-100 text-green-700' },
+                                awaiting_review: { label: 'Awaiting Review', color: 'bg-amber-100 text-amber-700' }
+                              }[soa.status] || { label: soa.status, color: 'bg-slate-100 text-slate-700' };
+
+                              return (
+                                <Badge key={soa.id} className={`${soaStatus.color} border-0 text-xs`}>
+                                  {soaStatus.label}
+                                </Badge>
+                              );
+                            })}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="text-slate-600">
                         {format(new Date(factFind.updated_date), 'MMM d, yyyy')}
