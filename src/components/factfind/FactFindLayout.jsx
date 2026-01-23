@@ -9,7 +9,8 @@ const sectionGroups = [
     title: 'GETTING STARTED',
     sections: [
       { id: 'welcome', label: 'Welcome', path: 'FactFindWelcome' },
-      { id: 'prefill', label: 'Pre-fill (upload documents)', path: 'FactFindPrefill' }
+      { id: 'prefill', label: 'Pre-fill (upload documents)', path: 'FactFindPrefill' },
+      { id: 'assistant', label: 'AI Assistant', path: 'FactFindAssistant' }
     ]
   },
   {
