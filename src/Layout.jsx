@@ -30,8 +30,6 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const navLinks = user ? [
-    { name: 'Dashboard', path: 'Home', icon: LayoutDashboard, roles: ['user', 'admin'] },
-    { name: 'Fact Find', path: 'FactFindWelcome', icon: FileText, roles: ['user', 'admin'] },
     { name: 'Admin Panel', path: 'AdminDashboard', icon: Settings, roles: ['admin'] },
   ] : [];
 
