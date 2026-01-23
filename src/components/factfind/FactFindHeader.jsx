@@ -45,43 +45,39 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
           <h3 className="text-xl font-extrabold text-slate-800 mb-1">{title}</h3>
           <p className="text-sm text-slate-600">{description}</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
           {/* Talk to Assistant - Green Banner */}
           <Link to={createPageUrl('FactFindAssistant') + (factFind?.id ? `?id=${factFind.id}` : '')}>
-            <div className="flex items-center gap-3 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 rounded-full px-4 py-2.5 shadow-md hover:shadow-lg transition-all cursor-pointer">
-              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+            <div className="flex items-center gap-2.5 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 rounded-full px-4 py-2 shadow-md hover:shadow-lg transition-all cursor-pointer">
+              <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center flex-shrink-0">
                 <MessageSquare className="w-4 h-4 text-teal-600" />
               </div>
               <div className="flex flex-col items-start">
                 <div className="flex items-center gap-2">
-                  <span className="text-white font-bold text-sm">Talk to our assistant</span>
-                  <span className="bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded">LIVE</span>
+                  <span className="text-white font-semibold text-sm">Talk to our assistant</span>
+                  <span className="bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Live</span>
                 </div>
-                <span className="text-teal-50 text-xs">Get help completing your Fact Find</span>
+                <span className="text-teal-50 text-xs leading-tight">Get help completing your fact find</span>
               </div>
             </div>
           </Link>
 
           {/* Refresh Button */}
-          <Button
-            variant="ghost"
-            size="icon"
+          <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="w-10 h-10 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex-shrink-0"
+            className="w-11 h-11 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0"
           >
             <RefreshCw className={cn("w-5 h-5", refreshing && "animate-spin")} />
-          </Button>
+          </button>
 
           {/* Info Button */}
-          <Button
-            variant="ghost"
-            size="icon"
+          <button
             onClick={() => setShowAssumptions(true)}
-            className="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex-shrink-0"
+            className="w-11 h-11 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0"
           >
             <Info className="w-5 h-5" />
-          </Button>
+          </button>
         </div>
       </div>
 
