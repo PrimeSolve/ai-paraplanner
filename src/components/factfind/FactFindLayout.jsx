@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, MessageSquare } from 'lucide-react';
 
 const sectionGroups = [
   {
@@ -127,8 +127,23 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
           ))}
         </div>
 
-        {/* Dashboard Toggle */}
-        <div className="px-4 py-3 border-t border-slate-700 mt-auto">
+        {/* Footer Actions */}
+        <div className="px-4 py-3 border-t border-slate-700 mt-auto space-y-2">
+          <Link
+            to={createPageUrl('FactFindAssistant') + (factFind?.id ? `?id=${factFind.id}` : '')}
+            className="w-full flex items-center justify-between px-3 py-3 hover:bg-orange-600 rounded-lg transition-all bg-orange-500"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                <MessageSquare className="w-4 h-4 text-orange-600" />
+              </div>
+              <div className="flex flex-col items-start gap-0.5">
+                <div className="text-sm font-semibold text-white">AI Assistant</div>
+                <div className="text-xs text-orange-100">Ask questions & get help</div>
+              </div>
+            </div>
+          </Link>
+          
           <Link
             to={createPageUrl('Home')}
             className="w-full flex items-center justify-between px-3 py-3 hover:bg-slate-700/30 rounded-lg transition-all"
