@@ -52,7 +52,9 @@ export default function AdminDashboard() {
     } else {
       const filtered = factFinds.filter(ff => 
         ff.created_by?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ff.personal_info?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ff.personal?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ff.personal?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ff.personal?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         ff.id.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredFinds(filtered);
@@ -198,10 +200,12 @@ export default function AdminDashboard() {
                   return (
                     <TableRow key={factFind.id} className="hover:bg-slate-50">
                       <TableCell className="font-medium">
-                        {factFind.personal_info?.full_name || 'Not provided'}
+                        {factFind.personal?.first_name && factFind.personal?.last_name 
+                          ? `${factFind.personal.first_name} ${factFind.personal.last_name}`
+                          : 'Not provided'}
                       </TableCell>
                       <TableCell className="text-slate-600">
-                        {factFind.created_by}
+                        {factFind.personal?.email || factFind.created_by}
                       </TableCell>
                       <TableCell>
                         <Badge className={`${status.bg} ${status.color} border-0`}>
