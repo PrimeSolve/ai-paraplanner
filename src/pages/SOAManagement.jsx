@@ -40,11 +40,9 @@ export default function SOAManagement() {
   const [filteredSOAs, setFilteredSOAs] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     fact_find_id: '',
-    status: 'pending',
-    adviser_notes: ''
+    status: 'pending'
   });
   const [submitting, setSubmitting] = useState(false);
 
