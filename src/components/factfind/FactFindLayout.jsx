@@ -103,35 +103,46 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
         {/* Navigation Links */}
         <div className="flex-1 overflow-y-auto px-3 py-4">
           {sectionGroups.map((group, groupIndex) => (
-            <div key={groupIndex} className="mb-5">
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 ml-2">
-                {group.title}
+              <div key={groupIndex} className="mb-5">
+                <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 ml-2">
+                  {group.title}
+                </div>
+                {group.sections.map((section) => {
+                  const completion = getCompletionForSection(section.id);
+                  const isActive = currentSection === section.id;
+
+                  return (
+                    <Link
+                      key={section.id}
+                      to={createPageUrl(section.path) + (factFind?.id ? `?id=${factFind.id}` : '')}
+                      className={cn(
+                        "flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all text-sm",
+                        isActive 
+                          ? "bg-slate-700 text-white font-medium" 
+                          : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
+                      )}
+                    >
+                      <span>{section.label}</span>
+                      {completion > 0 && (
+                        <span className="text-xs text-slate-400 font-semibold">{completion}%</span>
+                      )}
+                    </Link>
+                  );
+                })}
               </div>
-              {group.sections.map((section) => {
-                const completion = getCompletionForSection(section.id);
-                const isActive = currentSection === section.id;
-                
-                return (
-                  <Link
-                    key={section.id}
-                    to={createPageUrl(section.path) + (factFind?.id ? `?id=${factFind.id}` : '')}
-                    className={cn(
-                      "flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all text-sm",
-                      isActive 
-                        ? "bg-slate-700 text-white font-medium" 
-                        : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
-                    )}
-                  >
-                    <span>{section.label}</span>
-                    {completion > 0 && (
-                      <span className="text-xs text-slate-400 font-semibold">{completion}%</span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+
+          {/* Collapse Button */}
+          <div className="border-t border-slate-700 px-3 py-3 mt-auto">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 transition-all text-sm font-medium"
+            >
+              {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              {sidebarOpen && <span>Collapse</span>}
+            </button>
+          </div>
       </div>
 
       {/* Main Content Area */}
