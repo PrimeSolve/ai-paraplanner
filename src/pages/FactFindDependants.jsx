@@ -132,42 +132,11 @@ export default function FactFindDependants() {
 
   return (
     <FactFindLayout currentSection="dependants" factFind={factFind}>
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between flex-shrink-0">
-        <div>
-          <h3 className="text-xl font-extrabold text-slate-800 mb-1">Dependants</h3>
-          <p className="text-sm text-slate-600">
-            Tell us about anyone who is financially dependent on you.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-slate-300 text-slate-700 hover:bg-slate-50"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh Data
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-slate-300 text-slate-700 hover:bg-slate-50"
-          >
-            <Info className="w-4 h-4 mr-2" />
-            Key Assumptions
-          </Button>
-          <Link to={createPageUrl('FactFindAssistant') + (factFind?.id ? `?id=${factFind.id}` : '')}>
-            <Button
-              size="sm"
-              className="bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-lg shadow-orange-500/30"
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Talk to Assistant
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <FactFindHeader
+        title="Dependants"
+        description="Tell us about anyone who is financially dependent on you."
+        factFind={factFind}
+      />
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
