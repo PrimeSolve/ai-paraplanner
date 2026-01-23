@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, RefreshCw, Info } from 'lucide-react';
+import { MessageSquare, RefreshCw, Info, AlertTriangle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Checkbox } from '@/components/ui/checkbox';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -16,10 +17,23 @@ import { base44 } from '@/api/base44Client';
 
 export default function FactFindHeader({ title, description, tabs, activeTab, onTabChange, factFind }) {
   const [showAssumptions, setShowAssumptions] = useState(false);
+  const [showRefreshWarning, setShowRefreshWarning] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const handleRefresh = async () => {
+  const handleRefreshClick = () => {
+    setShowRefreshWarning(true);
+    setConfirmDelete(false);
+  };
+
+  const handleConfirmRefresh = async () => {
+    if (!confirmDelete) {
+      toast.error('Please confirm you understand this will delete all data');
+      return;
+    }
+
     setRefreshing(true);
+    setShowRefreshWarning(false);
     try {
       // Reload the fact find data
       if (factFind?.id) {
@@ -64,7 +78,7 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
 
           {/* Refresh Button */}
           <button
-            onClick={handleRefresh}
+            onClick={handleRefreshClick}
             disabled={refreshing}
             className="w-11 h-11 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0"
           >
@@ -101,6 +115,74 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
           ))}
         </div>
       )}
+
+      {/* Refresh Warning Dialog */}
+      <Dialog open={showRefreshWarning} onOpenChange={setShowRefreshWarning}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+              <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-yellow-600" />
+              </div>
+              Refresh Fact Find Data
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-slate-700">
+              Are you sure you want to refresh all Fact Find data?
+            </p>
+
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+              <div className="flex gap-2 mb-2">
+                <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-slate-800 mb-2">WARNING: This will:</h4>
+                  <ul className="text-sm text-slate-700 space-y-1">
+                    <li>• Clear all current fact find data</li>
+                    <li>• This action cannot be undone</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-sm text-slate-600">
+              Only use this if you want to start fresh with your fact find.
+            </p>
+
+            <div className="flex items-start gap-3 p-3 border border-slate-200 rounded-lg bg-slate-50">
+              <Checkbox
+                id="confirm-delete"
+                checked={confirmDelete}
+                onCheckedChange={setConfirmDelete}
+                className="mt-0.5"
+              />
+              <label
+                htmlFor="confirm-delete"
+                className="text-sm text-slate-700 cursor-pointer leading-tight"
+              >
+                I understand this will delete all my current fact find data
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowRefreshWarning(false)}
+                className="border-slate-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmRefresh}
+                disabled={!confirmDelete}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Yes, Refresh Data
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Key Assumptions Dialog */}
       <Dialog open={showAssumptions} onOpenChange={setShowAssumptions}>
