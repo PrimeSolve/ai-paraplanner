@@ -247,13 +247,13 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
                 <div className="grid grid-cols-3 gap-2">
                   <span className="text-sm text-slate-600">Email</span>
                   <span className="text-sm text-slate-500 col-span-2">
-                    john.smith@primesolve.com.au
+                    john.smith@example.com.au
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <span className="text-sm text-slate-600">Company</span>
                   <span className="text-sm text-slate-500 col-span-2">
-                    PrimeSolve Financial Planning
+                    Financial Planning Services
                   </span>
                 </div>
               </div>
@@ -303,7 +303,7 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
                 <div className="grid grid-cols-3 gap-2">
                   <span className="text-sm text-slate-600">Client ID</span>
                   <span className="text-sm text-slate-900 font-medium col-span-2">
-                    #{factFind?.id?.substring(0, 12) || 'PS-2024-1234'}
+                    #{factFind?.id?.substring(0, 12) || 'Not assigned'}
                   </span>
                 </div>
               </div>
