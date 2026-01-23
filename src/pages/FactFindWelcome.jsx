@@ -121,7 +121,7 @@ export default function FactFindWelcome() {
               <Card className="border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer">
                 <CardContent className="p-5">
                   <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center mb-4">
-                    <Upload className="w-6 h-6 text-blue-600" />
+                    <Upload className="w-5 h-5 text-blue-600" />
                   </div>
                   <h3 className="font-bold text-slate-800 mb-2">Smart Document Upload</h3>
                   <p className="text-sm text-slate-600 mb-4">
@@ -139,7 +139,7 @@ export default function FactFindWelcome() {
                 </div>
                 <CardContent className="p-5">
                   <div className="w-12 h-12 rounded-lg bg-orange-50 flex items-center justify-center mb-4">
-                    <Mic className="w-6 h-6 text-orange-600" />
+                    <Mic className="w-5 h-5 text-orange-600" />
                   </div>
                   <h3 className="font-bold text-slate-800 mb-2">AI Assistant</h3>
                   <p className="text-sm text-slate-600 mb-4">
@@ -154,7 +154,7 @@ export default function FactFindWelcome() {
               <Card className="border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer">
                 <CardContent className="p-5">
                   <div className="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center mb-4">
-                    <TrendingUp className="w-6 h-6 text-green-600" />
+                    <TrendingUp className="w-5 h-5 text-green-600" />
                   </div>
                   <h3 className="font-bold text-slate-800 mb-2">Progress Dashboard</h3>
                   <p className="text-sm text-slate-600 mb-4">

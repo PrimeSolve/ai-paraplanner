@@ -153,7 +153,7 @@ export default function FactFindPrefill() {
             <CardContent className="p-5">
               <div className="flex gap-4">
                 <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <Upload className="w-6 h-6 text-blue-600" />
+                  <Upload className="w-5 h-5 text-blue-600" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-slate-800 mb-2">AI-powered pre-fill</h3>
@@ -183,7 +183,7 @@ export default function FactFindPrefill() {
                   <CardContent className="p-5">
                     <div className="flex items-start gap-4">
                       <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${colorClasses[docType.color]}`}>
-                        <Icon className="w-6 h-6" />
+                       <Icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-slate-800 mb-1">{docType.title}</h4>
