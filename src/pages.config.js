@@ -2,6 +2,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import FactFindAboutYou from './pages/FactFindAboutYou';
 import FactFindAdviceReason from './pages/FactFindAdviceReason';
 import FactFindAssetsLiabilities from './pages/FactFindAssetsLiabilities';
+import FactFindAssistant from './pages/FactFindAssistant';
 import FactFindDependants from './pages/FactFindDependants';
 import FactFindIncomeExpenses from './pages/FactFindIncomeExpenses';
 import FactFindInsurance from './pages/FactFindInsurance';
@@ -16,7 +17,6 @@ import FactFindSuperannuation from './pages/FactFindSuperannuation';
 import FactFindTrusts from './pages/FactFindTrusts';
 import FactFindWelcome from './pages/FactFindWelcome';
 import Home from './pages/Home';
-import FactFindAssistant from './pages/FactFindAssistant';
 import __Layout from './Layout.jsx';
 
 
@@ -25,6 +25,7 @@ export const PAGES = {
     "FactFindAboutYou": FactFindAboutYou,
     "FactFindAdviceReason": FactFindAdviceReason,
     "FactFindAssetsLiabilities": FactFindAssetsLiabilities,
+    "FactFindAssistant": FactFindAssistant,
     "FactFindDependants": FactFindDependants,
     "FactFindIncomeExpenses": FactFindIncomeExpenses,
     "FactFindInsurance": FactFindInsurance,
@@ -39,7 +40,6 @@ export const PAGES = {
     "FactFindTrusts": FactFindTrusts,
     "FactFindWelcome": FactFindWelcome,
     "Home": Home,
-    "FactFindAssistant": FactFindAssistant,
 }
 
 export const pagesConfig = {
