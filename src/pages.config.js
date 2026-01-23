@@ -17,6 +17,7 @@ import FactFindSuperannuation from './pages/FactFindSuperannuation';
 import FactFindTrusts from './pages/FactFindTrusts';
 import FactFindWelcome from './pages/FactFindWelcome';
 import Home from './pages/Home';
+import SOAManagement from './pages/SOAManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -40,6 +41,7 @@ export const PAGES = {
     "FactFindTrusts": FactFindTrusts,
     "FactFindWelcome": FactFindWelcome,
     "Home": Home,
+    "SOAManagement": SOAManagement,
 }
 
 export const pagesConfig = {
