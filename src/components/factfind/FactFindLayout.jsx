@@ -6,6 +6,12 @@ import { LayoutDashboard } from 'lucide-react';
 
 const sectionGroups = [
   {
+    title: 'OVERVIEW',
+    sections: [
+      { id: 'dashboard', label: 'Dashboard', path: 'Home' }
+    ]
+  },
+  {
     title: 'GETTING STARTED',
     sections: [
       { id: 'welcome', label: 'Welcome', path: 'FactFindWelcome' },

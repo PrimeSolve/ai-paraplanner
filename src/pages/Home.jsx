@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { FileText, Clock, CheckCircle2, AlertCircle, ArrowRight, Plus, DollarSign, TrendingUp, Shield, MessageSquare, RefreshCw, Info } from 'lucide-react';
 import { format } from 'date-fns';
+import FactFindLayout from '../components/factfind/FactFindLayout';
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -18,13 +19,26 @@ export default function Home() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
         
-        const finds = await base44.entities.FactFind.filter(
-          { created_by: currentUser.email },
-          '-updated_date',
-          1
-        );
-        if (finds[0]) {
-          setFactFind(finds[0]);
+        // Check if there's an ID in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const factFindId = urlParams.get('id');
+        
+        if (factFindId) {
+          // Load specific fact find if ID is provided
+          const finds = await base44.entities.FactFind.filter({ id: factFindId });
+          if (finds[0]) {
+            setFactFind(finds[0]);
+          }
+        } else {
+          // Load user's own fact find
+          const finds = await base44.entities.FactFind.filter(
+            { created_by: currentUser.email },
+            '-updated_date',
+            1
+          );
+          if (finds[0]) {
+            setFactFind(finds[0]);
+          }
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -109,9 +123,10 @@ export default function Home() {
   const completionPercentage = factFind.completion_percentage || 0;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-8 py-5">
+    <FactFindLayout currentSection="dashboard" factFind={factFind}>
+      <div className="min-h-screen bg-slate-50">
+        {/* Header */}
+        <div className="bg-white border-b border-slate-200 px-8 py-5">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-xl font-extrabold text-slate-800 mb-1">Client Dashboard</h3>
@@ -362,5 +377,6 @@ export default function Home() {
         </Card>
       </div>
     </div>
+    </FactFindLayout>
   );
 }
