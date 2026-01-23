@@ -65,9 +65,9 @@ export default function Layout({ children, currentPageName }) {
             {/* Logo */}
             <Link to={createPageUrl('Home')} className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-br from-slate-800 to-slate-600 rounded-lg flex items-center justify-center">
-                <span className="text-amber-400 font-bold text-xl">FA</span>
+                <span className="text-amber-400 font-bold text-xl">AI</span>
               </div>
-              <span className="text-xl font-bold text-slate-800 hidden sm:block">Financial Adviser</span>
+              <span className="text-xl font-bold text-slate-800 hidden sm:block">AI Paraplanner</span>
             </Link>
 
             {/* Desktop Navigation */}
