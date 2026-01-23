@@ -104,57 +104,127 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
 
       {/* Key Assumptions Dialog */}
       <Dialog open={showAssumptions} onOpenChange={setShowAssumptions}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">Key Assumptions</DialogTitle>
-            <DialogDescription>
-              The following assumptions are used throughout your Fact Find calculations
-            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="border-l-4 border-blue-500 bg-blue-50 p-4 rounded-r-lg">
-              <h4 className="font-bold text-slate-800 mb-2">Investment Returns</h4>
-              <ul className="text-sm text-slate-700 space-y-1">
-                <li>• Growth assets: 7% p.a. (after fees, pre-tax)</li>
-                <li>• Defensive assets: 3.5% p.a. (after fees, pre-tax)</li>
-                <li>• Cash/Term deposits: 2.5% p.a.</li>
-              </ul>
+          <div className="space-y-6 py-4">
+            {/* Client Information */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-5 h-5 bg-purple-600 rounded flex items-center justify-center">
+                  <span className="text-white text-xs">👤</span>
+                </div>
+                <h4 className="font-bold text-slate-800 uppercase text-sm">Client Information</h4>
+              </div>
+              <div className="space-y-3 pl-7">
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-sm text-slate-600">Primary</span>
+                  <span className="text-sm text-slate-900 font-medium col-span-2">
+                    {factFind?.personal?.first_name && factFind?.personal?.last_name 
+                      ? `${factFind.personal.first_name} ${factFind.personal.last_name}`
+                      : 'Not provided'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-sm text-slate-600">Email</span>
+                  <span className="text-sm text-slate-500 col-span-2">
+                    {factFind?.personal?.email || 'Primary email'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-sm text-slate-600">Partner</span>
+                  <span className="text-sm text-slate-900 font-medium col-span-2">
+                    {factFind?.partner_email ? factFind.partner_email.split('@')[0] : 'Not provided'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-sm text-slate-600">Email</span>
+                  <span className="text-sm text-slate-500 col-span-2">
+                    {factFind?.partner_email || 'Partner email'}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <div className="border-l-4 border-green-500 bg-green-50 p-4 rounded-r-lg">
-              <h4 className="font-bold text-slate-800 mb-2">Inflation & Growth</h4>
-              <ul className="text-sm text-slate-700 space-y-1">
-                <li>• CPI inflation: 2.5% p.a.</li>
-                <li>• Wage growth: 3.5% p.a.</li>
-                <li>• Age Pension indexation: 2.5% p.a.</li>
-              </ul>
+            {/* Adviser */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-5 h-5 bg-amber-700 rounded flex items-center justify-center">
+                  <span className="text-white text-xs">💼</span>
+                </div>
+                <h4 className="font-bold text-slate-800 uppercase text-sm">Adviser</h4>
+              </div>
+              <div className="space-y-3 pl-7">
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-sm text-slate-600">Name</span>
+                  <span className="text-sm text-slate-900 font-medium col-span-2">
+                    {factFind?.assigned_adviser || 'John Smith, CFP®'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-sm text-slate-600">Email</span>
+                  <span className="text-sm text-slate-500 col-span-2">
+                    john.smith@primesolve.com.au
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-sm text-slate-600">Company</span>
+                  <span className="text-sm text-slate-500 col-span-2">
+                    PrimeSolve Financial Planning
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <div className="border-l-4 border-purple-500 bg-purple-50 p-4 rounded-r-lg">
-              <h4 className="font-bold text-slate-800 mb-2">Superannuation</h4>
-              <ul className="text-sm text-slate-700 space-y-1">
-                <li>• Superannuation Guarantee: 11.5% (2024/25)</li>
-                <li>• Concessional cap: $30,000 p.a.</li>
-                <li>• Non-concessional cap: $120,000 p.a.</li>
-                <li>• Transfer Balance Cap: $1.9 million (2024/25)</li>
-              </ul>
-            </div>
-
-            <div className="border-l-4 border-amber-500 bg-amber-50 p-4 rounded-r-lg">
-              <h4 className="font-bold text-slate-800 mb-2">Age Pension (Full Rate 2024/25)</h4>
-              <ul className="text-sm text-slate-700 space-y-1">
-                <li>• Single: $1,116.30 per fortnight</li>
-                <li>• Couple (combined): $1,682.80 per fortnight</li>
-                <li>• Assets test threshold (homeowner couple): $451,500</li>
-                <li>• Income test threshold: $204 per fortnight (couple)</li>
-              </ul>
-            </div>
-
-            <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-              <p className="text-xs text-slate-600 italic">
-                These assumptions are indicative and may be adjusted based on your specific circumstances. 
-                Speak with your adviser for personalized projections.
-              </p>
+            {/* Fact Find Status */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center">
+                  <span className="text-white text-xs">📊</span>
+                </div>
+                <h4 className="font-bold text-slate-800 uppercase text-sm">Fact Find Status</h4>
+              </div>
+              <div className="space-y-3 pl-7">
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-slate-600">Completion</span>
+                    <span className="text-sm text-slate-900 font-bold">
+                      {factFind?.completion_percentage || 0}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all"
+                      style={{ width: `${factFind?.completion_percentage || 0}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-sm text-slate-600">Submission Status</span>
+                  <span className="text-sm text-slate-500 col-span-2">
+                    {factFind?.status === 'submitted' ? 'Submitted' : 'Not submitted'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-sm text-slate-600">Last Updated</span>
+                  <span className="text-sm text-slate-500 col-span-2">
+                    {factFind?.updated_date 
+                      ? new Date(factFind.updated_date).toLocaleDateString('en-GB', { 
+                          day: 'numeric', 
+                          month: 'short', 
+                          year: 'numeric' 
+                        })
+                      : 'N/A'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-sm text-slate-600">Client ID</span>
+                  <span className="text-sm text-slate-900 font-medium col-span-2">
+                    #{factFind?.id?.substring(0, 12) || 'PS-2024-1234'}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </DialogContent>
