@@ -20,6 +20,7 @@ import { format } from 'date-fns';
 export default function AdminDashboard() {
   const [user, setUser] = useState(null);
   const [factFinds, setFactFinds] = useState([]);
+  const [soaRequests, setSOARequests] = useState([]);
   const [filteredFinds, setFilteredFinds] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
