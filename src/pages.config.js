@@ -15,6 +15,7 @@ import FactFindInsurance from './pages/FactFindInsurance';
 import FactFindSuperTax from './pages/FactFindSuperTax';
 import FactFindAdviceReason from './pages/FactFindAdviceReason';
 import FactFindRiskProfile from './pages/FactFindRiskProfile';
+import FactFindReview from './pages/FactFindReview';
 import __Layout from './Layout.jsx';
 
 
@@ -36,6 +37,7 @@ export const PAGES = {
     "FactFindSuperTax": FactFindSuperTax,
     "FactFindAdviceReason": FactFindAdviceReason,
     "FactFindRiskProfile": FactFindRiskProfile,
+    "FactFindReview": FactFindReview,
 }
 
 export const pagesConfig = {
