@@ -175,70 +175,23 @@ export default function FactFindSuperannuation() {
 
   const filteredAccounts = accounts.filter(a => a.type === activeTab && a.owner === activeOwner);
 
+  const handleTabChange = (newTab) => {
+    setActiveTab(newTab);
+    if (editingIndex === null) {
+      setFormData({ ...formData, type: newTab });
+    }
+  };
+
   return (
     <FactFindLayout currentSection="superannuation" factFind={factFind}>
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-8 py-5 flex-shrink-0">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h3 className="text-xl font-extrabold text-slate-800 mb-1">Superannuation + Pension + Annuities</h3>
-            <p className="text-sm text-slate-600">
-              Record super funds, pensions, and annuities.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-slate-300 text-slate-700 hover:bg-slate-50"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh Data
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-slate-300 text-slate-700 hover:bg-slate-50"
-            >
-              <Info className="w-4 h-4 mr-2" />
-              Key Assumptions
-            </Button>
-            <Link to={createPageUrl('FactFindAssistant') + (factFind?.id ? `?id=${factFind.id}` : '')}>
-              <Button
-                size="sm"
-                className="bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-lg shadow-orange-500/30"
-              >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Talk to Assistant
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-2">
-          {accountTypes.map(type => (
-            <button
-              key={type.id}
-              onClick={() => {
-                setActiveTab(type.id);
-                if (editingIndex === null) {
-                  setFormData({ ...formData, type: type.id });
-                }
-              }}
-              className={cn(
-                "px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2",
-                activeTab === type.id
-                  ? "bg-blue-600 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              )}
-            >
-              <span>{type.icon}</span>
-              {type.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <FactFindHeader
+        title="Superannuation + Pension + Annuities"
+        description="Record super funds, pensions, and annuities."
+        tabs={accountTypes}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        factFind={factFind}
+      />
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
