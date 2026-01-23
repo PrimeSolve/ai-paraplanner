@@ -91,6 +91,11 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
           </div>
           <div className="flex flex-col gap-0.5">
             <div className="text-lg font-extrabold text-slate-50">Fact Find</div>
+            {factFind?.personal?.first_name && (
+              <div className="text-xs text-slate-400">
+                Client: {factFind.personal.first_name} {factFind.personal.last_name}
+              </div>
+            )}
           </div>
         </div>
 
