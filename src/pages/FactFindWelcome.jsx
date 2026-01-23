@@ -3,11 +3,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
+import FactFindHeader from '../components/factfind/FactFindHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
-  MessageSquare, RefreshCw, Info, Upload, 
-  TrendingUp, ArrowRight, CheckCircle2, FileText, Mic
+  Upload, TrendingUp, ArrowRight, FileText, Mic
 } from 'lucide-react';
 
 export default function FactFindWelcome() {
@@ -84,44 +84,11 @@ export default function FactFindWelcome() {
 
   return (
     <FactFindLayout currentSection="welcome" factFind={factFind}>
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between flex-shrink-0">
-        <div>
-          <h3 className="text-xl font-extrabold text-slate-800 mb-1">
-            Welcome to your Fact Find
-          </h3>
-          <p className="text-sm text-slate-600">
-            We'll guide you step-by-step to capture the information needed to prepare personalised advice.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-slate-300 text-slate-700 hover:bg-slate-50"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh Data
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-slate-300 text-slate-700 hover:bg-slate-50"
-          >
-            <Info className="w-4 h-4 mr-2" />
-            Key Assumptions
-          </Button>
-          <Link to={createPageUrl('FactFindAssistant') + (factFind?.id ? `?id=${factFind.id}` : '')}>
-            <Button
-              size="sm"
-              className="bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-lg shadow-orange-500/30"
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Talk to Assistant
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <FactFindHeader
+        title="Welcome to your Fact Find"
+        description="We'll guide you step-by-step to capture the information needed to prepare personalised advice."
+        factFind={factFind}
+      />
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
