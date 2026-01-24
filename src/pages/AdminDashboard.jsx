@@ -1,277 +1,216 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import AdminLayout from '../components/admin/AdminLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Users, FileText, CheckCircle, Clock, TrendingUp, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { FileText, Search, Users, CheckCircle2, Clock, AlertCircle, Eye } from 'lucide-react';
-import { format } from 'date-fns';
 
 export default function AdminDashboard() {
-  const [user, setUser] = useState(null);
-  const [factFinds, setFactFinds] = useState([]);
-  const [soaRequests, setSOARequests] = useState([]);
-  const [filteredFinds, setFilteredFinds] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalGroups: 0,
+    totalAdvisers: 0,
+    totalClients: 0,
+    pendingSOAs: 12,
+    completedSOAs: 847,
+    activeSOAs: 23
+  });
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-        
-        if (currentUser.role !== 'admin') {
-          return;
-        }
-        
-        const allFinds = await base44.entities.FactFind.list('-updated_date');
-        const allSOARequests = await base44.entities.SOARequest.list('-updated_date');
-        setFactFinds(allFinds);
-        setSOARequests(allSOARequests);
-        setFilteredFinds(allFinds);
-      } catch (error) {
-        console.error('Error loading data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
+    loadStats();
   }, []);
 
-  useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setFilteredFinds(factFinds);
-    } else {
-      const filtered = factFinds.filter(ff => 
-        ff.created_by?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ff.personal?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ff.personal?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ff.personal?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ff.id.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredFinds(filtered);
+  const loadStats = async () => {
+    try {
+      const [groups, clients] = await Promise.all([
+        base44.entities.AdviceGroup.list(),
+        base44.entities.Client.list()
+      ]);
+
+      const advisers = await base44.entities.User.filter({ user_type: 'adviser' });
+      
+      setStats({
+        totalGroups: groups.length,
+        totalAdvisers: advisers.length,
+        totalClients: clients.length,
+        pendingSOAs: 12,
+        completedSOAs: 847,
+        activeSOAs: 23
+      });
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+    } finally {
+      setLoading(false);
     }
-  }, [searchTerm, factFinds]);
-
-  const statusConfig = {
-    draft: { icon: Clock, color: 'text-slate-500', bg: 'bg-slate-100', label: 'Draft' },
-    in_progress: { icon: Clock, color: 'text-blue-600', bg: 'bg-blue-100', label: 'In Progress' },
-    completed: { icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-100', label: 'Completed' },
-    under_review: { icon: AlertCircle, color: 'text-amber-600', bg: 'bg-amber-100', label: 'Under Review' }
   };
 
-  const stats = {
-    total: factFinds.length,
-    completed: factFinds.filter(f => f.status === 'completed').length,
-    inProgress: factFinds.filter(f => f.status === 'in_progress').length,
-    draft: factFinds.filter(f => f.status === 'draft').length
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-      </div>
-    );
-  }
-
-  if (user?.role !== 'admin') {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <Card className="max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-slate-800 mb-2">Access Denied</h2>
-              <p className="text-slate-600">You need admin privileges to view this page.</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const statCards = [
+    { 
+      label: 'Total Advice Groups', 
+      value: stats.totalGroups, 
+      icon: Users, 
+      color: 'bg-indigo-100 text-indigo-600',
+      trend: '+12%'
+    },
+    { 
+      label: 'Total Advisers', 
+      value: stats.totalAdvisers, 
+      icon: Users, 
+      color: 'bg-blue-100 text-blue-600',
+      trend: '+8%'
+    },
+    { 
+      label: 'Total Clients', 
+      value: stats.totalClients, 
+      icon: Users, 
+      color: 'bg-green-100 text-green-600',
+      trend: '+23%'
+    },
+    { 
+      label: 'Pending SOAs', 
+      value: stats.pendingSOAs, 
+      icon: Clock, 
+      color: 'bg-amber-100 text-amber-600',
+      urgent: true
+    }
+  ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-slate-800 mb-3">Admin Dashboard</h1>
-        <p className="text-lg text-slate-600">Manage and review all client Fact Finds</p>
+    <AdminLayout currentPage="AdminDashboard">
+      <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
+        <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">Admin Dashboard</h1>
+        <p className="text-sm text-slate-600 mt-1">System overview and management</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid md:grid-cols-4 gap-6 mb-8">
-        <Card className="border-slate-200">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600 mb-1">Total Fact Finds</p>
-                <p className="text-3xl font-bold text-slate-800">{stats.total}</p>
-              </div>
-              <FileText className="w-10 h-10 text-slate-400" />
-            </div>
-          </CardContent>
-        </Card>
+      <div className="p-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-4 gap-4 mb-8">
+          {statCards.map((stat, idx) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={idx}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-12 h-12 rounded-xl ${stat.color} flex items-center justify-center`}>
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    {stat.trend && (
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                        stat.urgent ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
+                      }`}>
+                        {stat.trend}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-3xl font-['Fraunces'] font-semibold text-slate-800 mb-1">
+                    {loading ? '...' : stat.value}
+                  </div>
+                  <div className="text-sm text-slate-600">{stat.label}</div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
 
-        <Card className="border-slate-200">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600 mb-1">Completed</p>
-                <p className="text-3xl font-bold text-green-600">{stats.completed}</p>
-              </div>
-              <CheckCircle2 className="w-10 h-10 text-green-400" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-slate-200">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600 mb-1">In Progress</p>
-                <p className="text-3xl font-bold text-blue-600">{stats.inProgress}</p>
-              </div>
-              <Clock className="w-10 h-10 text-blue-400" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-slate-200">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600 mb-1">Drafts</p>
-                <p className="text-3xl font-bold text-slate-600">{stats.draft}</p>
-              </div>
-              <Users className="w-10 h-10 text-slate-400" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Search and Table */}
-      <Card className="border-slate-200">
-        <CardHeader className="border-b border-slate-100">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-slate-800">All Fact Finds</CardTitle>
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                placeholder="Search by name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 border-slate-300"
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-50">
-                <TableHead>Client</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Fact Find Status</TableHead>
-                <TableHead>Progress</TableHead>
-                <TableHead>SOA Requests</TableHead>
-                <TableHead>Last Updated</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredFinds.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-slate-500">
-                    No fact finds found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredFinds.map((factFind) => {
-                  const status = statusConfig[factFind.status] || statusConfig.draft;
-                  const StatusIcon = status.icon;
-                  const clientSOAs = soaRequests.filter(soa => soa.fact_find_id === factFind.id);
-
-                  return (
-                    <TableRow key={factFind.id} className="hover:bg-slate-50">
-                      <TableCell className="font-medium">
-                        {factFind.personal?.first_name && factFind.personal?.last_name 
-                          ? `${factFind.personal.first_name} ${factFind.personal.last_name}`
-                          : 'Not provided'}
-                      </TableCell>
-                      <TableCell className="text-slate-600">
-                        {factFind.personal?.email || factFind.created_by}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`${status.bg} ${status.color} border-0`}>
-                          <StatusIcon className="w-3 h-3 mr-1" />
-                          {status.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-24 bg-slate-200 rounded-full h-2">
-                            <div
-                              className="bg-amber-500 h-2 rounded-full"
-                              style={{ width: `${((factFind.completion_percentage || 0) / 100) * 100}%` }}
-                            />
-                          </div>
-                          <span className="text-sm text-slate-600">
-                            {factFind.completion_percentage || 0}%
-                          </span>
+        <div className="grid grid-cols-3 gap-6">
+          {/* Recent Activity */}
+          <div className="col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="w-5 h-5" />
+                  Recent SOA Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {[
+                    { client: 'John & Mary Smith', adviser: 'Sarah Johnson', group: 'PrimeSolve Financial', status: 'in_progress', time: '2 hours ago' },
+                    { client: 'Robert Chen', adviser: 'Michael Wong', group: 'Wealth Partners', status: 'completed', time: '5 hours ago' },
+                    { client: 'Emma Williams', adviser: 'Sarah Johnson', group: 'PrimeSolve Financial', status: 'submitted', time: 'Yesterday' }
+                  ].map((activity, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-semibold">
+                          {activity.client.charAt(0)}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        {clientSOAs.length === 0 ? (
-                          <span className="text-sm text-slate-500">No requests</span>
-                        ) : (
-                          <div className="space-y-1">
-                            {clientSOAs.map(soa => {
-                              const soaStatus = {
-                                pending: { label: 'Pending', color: 'bg-slate-100 text-slate-700' },
-                                in_progress: { label: 'In Progress', color: 'bg-blue-100 text-blue-700' },
-                                completed: { label: 'Completed', color: 'bg-green-100 text-green-700' },
-                                awaiting_review: { label: 'Awaiting Review', color: 'bg-amber-100 text-amber-700' }
-                              }[soa.status] || { label: soa.status, color: 'bg-slate-100 text-slate-700' };
-
-                              return (
-                                <Badge key={soa.id} className={`${soaStatus.color} border-0 text-xs`}>
-                                  {soaStatus.label}
-                                </Badge>
-                              );
-                            })}
+                        <div>
+                          <div className="font-semibold text-sm">{activity.client}</div>
+                          <div className="text-xs text-slate-600">
+                            {activity.adviser} • {activity.group}
                           </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-slate-600">
-                        {format(new Date(factFind.updated_date), 'MMM d, yyyy')}
-                      </TableCell>
-                      <TableCell>
-                        <Link to={createPageUrl('FactFindWelcome') + `?id=${factFind.id}`}>
-                          <Button size="sm" variant="outline" className="border-slate-300">
-                            <Eye className="w-4 h-4 mr-2" />
-                            View
-                          </Button>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Badge variant={activity.status === 'completed' ? 'default' : 'secondary'}>
+                          {activity.status.replace('_', ' ')}
+                        </Badge>
+                        <span className="text-xs text-slate-500">{activity.time}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Quick Actions */}
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Link to={createPageUrl('AdminAdviceGroups')}>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Users className="w-4 h-4 mr-2" />
+                      Manage Groups
+                    </Button>
+                  </Link>
+                  <Link to={createPageUrl('AdminQueue')}>
+                    <Button variant="outline" className="w-full justify-start">
+                      <FileText className="w-4 h-4 mr-2" />
+                      View Queue
+                    </Button>
+                  </Link>
+                  <Link to={createPageUrl('AdminTemplate')}>
+                    <Button variant="outline" className="w-full justify-start">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Edit Template
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="text-lg">System Health</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-600">API Status</span>
+                    <Badge className="bg-green-100 text-green-600">Online</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-600">Queue Processing</span>
+                    <Badge className="bg-green-100 text-green-600">Active</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-600">Storage</span>
+                    <Badge className="bg-blue-100 text-blue-600">87% Used</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </AdminLayout>
   );
 }

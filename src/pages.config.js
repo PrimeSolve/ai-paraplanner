@@ -29,6 +29,15 @@ import SOARequestScope from './pages/SOARequestScope';
 import SOARequestStrategy from './pages/SOARequestStrategy';
 import SOARequestTransactions from './pages/SOARequestTransactions';
 import SOARequestWelcome from './pages/SOARequestWelcome';
+import AdminAdviceGroups from './pages/AdminAdviceGroups';
+import AdminAdviceGroupDetail from './pages/AdminAdviceGroupDetail';
+import AdminQueue from './pages/AdminQueue';
+import AdminCompleted from './pages/AdminCompleted';
+import AdminAdvisers from './pages/AdminAdvisers';
+import AdminClients from './pages/AdminClients';
+import AdminTemplate from './pages/AdminTemplate';
+import AdminTeam from './pages/AdminTeam';
+import AdminSettings from './pages/AdminSettings';
 import __Layout from './Layout.jsx';
 
 
@@ -64,6 +73,15 @@ export const PAGES = {
     "SOARequestStrategy": SOARequestStrategy,
     "SOARequestTransactions": SOARequestTransactions,
     "SOARequestWelcome": SOARequestWelcome,
+    "AdminAdviceGroups": AdminAdviceGroups,
+    "AdminAdviceGroupDetail": AdminAdviceGroupDetail,
+    "AdminQueue": AdminQueue,
+    "AdminCompleted": AdminCompleted,
+    "AdminAdvisers": AdminAdvisers,
+    "AdminClients": AdminClients,
+    "AdminTemplate": AdminTemplate,
+    "AdminTeam": AdminTeam,
+    "AdminSettings": AdminSettings,
 }
 
 export const pagesConfig = {
