@@ -127,6 +127,16 @@ Provide a helpful, friendly, and concise response. Be specific and actionable.`,
             </p>
           </div>
           <div className="flex items-center gap-3">
+            {/* Dashboard Button */}
+            <button
+              className="w-11 h-11 rounded-lg bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
+            >
+              📊
+              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                Dashboard
+              </span>
+            </button>
+            
             <div className="text-right">
               <div className="text-xs text-slate-500 font-semibold uppercase tracking-wide mb-1">Progress</div>
               <div className="text-2xl font-bold text-blue-600">{factFind?.completion_percentage || 0}%</div>

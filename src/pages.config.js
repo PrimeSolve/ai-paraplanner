@@ -18,17 +18,17 @@ import FactFindTrusts from './pages/FactFindTrusts';
 import FactFindWelcome from './pages/FactFindWelcome';
 import Home from './pages/Home';
 import SOAManagement from './pages/SOAManagement';
-import SOARequestWelcome from './pages/SOARequestWelcome';
-import SOARequestPrefill from './pages/SOARequestPrefill';
-import SOARequestScope from './pages/SOARequestScope';
+import SOARequestAssumptions from './pages/SOARequestAssumptions';
 import SOARequestDetails from './pages/SOARequestDetails';
-import SOARequestTransactions from './pages/SOARequestTransactions';
-import SOARequestProducts from './pages/SOARequestProducts';
 import SOARequestInsurance from './pages/SOARequestInsurance';
 import SOARequestPortfolio from './pages/SOARequestPortfolio';
-import SOARequestStrategy from './pages/SOARequestStrategy';
-import SOARequestAssumptions from './pages/SOARequestAssumptions';
+import SOARequestPrefill from './pages/SOARequestPrefill';
+import SOARequestProducts from './pages/SOARequestProducts';
 import SOARequestReview from './pages/SOARequestReview';
+import SOARequestScope from './pages/SOARequestScope';
+import SOARequestStrategy from './pages/SOARequestStrategy';
+import SOARequestTransactions from './pages/SOARequestTransactions';
+import SOARequestWelcome from './pages/SOARequestWelcome';
 import __Layout from './Layout.jsx';
 
 
@@ -53,17 +53,17 @@ export const PAGES = {
     "FactFindWelcome": FactFindWelcome,
     "Home": Home,
     "SOAManagement": SOAManagement,
-    "SOARequestWelcome": SOARequestWelcome,
-    "SOARequestPrefill": SOARequestPrefill,
-    "SOARequestScope": SOARequestScope,
+    "SOARequestAssumptions": SOARequestAssumptions,
     "SOARequestDetails": SOARequestDetails,
-    "SOARequestTransactions": SOARequestTransactions,
-    "SOARequestProducts": SOARequestProducts,
     "SOARequestInsurance": SOARequestInsurance,
     "SOARequestPortfolio": SOARequestPortfolio,
-    "SOARequestStrategy": SOARequestStrategy,
-    "SOARequestAssumptions": SOARequestAssumptions,
+    "SOARequestPrefill": SOARequestPrefill,
+    "SOARequestProducts": SOARequestProducts,
     "SOARequestReview": SOARequestReview,
+    "SOARequestScope": SOARequestScope,
+    "SOARequestStrategy": SOARequestStrategy,
+    "SOARequestTransactions": SOARequestTransactions,
+    "SOARequestWelcome": SOARequestWelcome,
 }
 
 export const pagesConfig = {
