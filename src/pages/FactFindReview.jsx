@@ -176,7 +176,7 @@ export default function FactFindReview() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-8 bg-slate-50">
-        <div className="max-w-5xl mx-auto space-y-6">
+        <div className="w-full space-y-6">
           {/* Progress Overview */}
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-6">

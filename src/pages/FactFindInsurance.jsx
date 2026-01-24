@@ -156,7 +156,7 @@ export default function FactFindInsurance() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="max-w-5xl mx-auto space-y-4">
+        <div className="w-full space-y-4">
           {/* Add/Edit Form */}
           <Card className="border-slate-200 shadow-sm">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 rounded-t-lg">

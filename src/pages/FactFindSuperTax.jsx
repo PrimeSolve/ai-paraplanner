@@ -140,7 +140,7 @@ export default function FactFindSuperTax() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="max-w-5xl mx-auto space-y-4">
+        <div className="w-full space-y-4">
           {/* Owner Selection */}
           <div className="flex items-center justify-between bg-slate-100 border border-slate-200 rounded-lg px-4 py-3">
             <div className="flex items-center gap-3">

@@ -220,7 +220,7 @@ export default function FactFindAssetsLiabilities() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="max-w-5xl mx-auto space-y-4">
+        <div className="w-full space-y-4">
           {activeTab === 'assets' ? (
             <>
               {/* Asset Form */}
