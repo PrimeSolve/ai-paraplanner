@@ -18,6 +18,7 @@ import FactFindTrusts from './pages/FactFindTrusts';
 import FactFindWelcome from './pages/FactFindWelcome';
 import Home from './pages/Home';
 import SOAManagement from './pages/SOAManagement';
+import SOARequestWelcome from './pages/SOARequestWelcome';
 import __Layout from './Layout.jsx';
 
 
@@ -42,6 +43,7 @@ export const PAGES = {
     "FactFindWelcome": FactFindWelcome,
     "Home": Home,
     "SOAManagement": SOAManagement,
+    "SOARequestWelcome": SOARequestWelcome,
 }
 
 export const pagesConfig = {
