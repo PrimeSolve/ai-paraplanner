@@ -46,6 +46,16 @@ import AdviceGroupRiskProfiles from './pages/AdviceGroupRiskProfiles';
 import AdviceGroupModelPortfolios from './pages/AdviceGroupModelPortfolios';
 import AdviceGroupSOATemplate from './pages/AdviceGroupSOATemplate';
 import AdviceGroupSettings from './pages/AdviceGroupSettings';
+import AdviserDashboard from './pages/AdviserDashboard';
+import AdviserClients from './pages/AdviserClients';
+import AdviserClientDetail from './pages/AdviserClientDetail';
+import AdviserSOARequests from './pages/AdviserSOARequests';
+import AdviserFactFinds from './pages/AdviserFactFinds';
+import AdviserSOATemplate from './pages/AdviserSOATemplate';
+import AdviserDocuments from './pages/AdviserDocuments';
+import AdviserCalendar from './pages/AdviserCalendar';
+import AdviserAnalytics from './pages/AdviserAnalytics';
+import AdviserSettings from './pages/AdviserSettings';
 import __Layout from './Layout.jsx';
 
 
@@ -98,6 +108,16 @@ export const PAGES = {
     "AdviceGroupModelPortfolios": AdviceGroupModelPortfolios,
     "AdviceGroupSOATemplate": AdviceGroupSOATemplate,
     "AdviceGroupSettings": AdviceGroupSettings,
+    "AdviserDashboard": AdviserDashboard,
+    "AdviserClients": AdviserClients,
+    "AdviserClientDetail": AdviserClientDetail,
+    "AdviserSOARequests": AdviserSOARequests,
+    "AdviserFactFinds": AdviserFactFinds,
+    "AdviserSOATemplate": AdviserSOATemplate,
+    "AdviserDocuments": AdviserDocuments,
+    "AdviserCalendar": AdviserCalendar,
+    "AdviserAnalytics": AdviserAnalytics,
+    "AdviserSettings": AdviserSettings,
 }
 
 export const pagesConfig = {
