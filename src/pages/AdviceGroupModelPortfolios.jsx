@@ -1,0 +1,118 @@
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import AdviceGroupLayout from '../components/advicegroup/AdviceGroupLayout';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Briefcase, Edit } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+
+export default function AdviceGroupModelPortfolios() {
+  const [portfolios, setPortfolios] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+
+      if (currentUser.advice_group_id) {
+        const data = await base44.entities.ModelPortfolio.filter({
+          advice_group_id: currentUser.advice_group_id
+        }, 'name');
+        setPortfolios(data);
+      }
+    } catch (error) {
+      console.error('Failed to load portfolios:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AdviceGroupLayout currentPage="AdviceGroupModelPortfolios">
+      <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">Model Portfolios</h1>
+            <p className="text-sm text-slate-600 mt-1">Manage standardized investment portfolios</p>
+          </div>
+          <Button className="bg-cyan-600 hover:bg-cyan-700">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Portfolio
+          </Button>
+        </div>
+      </div>
+
+      <div className="p-8">
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600 mx-auto"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-6">
+            {portfolios.map((portfolio) => (
+              <Card key={portfolio.id} className="hover:border-cyan-400 transition-all">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center">
+                        <Briefcase className="w-6 h-6 text-cyan-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-lg">{portfolio.name}</h3>
+                        <p className="text-sm text-slate-600">{portfolio.description}</p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary">Active</Badge>
+                  </div>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-600">Expected Return</span>
+                      <span className="font-medium">{portfolio.expected_return || 7.5}% p.a.</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-600">Expected Volatility</span>
+                      <span className="font-medium">{portfolio.expected_volatility || 8.2}%</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-600">Rebalance</span>
+                      <span className="font-medium">{portfolio.rebalance_frequency || 'Quarterly'}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-600">Min Investment</span>
+                      <span className="font-medium">${(portfolio.min_investment || 50000).toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  <Button size="sm" variant="outline" className="w-full">
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Portfolio
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+
+            {portfolios.length === 0 && !loading && (
+              <div className="col-span-2 text-center py-12">
+                <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-600 mb-4">No model portfolios yet</p>
+                <Button className="bg-cyan-600 hover:bg-cyan-700">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create First Portfolio
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </AdviceGroupLayout>
+  );
+}

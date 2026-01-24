@@ -1,0 +1,254 @@
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import AdviceGroupLayout from '../components/advicegroup/AdviceGroupLayout';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Target, Edit, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from 'sonner';
+
+export default function AdviceGroupRiskProfiles() {
+  const [profiles, setProfiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [showDialog, setShowDialog] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(null);
+
+  const defaultAllocation = {
+    cash: 0,
+    au_fixed_interest: 0,
+    int_fixed_interest: 0,
+    property: 0,
+    alternatives: 0,
+    au_equities: 0,
+    int_equities: 0
+  };
+
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    risk_level: 1,
+    min_score: 0,
+    max_score: 10,
+    allocation: defaultAllocation,
+    expected_return: 0,
+    timeframe: '',
+    volatility_tolerance: ''
+  });
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+
+      if (currentUser.advice_group_id) {
+        const data = await base44.entities.RiskProfile.filter({
+          advice_group_id: currentUser.advice_group_id
+        }, 'risk_level');
+        setProfiles(data);
+      }
+    } catch (error) {
+      console.error('Failed to load risk profiles:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      if (editingProfile) {
+        await base44.entities.RiskProfile.update(editingProfile.id, {
+          ...formData,
+          advice_group_id: user.advice_group_id
+        });
+        toast.success('Risk profile updated');
+      } else {
+        await base44.entities.RiskProfile.create({
+          ...formData,
+          advice_group_id: user.advice_group_id
+        });
+        toast.success('Risk profile created');
+      }
+      setShowDialog(false);
+      setEditingProfile(null);
+      setFormData({
+        name: '',
+        description: '',
+        risk_level: 1,
+        min_score: 0,
+        max_score: 10,
+        allocation: defaultAllocation,
+        expected_return: 0,
+        timeframe: '',
+        volatility_tolerance: ''
+      });
+      loadData();
+    } catch (error) {
+      toast.error('Failed to save risk profile');
+    }
+  };
+
+  const handleEdit = (profile) => {
+    setEditingProfile(profile);
+    setFormData(profile);
+    setShowDialog(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (confirm('Delete this risk profile?')) {
+      try {
+        await base44.entities.RiskProfile.delete(id);
+        toast.success('Risk profile deleted');
+        loadData();
+      } catch (error) {
+        toast.error('Failed to delete risk profile');
+      }
+    }
+  };
+
+  return (
+    <AdviceGroupLayout currentPage="AdviceGroupRiskProfiles">
+      <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">Risk Profiles</h1>
+            <p className="text-sm text-slate-600 mt-1">Define risk categories and asset allocations</p>
+          </div>
+          <Button onClick={() => setShowDialog(true)} className="bg-cyan-600 hover:bg-cyan-700">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Risk Profile
+          </Button>
+        </div>
+      </div>
+
+      <div className="p-8">
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600 mx-auto"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-6">
+            {profiles.map((profile) => (
+              <Card key={profile.id} className="hover:border-cyan-400 transition-all">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center">
+                        <Target className="w-6 h-6 text-cyan-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-lg">{profile.name}</h3>
+                        <p className="text-sm text-slate-600">{profile.description}</p>
+                      </div>
+                    </div>
+                    <Badge>Risk {profile.risk_level}/7</Badge>
+                  </div>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-600">Score Range</span>
+                      <span className="font-medium">{profile.min_score} - {profile.max_score}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-600">Expected Return</span>
+                      <span className="font-medium">{profile.expected_return}% p.a.</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-600">Timeframe</span>
+                      <span className="font-medium">{profile.timeframe || 'N/A'}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-4 border-t">
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(profile)} className="flex-1">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => handleDelete(profile.id)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingProfile ? 'Edit' : 'Add'} Risk Profile</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>Profile Name</Label>
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="e.g., Defensive, Conservative, Balanced"
+              />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Input
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Risk Level (1-7)</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="7"
+                  value={formData.risk_level}
+                  onChange={(e) => setFormData({...formData, risk_level: Number(e.target.value)})}
+                />
+              </div>
+              <div>
+                <Label>Min Score</Label>
+                <Input
+                  type="number"
+                  value={formData.min_score}
+                  onChange={(e) => setFormData({...formData, min_score: Number(e.target.value)})}
+                />
+              </div>
+              <div>
+                <Label>Max Score</Label>
+                <Input
+                  type="number"
+                  value={formData.max_score}
+                  onChange={(e) => setFormData({...formData, max_score: Number(e.target.value)})}
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Expected Return (%)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                value={formData.expected_return}
+                onChange={(e) => setFormData({...formData, expected_return: Number(e.target.value)})}
+              />
+            </div>
+            <div className="flex gap-2 justify-end pt-4">
+              <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
+              <Button onClick={handleSave} className="bg-cyan-600 hover:bg-cyan-700">
+                {editingProfile ? 'Update' : 'Create'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </AdviceGroupLayout>
+  );
+}

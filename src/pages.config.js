@@ -38,6 +38,14 @@ import AdminClients from './pages/AdminClients';
 import AdminTemplate from './pages/AdminTemplate';
 import AdminTeam from './pages/AdminTeam';
 import AdminSettings from './pages/AdminSettings';
+import AdviceGroupDashboard from './pages/AdviceGroupDashboard';
+import AdviceGroupAdvisers from './pages/AdviceGroupAdvisers';
+import AdviceGroupClients from './pages/AdviceGroupClients';
+import AdviceGroupSOARequests from './pages/AdviceGroupSOARequests';
+import AdviceGroupRiskProfiles from './pages/AdviceGroupRiskProfiles';
+import AdviceGroupModelPortfolios from './pages/AdviceGroupModelPortfolios';
+import AdviceGroupSOATemplate from './pages/AdviceGroupSOATemplate';
+import AdviceGroupSettings from './pages/AdviceGroupSettings';
 import __Layout from './Layout.jsx';
 
 
@@ -82,6 +90,14 @@ export const PAGES = {
     "AdminTemplate": AdminTemplate,
     "AdminTeam": AdminTeam,
     "AdminSettings": AdminSettings,
+    "AdviceGroupDashboard": AdviceGroupDashboard,
+    "AdviceGroupAdvisers": AdviceGroupAdvisers,
+    "AdviceGroupClients": AdviceGroupClients,
+    "AdviceGroupSOARequests": AdviceGroupSOARequests,
+    "AdviceGroupRiskProfiles": AdviceGroupRiskProfiles,
+    "AdviceGroupModelPortfolios": AdviceGroupModelPortfolios,
+    "AdviceGroupSOATemplate": AdviceGroupSOATemplate,
+    "AdviceGroupSettings": AdviceGroupSettings,
 }
 
 export const pagesConfig = {
