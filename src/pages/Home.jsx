@@ -4,9 +4,10 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { FileText, Clock, CheckCircle2, AlertCircle, ArrowRight, Plus, DollarSign, TrendingUp, Shield, MessageSquare, RefreshCw, Info } from 'lucide-react';
+import { FileText, Clock, CheckCircle2, AlertCircle, ArrowRight, Plus, DollarSign, TrendingUp, Shield } from 'lucide-react';
 import { format } from 'date-fns';
 import FactFindLayout from '../components/factfind/FactFindLayout';
+import FactFindHeader from '../components/factfind/FactFindHeader';
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -125,42 +126,11 @@ export default function Home() {
   return (
     <FactFindLayout currentSection="dashboard" factFind={factFind}>
       <div className="min-h-screen bg-slate-50">
-        {/* Header */}
-        <div className="bg-white border-b border-slate-200 px-8 py-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-extrabold text-slate-800 mb-1">Client Dashboard</h3>
-            <p className="text-sm text-slate-600">
-              A high-level summary of your financial position. Click any section below to review or update details.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              className="w-11 h-11 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
-            >
-              🔄
-              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                Refresh Data
-              </span>
-            </button>
-            <button
-              className="w-11 h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
-            >
-              ℹ️
-              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                Key Assumptions
-              </span>
-            </button>
-            <Link to={createPageUrl('FactFindAssistant') + (factFind?.id ? `?id=${factFind.id}` : '')}>
-              <button className="px-4 py-2.5 rounded-lg bg-teal-500 hover:bg-teal-600 text-white flex items-center gap-2 shadow-md transition-all">
-                <span className="text-base">💬</span>
-                <span className="font-medium text-sm">Talk to our assistant</span>
-                <span className="bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">NEW</span>
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div>
+        <FactFindHeader 
+          title="Client Dashboard"
+          description="A high-level summary of your financial position. Click any section below to review or update details."
+          factFind={factFind}
+        />
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-8 py-6 space-y-6">
