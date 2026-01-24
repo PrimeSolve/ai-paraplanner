@@ -120,9 +120,9 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
       {/* Sidebar Navigation */}
-      <div className="w-80 bg-gray-800 text-gray-200 flex flex-col border-r border-gray-900">
-        {/* Brand */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-700">
+      <div className="w-80 bg-gray-800 text-gray-200 flex flex-col border-r border-gray-900 fixed left-0 top-0 bottom-0 z-10">
+        {/* Brand - Anchored to top */}
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-700 flex-shrink-0">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-600 flex flex-col justify-center px-2 py-1.5 gap-1 shadow-lg">
             <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '70%'}}></div>
             <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '55%'}}></div>
