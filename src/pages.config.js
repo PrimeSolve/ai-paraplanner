@@ -21,6 +21,9 @@ import SOAManagement from './pages/SOAManagement';
 import SOARequestWelcome from './pages/SOARequestWelcome';
 import SOARequestPrefill from './pages/SOARequestPrefill';
 import SOARequestScope from './pages/SOARequestScope';
+import SOARequestDetails from './pages/SOARequestDetails';
+import SOARequestTransactions from './pages/SOARequestTransactions';
+import SOARequestProducts from './pages/SOARequestProducts';
 import __Layout from './Layout.jsx';
 
 
@@ -48,6 +51,9 @@ export const PAGES = {
     "SOARequestWelcome": SOARequestWelcome,
     "SOARequestPrefill": SOARequestPrefill,
     "SOARequestScope": SOARequestScope,
+    "SOARequestDetails": SOARequestDetails,
+    "SOARequestTransactions": SOARequestTransactions,
+    "SOARequestProducts": SOARequestProducts,
 }
 
 export const pagesConfig = {
