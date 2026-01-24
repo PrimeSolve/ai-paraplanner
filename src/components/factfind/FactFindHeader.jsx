@@ -79,9 +79,12 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
           {/* Dashboard Button */}
           <Link to={createPageUrl('Home') + (factFind?.id ? `?id=${factFind.id}` : '')}>
             <button
-              className="w-11 h-11 rounded-lg bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0"
+              className="w-11 h-11 rounded-lg bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
             >
-              <LayoutDashboard className="w-5 h-5" />
+              📊
+              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                Dashboard
+              </span>
             </button>
           </Link>
 
@@ -89,17 +92,23 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
           <button
             onClick={handleRefreshClick}
             disabled={refreshing}
-            className="w-11 h-11 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0"
+            className="w-11 h-11 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
           >
-            <RefreshCw className={cn("w-5 h-5", refreshing && "animate-spin")} />
+            🔄
+            <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              Refresh Data
+            </span>
           </button>
 
           {/* Info Button */}
           <button
             onClick={() => setShowAssumptions(true)}
-            className="w-11 h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0"
+            className="w-11 h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
           >
-            <Info className="w-5 h-5" />
+            ℹ️
+            <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              Key Assumptions
+            </span>
           </button>
         </div>
       </div>
