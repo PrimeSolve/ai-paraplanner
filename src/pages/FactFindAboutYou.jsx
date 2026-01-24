@@ -200,7 +200,7 @@ export default function FactFindPersonal() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="max-w-5xl mx-auto">
+        <div className="w-full">
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-6 space-y-6">
               {/* Client Information Bar */}

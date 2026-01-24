@@ -147,7 +147,7 @@ export default function FactFindPrefill() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="max-w-6xl mx-auto space-y-4">
+        <div className="w-full space-y-4">
           {/* Info Card */}
           <Card className="border-blue-200 bg-blue-50/50">
             <CardContent className="p-5">

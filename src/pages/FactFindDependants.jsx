@@ -140,7 +140,7 @@ export default function FactFindDependants() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="max-w-5xl mx-auto space-y-4">
+        <div className="w-full space-y-4">
           {/* Add/Edit Form */}
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-6 space-y-4">
