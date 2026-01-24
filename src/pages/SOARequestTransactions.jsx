@@ -106,7 +106,7 @@ export default function SOARequestTransactions() {
       />
       
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="w-full space-y-6">
           {/* Buy Transactions */}
           <Card>
             <CardHeader>

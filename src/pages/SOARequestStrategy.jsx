@@ -76,7 +76,7 @@ export default function SOARequestStrategy() {
       />
       
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="w-full space-y-6">
           <Card className="border-blue-200 bg-blue-50">
             <CardContent className="pt-6">
               <h3 className="font-bold text-slate-800 mb-2">Strategy Recommendations</h3>

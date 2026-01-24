@@ -84,7 +84,7 @@ export default function SOARequestReview() {
       />
       
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="w-full space-y-6">
           <Card className="border-green-200 bg-green-50">
             <CardContent className="pt-6">
               <h3 className="font-bold text-slate-800 mb-2">Ready to Submit</h3>

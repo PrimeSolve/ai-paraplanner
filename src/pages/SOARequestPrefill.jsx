@@ -132,7 +132,7 @@ export default function SOARequestPrefill() {
       />
       
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
-        <div className="max-w-6xl mx-auto space-y-6">
+        <div className="w-full space-y-6">
           {/* Info Card */}
           <Card className="border-blue-200 bg-blue-50">
             <CardContent className="pt-6">
