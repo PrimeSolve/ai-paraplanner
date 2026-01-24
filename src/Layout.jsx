@@ -32,6 +32,7 @@ export default function Layout({ children, currentPageName }) {
   const navLinks = user ? [
     { name: 'Admin Panel', path: 'AdminDashboard', icon: Settings, roles: ['admin'] },
     { name: 'SOA Management', path: 'SOAManagement', icon: FileText, roles: ['admin'] },
+    { name: 'SOA Request', path: 'SOARequestWelcome', icon: FileText, roles: ['admin', 'user'] },
   ] : [];
 
   const filteredLinks = navLinks.filter(link => 
