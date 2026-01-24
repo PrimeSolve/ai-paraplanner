@@ -11,32 +11,98 @@ const sectionGroups = [
   {
     title: 'GETTING STARTED',
     sections: [
-      { id: 'welcome', label: 'Welcome', path: 'SOARequestWelcome', icon: Home },
-      { id: 'prefill', label: 'Prefill (upload documents)', path: 'SOARequestPrefill', icon: Upload }
+      { 
+        id: 'welcome', 
+        label: 'Welcome', 
+        description: 'Learn how to build and submit your SOA request',
+        path: 'SOARequestWelcome', 
+        icon: Home 
+      },
+      { 
+        id: 'prefill', 
+        label: 'Prefill', 
+        description: 'Upload documents such as file notes, insurance quotes, cashflow modelling to build the form faster',
+        path: 'SOARequestPrefill', 
+        icon: Upload 
+      }
     ]
   },
   {
-    title: 'ADVICE CONTENT',
+    title: 'ADVICE DETAILS',
     sections: [
-      { id: 'scope', label: '1. Scope of Advice', path: 'SOARequestScope', icon: FileText },
-      { id: 'details', label: '2. SOA Details', path: 'SOARequestDetails', icon: FileText },
-      { id: 'transactions', label: '3. Transactions', path: 'SOARequestTransactions', icon: TrendingUp },
-      { id: 'products', label: '4. Products & Entities', path: 'SOARequestProducts', icon: Building2 }
+      { 
+        id: 'scope', 
+        label: 'Scope of advice', 
+        description: "Define what's in and out of scope",
+        path: 'SOARequestScope', 
+        icon: FileText 
+      },
+      { 
+        id: 'products', 
+        label: 'Products & entities', 
+        description: 'Add the new products or entities you are recommending',
+        path: 'SOARequestProducts', 
+        icon: Building2 
+      },
+      { 
+        id: 'insurance', 
+        label: 'Insurance', 
+        description: 'Use the calculators to build insurance needs and define recommendations',
+        path: 'SOARequestInsurance', 
+        icon: Shield 
+      },
+      { 
+        id: 'transactions', 
+        label: 'Transactions', 
+        description: 'Specify assets you want to buy or sell or any new debts required to support',
+        path: 'SOARequestTransactions', 
+        icon: TrendingUp 
+      },
+      { 
+        id: 'portfolio', 
+        label: 'Portfolio', 
+        description: 'Build portfolios for each product',
+        path: 'SOARequestPortfolio', 
+        icon: PieChart 
+      },
+      { 
+        id: 'strategy', 
+        label: 'Strategy', 
+        description: 'Optional section models to compare cashflow scenarios, as well as add strategy recommendations to your product strategy',
+        path: 'SOARequestStrategy', 
+        icon: TrendingUp 
+      }
     ]
   },
   {
-    title: 'CALCULATIONS',
+    title: 'FINAL DETAILS',
     sections: [
-      { id: 'insurance', label: '5. Insurance', path: 'SOARequestInsurance', icon: Shield },
-      { id: 'portfolio', label: '6. Portfolio', path: 'SOARequestPortfolio', icon: PieChart },
-      { id: 'cashflow', label: '7. Cashflow Models', path: 'SOARequestCashflow', icon: DollarSign },
-      { id: 'assumptions', label: '8. Assumptions', path: 'SOARequestAssumptions', icon: FileText }
+      { 
+        id: 'assumptions', 
+        label: 'Assumptions', 
+        description: 'Define values, choices, longevity',
+        path: 'SOARequestAssumptions', 
+        icon: FileText 
+      },
+      { 
+        id: 'details', 
+        label: 'SOA details', 
+        description: 'Define SOA requirements',
+        path: 'SOARequestDetails', 
+        icon: FileText 
+      }
     ]
   },
   {
     title: 'FINAL STEP',
     sections: [
-      { id: 'review', label: 'Review & Submit', path: 'SOARequestReview', icon: CheckCircle2 }
+      { 
+        id: 'review', 
+        label: 'Review and submit', 
+        description: 'Final review and send to paraplanner',
+        path: 'SOARequestReview', 
+        icon: CheckCircle2 
+      }
     ]
   }
 ];
@@ -89,18 +155,21 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
                     key={section.id}
                     to={createPageUrl(section.path) + (soaRequest?.id ? `?id=${soaRequest.id}` : '')}
                     className={cn(
-                      "flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all text-sm group",
+                      "flex flex-col px-3 py-3 rounded-lg mb-2 transition-all group",
                       isActive 
-                        ? "bg-gray-700 text-white font-medium" 
+                        ? "bg-gray-700 text-white" 
                         : "text-gray-300 hover:bg-gray-700/50 hover:text-white"
                     )}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <Icon className="w-5 h-5" />
-                      <span>{section.label}</span>
+                    <div className="flex items-center gap-2.5 mb-1">
+                      <Icon className="w-5 h-5 flex-shrink-0" />
+                      <span className="font-semibold text-sm">{section.label}</span>
+                      {completion > 0 && (
+                        <span className="text-xs text-slate-400 font-semibold ml-auto">{completion}%</span>
+                      )}
                     </div>
-                    {completion > 0 && (
-                      <span className="text-xs text-slate-400 font-semibold">{completion}%</span>
+                    {section.description && (
+                      <p className="text-xs text-gray-400 leading-relaxed ml-7">{section.description}</p>
                     )}
                   </Link>
                 );
