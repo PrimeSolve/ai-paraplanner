@@ -135,27 +135,31 @@ export default function Home() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-slate-300 text-slate-700 hover:bg-slate-50"
+            <button
+              className="w-11 h-11 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
             >
-              🔄 Refresh Data
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-slate-300 text-slate-700 hover:bg-slate-50"
+              🔄
+              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                Refresh Data
+              </span>
+            </button>
+            <button
+              className="w-11 h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
             >
-              ℹ️ Key Assumptions
-            </Button>
+              ℹ️
+              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                Key Assumptions
+              </span>
+            </button>
             <Link to={createPageUrl('FactFindAssistant') + (factFind?.id ? `?id=${factFind.id}` : '')}>
-              <Button
-                size="sm"
-                className="bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-lg shadow-orange-500/30"
+              <button
+                className="w-11 h-11 rounded-lg bg-teal-500 hover:bg-teal-600 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
               >
-                💬 Talk to Assistant
-              </Button>
+                💬
+                <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                  Talk to Assistant
+                </span>
+              </button>
             </Link>
           </div>
         </div>
