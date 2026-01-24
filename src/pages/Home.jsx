@@ -140,24 +140,21 @@ export default function Home() {
               size="sm"
               className="border-slate-300 text-slate-700 hover:bg-slate-50"
             >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh Data
+              🔄 Refresh Data
             </Button>
             <Button
               variant="outline"
               size="sm"
               className="border-slate-300 text-slate-700 hover:bg-slate-50"
             >
-              <Info className="w-4 h-4 mr-2" />
-              Key Assumptions
+              ℹ️ Key Assumptions
             </Button>
             <Link to={createPageUrl('FactFindAssistant') + (factFind?.id ? `?id=${factFind.id}` : '')}>
               <Button
                 size="sm"
                 className="bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-lg shadow-orange-500/30"
               >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Talk to Assistant
+                💬 Talk to Assistant
               </Button>
             </Link>
           </div>
