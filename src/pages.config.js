@@ -24,6 +24,11 @@ import SOARequestScope from './pages/SOARequestScope';
 import SOARequestDetails from './pages/SOARequestDetails';
 import SOARequestTransactions from './pages/SOARequestTransactions';
 import SOARequestProducts from './pages/SOARequestProducts';
+import SOARequestInsurance from './pages/SOARequestInsurance';
+import SOARequestPortfolio from './pages/SOARequestPortfolio';
+import SOARequestStrategy from './pages/SOARequestStrategy';
+import SOARequestAssumptions from './pages/SOARequestAssumptions';
+import SOARequestReview from './pages/SOARequestReview';
 import __Layout from './Layout.jsx';
 
 
@@ -54,6 +59,11 @@ export const PAGES = {
     "SOARequestDetails": SOARequestDetails,
     "SOARequestTransactions": SOARequestTransactions,
     "SOARequestProducts": SOARequestProducts,
+    "SOARequestInsurance": SOARequestInsurance,
+    "SOARequestPortfolio": SOARequestPortfolio,
+    "SOARequestStrategy": SOARequestStrategy,
+    "SOARequestAssumptions": SOARequestAssumptions,
+    "SOARequestReview": SOARequestReview,
 }
 
 export const pagesConfig = {
