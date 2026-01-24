@@ -81,9 +81,9 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
       {/* Sidebar Navigation */}
-      <div className="w-80 bg-slate-800 text-slate-200 flex flex-col border-r border-slate-900">
+      <div className="w-80 bg-slate-800 text-slate-200 flex flex-col border-r border-slate-900 fixed left-0 top-0 bottom-0 z-10">
         {/* Brand */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-700">
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-700 flex-shrink-0">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-600 flex flex-col justify-center px-2 py-1.5 gap-1 shadow-lg">
             <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '70%'}}></div>
             <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '55%'}}></div>
@@ -134,7 +134,7 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden ml-80">
         {children}
       </div>
     </div>
