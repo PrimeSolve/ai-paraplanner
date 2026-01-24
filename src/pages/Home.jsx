@@ -130,6 +130,7 @@ export default function Home() {
           title="Client Dashboard"
           description="A high-level summary of your financial position. Click any section below to review or update details."
           factFind={factFind}
+          hideDashboard={true}
         />
 
       {/* Content */}

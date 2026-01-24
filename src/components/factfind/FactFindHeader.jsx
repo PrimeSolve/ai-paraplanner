@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
-export default function FactFindHeader({ title, description, tabs, activeTab, onTabChange, factFind }) {
+export default function FactFindHeader({ title, description, tabs, activeTab, onTabChange, factFind, hideDashboard = false }) {
   const [showAssumptions, setShowAssumptions] = useState(false);
   const [showRefreshWarning, setShowRefreshWarning] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -77,16 +77,18 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
           </Link>
 
           {/* Dashboard Button */}
-          <Link to={createPageUrl('Home') + (factFind?.id ? `?id=${factFind.id}` : '')}>
-            <button
-              className="w-11 h-11 rounded-lg bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
-            >
-              📊
-              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                Dashboard
-              </span>
-            </button>
-          </Link>
+          {!hideDashboard && (
+            <Link to={createPageUrl('Home') + (factFind?.id ? `?id=${factFind.id}` : '')}>
+              <button
+                className="w-11 h-11 rounded-lg bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
+              >
+                📊
+                <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                  Dashboard
+                </span>
+              </button>
+            </Link>
+          )}
 
           {/* Refresh Button */}
           <button
