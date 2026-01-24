@@ -28,7 +28,7 @@ const sectionGroups = [
     ]
   },
   {
-    title: 'ADVICE DETAILS',
+    title: 'REQUEST DETAILS',
     sections: [
       { 
         id: 'scope', 
@@ -71,12 +71,7 @@ const sectionGroups = [
         description: 'Optional section models to compare cashflow scenarios, as well as add strategy recommendations to your product strategy',
         path: 'SOARequestStrategy', 
         icon: TrendingUp 
-      }
-    ]
-  },
-  {
-    title: 'FINAL DETAILS',
-    sections: [
+      },
       { 
         id: 'assumptions', 
         label: 'Assumptions', 
