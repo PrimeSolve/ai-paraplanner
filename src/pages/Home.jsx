@@ -152,13 +152,10 @@ export default function Home() {
               </span>
             </button>
             <Link to={createPageUrl('FactFindAssistant') + (factFind?.id ? `?id=${factFind.id}` : '')}>
-              <button
-                className="w-11 h-11 rounded-lg bg-teal-500 hover:bg-teal-600 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
-              >
-                💬
-                <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                  Talk to Assistant
-                </span>
+              <button className="px-4 py-2.5 rounded-lg bg-teal-500 hover:bg-teal-600 text-white flex items-center gap-2 shadow-md transition-all">
+                <span className="text-base">💬</span>
+                <span className="font-medium text-sm">Talk to our assistant</span>
+                <span className="bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">NEW</span>
               </button>
             </Link>
           </div>
