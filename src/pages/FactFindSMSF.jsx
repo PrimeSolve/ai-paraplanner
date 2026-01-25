@@ -691,18 +691,32 @@ export default function FactFindSMSF() {
             <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
               <h4 className="text-sm font-semibold text-purple-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-purple-600 rounded"></span>👥 Beneficiaries</h4>
               
-              <div className="benef-list space-y-3 mb-3">
-                {/* Beneficiary rows go here */}
-              </div>
+              <div className="benef-container">
+                {/* Table with headers */}
+                <div className="benef-list-table hidden mb-3 overflow-x-auto">
+                  <div className="bg-slate-100 rounded-md mb-2 pb-2">
+                    <div className="grid grid-cols-5 gap-2 px-2 py-2 text-xs font-semibold text-slate-700">
+                      <div>Beneficiary Account</div>
+                      <div>Who is Beneficiary</div>
+                      <div>Beneficiary Type</div>
+                      <div>Entitlement</div>
+                      <div></div>
+                    </div>
+                  </div>
+                  <div className="benef-list space-y-2">
+                    {/* Beneficiary rows go here */}
+                  </div>
+                </div>
 
-              {/* Empty state */}
-              <div className="benef-list-empty hidden text-center py-6">
-                <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
-                <button type="button" className="add-first-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First Beneficiary</button>
-              </div>
+                {/* Empty state */}
+                <div className="benef-list-empty text-center py-6">
+                  <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
+                  <button type="button" className="add-first-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First Beneficiary</button>
+                </div>
 
-              {/* Add button */}
-              <button type="button" className="add-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
+                {/* Add button - only show if beneficiaries exist */}
+                <button type="button" className="add-benef hidden px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
+              </div>
             </div>
           </div>
         </div>
