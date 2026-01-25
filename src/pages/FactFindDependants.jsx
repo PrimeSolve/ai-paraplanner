@@ -20,8 +20,7 @@ export default function FactFindDependants() {
   const [activeTab, setActiveTab] = useState('children');
   const [children, setChildren] = useState([]);
   const [dependants, setDependants] = useState([]);
-  const [showChildForm, setShowChildForm] = useState(false);
-  const [showDependantForm, setShowDependantForm] = useState(false);
+
   const [selectedChildIndex, setSelectedChildIndex] = useState(null);
   const [selectedDependantIndex, setSelectedDependantIndex] = useState(null);
   const [childFormData, setChildFormData] = useState({
