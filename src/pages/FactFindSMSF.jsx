@@ -706,22 +706,21 @@ export default function FactFindSMSF() {
               <div className="acct-container">
                 {/* Table with headers */}
                 <div className="acct-list-table hidden mb-3 overflow-x-auto">
-                  <div className="space-y-0">
-                    <div className="grid gap-2 px-2 py-2 text-xs font-semibold text-slate-700" style={{ gridTemplateColumns: 'repeat(9, minmax(0, 1fr))' }}>
-                      <div>Account Owner</div>
-                      <div>Tax Environment</div>
-                      <div>Tax Free Amt</div>
-                      <div>Tax Free %</div>
-                      <div>UNP Amount</div>
-                      <div>Super Guar?</div>
-                      <div>Salary Sac</div>
-                      <div>After Tax</div>
-                      <div></div>
+                  <div className="min-w-[1100px]">
+                    <div className="grid gap-2 py-2 text-xs font-semibold text-slate-600 border-b border-slate-200" style={{ gridTemplateColumns: '120px 120px 100px 90px 100px 90px 100px 110px 80px' }}>
+                      <div className="px-1">Account Owner</div>
+                      <div className="px-1">Tax Environment</div>
+                      <div className="px-1">Tax Free Amt</div>
+                      <div className="px-1">Tax Free %</div>
+                      <div className="px-1">UNP Amount</div>
+                      <div className="px-1">Super Guar?</div>
+                      <div className="px-1">Salary Sac</div>
+                      <div className="px-1">After Tax</div>
+                      <div className="px-1"></div>
                     </div>
-                    <div className="bg-slate-100 h-px"></div>
-                  </div>
-                  <div className="acct-list space-y-0">
-                    {/* Account rows go here */}
+                    <div className="acct-list">
+                      {/* Account rows go here */}
+                    </div>
                   </div>
                 </div>
 
