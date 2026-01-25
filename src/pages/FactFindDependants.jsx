@@ -273,23 +273,23 @@ export default function FactFindDependants() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Is child financially dependent?</Label>
-                      <div className="flex gap-3">
-                        {[{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }].map(option => (
-                          <button
-                            key={option.value}
-                            onClick={() => setChildFormData({ ...childFormData, financially_dependent: option.value })}
-                            className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                              childFormData.financially_dependent === option.value
-                                ? 'bg-blue-600 text-white border-blue-600'
-                                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                            }`}
-                          >
-                            {option.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                       <Label className="text-slate-700 font-semibold text-sm">Is child financially dependent?</Label>
+                       <div className="flex gap-3">
+                         {[{ label: 'Yes', value: '1' }, { label: 'No', value: '2' }].map(option => (
+                           <button
+                             key={option.value}
+                             onClick={() => setChildFormData({ ...childFormData, child_fin_dep: option.value })}
+                             className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                               childFormData.child_fin_dep === option.value
+                                 ? 'bg-blue-600 text-white border-blue-600'
+                                 : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                             }`}
+                           >
+                             {option.label}
+                           </button>
+                         ))}
+                       </div>
+                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
