@@ -211,6 +211,12 @@ export default function FactFindSMSF() {
           acctContainer.appendChild(row);
         });
       }
+      const acctTable = card.querySelector('.acct-list-table');
+      const acctEmpty = card.querySelector('.acct-list-empty');
+      const acctBtn = card.querySelector('.add-acct');
+      acctTable?.classList.remove('hidden');
+      acctEmpty?.classList.add('hidden');
+      acctBtn?.classList.remove('hidden');
     }
 
     // Fill beneficiaries
@@ -223,6 +229,12 @@ export default function FactFindSMSF() {
           benefContainer.appendChild(row);
         });
       }
+      const benefTable = card.querySelector('.benef-list-table');
+      const benefEmpty = card.querySelector('.benef-list-empty');
+      const benefBtn = card.querySelector('.add-benef');
+      benefTable?.classList.remove('hidden');
+      benefEmpty?.classList.add('hidden');
+      benefBtn?.classList.remove('hidden');
     }
   }, []);
 
