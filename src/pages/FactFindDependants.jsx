@@ -74,14 +74,13 @@ export default function FactFindDependants() {
     }
 
     try {
-      let updated;
-      if (selectedChildIndex !== null) {
-        updated = [...children];
-        updated[selectedChildIndex] = childFormData;
-        setChildren(updated);
+      const isNewChild = selectedChildIndex >= children.length;
+      let updated = [...children];
+      
+      if (isNewChild) {
+        updated.push(childFormData);
       } else {
-        updated = [...children, childFormData];
-        setChildren(updated);
+        updated[selectedChildIndex] = childFormData;
       }
 
       // Auto-save to database
@@ -98,26 +97,15 @@ export default function FactFindDependants() {
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
 
-      toast.success(selectedChildIndex !== null ? 'Child updated' : 'Child added');
+      setChildren(updated);
+      if (isNewChild) {
+        setSelectedChildIndex(updated.length - 1);
+      }
+      toast.success(isNewChild ? 'Child added' : 'Child updated');
     } catch (error) {
       toast.error('Failed to save child');
       console.error(error);
     }
-
-    setChildFormData({
-      child_name: '',
-      child_dob: '',
-      child_fin_dep: '',
-      child_edu: '',
-      child_fin_age: '',
-      child_health: ''
-    });
-    setIsAddingChild(false);
-  };
-
-  const handleSelectChild = (index) => {
-    setSelectedChildIndex(index);
-    setChildFormData(children[index]);
   };
 
   const handleDeleteChild = async (index) => {
