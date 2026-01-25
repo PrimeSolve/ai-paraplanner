@@ -303,7 +303,7 @@ export default function FactFindDependants() {
           {/* Children Tab */}
           {activeTab === 'children' && (
             <>
-              {children.length > 0 && (
+              {children.length > 0 && !isAddingChild && selectedChildIndex === null && (
                 <div className="flex gap-2 mb-4 flex-wrap">
                   {children.map((child, index) => (
                     <button
