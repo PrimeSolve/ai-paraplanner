@@ -577,7 +577,7 @@ export default function FactFindDependants() {
                 </Card>
               )}
 
-              {selectedDependantIndex !== null && (
+              {(selectedDependantIndex !== null || isAddingDependant) && (
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-center justify-between mb-4">
@@ -600,6 +600,7 @@ export default function FactFindDependants() {
                         size="sm"
                         onClick={() => {
                           setSelectedDependantIndex(null);
+                          setIsAddingDependant(false);
                           setDependantFormData({
                             dep_name: '',
                             dep_dob: '',
@@ -612,7 +613,7 @@ export default function FactFindDependants() {
                       >
                         Cancel
                       </Button>
-                      </div>
+                    </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
