@@ -172,6 +172,11 @@ export default function FactFindDependants() {
     const wrap = wrapForTab(tab);
     const remaining = wrap.querySelectorAll('.entry').length;
     renumber(tab);
+    if (tab === 'children') {
+      setChildrenCount(remaining);
+    } else {
+      setDependantsCount(remaining);
+    }
     updatePills();
 
     if (remaining > 0) {
