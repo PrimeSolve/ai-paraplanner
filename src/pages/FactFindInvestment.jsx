@@ -208,6 +208,12 @@ export default function FactFindInvestment() {
         if (clientName) ownerSelect.innerHTML += `<option value="client">${clientName}</option>`;
         if (partnerName) ownerSelect.innerHTML += `<option value="partner">${partnerName}</option>`;
 
+        // Add trusts only (no companies or SMSFs for bonds)
+        const trusts = factFind?.trusts_companies?.entities?.filter(e => e.entity_type === 'trust') || [];
+        trusts.forEach((trust, i) => {
+          ownerSelect.innerHTML += `<option value="trust-${i}">${trust.entity_name || `Trust ${i + 1}`}</option>`;
+        });
+
         if (data.b_owner) ownerSelect.value = data.b_owner;
       }
 
