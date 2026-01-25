@@ -367,13 +367,13 @@ export default function FactFindDependants() {
                                   <span className="font-bold text-slate-800">Child {index + 1}</span>
                                 </div>
                               <div className="space-y-1 text-sm text-slate-600">
-                                <p><strong>Name:</strong> {child.name}</p>
-                                {child.date_of_birth && <p><strong>DOB:</strong> {child.date_of_birth}</p>}
-                                {child.financially_dependent && <p><strong>Financially Dependent:</strong> {child.financially_dependent}</p>}
-                                {child.education_status && <p><strong>Education:</strong> {child.education_status}</p>}
-                                {child.dependent_age && <p><strong>Dependent Age:</strong> {child.dependent_age}</p>}
-                                {child.health_issues && <p><strong>Health Issues:</strong> {child.health_issues}</p>}
-                              </div>
+                                 <p><strong>Name:</strong> {child.child_name}</p>
+                                 {child.child_dob && <p><strong>DOB:</strong> {child.child_dob}</p>}
+                                 {child.child_fin_dep && <p><strong>Financially Dependent:</strong> {child.child_fin_dep === '1' ? 'Yes' : 'No'}</p>}
+                                 {child.child_edu && <p><strong>Education:</strong> {['Primary', 'Secondary', 'Tertiary', 'TAFE/Trade', 'Not in education'][parseInt(child.child_edu) - 1]}</p>}
+                                 {child.child_fin_age && <p><strong>Dependent Age:</strong> {child.child_fin_age}</p>}
+                                 {child.child_health && <p><strong>Health Issues:</strong> {child.child_health}</p>}
+                               </div>
                             </div>
                             </div>
                             <div className="flex gap-2 ml-2">
