@@ -939,12 +939,24 @@ export default function FactFindSuperannuation() {
             <div className="bg-green-50 rounded-lg p-4 border border-green-200">
               <h4 className="text-sm font-semibold text-green-700 mb-4">💵 Income</h4>
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="p_income" placeholder="Income" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
-                <select name="p_frequency" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"><option value="">Frequency</option><option value="1">Weekly</option><option value="2">Fortnightly</option><option value="3">Monthly</option><option value="4">Quarterly</option><option value="5">Annual</option></select>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Income</label>
+                  <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="p_income" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Frequency</label>
+                  <select name="p_frequency" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"><option value="">Select…</option><option value="1">Weekly</option><option value="2">Fortnightly</option><option value="3">Monthly</option><option value="4">Quarterly</option><option value="5">Annual</option></select>
+                </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4 mt-4">
-                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="p_deductible" placeholder="Deductible amt" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
-                <input type="text" name="p_taxfree_pct" placeholder="Tax free %" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Deductible amount</label>
+                  <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="p_deductible" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Tax free %</label>
+                  <input type="text" name="p_taxfree_pct" placeholder="e.g. 50%" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                </div>
               </div>
             </div>
             <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
