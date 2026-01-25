@@ -1,121 +1,540 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, MessageSquare, RefreshCw, Info, Plus, Trash2, Edit2, Building2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft } from 'lucide-react';
+
+const MAX_SMSF = 2;
 
 export default function FactFindSMSF() {
   const navigate = useNavigate();
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [smsfList, setSmsfList] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [formData, setFormData] = useState({
-    fund_name: '',
-    abn: '',
-    tfn: '',
-    established_date: '',
-    trustee_structure: '',
-    trustee_name: '',
-    members: '',
-    total_balance: '',
-    investment_strategy: '',
-    auditor: '',
-    administrator: '',
-    bank_account: '',
-    notes: ''
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [smsfCount, setSmsfCount] = useState(0);
+
+  const globalStateRef = React.useRef({
+    smsf: {
+      funds: [],
+      activeIndex: 0
+    }
   });
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
+  // ============================================
+  // CORE DOM MANIPULATION
+  // ============================================
 
-        if (id) {
-          const finds = await base44.entities.FactFind.filter({ id });
-          if (finds[0]) {
-            setFactFind(finds[0]);
-            if (finds[0].smsf?.smsf_details) {
-              setSmsfList(finds[0].smsf.smsf_details);
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error loading fact find:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
+  const wrapForTab = useCallback(() => {
+    return document.getElementById('smsfWrap');
   }, []);
 
-  const handleAddSMSF = () => {
-    if (!formData.fund_name) {
-      toast.error('Please enter fund name');
+  const cloneTemplateDiv = useCallback((id) => {
+    const src = document.getElementById(id);
+    if (!src) {
+      console.error(`Template not found: ${id}`);
+      return null;
+    }
+    const tmp = document.createElement('div');
+    tmp.innerHTML = (src.innerHTML || '').trim();
+    return tmp.firstElementChild;
+  }, []);
+
+  // ============================================
+  // READ DATA FROM DOM
+  // ============================================
+
+  const readTabToArray = useCallback(() => {
+    const wrap = wrapForTab();
+    if (!wrap) return [];
+
+    const cards = [...wrap.querySelectorAll('.entry')];
+    return cards.map((card) => {
+      const data = {};
+      
+      // Get all inputs/selects
+      const inputs = card.querySelectorAll('input:not([type="button"]), select, textarea');
+      inputs.forEach(input => {
+        if (input.type === 'radio') {
+          const baseName = input.name.replace(/__\d+$/, '');
+          if (input.checked) {
+            data[baseName] = input.value;
+          }
+        } else if (input.type !== 'button') {
+          data[input.name] = input.value;
+        }
+      });
+
+      // Read account rows
+      const acctRows = card.querySelectorAll('.acct-row');
+      data.accounts = Array.from(acctRows).map(row => ({
+        acct_owner: row.querySelector('select[name="acct_owner"]')?.value || '',
+        tax_env: row.querySelector('select[name="tax_env"]')?.value || '',
+        tax_free_amt: row.querySelector('input[name="tax_free_amt"]')?.value || '',
+        tax_free_pct: row.querySelector('input[name="tax_free_pct"]')?.value || '',
+        unp_amt: row.querySelector('input[name="unp_amt"]')?.value || '',
+        super_guarantee: row.querySelector('select[name="super_guarantee"]')?.value || '',
+        salary_sacrifice: row.querySelector('input[name="salary_sacrifice"]')?.value || '',
+        after_tax: row.querySelector('input[name="after_tax"]')?.value || ''
+      }));
+
+      // Read beneficiary rows
+      const benefRows = card.querySelectorAll('.benef-row');
+      data.beneficiaries = Array.from(benefRows).map(row => ({
+        benef_account: row.querySelector('select[name="benef_account"]')?.value || '',
+        benef_who: row.querySelector('select[name="benef_who"]')?.value || '',
+        benef_type: row.querySelector('select[name="benef_type"]')?.value || '',
+        benef_entitlement: row.querySelector('input[name="benef_entitlement"]')?.value || ''
+      }));
+
+      return data;
+    });
+  }, [wrapForTab]);
+
+  // ============================================
+  // RENUMBER ENTRIES
+  // ============================================
+
+  const renumber = useCallback(() => {
+    const wrap = wrapForTab();
+    if (!wrap) return;
+
+    [...wrap.querySelectorAll('.entry')].forEach((card, i) => {
+      const idxSpan = card.querySelector('.idx');
+      if (idxSpan) idxSpan.textContent = i + 1;
+
+      card.querySelectorAll('input[type="radio"][name^="fund_type"]')
+        .forEach(r => { r.name = 'fund_type__' + (i + 1); });
+      card.querySelectorAll('input[type="radio"][name^="trustee_type"]')
+        .forEach(r => { r.name = 'trustee_type__' + (i + 1); });
+      card.querySelectorAll('input[type="radio"][name^="acct_type"]')
+        .forEach(r => { r.name = 'acct_type__' + (i + 1); });
+    });
+  }, [wrapForTab]);
+
+  // ============================================
+  // UPDATE PILL NAVIGATION
+  // ============================================
+
+  const updatePills = useCallback((index) => {
+    const pillsContainer = document.getElementById('smsfPills');
+    if (!pillsContainer) return;
+
+    pillsContainer.innerHTML = '';
+    const wrap = wrapForTab();
+    if (!wrap) return;
+
+    const cards = [...wrap.querySelectorAll('.entry')];
+
+    cards.forEach((card, i) => {
+      const pill = document.createElement('button');
+      const isActive = i === index;
+      pill.type = 'button';
+
+      const nameInput = card.querySelector('input[name="smsf_name"]');
+      const displayName = nameInput?.value?.trim() || `SMSF ${i + 1}`;
+
+      pill.className = `px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+        isActive
+          ? 'bg-blue-600 text-white shadow-md'
+          : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+      }`;
+      pill.textContent = displayName;
+
+      pill.onclick = (e) => {
+        e.preventDefault();
+        setActiveIndex(i);
+        showOnlyActiveEntry(i);
+      };
+
+      pillsContainer.appendChild(pill);
+    });
+  }, [wrapForTab]);
+
+  // ============================================
+  // SHOW ONLY ACTIVE ENTRY
+  // ============================================
+
+  const showOnlyActiveEntry = useCallback((index) => {
+    const wrap = wrapForTab();
+    if (!wrap) return;
+
+    const cards = [...wrap.querySelectorAll('.entry')];
+    cards.forEach((card, i) => {
+      card.style.display = i === index ? '' : 'none';
+    });
+  }, [wrapForTab]);
+
+  // ============================================
+  // FILL CARD WITH DATA
+  // ============================================
+
+  const fillCardFromData = useCallback((card, data) => {
+    if (!data || !card) return;
+
+    const nameInput = card.querySelector('input[name="smsf_name"]');
+    if (nameInput && data.smsf_name) nameInput.value = data.smsf_name;
+
+    const fundTypeRadios = card.querySelectorAll('input[type="radio"][name^="fund_type"]');
+    if (data.fund_type) {
+      fundTypeRadios.forEach(r => { r.checked = r.value === data.fund_type; });
+    }
+
+    const trusteeTypeRadios = card.querySelectorAll('input[type="radio"][name^="trustee_type"]');
+    if (data.trustee_type) {
+      trusteeTypeRadios.forEach(r => { r.checked = r.value === data.trustee_type; });
+    }
+
+    const acctTypeRadios = card.querySelectorAll('input[type="radio"][name^="acct_type"]');
+    if (data.acct_type) {
+      acctTypeRadios.forEach(r => { r.checked = r.value === data.acct_type; });
+    }
+
+    const balanceInput = card.querySelector('input[name="smsf_balance"]');
+    if (balanceInput && data.smsf_balance) balanceInput.value = data.smsf_balance;
+
+    const trusteeInput = card.querySelector('input[name="individual_trustee"]');
+    if (trusteeInput && data.individual_trustee) trusteeInput.value = data.individual_trustee;
+
+    // Fill accounts
+    if (Array.isArray(data.accounts) && data.accounts.length > 0) {
+      const acctContainer = card.querySelector('.acct-list');
+      if (acctContainer) {
+        acctContainer.innerHTML = '';
+        data.accounts.forEach((acct) => {
+          const row = createAccountRow(card, acct);
+          acctContainer.appendChild(row);
+        });
+      }
+    }
+
+    // Fill beneficiaries
+    if (Array.isArray(data.beneficiaries) && data.beneficiaries.length > 0) {
+      const benefContainer = card.querySelector('.benef-list');
+      if (benefContainer) {
+        benefContainer.innerHTML = '';
+        data.beneficiaries.forEach((benef) => {
+          const row = createBeneficiaryRow(card, benef);
+          benefContainer.appendChild(row);
+        });
+      }
+    }
+  }, []);
+
+  // ============================================
+  // CREATE ACCOUNT ROW
+  // ============================================
+
+  const createAccountRow = useCallback((card, data = {}) => {
+    const row = document.createElement('div');
+    row.className = 'acct-row flex gap-2 items-end pb-3 border-b border-slate-200 last:border-b-0 py-3';
+
+    const clientName = factFind?.personal?.client?.first_name 
+      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
+      : 'Client';
+
+    row.innerHTML = `
+      <select name="acct_owner" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">Select entity…</option>
+        <option value="client">${clientName}</option>
+      </select>
+      <select name="tax_env" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">Select…</option>
+        <option value="1">Superannuation</option>
+        <option value="2">Pension</option>
+      </select>
+      <div class="flex items-center flex-1">
+        <span class="text-slate-500 mr-2">$</span>
+        <input type="number" name="tax_free_amt" placeholder="0.00" step="0.01" min="0" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <input type="text" name="tax_free_pct" placeholder="e.g. 30%" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <div class="flex items-center flex-1">
+        <span class="text-slate-500 mr-2">$</span>
+        <input type="number" name="unp_amt" placeholder="0.00" step="0.01" min="0" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <select name="super_guarantee" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">Select…</option>
+        <option value="1">Yes</option>
+        <option value="2">No</option>
+      </select>
+      <input type="text" name="salary_sacrifice" placeholder="" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <div class="flex items-center flex-1">
+        <span class="text-slate-500 mr-2">$</span>
+        <input type="number" name="after_tax" placeholder="0.00" step="0.01" min="0" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <button type="button" class="remove-acct px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium">Remove</button>
+    `;
+
+    const removeBtn = row.querySelector('.remove-acct');
+    removeBtn.onclick = (e) => {
+      e.preventDefault();
+      row.remove();
+    };
+
+    if (data?.acct_owner) row.querySelector('select[name="acct_owner"]').value = data.acct_owner;
+    if (data?.tax_env) row.querySelector('select[name="tax_env"]').value = data.tax_env;
+    if (data?.tax_free_amt) row.querySelector('input[name="tax_free_amt"]').value = data.tax_free_amt;
+    if (data?.tax_free_pct) row.querySelector('input[name="tax_free_pct"]').value = data.tax_free_pct;
+    if (data?.unp_amt) row.querySelector('input[name="unp_amt"]').value = data.unp_amt;
+    if (data?.super_guarantee) row.querySelector('select[name="super_guarantee"]').value = data.super_guarantee;
+    if (data?.salary_sacrifice) row.querySelector('input[name="salary_sacrifice"]').value = data.salary_sacrifice;
+    if (data?.after_tax) row.querySelector('input[name="after_tax"]').value = data.after_tax;
+
+    return row;
+  }, [factFind]);
+
+  // ============================================
+  // CREATE BENEFICIARY ROW
+  // ============================================
+
+  const createBeneficiaryRow = useCallback((card, data = {}) => {
+    const row = document.createElement('div');
+    row.className = 'benef-row flex gap-2 items-end pb-3 border-b border-slate-200 last:border-b-0 py-3';
+
+    const clientName = factFind?.personal?.client?.first_name 
+      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
+      : 'Client';
+
+    const childrenOptions = factFind?.dependants?.children
+      ?.map((c, i) => `<option value="child-${i}">${c.child_name || `Child ${i + 1}`}</option>`)
+      .join('') || '';
+
+    const dependantsOptions = factFind?.dependants?.dependants_list
+      ?.map((d, i) => `<option value="dependent-${i}">${d.dep_name || `Dependant ${i + 1}`}</option>`)
+      .join('') || '';
+
+    row.innerHTML = `
+      <select name="benef_account" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">Select…</option>
+      </select>
+      <select name="benef_who" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">Select entity…</option>
+        <option value="client">${clientName}</option>
+        ${childrenOptions}
+        ${dependantsOptions}
+      </select>
+      <select name="benef_type" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">Select…</option>
+        <option value="1">Binding</option>
+        <option value="2">Non binding</option>
+        <option value="3">Reversionary</option>
+        <option value="4">Not sure</option>
+      </select>
+      <input type="text" name="benef_entitlement" placeholder="e.g. 50%" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <button type="button" class="remove-benef px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium">Remove</button>
+    `;
+
+    const removeBtn = row.querySelector('.remove-benef');
+    removeBtn.onclick = (e) => {
+      e.preventDefault();
+      row.remove();
+    };
+
+    if (data?.benef_account) row.querySelector('select[name="benef_account"]').value = data.benef_account;
+    if (data?.benef_who) row.querySelector('select[name="benef_who"]').value = data.benef_who;
+    if (data?.benef_type) row.querySelector('select[name="benef_type"]').value = data.benef_type;
+    if (data?.benef_entitlement) row.querySelector('input[name="benef_entitlement"]').value = data.benef_entitlement;
+
+    return row;
+  }, [factFind]);
+
+  // ============================================
+  // ADD ENTRY
+  // ============================================
+
+  const addEntry = useCallback((existingData = null) => {
+    if (smsfCount >= MAX_SMSF) {
+      toast.error(`Maximum ${MAX_SMSF} SMSFs allowed`);
       return;
     }
 
-    if (editingIndex !== null) {
-      const updated = [...smsfList];
-      updated[editingIndex] = formData;
-      setSmsfList(updated);
-      setEditingIndex(null);
-    } else {
-      setSmsfList([...smsfList, formData]);
+    const wrap = wrapForTab();
+    if (!wrap) return;
+
+    const node = cloneTemplateDiv('smsfTemplate');
+    if (!node) return;
+
+    wrap.appendChild(node);
+
+    if (existingData) {
+      fillCardFromData(node, existingData);
     }
 
-    resetForm();
-  };
+    renumber();
+    const newCount = wrap.querySelectorAll('.entry').length;
+    setSmsfCount(newCount);
 
-  const resetForm = () => {
-    setFormData({
-      fund_name: '',
-      abn: '',
-      tfn: '',
-      established_date: '',
-      trustee_structure: '',
-      trustee_name: '',
-      members: '',
-      total_balance: '',
-      investment_strategy: '',
-      auditor: '',
-      administrator: '',
-      bank_account: '',
-      notes: ''
-    });
-  };
+    const newIndex = newCount - 1;
+    setActiveIndex(newIndex);
+    updatePills(newIndex);
+    showOnlyActiveEntry(newIndex);
+  }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry, smsfCount]);
 
-  const handleEdit = (index) => {
-    setFormData(smsfList[index]);
-    setEditingIndex(index);
-  };
+  // ============================================
+  // REMOVE ENTRY
+  // ============================================
 
-  const handleDelete = (index) => {
-    const updated = smsfList.filter((_, i) => i !== index);
-    setSmsfList(updated);
-  };
+  const removeEntry = useCallback((node) => {
+    node.remove();
+    const wrap = wrapForTab();
+    const remaining = wrap.querySelectorAll('.entry').length;
+    renumber();
+    setSmsfCount(remaining);
+
+    if (remaining > 0) {
+      const newIndex = Math.max(0, remaining - 1);
+      setActiveIndex(newIndex);
+      showOnlyActiveEntry(newIndex);
+      updatePills(newIndex);
+    } else {
+      setActiveIndex(0);
+    }
+  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
+
+  // ============================================
+  // LOAD DATA
+  // ============================================
+
+  const loadData = useCallback(async () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+
+      if (id) {
+        const finds = await base44.entities.FactFind.filter({ id });
+        if (finds[0]) {
+          setFactFind(finds[0]);
+          if (finds[0].smsf) {
+            globalStateRef.current.smsf = {
+              ...finds[0].smsf,
+              activeIndex: finds[0].smsf.activeIndex || 0
+            };
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading fact find:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // ============================================
+  // INITIALIZE DOM
+  // ============================================
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    if (!loading && factFind?.id) {
+      setTimeout(() => {
+        const wrap = wrapForTab();
+        if (wrap) wrap.innerHTML = '';
+
+        if (globalStateRef.current.smsf.funds?.length > 0) {
+          globalStateRef.current.smsf.funds.forEach((smsfData) => {
+            addEntry(smsfData);
+          });
+        }
+
+        const activeIdx = globalStateRef.current.smsf.activeIndex || 0;
+        setActiveIndex(activeIdx);
+        updatePills(activeIdx);
+        showOnlyActiveEntry(activeIdx);
+      }, 50);
+    }
+  }, [loading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry]);
+
+  // ============================================
+  // SETUP INPUT LISTENERS
+  // ============================================
+
+  useEffect(() => {
+    const clickHandler = (e) => {
+      if (e.target.closest('.add-first-acct') || e.target.closest('.add-acct')) {
+        e.preventDefault();
+        const card = e.target.closest('.entry');
+        const list = card.querySelector('.acct-list');
+        const row = createAccountRow(card);
+        list.appendChild(row);
+      }
+      if (e.target.closest('.add-first-benef') || e.target.closest('.add-benef')) {
+        e.preventDefault();
+        const card = e.target.closest('.entry');
+        const list = card.querySelector('.benef-list');
+        const row = createBeneficiaryRow(card);
+        list.appendChild(row);
+      }
+      if (e.target.closest('.entry-remove')) {
+        e.preventDefault();
+        const node = e.target.closest('.entry');
+        removeEntry(node);
+      }
+    };
+
+    const inputHandler = (e) => {
+      if (e.target.matches('input[name="smsf_name"]')) {
+        updatePills(activeIndex);
+      }
+      clearTimeout(window._smsfSaveTimeout);
+      window._smsfSaveTimeout = setTimeout(() => {
+        saveSmsfState();
+      }, 500);
+    };
+
+    document.addEventListener('click', clickHandler);
+    document.addEventListener('input', inputHandler);
+    return () => {
+      document.removeEventListener('click', clickHandler);
+      document.removeEventListener('input', inputHandler);
+    };
+  }, [activeIndex, updatePills, removeEntry, createAccountRow, createBeneficiaryRow]);
+
+  // ============================================
+  // SAVE STATE
+  // ============================================
+
+  const saveSmsfState = useCallback(async () => {
+    if (!factFind?.id) return;
+
+    try {
+      globalStateRef.current.smsf.funds = readTabToArray();
+      globalStateRef.current.smsf.activeIndex = activeIndex;
+
+      await base44.entities.FactFind.update(factFind.id, {
+        smsf: globalStateRef.current.smsf
+      });
+    } catch (error) {
+      console.error('Save failed:', error);
+    }
+  }, [factFind?.id, readTabToArray, activeIndex]);
+
+  // ============================================
+  // NAVIGATION
+  // ============================================
 
   const handleNext = async () => {
+    if (!factFind?.id) {
+      toast.error('Unable to save data');
+      return;
+    }
+
     setSaving(true);
     try {
-      const sectionsCompleted = factFind.sections_completed || [];
+      const sectionsCompleted = [...(factFind.sections_completed || [])];
       if (!sectionsCompleted.includes('smsf')) {
         sectionsCompleted.push('smsf');
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        smsf: { smsf_details: smsfList },
-        current_section: 'superannuation',
+        smsf: globalStateRef.current.smsf,
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
@@ -146,266 +565,164 @@ export default function FactFindSMSF() {
     <FactFindLayout currentSection="smsf" factFind={factFind}>
       <FactFindHeader
         title="SMSF"
-        description="Add details about your Self-Managed Superannuation Fund(s)."
+        description="Add details about your SMSF, including trustees, members, and pension accounts."
         factFind={factFind}
       />
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="w-full space-y-4">
-          {/* Add/Edit Form */}
-          <Card className="border-slate-200 shadow-sm">
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3 rounded-t-lg">
-              <h4 className="font-bold text-white">
-                {editingIndex !== null ? 'Edit SMSF' : 'Add an SMSF'}
-              </h4>
+      {/* Hidden Template */}
+      <div id="smsfTemplate" style={{ display: 'none' }}>
+        <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-4">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">SMSF <span className="idx">1</span></h3>
+              <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
             </div>
-            <CardContent className="p-6 space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">Fund name</Label>
-                  <Input
-                    value={formData.fund_name}
-                    onChange={(e) => setFormData({ ...formData, fund_name: e.target.value })}
-                    placeholder="Enter fund name"
-                    className="border-slate-300"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">ABN</Label>
-                  <Input
-                    value={formData.abn}
-                    onChange={(e) => setFormData({ ...formData, abn: e.target.value })}
-                    placeholder="Enter ABN"
-                    className="border-slate-300"
-                  />
-                </div>
-              </div>
+            <button type="button" className="entry-remove px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">Remove</button>
+          </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">TFN</Label>
-                  <Input
-                    value={formData.tfn}
-                    onChange={(e) => setFormData({ ...formData, tfn: e.target.value })}
-                    placeholder="Enter TFN"
-                    className="border-slate-300"
-                  />
+          <div className="space-y-6">
+            {/* SMSF Details Section */}
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <h4 className="text-sm font-semibold text-blue-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-blue-600 rounded"></span>💰 SMSF Details</h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">SMSF name</label>
+                  <input type="text" name="smsf_name" placeholder="e.g. Smith Family Super Fund" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">Established date</Label>
-                  <Input
-                    type="date"
-                    value={formData.established_date}
-                    onChange={(e) => setFormData({ ...formData, established_date: e.target.value })}
-                    className="border-slate-300"
-                  />
-                </div>
-              </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">Trustee structure</Label>
-                  <Select value={formData.trustee_structure} onValueChange={(value) => setFormData({ ...formData, trustee_structure: value })}>
-                    <SelectTrigger className="border-slate-300">
-                      <SelectValue placeholder="Select..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="individual">Individual trustees</SelectItem>
-                      <SelectItem value="company">Corporate trustee</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">Trustee name(s)</Label>
-                  <Input
-                    value={formData.trustee_name}
-                    onChange={(e) => setFormData({ ...formData, trustee_name: e.target.value })}
-                    placeholder="Enter trustee name(s)"
-                    className="border-slate-300"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-slate-700 font-semibold text-sm">Fund members</Label>
-                <Input
-                  value={formData.members}
-                  onChange={(e) => setFormData({ ...formData, members: e.target.value })}
-                  placeholder="Enter member names (comma separated)"
-                  className="border-slate-300"
-                />
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">Total fund balance ($)</Label>
-                  <Input
-                    type="number"
-                    value={formData.total_balance}
-                    onChange={(e) => setFormData({ ...formData, total_balance: e.target.value })}
-                    placeholder="0"
-                    className="border-slate-300"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">Investment strategy</Label>
-                  <Select value={formData.investment_strategy} onValueChange={(value) => setFormData({ ...formData, investment_strategy: value })}>
-                    <SelectTrigger className="border-slate-300">
-                      <SelectValue placeholder="Select..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="conservative">Conservative</SelectItem>
-                      <SelectItem value="balanced">Balanced</SelectItem>
-                      <SelectItem value="growth">Growth</SelectItem>
-                      <SelectItem value="aggressive">Aggressive</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">Auditor</Label>
-                  <Input
-                    value={formData.auditor}
-                    onChange={(e) => setFormData({ ...formData, auditor: e.target.value })}
-                    placeholder="Enter auditor name"
-                    className="border-slate-300"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">Administrator</Label>
-                  <Input
-                    value={formData.administrator}
-                    onChange={(e) => setFormData({ ...formData, administrator: e.target.value })}
-                    placeholder="Enter administrator name"
-                    className="border-slate-300"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-slate-700 font-semibold text-sm">Bank account details</Label>
-                <Input
-                  value={formData.bank_account}
-                  onChange={(e) => setFormData({ ...formData, bank_account: e.target.value })}
-                  placeholder="Enter bank and BSB"
-                  className="border-slate-300"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-slate-700 font-semibold text-sm">Additional notes</Label>
-                <Input
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Any other relevant information"
-                  className="border-slate-300"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                {editingIndex !== null && (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setEditingIndex(null);
-                      resetForm();
-                    }}
-                    className="border-slate-300"
-                  >
-                    Cancel
-                  </Button>
-                )}
-                <Button
-                  onClick={handleAddSMSF}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  {editingIndex !== null ? 'Update SMSF' : 'Add SMSF'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Empty State or List */}
-          {smsfList.length === 0 ? (
-            <Card className="border-slate-200 shadow-sm">
-              <CardContent className="p-12 text-center">
-                <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
-                  <Building2 className="w-8 h-8 text-purple-600" />
-                </div>
-                <h4 className="font-bold text-slate-800 mb-2">
-                  No SMSFs added yet
-                </h4>
-                <p className="text-sm text-slate-600 mb-4">
-                  Add your first Self-Managed Superannuation Fund using the form above.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="border-slate-200 shadow-sm">
-              <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-3">
-                <h4 className="font-bold text-white">
-                  Your SMSFs ({smsfList.length})
-                </h4>
-              </div>
-              <CardContent className="p-6">
-                <div className="space-y-3">
-                  {smsfList.map((smsf, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start justify-between p-4 bg-slate-50 rounded-lg border border-slate-200"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="font-bold text-slate-800">{smsf.fund_name}</span>
-                          {smsf.abn && (
-                            <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-xs font-semibold">
-                              ABN: {smsf.abn}
-                            </span>
-                          )}
-                        </div>
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-slate-600">
-                          {smsf.total_balance && (
-                            <span><strong>Balance:</strong> ${parseFloat(smsf.total_balance).toLocaleString()}</span>
-                          )}
-                          {smsf.members && (
-                            <span><strong>Members:</strong> {smsf.members}</span>
-                          )}
-                          {smsf.trustee_name && (
-                            <span><strong>Trustee:</strong> {smsf.trustee_name}</span>
-                          )}
-                          {smsf.investment_strategy && (
-                            <span><strong>Strategy:</strong> {smsf.investment_strategy}</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex gap-2 ml-4">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(index)}
-                          className="border-slate-300"
-                        >
-                          <Edit2 className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(index)}
-                          className="border-red-300 text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">Type of fund</label>
+                    <div className="flex flex-col gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="fund_type__1" value="1" className="w-4 h-4" />
+                        <span className="text-sm text-slate-700">SMSF</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="fund_type__1" value="2" className="w-4 h-4" />
+                        <span className="text-sm text-slate-700">SAF</span>
+                      </label>
                     </div>
-                  ))}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">Trustee type</label>
+                    <div className="flex flex-col gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="trustee_type__1" value="1" className="w-4 h-4" />
+                        <span className="text-sm text-slate-700">Corporate trustee</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="trustee_type__1" value="2" className="w-4 h-4" />
+                        <span className="text-sm text-slate-700">Individual trustee</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">What type of accounts does this fund operate?</label>
+                    <div className="flex flex-col gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="acct_type__1" value="1" className="w-4 h-4" />
+                        <span className="text-sm text-slate-700">Pooled</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="acct_type__1" value="2" className="w-4 h-4" />
+                        <span className="text-sm text-slate-700">Segregate</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">SMSF balance</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input type="number" name="smsf_balance" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Individual trustee</label>
+                  <input type="text" name="individual_trustee" placeholder="" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+            </div>
+
+            {/* Account Information Section */}
+            <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+              <h4 className="text-sm font-semibold text-orange-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-orange-600 rounded"></span>📊 Account Information</h4>
+              
+              <div className="acct-list space-y-3 mb-3">
+                {/* Account rows go here */}
+              </div>
+
+              {/* Empty state */}
+              <div className="acct-list-empty hidden text-center py-6">
+                <p className="text-sm text-slate-600 mb-3">No accounts added yet</p>
+                <button type="button" className="add-first-acct px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First Account</button>
+              </div>
+
+              {/* Add button */}
+              <button type="button" className="add-acct px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add account</button>
+            </div>
+
+            {/* Beneficiaries Section */}
+            <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+              <h4 className="text-sm font-semibold text-purple-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-purple-600 rounded"></span>👥 Beneficiaries</h4>
+              
+              <div className="benef-list space-y-3 mb-3">
+                {/* Beneficiary rows go here */}
+              </div>
+
+              {/* Empty state */}
+              <div className="benef-list-empty hidden text-center py-6">
+                <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
+                <button type="button" className="add-first-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First Beneficiary</button>
+              </div>
+
+              {/* Add button */}
+              <button type="button" className="add-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="w-full space-y-6">
+          <div id="smsfWrap" className="space-y-4" />
+
+          {/* Welcome Screen */}
+          {smsfCount === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="text-5xl mb-6">💰</div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Do you have a Self-Managed Super Fund?</h3>
+              <p className="text-slate-600 text-center mb-8 max-w-md">Add details about your SMSF, including trustees, members, and pension accounts.</p>
+              <Button
+                onClick={() => addEntry()}
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
+              >
+                + Add SMSF
+              </Button>
+            </div>
+          ) : (
+            <>
+              {/* Pills Navigation */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                <div id="smsfPills" className="flex gap-2" />
+                {smsfCount < MAX_SMSF && (
+                  <button
+                    onClick={() => addEntry()}
+                    className="ml-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0 shadow-sm"
+                  >
+                    + Add SMSF
+                  </button>
+                )}
+              </div>
+            </>
           )}
 
           {/* Navigation */}
@@ -434,7 +751,7 @@ export default function FactFindSMSF() {
                     </>
                   ) : (
                     <>
-                      Continue
+                      Save & continue
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </>
                   )}
