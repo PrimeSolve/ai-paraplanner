@@ -164,7 +164,6 @@ export default function FactFindDependants() {
       } else {
         updated = [...dependants, dependantFormData];
         setDependants(updated);
-        setSelectedDependantIndex(updated.length - 1);
       }
 
       // Auto-save to database
