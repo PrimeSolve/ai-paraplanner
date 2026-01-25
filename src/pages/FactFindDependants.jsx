@@ -207,7 +207,7 @@ export default function FactFindDependants() {
                       <img 
                         src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/a5dbbe56a_image.png" 
                         alt="Child" 
-                        className="w-40 h-40"
+                        className="w-40"
                       />
                     </div>
                     <h4 className="font-bold text-slate-800 mb-2 text-lg">Do you have any children?</h4>
@@ -414,7 +414,7 @@ export default function FactFindDependants() {
                       <img 
                         src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/7b9c67890_image.png" 
                         alt="Dependant" 
-                        className="w-40 h-40"
+                        className="w-40"
                       />
                     </div>
                     <h4 className="font-bold text-slate-800 mb-2 text-lg">Do you have any dependants?</h4>
