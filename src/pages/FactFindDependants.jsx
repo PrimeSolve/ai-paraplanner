@@ -127,8 +127,12 @@ export default function FactFindDependants() {
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
 
-      setSelectedChildIndex(null);
-      setIsAddingChild(false);
+      if (selectedChildIndex === index) {
+        setSelectedChildIndex(Math.max(0, updated.length - 1));
+        if (updated.length > 0) {
+          setChildFormData(updated[Math.max(0, updated.length - 1)]);
+        }
+      }
       toast.success('Child removed');
     } catch (error) {
       toast.error('Failed to delete child');
