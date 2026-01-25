@@ -147,9 +147,20 @@ export default function FactFindDependants() {
       });
 
       if (selectedChildIndex === index) {
-        setSelectedChildIndex(Math.max(0, updated.length - 1));
         if (updated.length > 0) {
-          setChildFormData(updated[Math.max(0, updated.length - 1)]);
+          const newIndex = Math.max(0, updated.length - 1);
+          setSelectedChildIndex(newIndex);
+          setChildFormData(updated[newIndex]);
+        } else {
+          setSelectedChildIndex(null);
+          setChildFormData({
+            child_name: '',
+            child_dob: '',
+            child_fin_dep: '',
+            child_edu: '',
+            child_fin_age: '',
+            child_health: ''
+          });
         }
       }
       toast.success('Child removed');
