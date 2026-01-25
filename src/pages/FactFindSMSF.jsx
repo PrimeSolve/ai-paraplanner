@@ -330,13 +330,8 @@ export default function FactFindSMSF() {
   // ============================================
 
   const createBeneficiaryRow = useCallback((card, data = {}) => {
-    const row = document.createElement('div');
-    row.className = 'benef-row py-2 border-b border-slate-100 last:border-b-0';
-    row.style.display = 'grid';
-    row.style.gridTemplateColumns = '150px 150px 130px 130px 80px';
-    row.style.gap = '0.5rem';
-    row.style.alignItems = 'center';
-    row.style.minWidth = '800px';
+    const row = document.createElement('tr');
+    row.className = 'border-b border-slate-100 hover:bg-purple-50/50';
 
     const clientName = factFind?.personal?.client?.first_name 
       ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
