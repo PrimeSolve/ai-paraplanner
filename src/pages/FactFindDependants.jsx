@@ -506,23 +506,23 @@ export default function FactFindDependants() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Is there interdependency</Label>
-                      <div className="flex gap-3">
-                        {[{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }].map(option => (
-                          <button
-                            key={option.value}
-                            onClick={() => setDependantFormData({ ...dependantFormData, interdependency: option.value })}
-                            className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                              dependantFormData.interdependency === option.value
-                                ? 'bg-blue-600 text-white border-blue-600'
-                                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                            }`}
-                          >
-                            {option.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                       <Label className="text-slate-700 font-semibold text-sm">Is there interdependency</Label>
+                       <div className="flex gap-3">
+                         {[{ label: 'Yes', value: '1' }, { label: 'No', value: '2' }].map(option => (
+                           <button
+                             key={option.value}
+                             onClick={() => setDependantFormData({ ...dependantFormData, dep_interdep: option.value })}
+                             className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                               dependantFormData.dep_interdep === option.value
+                                 ? 'bg-blue-600 text-white border-blue-600'
+                                 : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                             }`}
+                           >
+                             {option.label}
+                           </button>
+                         ))}
+                       </div>
+                     </div>
 
                     <div className="flex justify-end pt-2">
                       <Button
