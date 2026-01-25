@@ -773,18 +773,20 @@ export default function FactFindSMSF() {
               <div className="benef-container">
                 {/* Table with headers */}
                 <div className="benef-list-table hidden mb-3 overflow-x-auto">
-                  <div className="min-w-[800px]">
-                    <div className="grid gap-2 py-2 text-xs font-semibold text-slate-600 border-b border-slate-200" style={{ gridTemplateColumns: '150px 150px 130px 130px 80px' }}>
-                      <div className="px-1">Beneficiary Account</div>
-                      <div className="px-1">Who is Beneficiary</div>
-                      <div className="px-1">Beneficiary Type</div>
-                      <div className="px-1">Entitlement</div>
-                      <div className="px-1"></div>
-                    </div>
-                    <div className="benef-list">
+                  <table className="w-full text-xs border-collapse min-w-[700px]">
+                    <thead>
+                      <tr className="border-b border-purple-200">
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Beneficiary Account</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Who is Beneficiary</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Beneficiary Type</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Entitlement</th>
+                        <th className="w-16"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="benef-list">
                       {/* Beneficiary rows go here */}
-                    </div>
-                  </div>
+                    </tbody>
+                  </table>
                 </div>
 
                 {/* Empty state */}
