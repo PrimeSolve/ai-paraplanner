@@ -1027,9 +1027,14 @@ export default function FactFindSuperannuation() {
           <div className="space-y-6">
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
               <h4 className="text-sm font-semibold text-blue-700 mb-4">📈 Annuity Details</h4>
-              <input type="text" name="fund_name" placeholder="Annuity name" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm mb-4" />
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Owner(s) - Hold Ctrl/Cmd for multiple</label>
-              <select name="owners" multiple size={2} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm mb-4"><option value="client">Client</option><option value="partner">Partner</option></select>
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Annuity name</label>
+                <input type="text" name="fund_name" placeholder="e.g. ABC Annuity" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Owner(s) - Hold Ctrl/Cmd for multiple</label>
+                <select name="owners" multiple size={2} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"></select>
+              </div>
               <div className="grid md:grid-cols-2 gap-4 mb-4">
                 <div><label className="block text-sm font-semibold text-slate-700 mb-2">Type</label><label className="flex items-center gap-2"><input type="radio" name="a_type__1" value="1" className="w-4 h-4" /><span className="text-sm">Superannuation</span></label><label className="flex items-center gap-2"><input type="radio" name="a_type__1" value="2" className="w-4 h-4" /><span className="text-sm">Non-superannuation</span></label></div>
                 <div><label className="block text-sm font-semibold text-slate-700 mb-2">Lifetime annuity?</label><label className="flex items-center gap-2"><input type="radio" name="a_life__1" value="1" className="w-4 h-4" /><span className="text-sm">Yes</span></label><label className="flex items-center gap-2"><input type="radio" name="a_life__1" value="2" className="w-4 h-4" /><span className="text-sm">No</span></label></div>
