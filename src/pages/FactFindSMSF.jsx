@@ -735,22 +735,24 @@ export default function FactFindSMSF() {
               <div className="acct-container">
                 {/* Table with headers */}
                 <div className="acct-list-table hidden mb-3 overflow-x-auto">
-                  <div className="min-w-[1100px]">
-                    <div className="grid gap-2 py-2 text-xs font-semibold text-slate-600 border-b border-slate-200" style={{ gridTemplateColumns: '120px 120px 100px 90px 100px 90px 100px 110px 80px' }}>
-                      <div className="px-1">Account Owner</div>
-                      <div className="px-1">Tax Environment</div>
-                      <div className="px-1">Tax Free Amt</div>
-                      <div className="px-1">Tax Free %</div>
-                      <div className="px-1">UNP Amount</div>
-                      <div className="px-1">Super Guar?</div>
-                      <div className="px-1">Salary Sac</div>
-                      <div className="px-1">After Tax</div>
-                      <div className="px-1"></div>
-                    </div>
-                    <div className="acct-list">
+                  <table className="w-full text-xs border-collapse min-w-[900px]">
+                    <thead>
+                      <tr className="border-b border-orange-200">
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Account Owner</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Tax Environment</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Tax Free Amt</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Tax Free %</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">UNP Amount</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Super Guar?</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Salary Sac</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">After Tax</th>
+                        <th className="w-16"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="acct-list">
                       {/* Account rows go here */}
-                    </div>
-                  </div>
+                    </tbody>
+                  </table>
                 </div>
 
                 {/* Empty state */}
