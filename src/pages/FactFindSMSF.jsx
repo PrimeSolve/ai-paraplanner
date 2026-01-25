@@ -655,18 +655,36 @@ export default function FactFindSMSF() {
             <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
               <h4 className="text-sm font-semibold text-orange-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-orange-600 rounded"></span>📊 Account Information</h4>
               
-              <div className="acct-list space-y-3 mb-3">
-                {/* Account rows go here */}
-              </div>
+              <div className="acct-container">
+                {/* Table with headers */}
+                <div className="acct-list-table hidden mb-3 overflow-x-auto">
+                  <div className="bg-slate-100 rounded-md mb-2 pb-2">
+                    <div className="grid grid-cols-9 gap-2 px-2 py-2 text-xs font-semibold text-slate-700">
+                      <div>Account Owner</div>
+                      <div>Tax Environment</div>
+                      <div>Tax Free Amt</div>
+                      <div>Tax Free %</div>
+                      <div>UNP Amount</div>
+                      <div>Super Guar?</div>
+                      <div>Salary Sac</div>
+                      <div>After Tax</div>
+                      <div></div>
+                    </div>
+                  </div>
+                  <div className="acct-list space-y-2">
+                    {/* Account rows go here */}
+                  </div>
+                </div>
 
-              {/* Empty state */}
-              <div className="acct-list-empty hidden text-center py-6">
-                <p className="text-sm text-slate-600 mb-3">No accounts added yet</p>
-                <button type="button" className="add-first-acct px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First Account</button>
-              </div>
+                {/* Empty state */}
+                <div className="acct-list-empty text-center py-6">
+                  <p className="text-sm text-slate-600 mb-3">No accounts added yet</p>
+                  <button type="button" className="add-first-acct px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First Account</button>
+                </div>
 
-              {/* Add button */}
-              <button type="button" className="add-acct px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add account</button>
+                {/* Add button - only show if accounts exist */}
+                <button type="button" className="add-acct hidden px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add account</button>
+              </div>
             </div>
 
             {/* Beneficiaries Section */}
