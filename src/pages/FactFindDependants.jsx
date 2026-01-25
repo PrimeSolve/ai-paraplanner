@@ -83,7 +83,6 @@ export default function FactFindDependants() {
       } else {
         updated = [...children, childFormData];
         setChildren(updated);
-        setSelectedChildIndex(updated.length - 1);
       }
 
       // Auto-save to database
