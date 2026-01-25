@@ -482,7 +482,7 @@ export default function FactFindDependants() {
           </div>
 
           {/* Welcome Screen - Show if no entries exist */}
-          {globalStateRef.current.dependants[currentTab === 'children' ? 'children' : 'dependants_list']?.length === 0 ? (
+          {(currentTab === 'children' ? childrenCount : dependantsCount) === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
               <div className="text-5xl mb-6">
                 {currentTab === 'children' ? '👨‍👩‍👧‍👦' : '👥'}
