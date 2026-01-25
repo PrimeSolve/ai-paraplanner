@@ -665,71 +665,12 @@ export default function FactFindDependants() {
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         <Plus className="w-4 h-4 mr-2" />
-                        {editingDependantIndex !== null ? 'Update Dependant' : 'Add Dependant'}
+                        {selectedDependantIndex !== null ? 'Update Dependant' : 'Add Dependant'}
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {dependants.length > 0 && !showDependantForm && (
-                <>
-                  <div className="flex justify-end mb-4">
-                    <Button
-                      onClick={() => setShowDependantForm(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Dependant
-                    </Button>
-                  </div>
-                  <div className="space-y-3">
-                    {dependants.map((dep, index) => (
-                      <Card key={index} className="border-slate-200 shadow-sm">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3 flex-1">
-                              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                                <Users className="w-5 h-5 text-purple-600" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className="font-bold text-slate-800">Dependant {index + 1}</span>
-                                </div>
-                              <div className="space-y-1 text-sm text-slate-600">
-                                <p><strong>Name:</strong> {dep.dep_name}</p>
-                                {dep.dep_dob && <p><strong>DOB:</strong> {dep.dep_dob}</p>}
-                                {dep.dep_until_age && <p><strong>Dependent Until Age:</strong> {dep.dep_until_age}</p>}
-                                {dep.dep_relationship && <p><strong>Relationship:</strong> {['Child', 'Parent', 'Relative', 'Other'][parseInt(dep.dep_relationship) - 1]}</p>}
-                                {dep.dep_interdep && <p><strong>Interdependency:</strong> {dep.dep_interdep === '1' ? 'Yes' : 'No'}</p>}
-                              </div>
-                            </div>
-                            </div>
-                            <div className="flex gap-2 ml-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEditDependant(index)}
-                                className="border-slate-300"
-                              >
-                                <Edit2 className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteDependant(index)}
-                                className="border-red-300 text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </>
-              )}
+                    </CardContent>
+                    </Card>
+                    )}
             </>
           )}
 
