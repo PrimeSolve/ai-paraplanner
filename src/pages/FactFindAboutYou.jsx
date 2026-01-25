@@ -174,6 +174,7 @@ export default function FactFindPersonal() {
       const currentIndex = subSections.findIndex(s => s.id === activeSubSection);
       if (currentIndex < subSections.length - 1) {
         setActiveSubSection(subSections[currentIndex + 1].id);
+        setActiveTab('client');
         toast.success('Progress saved');
       } else {
         // Completed all sub-sections
