@@ -1,152 +1,637 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, MessageSquare, RefreshCw, Info, Plus, Trash2, Edit2, Wallet, DollarSign } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-const accountTypes = [
-  { id: 'superannuation', label: 'Superannuation', icon: '💰' },
-  { id: 'pension', label: 'Pension', icon: '🏦' },
-  { id: 'annuity', label: 'Annuities', icon: '📊' }
-];
+import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 export default function FactFindSuperannuation() {
   const navigate = useNavigate();
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('superannuation');
-  const [activeOwner, setActiveOwner] = useState('client');
-  const [accounts, setAccounts] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [formData, setFormData] = useState({
-    type: 'superannuation',
-    owner: 'client',
-    fund_name: '',
-    member_number: '',
-    abn: '',
-    usi: '',
-    account_type: '',
-    balance: '',
-    contributions: '',
-    investment_option: '',
-    insurance_cover: '',
-    beneficiary: '',
-    pension_type: '',
-    payment_amount: '',
-    payment_frequency: '',
-    commencement_date: '',
-    annuity_provider: '',
-    annuity_type: '',
-    purchase_price: '',
-    income_amount: '',
-    term_years: '',
-    notes: ''
+  const [currentTab, setCurrentTab] = useState('super');
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [superCount, setSuperCount] = useState(0);
+  const [pensionCount, setPensionCount] = useState(0);
+  const [annuityCount, setAnnuityCount] = useState(0);
+
+  const globalStateRef = React.useRef({
+    superannuation: {
+      currentTab: 'super',
+      activeIdx: {
+        super: 0,
+        pension: 0,
+        annuities: 0
+      },
+      superFunds: [],
+      pensions: [],
+      annuities: []
+    }
   });
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
+  // ============================================
+  // CORE DOM MANIPULATION
+  // ============================================
 
-        if (id) {
-          const finds = await base44.entities.FactFind.filter({ id });
-          if (finds[0]) {
-            setFactFind(finds[0]);
-            if (finds[0].superannuation?.super_accounts) {
-              setAccounts(finds[0].superannuation.super_accounts);
-            }
+  const wrapForTab = useCallback((tab) => {
+    const id = tab === 'super' ? 'superWrap' : tab === 'pension' ? 'pensionWrap' : 'annuitiesWrap';
+    return document.getElementById(id);
+  }, []);
+
+  const cloneTemplateDiv = useCallback((id) => {
+    const src = document.getElementById(id);
+    if (!src) {
+      console.error(`Template not found: ${id}`);
+      return null;
+    }
+    const tmp = document.createElement('div');
+    tmp.innerHTML = (src.innerHTML || '').trim();
+    return tmp.firstElementChild;
+  }, []);
+
+  // ============================================
+  // READ DATA FROM DOM
+  // ============================================
+
+  const readTabToArray = useCallback((tab) => {
+    const wrap = wrapForTab(tab);
+    if (!wrap) return [];
+
+    const cards = [...wrap.querySelectorAll('.entry')];
+    return cards.map((card) => {
+      const data = {};
+
+      const inputs = card.querySelectorAll('input:not([type="button"]), select, textarea');
+      inputs.forEach(input => {
+        if (input.type === 'radio') {
+          const baseName = input.name.replace(/__\d+$/, '');
+          if (input.checked) {
+            data[baseName] = input.value;
+          }
+        } else if (input.type !== 'button') {
+          data[input.name] = input.value;
+        }
+      });
+
+      // Read beneficiaries
+      const benefRows = card.querySelectorAll('tbody.benef-list tr');
+      data.beneficiaries = Array.from(benefRows).map(row => ({
+        benef_who: row.querySelector('select[name="benef_who"]')?.value || '',
+        benef_pct: row.querySelector('input[name="benef_pct"]')?.value || '',
+        benef_type: row.querySelector('select[name="benef_type"]')?.value || ''
+      }));
+
+      // Read portfolio
+      const portfolioRows = card.querySelectorAll('tbody.portfolio-list tr');
+      data.portfolio = Array.from(portfolioRows).map(row => ({
+        asset_type: row.querySelector('select[name="asset_type"]')?.value || '',
+        asset_desc: row.querySelector('input[name="asset_desc"]')?.value || '',
+        portfolio_pct: row.querySelector('input[name="portfolio_pct"]')?.value || ''
+      }));
+
+      return data;
+    });
+  }, [wrapForTab]);
+
+  // ============================================
+  // RENUMBER ENTRIES
+  // ============================================
+
+  const renumber = useCallback((tab) => {
+    const wrap = wrapForTab(tab);
+    if (!wrap) return;
+
+    [...wrap.querySelectorAll('.entry')].forEach((card, i) => {
+      const idxSpan = card.querySelector('.idx');
+      if (idxSpan) idxSpan.textContent = i + 1;
+
+      if (tab === 'super') {
+        card.querySelectorAll('input[type="radio"][name^="sg"]')
+          .forEach(r => { r.name = 'sg__' + (i + 1); });
+      }
+    });
+  }, [wrapForTab]);
+
+  // ============================================
+  // UPDATE PILL NAVIGATION
+  // ============================================
+
+  const updatePills = useCallback((tab, index) => {
+    const pillsId = tab === 'super' ? 'superPills' : tab === 'pension' ? 'pensionPills' : 'annuitiesPills';
+    const pillsContainer = document.getElementById(pillsId);
+    if (!pillsContainer) return;
+
+    pillsContainer.innerHTML = '';
+    const wrap = wrapForTab(tab);
+    if (!wrap) return;
+
+    const cards = [...wrap.querySelectorAll('.entry')];
+
+    cards.forEach((card, i) => {
+      const pill = document.createElement('button');
+      const isActive = i === index;
+      pill.type = 'button';
+
+      let displayName = '';
+      if (tab === 'super') {
+        const nameInput = card.querySelector('input[name="fund_name"]');
+        displayName = nameInput?.value?.trim() || `Super ${i + 1}`;
+      } else if (tab === 'pension') {
+        const nameInput = card.querySelector('input[name="fund_name"]');
+        displayName = nameInput?.value?.trim() || `Pension ${i + 1}`;
+      } else {
+        const nameInput = card.querySelector('input[name="fund_name"]');
+        displayName = nameInput?.value?.trim() || `Annuity ${i + 1}`;
+      }
+
+      pill.className = `px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+        isActive
+          ? 'bg-blue-600 text-white shadow-md'
+          : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+      }`;
+      pill.textContent = displayName;
+
+      pill.onclick = (e) => {
+        e.preventDefault();
+        setActiveIndex(i);
+        showOnlyActiveEntry(tab, i);
+      };
+
+      pillsContainer.appendChild(pill);
+    });
+  }, [wrapForTab]);
+
+  // ============================================
+  // SHOW ONLY ACTIVE ENTRY
+  // ============================================
+
+  const showOnlyActiveEntry = useCallback((tab, index) => {
+    const wrap = wrapForTab(tab);
+    if (!wrap) return;
+
+    const cards = [...wrap.querySelectorAll('.entry')];
+    cards.forEach((card, i) => {
+      card.style.display = i === index ? '' : 'none';
+    });
+  }, [wrapForTab]);
+
+  // ============================================
+  // FILL CARD WITH DATA
+  // ============================================
+
+  const fillCardFromData = useCallback((card, tab, data) => {
+    if (!data || !card) return;
+
+    const nameInput = card.querySelector('input[name="fund_name"]');
+    if (nameInput && data.fund_name) nameInput.value = data.fund_name;
+
+    if (tab === 'super') {
+      const ownerSelect = card.querySelector('select[name="owner"]');
+      if (ownerSelect && data.owner) ownerSelect.value = data.owner;
+
+      const balanceInput = card.querySelector('input[name="balance"]');
+      if (balanceInput && data.balance) balanceInput.value = data.balance;
+
+      if (data.sg) {
+        card.querySelectorAll('input[type="radio"][name^="sg"]').forEach(r => {
+          r.checked = r.value === data.sg;
+        });
+      }
+
+      const productInput = card.querySelector('input[name="product"]');
+      if (productInput && data.product) productInput.value = data.product;
+
+      const salarySacInput = card.querySelector('input[name="salary_sacrifice"]');
+      if (salarySacInput && data.salary_sacrifice) salarySacInput.value = data.salary_sacrifice;
+
+      const afterTaxInput = card.querySelector('input[name="after_tax"]');
+      if (afterTaxInput && data.after_tax) afterTaxInput.value = data.after_tax;
+
+      const spouseInput = card.querySelector('input[name="spouse_received"]');
+      if (spouseInput && data.spouse_received) spouseInput.value = data.spouse_received;
+
+      const splitInput = card.querySelector('input[name="split_received"]');
+      if (splitInput && data.split_received) splitInput.value = data.split_received;
+
+      const concessionalInput = card.querySelector('input[name="concessional"]');
+      if (concessionalInput && data.concessional) concessionalInput.value = data.concessional;
+
+      const unpInput = card.querySelector('input[name="unp"]');
+      if (unpInput && data.unp) unpInput.value = data.unp;
+
+      const taxableInput = card.querySelector('input[name="taxable_portion"]');
+      if (taxableInput && data.taxable_portion) taxableInput.value = data.taxable_portion;
+
+      const taxFreeInput = card.querySelector('input[name="tax_free"]');
+      if (taxFreeInput && data.tax_free) taxFreeInput.value = data.tax_free;
+    }
+
+    // Fill beneficiaries
+    if (Array.isArray(data.beneficiaries) && data.beneficiaries.length > 0) {
+      const benefContainer = card.querySelector('.benef-list');
+      if (benefContainer) {
+        benefContainer.innerHTML = '';
+        data.beneficiaries.forEach((benef) => {
+          const row = createBeneficiaryRow(card, benef);
+          benefContainer.appendChild(row);
+        });
+      }
+      const benefTable = card.querySelector('.benef-list-table');
+      const benefEmpty = card.querySelector('.benef-list-empty');
+      const benefBtn = card.querySelector('.add-benef');
+      benefTable?.classList.remove('hidden');
+      benefEmpty?.classList.add('hidden');
+      benefBtn?.classList.remove('hidden');
+    }
+
+    // Fill portfolio
+    if (Array.isArray(data.portfolio) && data.portfolio.length > 0) {
+      const portfolioContainer = card.querySelector('.portfolio-list');
+      if (portfolioContainer) {
+        portfolioContainer.innerHTML = '';
+        data.portfolio.forEach((port) => {
+          const row = createPortfolioRow(card, port);
+          portfolioContainer.appendChild(row);
+        });
+      }
+      const portfolioTable = card.querySelector('.portfolio-list-table');
+      const portfolioEmpty = card.querySelector('.portfolio-list-empty');
+      const portfolioBtn = card.querySelector('.add-portfolio');
+      portfolioTable?.classList.remove('hidden');
+      portfolioEmpty?.classList.add('hidden');
+      portfolioBtn?.classList.remove('hidden');
+    }
+  }, []);
+
+  // ============================================
+  // CREATE BENEFICIARY ROW
+  // ============================================
+
+  const createBeneficiaryRow = useCallback((card, data = {}) => {
+    const row = document.createElement('tr');
+    row.className = 'benef-row border-b border-slate-100 hover:bg-purple-50/50';
+
+    const clientName = factFind?.personal?.client?.first_name 
+      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
+      : 'Client';
+
+    const partnerName = factFind?.personal?.partner?.first_name 
+      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
+      : null;
+
+    const childrenOptions = factFind?.dependants?.children
+      ?.map((c, i) => `<option value="child-${i}">${c.child_name || `Child ${i + 1}`}</option>`)
+      .join('') || '';
+
+    const dependantsOptions = factFind?.dependants?.dependants_list
+      ?.map((d, i) => `<option value="dependent-${i}">${d.dep_name || `Dependant ${i + 1}`}</option>`)
+      .join('') || '';
+
+    row.innerHTML = `
+      <td class="py-2 px-2">
+        <select name="benef_who" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="">Select entity…</option>
+          <option value="client">${clientName}</option>
+          ${partnerName ? `<option value="partner">${partnerName}</option>` : ''}
+          ${childrenOptions}
+          ${dependantsOptions}
+        </select>
+      </td>
+      <td class="py-2 px-2">
+        <input type="text" name="benef_pct" placeholder="e.g. 50%" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+      </td>
+      <td class="py-2 px-2">
+        <select name="benef_type" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="">Select…</option>
+          <option value="1">Binding</option>
+          <option value="2">Non-binding</option>
+          <option value="3">Reversionary</option>
+        </select>
+      </td>
+      <td class="py-2 px-2 text-center">
+        <button type="button" class="remove-benef text-red-500 hover:text-red-700 text-xs font-medium">Remove</button>
+      </td>
+    `;
+
+    const removeBtn = row.querySelector('.remove-benef');
+    removeBtn.onclick = (e) => {
+      e.preventDefault();
+      row.remove();
+    };
+
+    if (data?.benef_who) row.querySelector('select[name="benef_who"]').value = data.benef_who;
+    if (data?.benef_pct) row.querySelector('input[name="benef_pct"]').value = data.benef_pct;
+    if (data?.benef_type) row.querySelector('select[name="benef_type"]').value = data.benef_type;
+
+    return row;
+  }, [factFind]);
+
+  // ============================================
+  // CREATE PORTFOLIO ROW
+  // ============================================
+
+  const createPortfolioRow = useCallback((card, data = {}) => {
+    const row = document.createElement('tr');
+    row.className = 'portfolio-row border-b border-slate-100 hover:bg-orange-50/50';
+
+    row.innerHTML = `
+      <td class="py-2 px-2">
+        <select name="asset_type" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="">Select…</option>
+          <option value="12">Australian equities</option>
+          <option value="13">International equities</option>
+          <option value="14">Australian fixed interest</option>
+          <option value="15">International fixed interest</option>
+          <option value="16">Property</option>
+          <option value="17">Cash</option>
+          <option value="18">Alternatives</option>
+        </select>
+      </td>
+      <td class="py-2 px-2">
+        <input type="text" name="asset_desc" placeholder="Notes / product / code" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+      </td>
+      <td class="py-2 px-2">
+        <input type="number" name="portfolio_pct" placeholder="0.00" step="0.01" min="0" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+      </td>
+      <td class="py-2 px-2 text-center">
+        <button type="button" class="remove-portfolio text-red-500 hover:text-red-700 text-xs font-medium">Remove</button>
+      </td>
+    `;
+
+    const removeBtn = row.querySelector('.remove-portfolio');
+    removeBtn.onclick = (e) => {
+      e.preventDefault();
+      row.remove();
+    };
+
+    if (data?.asset_type) row.querySelector('select[name="asset_type"]').value = data.asset_type;
+    if (data?.asset_desc) row.querySelector('input[name="asset_desc"]').value = data.asset_desc;
+    if (data?.portfolio_pct) row.querySelector('input[name="portfolio_pct"]').value = data.portfolio_pct;
+
+    return row;
+  }, []);
+
+  // ============================================
+  // ADD ENTRY
+  // ============================================
+
+  const addEntry = useCallback((tab, existingData = null) => {
+    const wrap = wrapForTab(tab);
+    if (!wrap) return;
+
+    const templateId = tab === 'super' ? 'superTemplate' : tab === 'pension' ? 'pensionTemplate' : 'annuitiesTemplate';
+    const node = cloneTemplateDiv(templateId);
+    if (!node) return;
+
+    wrap.appendChild(node);
+
+    if (existingData) {
+      fillCardFromData(node, tab, existingData);
+    }
+
+    renumber(tab);
+    const newCount = wrap.querySelectorAll('.entry').length;
+    if (tab === 'super') {
+      setSuperCount(newCount);
+    } else if (tab === 'pension') {
+      setPensionCount(newCount);
+    } else {
+      setAnnuityCount(newCount);
+    }
+
+    const newIndex = newCount - 1;
+    setActiveIndex(newIndex);
+    updatePills(tab, newIndex);
+    showOnlyActiveEntry(tab, newIndex);
+  }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry]);
+
+  // ============================================
+  // REMOVE ENTRY
+  // ============================================
+
+  const removeEntry = useCallback((node, tab) => {
+    node.remove();
+    const wrap = wrapForTab(tab);
+    const remaining = wrap.querySelectorAll('.entry').length;
+    renumber(tab);
+
+    if (tab === 'super') {
+      setSuperCount(remaining);
+    } else if (tab === 'pension') {
+      setPensionCount(remaining);
+    } else {
+      setAnnuityCount(remaining);
+    }
+
+    if (remaining > 0) {
+      const newIndex = Math.max(0, remaining - 1);
+      setActiveIndex(newIndex);
+      showOnlyActiveEntry(tab, newIndex);
+      updatePills(tab, newIndex);
+    } else {
+      setActiveIndex(0);
+    }
+  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
+
+  // ============================================
+  // LOAD DATA
+  // ============================================
+
+  const loadData = useCallback(async () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+
+      if (id) {
+        const finds = await base44.entities.FactFind.filter({ id });
+        if (finds[0]) {
+          setFactFind(finds[0]);
+          if (finds[0].superannuation) {
+            globalStateRef.current.superannuation = {
+              ...finds[0].superannuation,
+              currentTab: finds[0].superannuation.currentTab || 'super',
+              activeIdx: finds[0].superannuation.activeIdx || { super: 0, pension: 0, annuities: 0 }
+            };
           }
         }
-      } catch (error) {
-        console.error('Error loading fact find:', error);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error('Error loading fact find:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // ============================================
+  // INITIALIZE DOM
+  // ============================================
+
+  useEffect(() => {
     loadData();
   }, []);
 
-  const handleAddAccount = () => {
-    if (!formData.fund_name && !formData.pension_type && !formData.annuity_provider) {
-      toast.error('Please enter required information');
+  useEffect(() => {
+    if (!loading && factFind?.id) {
+      setTimeout(() => {
+        const superWrap = document.getElementById('superWrap');
+        const pensionWrap = document.getElementById('pensionWrap');
+        const annuitiesWrap = document.getElementById('annuitiesWrap');
+
+        if (superWrap) superWrap.innerHTML = '';
+        if (pensionWrap) pensionWrap.innerHTML = '';
+        if (annuitiesWrap) annuitiesWrap.innerHTML = '';
+
+        if (globalStateRef.current.superannuation.superFunds?.length > 0) {
+          globalStateRef.current.superannuation.superFunds.forEach((data) => {
+            addEntry('super', data);
+          });
+        }
+
+        if (globalStateRef.current.superannuation.pensions?.length > 0) {
+          globalStateRef.current.superannuation.pensions.forEach((data) => {
+            addEntry('pension', data);
+          });
+        }
+
+        if (globalStateRef.current.superannuation.annuities?.length > 0) {
+          globalStateRef.current.superannuation.annuities.forEach((data) => {
+            addEntry('annuities', data);
+          });
+        }
+
+        const activeIdx = globalStateRef.current.superannuation.activeIdx?.[currentTab] || 0;
+        setActiveIndex(activeIdx);
+        updatePills(currentTab, activeIdx);
+        showOnlyActiveEntry(currentTab, activeIdx);
+      }, 50);
+    }
+  }, [loading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
+
+  // ============================================
+  // SETUP INPUT LISTENERS
+  // ============================================
+
+  useEffect(() => {
+    const updateTableVisibility = (card, type) => {
+      const table = type === 'benef' ? card.querySelector('.benef-list-table') : card.querySelector('.portfolio-list-table');
+      const empty = type === 'benef' ? card.querySelector('.benef-list-empty') : card.querySelector('.portfolio-list-empty');
+      const addBtn = type === 'benef' ? card.querySelector('.add-benef') : card.querySelector('.add-portfolio');
+      const list = type === 'benef' ? card.querySelector('.benef-list') : card.querySelector('.portfolio-list');
+
+      const hasRows = list.querySelectorAll(type === 'benef' ? 'tr.benef-row' : 'tr.portfolio-row').length > 0;
+
+      if (hasRows) {
+        table?.classList.remove('hidden');
+        empty?.classList.add('hidden');
+        addBtn?.classList.remove('hidden');
+      } else {
+        table?.classList.add('hidden');
+        empty?.classList.remove('hidden');
+        addBtn?.classList.add('hidden');
+      }
+    };
+
+    const clickHandler = (e) => {
+      if (e.target.closest('.add-first-benef') || e.target.closest('.add-benef')) {
+        e.preventDefault();
+        const card = e.target.closest('.entry');
+        const list = card.querySelector('.benef-list');
+        const row = createBeneficiaryRow(card);
+        list.appendChild(row);
+        updateTableVisibility(card, 'benef');
+      }
+      if (e.target.closest('.add-first-portfolio') || e.target.closest('.add-portfolio')) {
+        e.preventDefault();
+        const card = e.target.closest('.entry');
+        const list = card.querySelector('.portfolio-list');
+        const row = createPortfolioRow(card);
+        list.appendChild(row);
+        updateTableVisibility(card, 'portfolio');
+      }
+      if (e.target.closest('.entry-remove')) {
+        e.preventDefault();
+        const node = e.target.closest('.entry');
+        const tab = currentTab;
+        removeEntry(node, tab);
+      }
+      if (e.target.closest('.remove-benef')) {
+        const card = e.target.closest('.entry');
+        setTimeout(() => updateTableVisibility(card, 'benef'), 0);
+      }
+      if (e.target.closest('.remove-portfolio')) {
+        const card = e.target.closest('.entry');
+        setTimeout(() => updateTableVisibility(card, 'portfolio'), 0);
+      }
+    };
+
+    const inputHandler = (e) => {
+      if (e.target.matches('input[name="fund_name"]')) {
+        updatePills(currentTab, activeIndex);
+      }
+      clearTimeout(window._superSaveTimeout);
+      window._superSaveTimeout = setTimeout(() => {
+        saveSuperState();
+      }, 500);
+    };
+
+    document.addEventListener('click', clickHandler);
+    document.addEventListener('input', inputHandler);
+    return () => {
+      document.removeEventListener('click', clickHandler);
+      document.removeEventListener('input', inputHandler);
+    };
+  }, [currentTab, activeIndex, updatePills, removeEntry, createBeneficiaryRow, createPortfolioRow]);
+
+  // ============================================
+  // SAVE STATE
+  // ============================================
+
+  const saveSuperState = useCallback(async () => {
+    if (!factFind?.id) return;
+
+    try {
+      globalStateRef.current.superannuation.superFunds = readTabToArray('super');
+      globalStateRef.current.superannuation.pensions = readTabToArray('pension');
+      globalStateRef.current.superannuation.annuities = readTabToArray('annuities');
+      globalStateRef.current.superannuation.currentTab = currentTab;
+      globalStateRef.current.superannuation.activeIdx = {
+        super: currentTab === 'super' ? activeIndex : globalStateRef.current.superannuation.activeIdx?.super || 0,
+        pension: currentTab === 'pension' ? activeIndex : globalStateRef.current.superannuation.activeIdx?.pension || 0,
+        annuities: currentTab === 'annuities' ? activeIndex : globalStateRef.current.superannuation.activeIdx?.annuities || 0
+      };
+
+      await base44.entities.FactFind.update(factFind.id, {
+        superannuation: globalStateRef.current.superannuation
+      });
+    } catch (error) {
+      console.error('Save failed:', error);
+    }
+  }, [factFind?.id, readTabToArray, currentTab, activeIndex]);
+
+  // ============================================
+  // NAVIGATION
+  // ============================================
+
+  const handleNext = async () => {
+    if (!factFind?.id) {
+      toast.error('Unable to save data');
       return;
     }
 
-    const accountData = { ...formData, type: activeTab, owner: activeOwner };
-
-    if (editingIndex !== null) {
-      const updated = [...accounts];
-      updated[editingIndex] = accountData;
-      setAccounts(updated);
-      setEditingIndex(null);
-    } else {
-      setAccounts([...accounts, accountData]);
-    }
-
-    resetForm();
-  };
-
-  const resetForm = () => {
-    setFormData({
-      type: activeTab,
-      owner: activeOwner,
-      fund_name: '',
-      member_number: '',
-      abn: '',
-      usi: '',
-      account_type: '',
-      balance: '',
-      contributions: '',
-      investment_option: '',
-      insurance_cover: '',
-      beneficiary: '',
-      pension_type: '',
-      payment_amount: '',
-      payment_frequency: '',
-      commencement_date: '',
-      annuity_provider: '',
-      annuity_type: '',
-      purchase_price: '',
-      income_amount: '',
-      term_years: '',
-      notes: ''
-    });
-  };
-
-  const handleEdit = (index) => {
-    setFormData(accounts[index]);
-    setEditingIndex(index);
-    setActiveTab(accounts[index].type);
-    setActiveOwner(accounts[index].owner);
-  };
-
-  const handleDelete = (index) => {
-    const updated = accounts.filter((_, i) => i !== index);
-    setAccounts(updated);
-  };
-
-  const handleNext = async () => {
     setSaving(true);
     try {
-      const sectionsCompleted = factFind.sections_completed || [];
+      const sectionsCompleted = [...(factFind.sections_completed || [])];
       if (!sectionsCompleted.includes('superannuation')) {
         sectionsCompleted.push('superannuation');
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        superannuation: { super_accounts: accounts },
-        current_section: 'investment',
+        superannuation: globalStateRef.current.superannuation,
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
@@ -173,473 +658,410 @@ export default function FactFindSuperannuation() {
     );
   }
 
-  const filteredAccounts = accounts.filter(a => a.type === activeTab && a.owner === activeOwner);
-
-  const handleTabChange = (newTab) => {
-    setActiveTab(newTab);
-    if (editingIndex === null) {
-      setFormData({ ...formData, type: newTab });
-    }
-  };
+  const currentCount = currentTab === 'super' ? superCount : currentTab === 'pension' ? pensionCount : annuityCount;
+  const tabLabels = { super: 'Superannuation', pension: 'Pension', annuities: 'Annuities' };
 
   return (
     <FactFindLayout currentSection="superannuation" factFind={factFind}>
       <FactFindHeader
         title="Superannuation + Pension + Annuities"
         description="Record super funds, pensions, and annuities."
-        tabs={accountTypes}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
         factFind={factFind}
+        tabs={[
+          { id: 'super', label: 'Superannuation' },
+          { id: 'pension', label: 'Pension' },
+          { id: 'annuities', label: 'Annuities' }
+        ]}
+        activeTab={currentTab}
+        onTabChange={(tab) => {
+          setCurrentTab(tab);
+          setActiveIndex(0);
+          setTimeout(() => updatePills(tab, 0), 0);
+        }}
       />
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="w-full space-y-4">
-          {/* Owner Bar */}
-          <div className="flex items-center justify-between bg-slate-100 border border-slate-200 rounded-lg px-4 py-3">
-            <div className="flex items-center gap-3">
-              <span className="font-bold text-slate-800 text-sm">Owner:</span>
-              <div className="flex gap-2">
-                {['client', 'partner', 'joint'].map(owner => (
-                  <button
-                    key={owner}
-                    onClick={() => {
-                      setActiveOwner(owner);
-                      if (editingIndex === null) {
-                        setFormData({ ...formData, owner });
-                      }
-                    }}
-                    className={cn(
-                      "px-3 py-1.5 rounded-full text-xs font-bold border transition-all capitalize",
-                      activeOwner === owner
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
-                    )}
-                  >
-                    {owner}
-                  </button>
-                ))}
+      {/* Hidden Templates */}
+      <div id="superTemplate" style={{ display: 'none' }}>
+        <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-4">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Superannuation <span className="idx">1</span></h3>
+              <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
+            </div>
+            <button type="button" className="entry-remove px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">Remove</button>
+          </div>
+
+          <div className="space-y-6">
+            {/* Fund Details */}
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <h4 className="text-sm font-semibold text-blue-700 mb-4">🏦 Fund Details</h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Superannuation fund name</label>
+                  <input type="text" name="fund_name" placeholder="e.g. Australian Super" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
+                    <select name="owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="">Select owner…</option>
+                      <option value="client">Client</option>
+                      <option value="partner">Partner</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Balance</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input type="number" name="balance" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">Is this fund used for super guarantee?</label>
+                    <div className="flex flex-col gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="sg__1" value="1" className="w-4 h-4" />
+                        <span className="text-sm text-slate-700">Yes</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="sg__1" value="2" className="w-4 h-4" />
+                        <span className="text-sm text-slate-700">No</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Superannuation product</label>
+                    <input type="text" name="product" placeholder="" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Contributions */}
+            <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+              <h4 className="text-sm font-semibold text-green-700 mb-4">💰 Contributions</h4>
+              <div className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Salary sacrifice to this fund</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input type="number" name="salary_sacrifice" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">After tax contributions to this fund</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input type="number" name="after_tax" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Spouse contribution received</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input type="number" name="spouse_received" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Contribution splitting received</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input type="number" name="split_received" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Concessional contribution</label>
+                  <div className="flex items-center">
+                    <span className="text-slate-500 mr-2">$</span>
+                    <input type="number" name="concessional" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Tax Components */}
+            <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+              <h4 className="text-sm font-semibold text-yellow-700 mb-4">📋 Tax Components</h4>
+              <div className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Unrestricted non-preserved</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input type="number" name="unp" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Taxable portion</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input type="number" name="taxable_portion" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Tax free portion</label>
+                  <div className="flex items-center">
+                    <span className="text-slate-500 mr-2">$</span>
+                    <input type="number" name="tax_free" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Beneficiaries */}
+            <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+              <h4 className="text-sm font-semibold text-purple-700 mb-4">👥 Beneficiaries</h4>
+
+              <div className="benef-container">
+                <div className="benef-list-table hidden mb-3 overflow-x-auto">
+                  <table className="w-full text-xs border-collapse min-w-[600px]">
+                    <thead>
+                      <tr className="border-b border-purple-200">
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Who is the beneficiary</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Percentage entitlement</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Beneficiary type</th>
+                        <th className="w-16"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="benef-list">
+                      {/* Beneficiary rows */}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="benef-list-empty text-center py-4">
+                  <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
+                </div>
+
+                <button type="button" className="add-benef hidden px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
+              </div>
+            </div>
+
+            {/* Portfolio */}
+            <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+              <h4 className="text-sm font-semibold text-orange-700 mb-4">📊 Portfolio</h4>
+
+              <div className="portfolio-container">
+                <div className="portfolio-list-table hidden mb-3 overflow-x-auto">
+                  <table className="w-full text-xs border-collapse min-w-[600px]">
+                    <thead>
+                      <tr className="border-b border-orange-200">
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Asset type</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Description</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Portfolio %</th>
+                        <th className="w-16"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="portfolio-list">
+                      {/* Portfolio rows */}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="portfolio-list-empty text-center py-4">
+                  <p className="text-sm text-slate-600 mb-3">No portfolio assets added yet</p>
+                </div>
+
+                <button type="button" className="add-portfolio hidden px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add asset</button>
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Add/Edit Form */}
-          <Card className="border-slate-200 shadow-sm">
-            <div className={cn(
-              "px-6 py-3 rounded-t-lg",
-              activeTab === 'superannuation' && "bg-gradient-to-r from-green-600 to-emerald-600",
-              activeTab === 'pension' && "bg-gradient-to-r from-blue-600 to-cyan-600",
-              activeTab === 'annuity' && "bg-gradient-to-r from-purple-600 to-pink-600"
-            )}>
-              <h4 className="font-bold text-white">
-                {editingIndex !== null ? `Edit ${activeTab}` : `Add a ${activeTab}`}
-              </h4>
+      <div id="pensionTemplate" style={{ display: 'none' }}>
+        <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-4">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Pension <span className="idx">1</span></h3>
+              <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
             </div>
-            <CardContent className="p-6 space-y-4">
-              {activeTab === 'superannuation' && (
-                <>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Fund name</Label>
-                      <Input
-                        value={formData.fund_name}
-                        onChange={(e) => setFormData({ ...formData, fund_name: e.target.value })}
-                        placeholder="Enter fund name"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Member number</Label>
-                      <Input
-                        value={formData.member_number}
-                        onChange={(e) => setFormData({ ...formData, member_number: e.target.value })}
-                        placeholder="Enter member number"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
+            <button type="button" className="entry-remove px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">Remove</button>
+          </div>
 
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">ABN</Label>
-                      <Input
-                        value={formData.abn}
-                        onChange={(e) => setFormData({ ...formData, abn: e.target.value })}
-                        placeholder="Enter ABN"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">USI (Unique Superannuation Identifier)</Label>
-                      <Input
-                        value={formData.usi}
-                        onChange={(e) => setFormData({ ...formData, usi: e.target.value })}
-                        placeholder="Enter USI"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Account type</Label>
-                      <Select value={formData.account_type} onValueChange={(value) => setFormData({ ...formData, account_type: value })}>
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="accumulation">Accumulation</SelectItem>
-                          <SelectItem value="defined_benefit">Defined benefit</SelectItem>
-                          <SelectItem value="transition_to_retirement">Transition to retirement</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Current balance ($)</Label>
-                      <Input
-                        type="number"
-                        value={formData.balance}
-                        onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Annual contributions ($)</Label>
-                      <Input
-                        type="number"
-                        value={formData.contributions}
-                        onChange={(e) => setFormData({ ...formData, contributions: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Investment option</Label>
-                      <Input
-                        value={formData.investment_option}
-                        onChange={(e) => setFormData({ ...formData, investment_option: e.target.value })}
-                        placeholder="e.g., Balanced, Growth"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Insurance cover</Label>
-                      <Input
-                        value={formData.insurance_cover}
-                        onChange={(e) => setFormData({ ...formData, insurance_cover: e.target.value })}
-                        placeholder="e.g., Life, TPD, Income protection"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Beneficiary</Label>
-                      <Input
-                        value={formData.beneficiary}
-                        onChange={(e) => setFormData({ ...formData, beneficiary: e.target.value })}
-                        placeholder="Enter beneficiary name(s)"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {activeTab === 'pension' && (
-                <>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Pension type</Label>
-                      <Select value={formData.pension_type} onValueChange={(value) => setFormData({ ...formData, pension_type: value })}>
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="account_based">Account-based pension</SelectItem>
-                          <SelectItem value="allocated">Allocated pension</SelectItem>
-                          <SelectItem value="transition_to_retirement">Transition to retirement</SelectItem>
-                          <SelectItem value="defined_benefit">Defined benefit pension</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Fund name</Label>
-                      <Input
-                        value={formData.fund_name}
-                        onChange={(e) => setFormData({ ...formData, fund_name: e.target.value })}
-                        placeholder="Enter fund name"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Payment amount ($)</Label>
-                      <Input
-                        type="number"
-                        value={formData.payment_amount}
-                        onChange={(e) => setFormData({ ...formData, payment_amount: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Payment frequency</Label>
-                      <Select value={formData.payment_frequency} onValueChange={(value) => setFormData({ ...formData, payment_frequency: value })}>
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="monthly">Monthly</SelectItem>
-                          <SelectItem value="quarterly">Quarterly</SelectItem>
-                          <SelectItem value="annually">Annually</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Current balance ($)</Label>
-                      <Input
-                        type="number"
-                        value={formData.balance}
-                        onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Commencement date</Label>
-                      <Input
-                        type="date"
-                        value={formData.commencement_date}
-                        onChange={(e) => setFormData({ ...formData, commencement_date: e.target.value })}
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold text-sm">Beneficiary</Label>
-                    <Input
-                      value={formData.beneficiary}
-                      onChange={(e) => setFormData({ ...formData, beneficiary: e.target.value })}
-                      placeholder="Enter beneficiary name(s)"
-                      className="border-slate-300"
-                    />
-                  </div>
-                </>
-              )}
-
-              {activeTab === 'annuity' && (
-                <>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Annuity provider</Label>
-                      <Input
-                        value={formData.annuity_provider}
-                        onChange={(e) => setFormData({ ...formData, annuity_provider: e.target.value })}
-                        placeholder="Enter provider name"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Annuity type</Label>
-                      <Select value={formData.annuity_type} onValueChange={(value) => setFormData({ ...formData, annuity_type: value })}>
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="fixed_term">Fixed term</SelectItem>
-                          <SelectItem value="lifetime">Lifetime</SelectItem>
-                          <SelectItem value="indexed">Indexed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Purchase price ($)</Label>
-                      <Input
-                        type="number"
-                        value={formData.purchase_price}
-                        onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Annual income amount ($)</Label>
-                      <Input
-                        type="number"
-                        value={formData.income_amount}
-                        onChange={(e) => setFormData({ ...formData, income_amount: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Term (years)</Label>
-                      <Input
-                        type="number"
-                        value={formData.term_years}
-                        onChange={(e) => setFormData({ ...formData, term_years: e.target.value })}
-                        placeholder="e.g., 10"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Commencement date</Label>
-                      <Input
-                        type="date"
-                        value={formData.commencement_date}
-                        onChange={(e) => setFormData({ ...formData, commencement_date: e.target.value })}
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <div className="space-y-2">
-                <Label className="text-slate-700 font-semibold text-sm">Additional notes</Label>
-                <Input
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Any other relevant information"
-                  className="border-slate-300"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                {editingIndex !== null && (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setEditingIndex(null);
-                      resetForm();
-                    }}
-                    className="border-slate-300"
-                  >
-                    Cancel
-                  </Button>
-                )}
-                <Button
-                  onClick={handleAddAccount}
-                  className={cn(
-                    "text-white",
-                    activeTab === 'superannuation' && "bg-green-600 hover:bg-green-700",
-                    activeTab === 'pension' && "bg-blue-600 hover:bg-blue-700",
-                    activeTab === 'annuity' && "bg-purple-600 hover:bg-purple-700"
-                  )}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  {editingIndex !== null ? 'Update' : 'Add'} {activeTab}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Empty State or List */}
-          {filteredAccounts.length === 0 ? (
-            <Card className="border-slate-200 shadow-sm">
-              <CardContent className="p-12 text-center">
-                <div className={cn(
-                  "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4",
-                  activeTab === 'superannuation' && "bg-green-100",
-                  activeTab === 'pension' && "bg-blue-100",
-                  activeTab === 'annuity' && "bg-purple-100"
-                )}>
-                  {activeTab === 'superannuation' && <Wallet className="w-8 h-8 text-green-600" />}
-                  {activeTab === 'pension' && <DollarSign className="w-8 h-8 text-blue-600" />}
-                  {activeTab === 'annuity' && <DollarSign className="w-8 h-8 text-purple-600" />}
+          <div className="space-y-6">
+            {/* Pension Details */}
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <h4 className="text-sm font-semibold text-blue-700 mb-4">🏦 Pension Details</h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Fund name</label>
+                  <input type="text" name="fund_name" placeholder="e.g. My Pension" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
-                <h4 className="font-bold text-slate-800 mb-2">
-                  No {activeTab} accounts added yet
-                </h4>
-                <p className="text-sm text-slate-600 mb-4">
-                  Add your first {activeTab} account using the form above.
-                </p>
-              </CardContent>
-            </Card>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
+                    <select name="owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="">Select owner…</option>
+                      <option value="client">Client</option>
+                      <option value="partner">Partner</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Balance</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input type="number" name="balance" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Beneficiaries */}
+            <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+              <h4 className="text-sm font-semibold text-purple-700 mb-4">👥 Beneficiaries</h4>
+
+              <div className="benef-container">
+                <div className="benef-list-table hidden mb-3 overflow-x-auto">
+                  <table className="w-full text-xs border-collapse min-w-[600px]">
+                    <thead>
+                      <tr className="border-b border-purple-200">
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Who is the beneficiary</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Percentage entitlement</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Beneficiary type</th>
+                        <th className="w-16"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="benef-list">
+                      {/* Beneficiary rows */}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="benef-list-empty text-center py-4">
+                  <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
+                </div>
+
+                <button type="button" className="add-benef hidden px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="annuitiesTemplate" style={{ display: 'none' }}>
+        <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-4">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Annuity <span className="idx">1</span></h3>
+              <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
+            </div>
+            <button type="button" className="entry-remove px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">Remove</button>
+          </div>
+
+          <div className="space-y-6">
+            {/* Annuity Details */}
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <h4 className="text-sm font-semibold text-blue-700 mb-4">📊 Annuity Details</h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Fund name</label>
+                  <input type="text" name="fund_name" placeholder="e.g. My Annuity" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
+                    <select name="owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="">Select owner…</option>
+                      <option value="client">Client</option>
+                      <option value="partner">Partner</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Balance</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input type="number" name="balance" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Beneficiaries */}
+            <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+              <h4 className="text-sm font-semibold text-purple-700 mb-4">👥 Beneficiaries</h4>
+
+              <div className="benef-container">
+                <div className="benef-list-table hidden mb-3 overflow-x-auto">
+                  <table className="w-full text-xs border-collapse min-w-[600px]">
+                    <thead>
+                      <tr className="border-b border-purple-200">
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Who is the beneficiary</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Percentage entitlement</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Beneficiary type</th>
+                        <th className="w-16"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="benef-list">
+                      {/* Beneficiary rows */}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="benef-list-empty text-center py-4">
+                  <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
+                </div>
+
+                <button type="button" className="add-benef hidden px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="w-full space-y-6">
+          <div id="superWrap" style={{ display: currentTab === 'super' ? 'block' : 'none' }} className="space-y-4" />
+          <div id="pensionWrap" style={{ display: currentTab === 'pension' ? 'block' : 'none' }} className="space-y-4" />
+          <div id="annuitiesWrap" style={{ display: currentTab === 'annuities' ? 'block' : 'none' }} className="space-y-4" />
+
+          {/* Welcome Screen */}
+          {currentCount === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="text-5xl mb-6">
+                {currentTab === 'super' ? '🏦' : currentTab === 'pension' ? '💰' : '📊'}
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                Do you have any {tabLabels[currentTab].toLowerCase()}?
+              </h3>
+              <p className="text-slate-600 text-center mb-8 max-w-md">
+                {currentTab === 'super' ? 'Add details about your superannuation accounts to track your retirement savings.' : 'Add details about your pension or annuity accounts.'}
+              </p>
+              <Button
+                onClick={() => addEntry(currentTab)}
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
+              >
+                + Add {tabLabels[currentTab]}
+              </Button>
+            </div>
           ) : (
-            <Card className="border-slate-200 shadow-sm">
-              <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-3">
-                <h4 className="font-bold text-white capitalize">
-                  {activeOwner}'s {activeTab} ({filteredAccounts.length})
-                </h4>
+            <>
+              {/* Pills Navigation */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                <div id={currentTab === 'super' ? 'superPills' : currentTab === 'pension' ? 'pensionPills' : 'annuitiesPills'} className="flex gap-2" />
+                <button
+                  onClick={() => addEntry(currentTab)}
+                  className="ml-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0 shadow-sm"
+                >
+                  + Add {tabLabels[currentTab]}
+                </button>
               </div>
-              <CardContent className="p-6">
-                <div className="space-y-3">
-                  {filteredAccounts.map((account, index) => {
-                    const globalIndex = accounts.findIndex(a => a === account);
-                    return (
-                      <div
-                        key={index}
-                        className="flex items-start justify-between p-4 bg-slate-50 rounded-lg border border-slate-200"
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className="font-bold text-slate-800">
-                              {account.fund_name || account.pension_type || account.annuity_provider}
-                            </span>
-                            {account.balance && (
-                              <span className={cn(
-                                "px-2 py-0.5 rounded text-xs font-semibold",
-                                activeTab === 'superannuation' && "bg-green-100 text-green-700",
-                                activeTab === 'pension' && "bg-blue-100 text-blue-700",
-                                activeTab === 'annuity' && "bg-purple-100 text-purple-700"
-                              )}>
-                                ${parseFloat(account.balance).toLocaleString()}
-                              </span>
-                            )}
-                          </div>
-                          <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-slate-600">
-                            {account.member_number && <span><strong>Member:</strong> {account.member_number}</span>}
-                            {account.account_type && <span><strong>Type:</strong> {account.account_type}</span>}
-                            {account.payment_amount && <span><strong>Payment:</strong> ${parseFloat(account.payment_amount).toLocaleString()}</span>}
-                            {account.payment_frequency && <span><strong>Frequency:</strong> {account.payment_frequency}</span>}
-                            {account.purchase_price && <span><strong>Purchase:</strong> ${parseFloat(account.purchase_price).toLocaleString()}</span>}
-                            {account.income_amount && <span><strong>Income:</strong> ${parseFloat(account.income_amount).toLocaleString()}</span>}
-                          </div>
-                        </div>
-                        <div className="flex gap-2 ml-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(globalIndex)}
-                            className="border-slate-300"
-                          >
-                            <Edit2 className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDelete(globalIndex)}
-                            className="border-red-300 text-red-600 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+            </>
           )}
 
           {/* Navigation */}
@@ -668,7 +1090,7 @@ export default function FactFindSuperannuation() {
                     </>
                   ) : (
                     <>
-                      Continue
+                      Save & continue
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </>
                   )}
