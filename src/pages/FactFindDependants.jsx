@@ -122,9 +122,30 @@ export default function FactFindDependants() {
     setShowChildForm(true);
   };
 
-  const handleDeleteChild = (index) => {
-    const updated = children.filter((_, i) => i !== index);
-    setChildren(updated);
+  const handleDeleteChild = async (index) => {
+    try {
+      const updated = children.filter((_, i) => i !== index);
+      setChildren(updated);
+
+      // Auto-save to database
+      const sectionsCompleted = factFind.sections_completed || [];
+      if (!sectionsCompleted.includes('dependants')) {
+        sectionsCompleted.push('dependants');
+      }
+      await base44.entities.FactFind.update(factFind.id, {
+        dependants: { 
+          children: updated,
+          dependants_list: dependants 
+        },
+        sections_completed: sectionsCompleted,
+        completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
+      });
+
+      toast.success('Child removed');
+    } catch (error) {
+      toast.error('Failed to delete child');
+      console.error(error);
+    }
   };
 
   const handleAddDependant = () => {
