@@ -114,6 +114,7 @@ export default function FactFindDependants() {
       child_fin_age: '',
       child_health: ''
     });
+    setIsAddingChild(false);
   };
 
   const handleSelectChild = (index) => {
