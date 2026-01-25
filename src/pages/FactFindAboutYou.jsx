@@ -572,7 +572,7 @@ export default function FactFindPersonal() {
                             <SelectItem value="part-time">Part-time</SelectItem>
                             <SelectItem value="casual">Casual</SelectItem>
                             <SelectItem value="home_duties">Home duties</SelectItem>
-                            <SelectItem value="maternity">Paternity leave</SelectItem>
+                            <SelectItem value="paternity">Paternity leave</SelectItem>
                             <SelectItem value="unemployed">Unemployed</SelectItem>
                             <SelectItem value="retired">Retired</SelectItem>
                           </SelectContent>
