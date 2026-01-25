@@ -244,42 +244,42 @@ export default function FactFindSMSF() {
 
   const createAccountRow = useCallback((card, data = {}) => {
     const row = document.createElement('div');
-    row.className = 'acct-row flex gap-2 items-end pb-3 border-b border-slate-200 last:border-b-0 py-3';
+    row.className = 'acct-row grid grid-cols-9 gap-2 items-center pb-2 border-b border-slate-200 last:border-b-0';
 
     const clientName = factFind?.personal?.client?.first_name 
       ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
       : 'Client';
 
     row.innerHTML = `
-      <select name="acct_owner" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <select name="acct_owner" class="px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         <option value="">Select entity…</option>
         <option value="client">${clientName}</option>
       </select>
-      <select name="tax_env" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <select name="tax_env" class="px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         <option value="">Select…</option>
         <option value="1">Superannuation</option>
         <option value="2">Pension</option>
       </select>
-      <div class="flex items-center flex-1">
-        <span class="text-slate-500 mr-2">$</span>
+      <div class="flex items-center">
+        <span class="text-slate-500 mr-1 text-xs">$</span>
         <input type="number" name="tax_free_amt" placeholder="0.00" step="0.01" min="0" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
-      <input type="text" name="tax_free_pct" placeholder="e.g. 30%" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      <div class="flex items-center flex-1">
-        <span class="text-slate-500 mr-2">$</span>
+      <input type="text" name="tax_free_pct" placeholder="e.g. 30%" class="px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <div class="flex items-center">
+        <span class="text-slate-500 mr-1 text-xs">$</span>
         <input type="number" name="unp_amt" placeholder="0.00" step="0.01" min="0" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
-      <select name="super_guarantee" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <select name="super_guarantee" class="px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         <option value="">Select…</option>
         <option value="1">Yes</option>
         <option value="2">No</option>
       </select>
-      <input type="text" name="salary_sacrifice" placeholder="" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      <div class="flex items-center flex-1">
-        <span class="text-slate-500 mr-2">$</span>
+      <input type="text" name="salary_sacrifice" placeholder="" class="px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <div class="flex items-center">
+        <span class="text-slate-500 mr-1 text-xs">$</span>
         <input type="number" name="after_tax" placeholder="0.00" step="0.01" min="0" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
-      <button type="button" class="remove-acct px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium">Remove</button>
+      <button type="button" class="remove-acct px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium whitespace-nowrap">Remove</button>
     `;
 
     const removeBtn = row.querySelector('.remove-acct');
