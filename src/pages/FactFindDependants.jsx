@@ -391,25 +391,7 @@ export default function FactFindDependants() {
                           Delete
                         </Button>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedChildIndex(null);
-                          setIsAddingChild(false);
-                          setChildFormData({
-                            child_name: '',
-                            child_dob: '',
-                            child_fin_dep: '',
-                            child_edu: '',
-                            child_fin_age: '',
-                            child_health: ''
-                          });
-                        }}
-                        className="border-slate-300"
-                      >
-                        Cancel
-                      </Button>
+
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
