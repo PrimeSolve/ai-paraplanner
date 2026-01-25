@@ -130,7 +130,7 @@ export default function FactFindAssetsLiabilities() {
     setEditingIndex(null);
   }, []);
 
-  const handleSaveAsset = use=> {
+  const handleSaveAsset = useCallback(() => {
     if (!assetForm.a_name.trim()) {
       toast.error('Please enter asset name');
       return;
@@ -145,7 +145,7 @@ export default function FactFindAssetsLiabilities() {
     }
 
     resetAssetForm();
-  };
+  }, [assetForm, assetsList, editingIndex, resetAssetForm]);
 
   const handleSaveDebt = useCallback(() => {
     if (!debtForm.d_name.trim()) {
@@ -449,11 +449,11 @@ export default function FactFindAssetsLiabilities() {
                         className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">Select…</option>
-                        <option value="1">Weekly</option>
-                        <option value="2">Fortnightly</option>
-                        <option value="3">Monthly</option>
+                        <option value="52">Weekly</option>
+                        <option value="26">Fortnightly</option>
+                        <option value="12">Monthly</option>
                         <option value="4">Quarterly</option>
-                        <option value="5">Annual</option>
+                        <option value="1">Annually</option>
                       </select>
                     </div>
                   </div>
@@ -511,7 +511,9 @@ export default function FactFindAssetsLiabilities() {
                             <th className="px-4 py-3 text-left font-semibold text-slate-700">Debt name</th>
                             <th className="px-4 py-3 text-left font-semibold text-slate-700">Ownership type</th>
                             <th className="px-4 py-3 text-left font-semibold text-slate-700">Owner</th>
+                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Debt type</th>
                             <th className="px-4 py-3 text-left font-semibold text-slate-700">Balance</th>
+                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Repayments</th>
                             <th className="px-4 py-3 text-left font-semibold text-slate-700">Actions</th>
                           </tr>
                         </thead>
@@ -521,8 +523,14 @@ export default function FactFindAssetsLiabilities() {
                               <td className="px-4 py-3 font-medium text-slate-800">{debt.d_name}</td>
                               <td className="px-4 py-3 text-slate-600">{debt.d_ownType === '2' ? 'Joint' : 'Sole'}</td>
                               <td className="px-4 py-3 text-slate-600">{getOwnerLabel(debt.d_owner)}</td>
+                              <td className="px-4 py-3 text-slate-600">
+                                {debt.d_type ? ['', 'Home loan', 'Investment loan', 'Margin loan', '', 'Credit card', 'Reverse mortgage', 'Car loan', 'Other'][debt.d_type] : '-'}
+                              </td>
                               <td className="px-4 py-3 font-semibold text-slate-800">
                                 {debt.d_balance ? `$${parseFloat(debt.d_balance).toLocaleString()}` : '-'}
+                              </td>
+                              <td className="px-4 py-3 text-slate-600 text-sm">
+                                {debt.d_repayments && debt.d_freq ? `$${parseFloat(debt.d_repayments).toLocaleString()} ${['', '', '', '', 'Quarterly', '', '', '', ''].includes(debt.d_freq) ? 'Quarterly' : debt.d_freq === '52' ? 'Weekly' : debt.d_freq === '26' ? 'Fortnightly' : debt.d_freq === '12' ? 'Monthly' : '-'}` : '-'}
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex gap-2">
@@ -611,21 +619,20 @@ export default function FactFindAssetsLiabilities() {
                         <option value="">Select…</option>
                         <option value="1">Home loan</option>
                         <option value="2">Investment loan</option>
-                        <option value="3">Personal loan</option>
-                        <option value="4">Credit card</option>
-                        <option value="5">Car loan</option>
-                        <option value="6">Other</option>
+                        <option value="3">Margin loan</option>
+                        <option value="5">Credit card</option>
+                        <option value="6">Reverse mortgage</option>
+                        <option value="7">Car loan</option>
+                        <option value="8">Other</option>
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">Interest rate (%)</label>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Interest rate</label>
                       <input
-                        type="number"
+                        type="text"
                         value={debtForm.d_rate}
                         onChange={(e) => setDebtForm({ ...debtForm, d_rate: e.target.value })}
-                        step="0.01"
-                        min="0"
-                        placeholder="0.00"
+                        placeholder="e.g. 6.49%"
                         className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
@@ -640,11 +647,10 @@ export default function FactFindAssetsLiabilities() {
                         className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">Select…</option>
-                        <option value="1">Weekly</option>
-                        <option value="2">Fortnightly</option>
-                        <option value="3">Monthly</option>
+                        <option value="52">Weekly</option>
+                        <option value="26">Fortnightly</option>
+                        <option value="12">Monthly</option>
                         <option value="4">Quarterly</option>
-                        <option value="5">Annual</option>
                       </select>
                     </div>
                     <div>
@@ -665,13 +671,12 @@ export default function FactFindAssetsLiabilities() {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">Term (years)</label>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Term remaining</label>
                       <input
-                        type="number"
+                        type="text"
                         value={debtForm.d_term}
                         onChange={(e) => setDebtForm({ ...debtForm, d_term: e.target.value })}
-                        min="0"
-                        placeholder="e.g. 30"
+                        placeholder="e.g. 18 years"
                         className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
@@ -691,37 +696,102 @@ export default function FactFindAssetsLiabilities() {
                     </div>
                   </div>
 
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-3">Interest only available</label>
+                      <div className="flex gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="d_io"
+                            value="1"
+                            checked={debtForm.d_io === '1'}
+                            onChange={(e) => setDebtForm({ ...debtForm, d_io: e.target.value })}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm text-slate-700">Yes</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="d_io"
+                            value="2"
+                            checked={debtForm.d_io === '2'}
+                            onChange={(e) => setDebtForm({ ...debtForm, d_io: e.target.value })}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm text-slate-700">No</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-3">Fixed interest rate</label>
+                      <div className="flex gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="d_fixed"
+                            value="1"
+                            checked={debtForm.d_fixed === '1'}
+                            onChange={(e) => setDebtForm({ ...debtForm, d_fixed: e.target.value })}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm text-slate-700">Yes</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="d_fixed"
+                            value="2"
+                            checked={debtForm.d_fixed === '2'}
+                            onChange={(e) => setDebtForm({ ...debtForm, d_fixed: e.target.value })}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm text-slate-700">No</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-3">Debt security - Linked assets</label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Redraw amount available</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input
+                        type="number"
+                        value={debtForm.d_redraw}
+                        onChange={(e) => setDebtForm({ ...debtForm, d_redraw: e.target.value })}
+                        step="0.01"
+                        min="0"
+                        className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Select asset held as security</label>
+                    <select
+                      multiple
+                      value={debtForm.d_security}
+                      onChange={(e) => {
+                        const selected = Array.from(e.target.selectedOptions, option => option.value);
+                        setDebtForm({ ...debtForm, d_security: selected });
+                      }}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      size={Math.min(5, Math.max(3, assetsList.length))}
+                    >
                       {assetsList.length === 0 ? (
-                        <p className="text-sm text-slate-500 italic">No assets added yet</p>
+                        <option disabled>No assets added yet</option>
                       ) : (
                         assetsList.map((asset, idx) => (
-                          <label key={idx} className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={debtForm.d_security.includes(idx)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setDebtForm({
-                                    ...debtForm,
-                                    d_security: [...debtForm.d_security, idx]
-                                  });
-                                } else {
-                                  setDebtForm({
-                                    ...debtForm,
-                                    d_security: debtForm.d_security.filter(i => i !== idx)
-                                  });
-                                }
-                              }}
-                              className="w-4 h-4 border-slate-300 rounded"
-                            />
-                            <span className="text-sm text-slate-700">{asset.a_name}</span>
-                          </label>
+                          <option key={idx} value={idx}>
+                            {asset.a_name}
+                          </option>
                         ))
                       )}
-                    </div>
+                    </select>
+                    <p className="text-xs text-slate-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
                   </div>
 
                   <div className="flex justify-end gap-2 pt-2">
