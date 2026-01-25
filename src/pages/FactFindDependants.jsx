@@ -195,6 +195,7 @@ export default function FactFindDependants() {
       dep_relationship: '',
       dep_interdep: ''
     });
+    setIsAddingDependant(false);
   };
 
   const handleSelectDependant = (index) => {
