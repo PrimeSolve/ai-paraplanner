@@ -730,27 +730,34 @@ export default function FactFindSuperannuation() {
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
               <h4 className="text-sm font-semibold text-blue-700 mb-4">🏦 Fund Details</h4>
               <div className="space-y-4">
-                <input type="text" name="fund_name" placeholder="e.g. Australian Super" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 <div className="grid md:grid-cols-2 gap-4">
-                  <select name="owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
-                    <option value="">Select owner…</option>
-                    <option value="client">Client</option>
-                    <option value="partner">Partner</option>
-                  </select>
-                  <div className="flex items-center">
-                    <span className="text-slate-500 mr-2">$</span>
-                    <input type="number" name="balance" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Fund name</label>
+                    <input type="text" name="fund_name" placeholder="e.g. Australian Super" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Product</label>
+                    <select name="product" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
+                      <option value="">Select product…</option>
+                    </select>
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-3">Super guarantee?</label>
-                    <label className="flex items-center gap-2"><input type="radio" name="sg__1" value="1" className="w-4 h-4" /><span className="text-sm">Yes</span></label>
-                    <label className="flex items-center gap-2"><input type="radio" name="sg__1" value="2" className="w-4 h-4" /><span className="text-sm">No</span></label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
+                    <select name="owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
+                      <option value="">Select owner…</option>
+                      <option value="client">Client</option>
+                      <option value="partner">Partner</option>
+                    </select>
                   </div>
-                  <select name="product" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
-                    <option value="">Select product…</option>
-                  </select>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Balance</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input type="number" name="balance" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
