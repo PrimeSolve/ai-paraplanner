@@ -909,10 +909,21 @@ export default function FactFindSuperannuation() {
           <div className="space-y-6">
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
               <h4 className="text-sm font-semibold text-blue-700 mb-4">🕰️ Pension Details</h4>
-              <input type="text" name="fund_name" placeholder="Pension name" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm mb-4" />
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Pension name</label>
+                  <input type="text" name="fund_name" placeholder="e.g. XYZ Pension" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                </div>
+              </div>
               <div className="grid md:grid-cols-2 gap-4">
-                <select name="owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"><option value="">Owner</option><option value="client">Client</option><option value="partner">Partner</option></select>
-                <select name="p_type" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"><option value="">Type</option><option value="1">Account based</option><option value="2">Term allocated</option><option value="3">Lifetime</option><option value="4">Defined benefit</option><option value="5">Foreign - UK</option><option value="6">Foreign - Other</option><option value="7">Transition to retirement</option></select>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
+                  <select name="owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"><option value="">Select owner…</option></select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Type</label>
+                  <select name="p_type" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"><option value="">Select…</option><option value="1">Account based</option><option value="2">Term allocated</option><option value="3">Lifetime</option><option value="4">Defined benefit</option><option value="5">Foreign - UK</option><option value="6">Foreign - Other</option><option value="7">Transition to retirement</option></select>
+                </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4 mt-4">
                 <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="p_balance" placeholder="Balance" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
