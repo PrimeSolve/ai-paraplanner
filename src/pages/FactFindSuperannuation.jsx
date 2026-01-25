@@ -177,7 +177,21 @@ export default function FactFindSuperannuation() {
 
     if (tab === 'super') {
       const ownerSelect = card.querySelector('select[name="owner"]');
-      if (ownerSelect && data.owner) ownerSelect.value = data.owner;
+      if (ownerSelect) {
+        // Populate with principal names
+        ownerSelect.innerHTML = '<option value="">Select owner…</option>';
+        const clientName = factFind?.personal?.client?.first_name 
+          ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
+          : null;
+        const partnerName = factFind?.personal?.partner?.first_name 
+          ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
+          : null;
+        
+        if (clientName) ownerSelect.innerHTML += `<option value="client">${clientName}</option>`;
+        if (partnerName) ownerSelect.innerHTML += `<option value="partner">${partnerName}</option>`;
+        
+        if (data.owner) ownerSelect.value = data.owner;
+      }
 
       const balanceInput = card.querySelector('input[name="balance"]');
       if (balanceInput && data.balance) balanceInput.value = data.balance;
