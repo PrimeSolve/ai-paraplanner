@@ -71,7 +71,7 @@ export default function FactFindSMSF() {
       });
 
       // Read account rows
-      const acctRows = card.querySelectorAll('.acct-row');
+      const acctRows = card.querySelectorAll('tbody.acct-list tr');
       data.accounts = Array.from(acctRows).map(row => ({
         acct_owner: row.querySelector('select[name="acct_owner"]')?.value || '',
         tax_env: row.querySelector('select[name="tax_env"]')?.value || '',
@@ -84,7 +84,7 @@ export default function FactFindSMSF() {
       }));
 
       // Read beneficiary rows
-      const benefRows = card.querySelectorAll('.benef-row');
+      const benefRows = card.querySelectorAll('tbody.benef-list tr');
       data.beneficiaries = Array.from(benefRows).map(row => ({
         benef_account: row.querySelector('select[name="benef_account"]')?.value || '',
         benef_who: row.querySelector('select[name="benef_who"]')?.value || '',
