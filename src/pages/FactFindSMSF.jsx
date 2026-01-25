@@ -774,18 +774,17 @@ export default function FactFindSMSF() {
               <div className="benef-container">
                 {/* Table with headers */}
                 <div className="benef-list-table hidden mb-3 overflow-x-auto">
-                  <div className="space-y-0">
-                    <div className="grid gap-2 px-2 py-2 text-xs font-semibold text-slate-700" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
-                      <div>Beneficiary Account</div>
-                      <div>Who is Beneficiary</div>
-                      <div>Beneficiary Type</div>
-                      <div>Entitlement</div>
-                      <div></div>
+                  <div className="min-w-[800px]">
+                    <div className="grid gap-2 py-2 text-xs font-semibold text-slate-600 border-b border-slate-200" style={{ gridTemplateColumns: '150px 150px 130px 130px 80px' }}>
+                      <div className="px-1">Beneficiary Account</div>
+                      <div className="px-1">Who is Beneficiary</div>
+                      <div className="px-1">Beneficiary Type</div>
+                      <div className="px-1">Entitlement</div>
+                      <div className="px-1"></div>
                     </div>
-                    <div className="bg-slate-100 h-px"></div>
-                  </div>
-                  <div className="benef-list space-y-0">
-                    {/* Beneficiary rows go here */}
+                    <div className="benef-list">
+                      {/* Beneficiary rows go here */}
+                    </div>
                   </div>
                 </div>
 
