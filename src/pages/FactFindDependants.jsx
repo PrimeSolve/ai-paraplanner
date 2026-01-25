@@ -25,19 +25,19 @@ export default function FactFindDependants() {
   const [editingChildIndex, setEditingChildIndex] = useState(null);
   const [editingDependantIndex, setEditingDependantIndex] = useState(null);
   const [childFormData, setChildFormData] = useState({
-    name: '',
-    date_of_birth: '',
-    financially_dependent: '',
-    education_status: '',
-    dependent_age: '',
-    health_issues: ''
+    child_name: '',
+    child_dob: '',
+    child_fin_dep: '',
+    child_edu: '',
+    child_fin_age: '',
+    child_health: ''
   });
   const [dependantFormData, setDependantFormData] = useState({
-    name: '',
-    date_of_birth: '',
-    dependent_until_age: '',
-    relationship: '',
-    interdependency: ''
+    dep_name: '',
+    dep_dob: '',
+    dep_until_age: '',
+    dep_relationship: '',
+    dep_interdep: ''
   });
 
   useEffect(() => {
