@@ -457,6 +457,26 @@ export default function FactFindSMSF() {
   // ============================================
 
   useEffect(() => {
+    const updateTableVisibility = (card, type) => {
+      const container = type === 'acct' ? card.querySelector('.acct-container') : card.querySelector('.benef-container');
+      const table = type === 'acct' ? card.querySelector('.acct-list-table') : card.querySelector('.benef-list-table');
+      const empty = type === 'acct' ? card.querySelector('.acct-list-empty') : card.querySelector('.benef-list-empty');
+      const addBtn = type === 'acct' ? card.querySelector('.add-acct') : card.querySelector('.add-benef');
+      const list = type === 'acct' ? card.querySelector('.acct-list') : card.querySelector('.benef-list');
+
+      const hasRows = list.querySelectorAll(type === 'acct' ? '.acct-row' : '.benef-row').length > 0;
+
+      if (hasRows) {
+        table?.classList.remove('hidden');
+        empty?.classList.add('hidden');
+        addBtn?.classList.remove('hidden');
+      } else {
+        table?.classList.add('hidden');
+        empty?.classList.remove('hidden');
+        addBtn?.classList.add('hidden');
+      }
+    };
+
     const clickHandler = (e) => {
       if (e.target.closest('.add-first-acct') || e.target.closest('.add-acct')) {
         e.preventDefault();
@@ -464,6 +484,7 @@ export default function FactFindSMSF() {
         const list = card.querySelector('.acct-list');
         const row = createAccountRow(card);
         list.appendChild(row);
+        updateTableVisibility(card, 'acct');
       }
       if (e.target.closest('.add-first-benef') || e.target.closest('.add-benef')) {
         e.preventDefault();
@@ -471,11 +492,20 @@ export default function FactFindSMSF() {
         const list = card.querySelector('.benef-list');
         const row = createBeneficiaryRow(card);
         list.appendChild(row);
+        updateTableVisibility(card, 'benef');
       }
       if (e.target.closest('.entry-remove')) {
         e.preventDefault();
         const node = e.target.closest('.entry');
         removeEntry(node);
+      }
+      if (e.target.closest('.remove-acct')) {
+        const card = e.target.closest('.entry');
+        setTimeout(() => updateTableVisibility(card, 'acct'), 0);
+      }
+      if (e.target.closest('.remove-benef')) {
+        const card = e.target.closest('.entry');
+        setTimeout(() => updateTableVisibility(card, 'benef'), 0);
       }
     };
 
