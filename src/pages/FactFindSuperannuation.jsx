@@ -751,7 +751,7 @@ export default function FactFindSuperannuation() {
   return (
     <FactFindLayout currentSection="superannuation" factFind={factFind}>
       <FactFindHeader
-        title="Superannuation + Pension + Annuities"
+        title="Retirement products"
         description="Record super funds, pensions, and annuities."
         factFind={factFind}
         tabs={[
