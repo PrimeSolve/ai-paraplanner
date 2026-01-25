@@ -106,6 +106,28 @@ export default function FactFindPersonal() {
     loadData();
   }, []);
 
+  // Auto-save when data changes (debounced)
+  useEffect(() => {
+    if (!factFind?.id || loading) return;
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const personalData = {
+          client: clientData,
+          ...(hasPartner && { partner: partnerData })
+        };
+        await base44.entities.FactFind.update(factFind.id, {
+          personal: personalData,
+          current_section: 'personal'
+        });
+      } catch (error) {
+        console.error('Auto-save failed:', error);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [clientData, partnerData, hasPartner, factFind?.id, loading]);
+
   const handleSave = async () => {
     if (!factFind?.id) return;
 
