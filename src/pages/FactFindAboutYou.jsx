@@ -310,18 +310,18 @@ export default function FactFindPersonal() {
                       <div className="space-y-2">
                         <Label className="text-slate-700 font-semibold text-sm">Gender</Label>
                         <div className="flex gap-3">
-                          {['Male', 'Female', 'Other'].map(option => (
+                          {[{label: 'Male', value: '2'}, {label: 'Female', value: '1'}, {label: 'Other', value: '3'}].map(option => (
                             <button
-                              key={option}
-                              onClick={() => setFormData({ ...formData, gender: option.toLowerCase() })}
+                              key={option.value}
+                              onClick={() => setFormData({ ...formData, gender: option.value })}
                               className={cn(
                                 "px-3 py-2 rounded-lg border text-sm font-medium transition-all",
-                                formData.gender === option.toLowerCase()
+                                formData.gender === option.value
                                   ? "bg-blue-600 text-white border-blue-600"
                                   : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
                               )}
                             >
-                              {option}
+                              {option.label}
                             </button>
                           ))}
                         </div>
@@ -345,11 +345,11 @@ export default function FactFindPersonal() {
                             <SelectValue placeholder="Select..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="single">Single</SelectItem>
-                            <SelectItem value="married">Married</SelectItem>
-                            <SelectItem value="de_facto">De facto</SelectItem>
-                            <SelectItem value="divorced">Divorced</SelectItem>
-                            <SelectItem value="widowed">Widowed</SelectItem>
+                            <SelectItem value="6">Single</SelectItem>
+                            <SelectItem value="1">Married</SelectItem>
+                            <SelectItem value="2">De facto</SelectItem>
+                            <SelectItem value="3">Divorced</SelectItem>
+                            <SelectItem value="4">Widowed</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -363,28 +363,28 @@ export default function FactFindPersonal() {
                             <SelectValue placeholder="Select..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="own">Own home</SelectItem>
-                            <SelectItem value="renting">Renting</SelectItem>
-                            <SelectItem value="aged_care">Live if aged care</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
+                            <SelectItem value="1">Own home</SelectItem>
+                            <SelectItem value="2">Renting</SelectItem>
+                            <SelectItem value="3">Live if aged care</SelectItem>
+                            <SelectItem value="4">Other</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-2">
                         <Label className="text-slate-700 font-semibold text-sm">Resident status</Label>
                         <div className="flex gap-3">
-                          {['Permanent resident', 'Temporary resident', 'Other'].map(option => (
+                          {[{label: 'Permanent resident', value: '1'}, {label: 'Temporary resident', value: '2'}, {label: 'Other', value: '3'}].map(option => (
                             <button
-                              key={option}
-                              onClick={() => setFormData({ ...formData, resident_status: option })}
+                              key={option.value}
+                              onClick={() => setFormData({ ...formData, resident_status: option.value })}
                               className={cn(
                                 "px-3 py-2 rounded-lg border text-xs font-medium transition-all",
-                                formData.resident_status === option
+                                formData.resident_status === option.value
                                   ? "bg-blue-600 text-white border-blue-600"
                                   : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
                               )}
                             >
-                              {option}
+                              {option.label}
                             </button>
                           ))}
                         </div>
@@ -422,14 +422,14 @@ export default function FactFindPersonal() {
                             <SelectValue placeholder="Select..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="ACT">ACT</SelectItem>
-                            <SelectItem value="NSW">NSW</SelectItem>
-                            <SelectItem value="NT">NT</SelectItem>
-                            <SelectItem value="QLD">QLD</SelectItem>
-                            <SelectItem value="SA">SA</SelectItem>
-                            <SelectItem value="TAS">TAS</SelectItem>
-                            <SelectItem value="VIC">VIC</SelectItem>
-                            <SelectItem value="WA">WA</SelectItem>
+                            <SelectItem value="1">ACT</SelectItem>
+                            <SelectItem value="2">NSW</SelectItem>
+                            <SelectItem value="3">NT</SelectItem>
+                            <SelectItem value="4">QLD</SelectItem>
+                            <SelectItem value="5">SA</SelectItem>
+                            <SelectItem value="6">TAS</SelectItem>
+                            <SelectItem value="7">VIC</SelectItem>
+                            <SelectItem value="8">WA</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -489,18 +489,18 @@ export default function FactFindPersonal() {
                     <div className="space-y-2">
                       <Label className="text-slate-700 font-semibold text-sm">Health status</Label>
                       <div className="flex gap-3">
-                        {['Excellent', 'Good', 'Fair', 'Poor'].map(option => (
+                        {[{label: 'Excellent', value: '4'}, {label: 'Good', value: '3'}, {label: 'Fair', value: '2'}, {label: 'Poor', value: '1'}].map(option => (
                           <button
-                            key={option}
-                            onClick={() => setFormData({ ...formData, health_status: option })}
+                            key={option.value}
+                            onClick={() => setFormData({ ...formData, health_status: option.value })}
                             className={cn(
                               "px-4 py-2 rounded-lg border text-sm font-medium transition-all",
-                              formData.health_status === option
+                              formData.health_status === option.value
                                 ? "bg-blue-600 text-white border-blue-600"
                                 : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
                             )}
                           >
-                            {option}
+                            {option.label}
                           </button>
                         ))}
                       </div>
@@ -509,18 +509,18 @@ export default function FactFindPersonal() {
                     <div className="space-y-2">
                       <Label className="text-slate-700 font-semibold text-sm">Smoker status</Label>
                       <div className="flex gap-3">
-                        {['Smoker', 'Non-smoker'].map(option => (
+                        {[{label: 'Smoker', value: '1'}, {label: 'Non-smoker', value: '2'}].map(option => (
                           <button
-                            key={option}
-                            onClick={() => setFormData({ ...formData, smoker_status: option })}
+                            key={option.value}
+                            onClick={() => setFormData({ ...formData, smoker_status: option.value })}
                             className={cn(
                               "px-4 py-2 rounded-lg border text-sm font-medium transition-all",
-                              formData.smoker_status === option
+                              formData.smoker_status === option.value
                                 ? "bg-blue-600 text-white border-blue-600"
                                 : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
                             )}
                           >
-                            {option}
+                            {option.label}
                           </button>
                         ))}
                       </div>
@@ -529,18 +529,18 @@ export default function FactFindPersonal() {
                     <div className="space-y-2">
                       <Label className="text-slate-700 font-semibold text-sm">Health insurance?</Label>
                       <div className="flex gap-3">
-                        {['Yes', 'No'].map(option => (
+                        {[{label: 'Yes', value: '1'}, {label: 'No', value: '2'}].map(option => (
                           <button
-                            key={option}
-                            onClick={() => setFormData({ ...formData, health_insurance: option })}
+                            key={option.value}
+                            onClick={() => setFormData({ ...formData, health_insurance: option.value })}
                             className={cn(
                               "px-4 py-2 rounded-lg border text-sm font-medium transition-all",
-                              formData.health_insurance === option
+                              formData.health_insurance === option.value
                                 ? "bg-blue-600 text-white border-blue-600"
                                 : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
                             )}
                           >
-                            {option}
+                            {option.label}
                           </button>
                         ))}
                       </div>
@@ -568,13 +568,13 @@ export default function FactFindPersonal() {
                             <SelectValue placeholder="Select..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="full-time">Full-time</SelectItem>
-                            <SelectItem value="part-time">Part-time</SelectItem>
-                            <SelectItem value="casual">Casual</SelectItem>
-                            <SelectItem value="home_duties">Home duties</SelectItem>
-                            <SelectItem value="paternity">Paternity leave</SelectItem>
-                            <SelectItem value="unemployed">Unemployed</SelectItem>
-                            <SelectItem value="retired">Retired</SelectItem>
+                            <SelectItem value="1">Full-time</SelectItem>
+                            <SelectItem value="2">Part-time</SelectItem>
+                            <SelectItem value="3">Casual</SelectItem>
+                            <SelectItem value="4">Home duties</SelectItem>
+                            <SelectItem value="5">Paternity leave</SelectItem>
+                            <SelectItem value="6">Unemployed</SelectItem>
+                            <SelectItem value="7">Retired</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -607,10 +607,10 @@ export default function FactFindPersonal() {
                             <SelectValue placeholder="Select..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="employee">Employee</SelectItem>
-                            <SelectItem value="sole_trader">Sole trader</SelectItem>
-                            <SelectItem value="self_employed">Self-employed</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
+                            <SelectItem value="1">Employee</SelectItem>
+                            <SelectItem value="2">Sole trader</SelectItem>
+                            <SelectItem value="3">Self-employed</SelectItem>
+                            <SelectItem value="4">Other</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -678,18 +678,18 @@ export default function FactFindPersonal() {
                       <div className="space-y-2">
                         <Label className="text-slate-700 font-semibold text-sm">Do you have a will?</Label>
                         <div className="flex gap-3">
-                          {['Yes', 'No'].map(option => (
+                          {[{label: 'Yes', value: '1'}, {label: 'No', value: '2'}].map(option => (
                             <button
-                              key={option}
-                              onClick={() => setFormData({ ...formData, has_will: option })}
+                              key={option.value}
+                              onClick={() => setFormData({ ...formData, has_will: option.value })}
                               className={cn(
                                 "px-4 py-2 rounded-lg border text-sm font-medium transition-all",
-                                formData.has_will === option
+                                formData.has_will === option.value
                                   ? "bg-blue-600 text-white border-blue-600"
                                   : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
                               )}
                             >
-                              {option}
+                              {option.label}
                             </button>
                           ))}
                         </div>
@@ -709,18 +709,18 @@ export default function FactFindPersonal() {
                       <div className="space-y-2">
                         <Label className="text-slate-700 font-semibold text-sm">Testamentary trust?</Label>
                         <div className="flex gap-3">
-                          {['Yes', 'No'].map(option => (
+                          {[{label: 'Yes', value: '1'}, {label: 'No', value: '2'}].map(option => (
                             <button
-                              key={option}
-                              onClick={() => setFormData({ ...formData, testamentary_trust: option })}
+                              key={option.value}
+                              onClick={() => setFormData({ ...formData, testamentary_trust: option.value })}
                               className={cn(
                                 "px-4 py-2 rounded-lg border text-sm font-medium transition-all",
-                                formData.testamentary_trust === option
+                                formData.testamentary_trust === option.value
                                   ? "bg-blue-600 text-white border-blue-600"
                                   : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
                               )}
                             >
-                              {option}
+                              {option.label}
                             </button>
                           ))}
                         </div>
@@ -732,11 +732,11 @@ export default function FactFindPersonal() {
                             <SelectValue placeholder="Select..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="financial">Financial</SelectItem>
-                            <SelectItem value="financial_medical">Financial & Medical</SelectItem>
-                            <SelectItem value="general">General</SelectItem>
-                            <SelectItem value="guardianship">Guardianship</SelectItem>
-                            <SelectItem value="medical">Medical</SelectItem>
+                            <SelectItem value="1">Financial</SelectItem>
+                            <SelectItem value="2">Financial &amp; Medical</SelectItem>
+                            <SelectItem value="3">General</SelectItem>
+                            <SelectItem value="4">Guardianship</SelectItem>
+                            <SelectItem value="5">Medical</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -749,24 +749,24 @@ export default function FactFindPersonal() {
                     <div className="space-y-2">
                       <Label className="text-slate-700 font-semibold text-sm">Receiving Centrelink benefits?</Label>
                       <div className="flex gap-3">
-                        {['Yes', 'No'].map(option => (
+                        {[{label: 'Yes', value: '1'}, {label: 'No', value: '2'}].map(option => (
                           <button
-                            key={option}
-                            onClick={() => setFormData({ ...formData, centrelink_benefits: option })}
+                            key={option.value}
+                            onClick={() => setFormData({ ...formData, centrelink_benefits: option.value })}
                             className={cn(
                               "px-4 py-2 rounded-lg border text-sm font-medium transition-all",
-                              formData.centrelink_benefits === option
+                              formData.centrelink_benefits === option.value
                                 ? "bg-blue-600 text-white border-blue-600"
                                 : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
                             )}
                           >
-                            {option}
+                            {option.label}
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    {formData.centrelink_benefits === 'Yes' && (
+                    {formData.centrelink_benefits === '1' && (
                       <>
                         <div className="space-y-2">
                           <Label className="text-slate-700 font-semibold text-sm">Type of benefit received</Label>
@@ -775,11 +775,11 @@ export default function FactFindPersonal() {
                               <SelectValue placeholder="Select..." />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="age_pension">Age Pension</SelectItem>
-                              <SelectItem value="dva">DVA Pension</SelectItem>
-                              <SelectItem value="disability">Disability support pension</SelectItem>
-                              <SelectItem value="allowance">Allowance</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
+                              <SelectItem value="1">Age Pension</SelectItem>
+                              <SelectItem value="2">DVA Pension</SelectItem>
+                              <SelectItem value="3">Disability support pension</SelectItem>
+                              <SelectItem value="4">Allowance</SelectItem>
+                              <SelectItem value="5">Other</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -787,18 +787,18 @@ export default function FactFindPersonal() {
                         <div className="space-y-2">
                           <Label className="text-slate-700 font-semibold text-sm">Concession cards?</Label>
                           <div className="flex gap-3">
-                            {['Yes', 'No'].map(option => (
+                            {[{label: 'Yes', value: '1'}, {label: 'No', value: '2'}].map(option => (
                               <button
-                                key={option}
-                                onClick={() => setFormData({ ...formData, concession_cards: option })}
+                                key={option.value}
+                                onClick={() => setFormData({ ...formData, concession_cards: option.value })}
                                 className={cn(
                                   "px-4 py-2 rounded-lg border text-sm font-medium transition-all",
-                                  formData.concession_cards === option
+                                  formData.concession_cards === option.value
                                     ? "bg-blue-600 text-white border-blue-600"
                                     : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
                                 )}
                               >
-                                {option}
+                                {option.label}
                               </button>
                             ))}
                           </div>
