@@ -333,33 +333,45 @@ export default function FactFindDependants() {
 
       {/* Hidden Templates */}
       <div id="childTemplate" style={{ display: 'none' }}>
-        <div className="entry border rounded-lg p-4 mb-4">
-          <div className="entry-head flex justify-between items-center mb-4">
-            <div className="entry-title font-bold text-slate-800">Child <span className="idx">1</span></div>
-            <button type="button" className="entry-remove px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 text-sm">Remove</button>
+        <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6">
+          <div className="entry-head flex justify-between items-start mb-6">
+            <div className="entry-title">
+              <h3 className="text-lg font-bold text-slate-900">Child <span className="idx">1</span></h3>
+              <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
+            </div>
+            <button type="button" className="entry-remove inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+              <span>✕</span>
+              <span>Remove</span>
+            </button>
           </div>
-          <div className="form-grid space-y-4">
+          <div className="form-grid space-y-5">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Child name</label>
-                <input type="text" name="child_name" placeholder="Enter child name" className="w-full border border-slate-300 rounded px-3 py-2" />
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Child name *</label>
+                <input type="text" name="child_name" placeholder="e.g. Emma" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Date of birth</label>
-                <input type="date" name="child_dob" className="w-full border border-slate-300 rounded px-3 py-2" />
+                <input type="date" name="child_dob" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Financially dependent?</label>
-              <div className="flex gap-3">
-                <label><input type="radio" name="child_fin_dep__1" value="1" /> Yes</label>
-                <label><input type="radio" name="child_fin_dep__1" value="2" /> No</label>
+            <div className="pt-2">
+              <label className="block text-sm font-semibold text-slate-700 mb-3">Financially dependent?</label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="child_fin_dep__1" value="1" className="w-4 h-4" />
+                  <span className="text-sm text-slate-700">Yes</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="child_fin_dep__1" value="2" className="w-4 h-4" />
+                  <span className="text-sm text-slate-700">No</span>
+                </label>
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Education status</label>
-                <select name="child_edu" className="w-full border border-slate-300 rounded px-3 py-2">
+                <select name="child_edu" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   <option value="">Select...</option>
                   <option value="1">Primary</option>
                   <option value="2">Secondary</option>
@@ -369,43 +381,49 @@ export default function FactFindDependants() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Financial Dependant Age</label>
-                <input type="number" name="child_fin_age" placeholder="Enter age" className="w-full border border-slate-300 rounded px-3 py-2" />
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Expected age of financial dependence</label>
+                <input type="number" name="child_fin_age" placeholder="e.g. 25" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Health issues</label>
-              <input type="text" name="child_health" placeholder="Enter any health issues" className="w-full border border-slate-300 rounded px-3 py-2" />
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Health issues or concerns</label>
+              <input type="text" name="child_health" placeholder="e.g. Asthma, food allergy" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
             </div>
           </div>
         </div>
       </div>
 
       <div id="depTemplate" style={{ display: 'none' }}>
-        <div className="entry border rounded-lg p-4 mb-4">
-          <div className="entry-head flex justify-between items-center mb-4">
-            <div className="entry-title font-bold text-slate-800">Dependant <span className="idx">1</span></div>
-            <button type="button" className="entry-remove px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 text-sm">Remove</button>
+        <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6">
+          <div className="entry-head flex justify-between items-start mb-6">
+            <div className="entry-title">
+              <h3 className="text-lg font-bold text-slate-900">Dependant <span className="idx">1</span></h3>
+              <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
+            </div>
+            <button type="button" className="entry-remove inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+              <span>✕</span>
+              <span>Remove</span>
+            </button>
           </div>
-          <div className="form-grid space-y-4">
+          <div className="form-grid space-y-5">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Name</label>
-                <input type="text" name="dep_name" placeholder="Enter name" className="w-full border border-slate-300 rounded px-3 py-2" />
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Name *</label>
+                <input type="text" name="dep_name" placeholder="e.g. Parent name" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Date of birth</label>
-                <input type="date" name="dep_dob" className="w-full border border-slate-300 rounded px-3 py-2" />
+                <input type="date" name="dep_dob" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Age expected dependant until</label>
-                <input type="number" name="dep_until_age" placeholder="Enter age" className="w-full border border-slate-300 rounded px-3 py-2" />
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Expected age of dependence until</label>
+                <input type="number" name="dep_until_age" placeholder="e.g. 85" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Relationship</label>
-                <select name="dep_relationship" className="w-full border border-slate-300 rounded px-3 py-2">
+                <select name="dep_relationship" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   <option value="">Select...</option>
                   <option value="1">Child</option>
                   <option value="2">Parent</option>
@@ -414,11 +432,17 @@ export default function FactFindDependants() {
                 </select>
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Is there interdependency</label>
-              <div className="flex gap-3">
-                <label><input type="radio" name="dep_interdep" value="1" /> Yes</label>
-                <label><input type="radio" name="dep_interdep" value="2" /> No</label>
+            <div className="pt-2">
+              <label className="block text-sm font-semibold text-slate-700 mb-3">Is there interdependency?</label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="dep_interdep" value="1" className="w-4 h-4" />
+                  <span className="text-sm text-slate-700">Yes</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="dep_interdep" value="2" className="w-4 h-4" />
+                  <span className="text-sm text-slate-700">No</span>
+                </label>
               </div>
             </div>
           </div>
