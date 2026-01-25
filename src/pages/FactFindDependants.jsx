@@ -459,23 +459,23 @@ export default function FactFindDependants() {
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Dependant name</Label>
-                        <Input
-                          value={dependantFormData.name}
-                          onChange={(e) => setDependantFormData({ ...dependantFormData, name: e.target.value })}
-                          placeholder="Enter dependant name"
-                          className="border-slate-300"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Dependant date of birth</Label>
-                        <Input
-                          type="date"
-                          value={dependantFormData.date_of_birth}
-                          onChange={(e) => setDependantFormData({ ...dependantFormData, date_of_birth: e.target.value })}
-                          className="border-slate-300"
-                        />
-                      </div>
+                         <Label className="text-slate-700 font-semibold text-sm">Dependant name</Label>
+                         <Input
+                           value={dependantFormData.dep_name}
+                           onChange={(e) => setDependantFormData({ ...dependantFormData, dep_name: e.target.value })}
+                           placeholder="Enter dependant name"
+                           className="border-slate-300"
+                         />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-slate-700 font-semibold text-sm">Dependant date of birth</Label>
+                         <Input
+                           type="date"
+                           value={dependantFormData.dep_dob}
+                           onChange={(e) => setDependantFormData({ ...dependantFormData, dep_dob: e.target.value })}
+                           className="border-slate-300"
+                         />
+                       </div>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
