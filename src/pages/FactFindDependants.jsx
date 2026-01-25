@@ -158,6 +158,11 @@ export default function FactFindDependants() {
     const newIndex = wrap.querySelectorAll('.entry').length - 1;
     setActiveIndex(newIndex);
     setRenderKey(k => k + 1);
+    if (tab === 'children') {
+      setChildrenCount(newIndex + 1);
+    } else {
+      setDependantsCount(newIndex + 1);
+    }
     updatePills(newIndex);
     showOnlyActiveEntry(newIndex);
     };
