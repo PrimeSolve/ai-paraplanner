@@ -457,6 +457,12 @@ export default function FactFindDependants() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
+          {/* Hidden containers - always rendered so addEntry can find them */}
+          <div id="childrenWrap" className="space-y-4" style={{ display: globalStateRef.current.dependants.children?.length === 0 && currentTab === 'children' ? 'none' : '' }}>
+          </div>
+          <div id="dependantsWrap" className="space-y-4" style={{ display: globalStateRef.current.dependants.dependants_list?.length === 0 && currentTab === 'dependants' ? 'none' : '' }}>
+          </div>
+
           {/* Welcome Screen - Show if no entries exist */}
           {globalStateRef.current.dependants[currentTab === 'children' ? 'children' : 'dependants_list']?.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
@@ -490,11 +496,6 @@ export default function FactFindDependants() {
                 >
                   + Add {currentTab === 'children' ? 'Child' : 'Dependant'}
                 </button>
-              </div>
-
-              {/* Entries Container */}
-              <div id={currentTab === 'children' ? 'childrenWrap' : 'dependantsWrap'} className="space-y-4">
-                {/* Entries will be added here */}
               </div>
             </>
           )}
