@@ -479,10 +479,8 @@ export default function FactFindDependants() {
                               variant="outline"
                               onClick={() => {
                                 setIsAddingChild(false);
-                                setSelectedChildIndex(children.length > 0 ? 0 : null);
-                                if (children.length > 0) {
-                                  setChildFormData(children[0]);
-                                }
+                                setSelectedChildIndex(0);
+                                setChildFormData(children[0]);
                               }}
                               className="border-slate-300 text-slate-700"
                             >
@@ -496,6 +494,113 @@ export default function FactFindDependants() {
                             </Button>
                           </div>
                         )}
+                        </div>
+                        )}
+
+                        {/* Form for adding new child */}
+                        {isAddingChild && (
+                        <div className="space-y-4 border-t pt-4">
+                        <h5 className="font-semibold text-slate-700">New Child</h5>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-slate-700 font-semibold text-sm">Child name</Label>
+                            <Input
+                              value={childFormData.child_name}
+                              onChange={(e) => setChildFormData({ ...childFormData, child_name: e.target.value })}
+                              placeholder="Enter child name"
+                              className="border-slate-300"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-slate-700 font-semibold text-sm">Child date of birth</Label>
+                            <Input
+                              type="date"
+                              value={childFormData.child_dob}
+                              onChange={(e) => setChildFormData({ ...childFormData, child_dob: e.target.value })}
+                              className="border-slate-300"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-slate-700 font-semibold text-sm">Is child financially dependent?</Label>
+                          <div className="flex gap-3">
+                            {[{ label: 'Yes', value: '1' }, { label: 'No', value: '2' }].map(option => (
+                              <button
+                                key={option.value}
+                                onClick={() => setChildFormData({ ...childFormData, child_fin_dep: option.value })}
+                                className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                                  childFormData.child_fin_dep === option.value
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                                }`}
+                              >
+                                {option.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-slate-700 font-semibold text-sm">Education status</Label>
+                            <Select value={childFormData.child_edu} onValueChange={(value) => setChildFormData({ ...childFormData, child_edu: value })}>
+                              <SelectTrigger className="border-slate-300">
+                                <SelectValue placeholder="Select..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">Primary</SelectItem>
+                                <SelectItem value="2">Secondary</SelectItem>
+                                <SelectItem value="3">Tertiary</SelectItem>
+                                <SelectItem value="4">TAFE/Trade</SelectItem>
+                                <SelectItem value="5">Not in education</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-slate-700 font-semibold text-sm">Financial Dependant Age</Label>
+                            <Input
+                              type="number"
+                              value={childFormData.child_fin_age}
+                              onChange={(e) => setChildFormData({ ...childFormData, child_fin_age: e.target.value })}
+                              placeholder="Enter age"
+                              className="border-slate-300"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-slate-700 font-semibold text-sm">Child health issues</Label>
+                          <Input
+                            value={childFormData.child_health}
+                            onChange={(e) => setChildFormData({ ...childFormData, child_health: e.target.value })}
+                            placeholder="Enter any health issues"
+                            className="border-slate-300"
+                          />
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setIsAddingChild(false);
+                              if (children.length > 0) {
+                                setSelectedChildIndex(0);
+                                setChildFormData(children[0]);
+                              }
+                            }}
+                            className="border-slate-300 text-slate-700"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={handleAddChild}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            Add Child
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </CardContent>
