@@ -456,7 +456,7 @@ export default function FactFindDependants() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
-        <div className="max-w-3xl mx-auto space-y-6">
+        <div className="w-full space-y-6">
           {/* Pills Navigation - Horizontal Scrollable */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2">
             <div id={currentTab === 'children' ? 'childPills' : 'dependantPills'} className="flex gap-2">
