@@ -270,12 +270,32 @@ export default function FactFindTrusts() {
       ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
       : null;
 
+    const childrenOptions = factFind?.dependants?.children
+      ?.map((c, i) => `<option value="child-${i}">${c.child_name || `Child ${i + 1}`}</option>`)
+      .join('') || '';
+
+    const dependantsOptions = factFind?.dependants?.dependants_list
+      ?.map((d, i) => `<option value="dependent-${i}">${d.dep_name || `Dependant ${i + 1}`}</option>`)
+      .join('') || '';
+
+    const trustOptions = globalStateRef.current.trusts.trusts
+      .map((t, i) => `<option value="trust-${i}">${t.trust_name || `Trust ${i + 1}`}</option>`)
+      .join('');
+
+    const companyOptions = globalStateRef.current.trusts.companies
+      .map((c, i) => `<option value="company-${i}">${c.company_name || `Company ${i + 1}`}</option>`)
+      .join('');
+
     row.innerHTML = `
       <td class="py-2 px-2">
         <select name="benef_entity" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select entity…</option>
           <option value="client">${clientName}</option>
           ${partnerName ? `<option value="partner">${partnerName}</option>` : ''}
+          ${childrenOptions}
+          ${dependantsOptions}
+          ${trustOptions}
+          ${companyOptions}
         </select>
       </td>
       <td class="py-2 px-2">
@@ -318,12 +338,32 @@ export default function FactFindTrusts() {
       ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
       : null;
 
+    const childrenOptions = factFind?.dependants?.children
+      ?.map((c, i) => `<option value="child-${i}">${c.child_name || `Child ${i + 1}`}</option>`)
+      .join('') || '';
+
+    const dependantsOptions = factFind?.dependants?.dependants_list
+      ?.map((d, i) => `<option value="dependent-${i}">${d.dep_name || `Dependant ${i + 1}`}</option>`)
+      .join('') || '';
+
+    const trustOptions = globalStateRef.current.trusts.trusts
+      .map((t, i) => `<option value="trust-${i}">${t.trust_name || `Trust ${i + 1}`}</option>`)
+      .join('');
+
+    const companyOptions = globalStateRef.current.trusts.companies
+      .map((c, i) => `<option value="company-${i}">${c.company_name || `Company ${i + 1}`}</option>`)
+      .join('');
+
     row.innerHTML = `
       <td class="py-2 px-2">
         <select name="sh_entity" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select entity…</option>
           <option value="client">${clientName}</option>
           ${partnerName ? `<option value="partner">${partnerName}</option>` : ''}
+          ${childrenOptions}
+          ${dependantsOptions}
+          ${trustOptions}
+          ${companyOptions}
         </select>
       </td>
       <td class="py-2 px-2">
