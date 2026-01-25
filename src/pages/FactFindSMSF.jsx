@@ -256,35 +256,53 @@ export default function FactFindSMSF() {
       : 'Client';
 
     row.innerHTML = `
-      <select name="acct_owner" class="px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <option value="">Select entity…</option>
-        <option value="client">${clientName}</option>
-      </select>
-      <select name="tax_env" class="px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <option value="">Select…</option>
-        <option value="1">Superannuation</option>
-        <option value="2">Pension</option>
-      </select>
-      <div class="flex items-center">
-        <span class="text-slate-500 mr-1 text-xs">$</span>
-        <input type="number" name="tax_free_amt" placeholder="0.00" step="0.01" min="0" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <div class="px-1">
+        <select name="acct_owner" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="">Select…</option>
+          <option value="client">${clientName}</option>
+        </select>
       </div>
-      <input type="text" name="tax_free_pct" placeholder="e.g. 30%" class="px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      <div class="flex items-center">
-        <span class="text-slate-500 mr-1 text-xs">$</span>
-        <input type="number" name="unp_amt" placeholder="0.00" step="0.01" min="0" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <div class="px-1">
+        <select name="tax_env" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="">Select…</option>
+          <option value="1">Superannuation</option>
+          <option value="2">Pension</option>
+        </select>
       </div>
-      <select name="super_guarantee" class="px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <option value="">Select…</option>
-        <option value="1">Yes</option>
-        <option value="2">No</option>
-      </select>
-      <input type="text" name="salary_sacrifice" placeholder="" class="px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      <div class="flex items-center">
-        <span class="text-slate-500 mr-1 text-xs">$</span>
-        <input type="number" name="after_tax" placeholder="0.00" step="0.01" min="0" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <div class="px-1">
+        <div class="relative">
+          <span class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+          <input type="number" name="tax_free_amt" placeholder="0.00" step="0.01" min="0" class="w-full pl-5 pr-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+        </div>
       </div>
-      <button type="button" class="remove-acct px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium whitespace-nowrap">Remove</button>
+      <div class="px-1">
+        <input type="text" name="tax_free_pct" placeholder="e.g. 30%" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+      </div>
+      <div class="px-1">
+        <div class="relative">
+          <span class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+          <input type="number" name="unp_amt" placeholder="0.00" step="0.01" min="0" class="w-full pl-5 pr-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+        </div>
+      </div>
+      <div class="px-1">
+        <select name="super_guarantee" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="">Select…</option>
+          <option value="1">Yes</option>
+          <option value="2">No</option>
+        </select>
+      </div>
+      <div class="px-1">
+        <input type="text" name="salary_sacrifice" placeholder="" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+      </div>
+      <div class="px-1">
+        <div class="relative">
+          <span class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+          <input type="number" name="after_tax" placeholder="0.00" step="0.01" min="0" class="w-full pl-5 pr-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+        </div>
+      </div>
+      <div class="px-1 text-center">
+        <button type="button" class="remove-acct text-red-500 hover:text-red-700 text-xs font-medium">Remove</button>
+      </div>
     `;
 
     const removeBtn = row.querySelector('.remove-acct');
