@@ -203,6 +203,11 @@ export default function FactFindDependants() {
               {!showChildForm && children.length === 0 && (
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-8 text-center">
+                    <div className="flex justify-center mb-4">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-pink-100 flex items-center justify-center">
+                        <Baby className="w-8 h-8 text-blue-600" />
+                      </div>
+                    </div>
                     <h4 className="font-bold text-slate-800 mb-2 text-lg">Do you have any children?</h4>
                     <p className="text-slate-600 mb-6">Add details about your children to help us understand your family situation.</p>
                     <Button
@@ -403,6 +408,11 @@ export default function FactFindDependants() {
               {!showDependantForm && dependants.length === 0 && (
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-8 text-center">
+                    <div className="flex justify-center mb-4">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
+                        <Users className="w-8 h-8 text-purple-600" />
+                      </div>
+                    </div>
                     <h4 className="font-bold text-slate-800 mb-2 text-lg">Do you have any dependants?</h4>
                     <p className="text-slate-600 mb-6">Add details about other financial dependants, such as parents or relatives.</p>
                     <Button
