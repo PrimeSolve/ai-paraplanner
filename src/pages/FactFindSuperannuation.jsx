@@ -962,12 +962,24 @@ export default function FactFindSuperannuation() {
             <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
               <h4 className="text-sm font-semibold text-yellow-700 mb-4">⚙️ Settings</h4>
               <div className="grid md:grid-cols-2 gap-4">
-                <input type="text" name="p_index_rate" placeholder="Index rate" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
-                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="p_purchase" placeholder="Purchase price" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Index rate</label>
+                  <input type="text" name="p_index_rate" placeholder="" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Purchase price</label>
+                  <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="p_purchase" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4 mt-4">
-                <input type="date" name="p_start" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Start date" />
-                <input type="text" name="p_term" placeholder="Term" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Start date</label>
+                  <input type="date" name="p_start" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Term</label>
+                  <input type="text" name="p_term" placeholder="" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                </div>
               </div>
             </div>
             <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
