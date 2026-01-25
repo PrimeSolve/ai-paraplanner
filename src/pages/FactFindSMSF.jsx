@@ -261,7 +261,7 @@ export default function FactFindSMSF() {
        <select name="acct_owner" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
          <option value="">Select…</option>
          <option value="client">${clientName}</option>
-         ${partnerOption}
+         ${partnerName ? `<option value="partner">${partnerName}</option>` : ''}
        </select>
      </td>
      <td class="py-2 px-2">
