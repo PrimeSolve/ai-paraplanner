@@ -82,6 +82,11 @@ export default function FactFindDependants() {
       return;
     }
 
+    if (!factFind?.id) {
+      toast.error('Unable to save data');
+      return;
+    }
+
     try {
       const isNewChild = selectedChildIndex >= children.length;
       let updated = [...children];
