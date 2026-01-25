@@ -249,11 +249,25 @@ export default function FactFindTrusts() {
   const createBeneficiaryRow = useCallback((card, data = {}) => {
     const row = document.createElement('div');
     row.className = 'benef-row flex gap-2 items-end pb-2';
+    
+    const clientName = factFind?.personal?.client?.first_name 
+      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
+      : 'Client';
+    
+    const trustOptions = globalStateRef.current.trusts.trusts
+      .map((t, i) => `<option value="trust-${i}">${t.trust_name || `Trust ${i + 1}`}</option>`)
+      .join('');
+    
+    const companyOptions = globalStateRef.current.trusts.companies
+      .map((c, i) => `<option value="company-${i}">${c.company_name || `Company ${i + 1}`}</option>`)
+      .join('');
+    
     row.innerHTML = `
       <select name="benef_entity" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         <option value="">Select entity…</option>
-        <option value="client">Client</option>
-        <option value="partner">Partner</option>
+        <option value="client">${clientName}</option>
+        ${trustOptions}
+        ${companyOptions}
       </select>
       <input type="text" name="benef_entitlement" placeholder="e.g. 25% or fixed amount" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
       <button type="button" class="remove-benef px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium">Remove</button>
@@ -265,7 +279,6 @@ export default function FactFindTrusts() {
       row.remove();
     };
 
-    // Fill data if provided
     if (data?.benef_entity) {
       row.querySelector('select[name="benef_entity"]').value = data.benef_entity;
     }
@@ -274,7 +287,7 @@ export default function FactFindTrusts() {
     }
 
     return row;
-  }, []);
+  }, [factFind]);
 
   // ============================================
   // CREATE SHAREHOLDER ROW
@@ -283,11 +296,25 @@ export default function FactFindTrusts() {
   const createShareholderRow = useCallback((card, data = {}) => {
     const row = document.createElement('div');
     row.className = 'sh-row flex gap-2 items-end pb-2';
+    
+    const clientName = factFind?.personal?.client?.first_name 
+      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
+      : 'Client';
+    
+    const trustOptions = globalStateRef.current.trusts.trusts
+      .map((t, i) => `<option value="trust-${i}">${t.trust_name || `Trust ${i + 1}`}</option>`)
+      .join('');
+    
+    const companyOptions = globalStateRef.current.trusts.companies
+      .map((c, i) => `<option value="company-${i}">${c.company_name || `Company ${i + 1}`}</option>`)
+      .join('');
+    
     row.innerHTML = `
       <select name="sh_entity" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         <option value="">Select entity…</option>
-        <option value="client">Client</option>
-        <option value="partner">Partner</option>
+        <option value="client">${clientName}</option>
+        ${trustOptions}
+        ${companyOptions}
       </select>
       <input type="text" name="sh_pct" placeholder="e.g. 25%" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
       <button type="button" class="remove-sh px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium">Remove</button>
@@ -299,7 +326,6 @@ export default function FactFindTrusts() {
       row.remove();
     };
 
-    // Fill data if provided
     if (data?.sh_entity) {
       row.querySelector('select[name="sh_entity"]').value = data.sh_entity;
     }
@@ -308,7 +334,7 @@ export default function FactFindTrusts() {
     }
 
     return row;
-  }, []);
+  }, [factFind]);
 
   // ============================================
   // ADD ENTRY
