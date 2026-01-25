@@ -300,7 +300,43 @@ export default function FactFindDependants() {
           {/* Children Tab */}
           {activeTab === 'children' && (
             <>
-              {!showChildForm && children.length === 0 && (
+              {children.length > 0 && (
+                <div className="flex gap-2 mb-4 flex-wrap">
+                  {children.map((child, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleSelectChild(index)}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                        selectedChildIndex === index
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {child.child_name || `Child ${index + 1}`}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => {
+                      setSelectedChildIndex(null);
+                      setChildFormData({
+                        child_name: '',
+                        child_dob: '',
+                        child_fin_dep: '',
+                        child_edu: '',
+                        child_fin_age: '',
+                        child_health: ''
+                      });
+                      setShowChildForm(true);
+                    }}
+                    className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium"
+                  >
+                    <Plus className="w-4 h-4 inline mr-2" />
+                    Add Child
+                  </button>
+                </div>
+              )}
+
+              {children.length === 0 && !showChildForm && (
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-8 text-center">
                     <div className="flex justify-center mb-4">
