@@ -117,13 +117,13 @@ export default function FactFindDependants() {
     });
   };
 
-  const showOnlyActiveEntry = () => {
+  const showOnlyActiveEntry = (index = activeIndex) => {
     const wrap = wrapForTab(currentTab);
     if (!wrap) return;
 
     const cards = [...wrap.querySelectorAll('.entry')];
     cards.forEach((card, i) => {
-      card.style.display = i === activeIndex ? '' : 'none';
+      card.style.display = i === index ? '' : 'none';
     });
   };
 
