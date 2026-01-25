@@ -142,6 +142,7 @@ export default function FactFindDependants() {
       });
 
       setSelectedChildIndex(null);
+      setIsAddingChild(false);
       toast.success('Child removed');
     } catch (error) {
       toast.error('Failed to delete child');
