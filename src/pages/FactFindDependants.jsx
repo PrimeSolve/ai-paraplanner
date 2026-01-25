@@ -82,7 +82,7 @@ export default function FactFindDependants() {
       return;
     }
 
-    if (!factFind?.id) {
+    if (!factFind || !factFind.id) {
       toast.error('Unable to save data');
       return;
     }
@@ -98,7 +98,7 @@ export default function FactFindDependants() {
       }
 
       // Auto-save to database
-      const sectionsCompleted = factFind.sections_completed || [];
+      const sectionsCompleted = (factFind.sections_completed || []);
       if (!sectionsCompleted.includes('dependants')) {
         sectionsCompleted.push('dependants');
       }
