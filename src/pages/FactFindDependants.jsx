@@ -321,6 +321,7 @@ export default function FactFindDependants() {
                   <button
                     onClick={() => {
                       setSelectedChildIndex(null);
+                      setIsAddingChild(true);
                       setChildFormData({
                         child_name: '',
                         child_dob: '',
