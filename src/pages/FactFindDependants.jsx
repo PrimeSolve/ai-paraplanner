@@ -411,15 +411,26 @@ export default function FactFindDependants() {
                         <h5 className="font-semibold text-slate-700">
                           {isAddingChild ? 'New Child' : `Child ${selectedChildIndex + 1}`}
                         </h5>
-                        {!isAddingChild && (
-                          <Button
-                            onClick={() => handleDeleteChild(selectedChildIndex)}
-                            variant="destructive"
-                            size="sm"
-                          >
-                            Remove
-                          </Button>
-                        )}
+                        <div className="flex gap-2">
+                          {!isAddingChild && (
+                            <Button
+                              onClick={() => handleDeleteChild(selectedChildIndex)}
+                              variant="destructive"
+                              size="sm"
+                            >
+                              Remove
+                            </Button>
+                          )}
+                          {isAddingChild && (
+                            <Button
+                              onClick={handleAddChild}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                              size="sm"
+                            >
+                              Add Child
+                            </Button>
+                          )}
+                        </div>
                       </div>
 
                       <div className="grid md:grid-cols-2 gap-4">
