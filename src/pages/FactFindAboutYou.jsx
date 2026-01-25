@@ -31,6 +31,7 @@ export default function FactFindPersonal() {
   const [activeSubSection, setActiveSubSection] = useState('basic');
   const [user, setUser] = useState(null);
   const [hasPartner, setHasPartner] = useState(false);
+  const [sameAddressAsClient, setSameAddressAsClient] = useState(false);
   
   const initialFormState = {
     first_name: '',
@@ -421,6 +422,39 @@ export default function FactFindPersonal() {
 
                 {activeSubSection === 'contact' && (
                   <>
+                    {activeTab === 'partner' && (
+                      <div className="space-y-2 mb-4">
+                        <Label className="text-slate-700 font-semibold text-sm">Same address as client?</Label>
+                        <div className="flex gap-3">
+                          {[{label: 'Yes', value: true}, {label: 'No', value: false}].map(option => (
+                            <button
+                              key={option.label}
+                              onClick={() => {
+                                setSameAddressAsClient(option.value);
+                                if (option.value) {
+                                  setPartnerData({
+                                    ...partnerData,
+                                    address: clientData.address,
+                                    suburb: clientData.suburb,
+                                    state: clientData.state,
+                                    country: clientData.country,
+                                    postcode: clientData.postcode
+                                  });
+                                }
+                              }}
+                              className={cn(
+                                "px-4 py-2 rounded-lg border text-sm font-medium transition-all",
+                                sameAddressAsClient === option.value
+                                  ? "bg-blue-600 text-white border-blue-600"
+                                  : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
+                              )}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="space-y-2">
                       <Label className="text-slate-700 font-semibold text-sm">Street address</Label>
                       <Input
@@ -428,61 +462,72 @@ export default function FactFindPersonal() {
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                         placeholder="Enter street address"
                         className="border-slate-300"
+                        disabled={activeTab === 'partner' && sameAddressAsClient}
                       />
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Suburb</Label>
-                        <Input
-                          value={formData.suburb}
-                          onChange={(e) => setFormData({ ...formData, suburb: e.target.value })}
-                          placeholder="Enter suburb"
-                          className="border-slate-300"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">State</Label>
-                        <Select value={formData.state} onValueChange={(value) => setFormData({ ...formData, state: value })}>
-                          <SelectTrigger className="border-slate-300">
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">ACT</SelectItem>
-                            <SelectItem value="2">NSW</SelectItem>
-                            <SelectItem value="3">NT</SelectItem>
-                            <SelectItem value="4">QLD</SelectItem>
-                            <SelectItem value="5">SA</SelectItem>
-                            <SelectItem value="6">TAS</SelectItem>
-                            <SelectItem value="7">VIC</SelectItem>
-                            <SelectItem value="8">WA</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 font-semibold text-sm">Suburb</Label>
+                      <Input
+                        value={formData.suburb}
+                        onChange={(e) => setFormData({ ...formData, suburb: e.target.value })}
+                        placeholder="Enter suburb"
+                        className="border-slate-300"
+                        disabled={activeTab === 'partner' && sameAddressAsClient}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 font-semibold text-sm">State</Label>
+                      <Select 
+                        value={formData.state} 
+                        onValueChange={(value) => setFormData({ ...formData, state: value })}
+                        disabled={activeTab === 'partner' && sameAddressAsClient}
+                      >
+                        <SelectTrigger className="border-slate-300">
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">ACT</SelectItem>
+                          <SelectItem value="2">NSW</SelectItem>
+                          <SelectItem value="3">NT</SelectItem>
+                          <SelectItem value="4">QLD</SelectItem>
+                          <SelectItem value="5">SA</SelectItem>
+                          <SelectItem value="6">TAS</SelectItem>
+                          <SelectItem value="7">VIC</SelectItem>
+                          <SelectItem value="8">WA</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Country</Label>
-                        <Select value={formData.country} onValueChange={(value) => setFormData({ ...formData, country: value })}>
-                          <SelectTrigger className="border-slate-300">
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Australia">Australia</SelectItem>
-                            <SelectItem value="New Zealand">New Zealand</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Postal code</Label>
-                        <Input
-                          value={formData.postcode}
-                          onChange={(e) => setFormData({ ...formData, postcode: e.target.value })}
-                          placeholder="Enter postcode"
-                          className="border-slate-300"
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 font-semibold text-sm">Country</Label>
+                      <Select 
+                        value={formData.country} 
+                        onValueChange={(value) => setFormData({ ...formData, country: value })}
+                        disabled={activeTab === 'partner' && sameAddressAsClient}
+                      >
+                        <SelectTrigger className="border-slate-300">
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Australia">Australia</SelectItem>
+                          <SelectItem value="New Zealand">New Zealand</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 font-semibold text-sm">Postal code</Label>
+                      <Input
+                        value={formData.postcode}
+                        onChange={(e) => setFormData({ ...formData, postcode: e.target.value })}
+                        placeholder="Enter postcode"
+                        className="border-slate-300"
+                        disabled={activeTab === 'partner' && sameAddressAsClient}
+                      />
+                    </div>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
