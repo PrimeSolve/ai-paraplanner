@@ -643,10 +643,32 @@ export default function FactFindTrusts() {
                 {/* Beneficiaries Section */}
                 <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
                 <h4 className="text-sm font-semibold text-purple-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-purple-600 rounded"></span>👥 Trustee Beneficiaries</h4>
-              <div className="benef-list space-y-2 mb-3">
-                {/* Beneficiary rows go here */}
-              </div>
-              <button type="button" class="add-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
+                
+                <div className="benef-container">
+                  {/* Table with headers */}
+                  <div className="benef-list-table mb-3 overflow-x-auto">
+                    <table className="w-full text-xs border-collapse min-w-[500px]">
+                      <thead>
+                        <tr className="border-b border-purple-200">
+                          <th className="text-left py-2 px-2 font-semibold text-slate-600">Beneficiary</th>
+                          <th className="text-left py-2 px-2 font-semibold text-slate-600">Entitlement</th>
+                          <th className="w-16"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="benef-list">
+                        {/* Beneficiary rows go here */}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Empty state */}
+                  <div className="benef-list-empty text-center py-4">
+                    <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
+                  </div>
+
+                  {/* Add button */}
+                  <button type="button" className="add-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
+                </div>
             </div>
           </div>
         </div>
@@ -736,11 +758,33 @@ export default function FactFindTrusts() {
               {/* Shareholders Section */}
               <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
               <h4 className="text-sm font-semibold text-orange-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-orange-600 rounded"></span>📊 Shareholders</h4>
-              <div className="sh-list space-y-2 mb-3">
-                {/* Shareholder rows go here */}
+
+              <div className="sh-container">
+                {/* Table with headers */}
+                <div className="sh-list-table mb-3 overflow-x-auto">
+                  <table className="w-full text-xs border-collapse min-w-[500px]">
+                    <thead>
+                      <tr className="border-b border-orange-200">
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Shareholder</th>
+                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Percentage</th>
+                        <th className="w-16"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="sh-list">
+                      {/* Shareholder rows go here */}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Empty state */}
+                <div className="sh-list-empty text-center py-4">
+                  <p className="text-sm text-slate-600 mb-3">No shareholders added yet</p>
+                </div>
+
+                {/* Add button */}
+                <button type="button" className="add-shareholder px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add shareholder</button>
               </div>
-              <button type="button" className="add-shareholder px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add shareholder</button>
-            </div>
+              </div>
           </div>
         </div>
       </div>
