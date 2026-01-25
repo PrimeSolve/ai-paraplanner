@@ -926,8 +926,14 @@ export default function FactFindSuperannuation() {
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4 mt-4">
-                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="p_balance" placeholder="Balance" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
-                <input type="text" name="p_provider" placeholder="Provider" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Balance</label>
+                  <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="p_balance" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Provider</label>
+                  <input type="text" name="p_provider" placeholder="" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                </div>
               </div>
             </div>
             <div className="bg-green-50 rounded-lg p-4 border border-green-200">
