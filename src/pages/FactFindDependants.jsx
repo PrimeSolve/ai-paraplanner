@@ -480,29 +480,29 @@ export default function FactFindDependants() {
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Age they are expected to be dependant until</Label>
-                        <Input
-                          type="number"
-                          value={dependantFormData.dependent_until_age}
-                          onChange={(e) => setDependantFormData({ ...dependantFormData, dependent_until_age: e.target.value })}
-                          placeholder="Enter age"
-                          className="border-slate-300"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Dependant relationship</Label>
-                        <Select value={dependantFormData.relationship} onValueChange={(value) => setDependantFormData({ ...dependantFormData, relationship: value })}>
-                          <SelectTrigger className="border-slate-300">
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="child">Child</SelectItem>
-                            <SelectItem value="parent">Parent</SelectItem>
-                            <SelectItem value="relative">Relative</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                         <Label className="text-slate-700 font-semibold text-sm">Age expected dependant until</Label>
+                         <Input
+                           type="number"
+                           value={dependantFormData.dep_until_age}
+                           onChange={(e) => setDependantFormData({ ...dependantFormData, dep_until_age: e.target.value })}
+                           placeholder="Enter age"
+                           className="border-slate-300"
+                         />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-slate-700 font-semibold text-sm">Dependant relationship</Label>
+                         <Select value={dependantFormData.dep_relationship} onValueChange={(value) => setDependantFormData({ ...dependantFormData, dep_relationship: value })}>
+                           <SelectTrigger className="border-slate-300">
+                             <SelectValue placeholder="Select..." />
+                           </SelectTrigger>
+                           <SelectContent>
+                             <SelectItem value="1">Child</SelectItem>
+                             <SelectItem value="2">Parent</SelectItem>
+                             <SelectItem value="3">Relative</SelectItem>
+                             <SelectItem value="4">Other</SelectItem>
+                           </SelectContent>
+                         </Select>
+                       </div>
                     </div>
 
                     <div className="space-y-2">
