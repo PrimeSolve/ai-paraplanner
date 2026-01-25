@@ -253,23 +253,23 @@ export default function FactFindDependants() {
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Child name</Label>
-                        <Input
-                          value={childFormData.name}
-                          onChange={(e) => setChildFormData({ ...childFormData, name: e.target.value })}
-                          placeholder="Enter child name"
-                          className="border-slate-300"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Child date of birth</Label>
-                        <Input
-                          type="date"
-                          value={childFormData.date_of_birth}
-                          onChange={(e) => setChildFormData({ ...childFormData, date_of_birth: e.target.value })}
-                          className="border-slate-300"
-                        />
-                      </div>
+                         <Label className="text-slate-700 font-semibold text-sm">Child name</Label>
+                         <Input
+                           value={childFormData.child_name}
+                           onChange={(e) => setChildFormData({ ...childFormData, child_name: e.target.value })}
+                           placeholder="Enter child name"
+                           className="border-slate-300"
+                         />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-slate-700 font-semibold text-sm">Child date of birth</Label>
+                         <Input
+                           type="date"
+                           value={childFormData.child_dob}
+                           onChange={(e) => setChildFormData({ ...childFormData, child_dob: e.target.value })}
+                           className="border-slate-300"
+                         />
+                       </div>
                     </div>
 
                     <div className="space-y-2">
