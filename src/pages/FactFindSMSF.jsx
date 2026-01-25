@@ -349,24 +349,34 @@ export default function FactFindSMSF() {
       .join('') || '';
 
     row.innerHTML = `
-      <select name="benef_account" class="px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <option value="">Select…</option>
-      </select>
-      <select name="benef_who" class="px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <option value="">Select entity…</option>
-        <option value="client">${clientName}</option>
-        ${childrenOptions}
-        ${dependantsOptions}
-      </select>
-      <select name="benef_type" class="px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <option value="">Select…</option>
-        <option value="1">Binding</option>
-        <option value="2">Non binding</option>
-        <option value="3">Reversionary</option>
-        <option value="4">Not sure</option>
-      </select>
-      <input type="text" name="benef_entitlement" placeholder="e.g. 50%" class="px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      <button type="button" class="remove-benef px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium whitespace-nowrap">Remove</button>
+      <div class="px-1">
+        <select name="benef_account" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="">Select…</option>
+        </select>
+      </div>
+      <div class="px-1">
+        <select name="benef_who" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="">Select entity…</option>
+          <option value="client">${clientName}</option>
+          ${childrenOptions}
+          ${dependantsOptions}
+        </select>
+      </div>
+      <div class="px-1">
+        <select name="benef_type" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="">Select…</option>
+          <option value="1">Binding</option>
+          <option value="2">Non binding</option>
+          <option value="3">Reversionary</option>
+          <option value="4">Not sure</option>
+        </select>
+      </div>
+      <div class="px-1">
+        <input type="text" name="benef_entitlement" placeholder="e.g. 50%" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+      </div>
+      <div class="px-1 text-center">
+        <button type="button" class="remove-benef text-red-500 hover:text-red-700 text-xs font-medium">Remove</button>
+      </div>
     `;
 
     const removeBtn = row.querySelector('.remove-benef');
