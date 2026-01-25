@@ -527,6 +527,7 @@ export default function FactFindDependants() {
                   <button
                     onClick={() => {
                       setSelectedDependantIndex(null);
+                      setIsAddingDependant(true);
                       setDependantFormData({
                         dep_name: '',
                         dep_dob: '',
