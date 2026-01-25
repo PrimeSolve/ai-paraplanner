@@ -648,8 +648,8 @@ export default function FactFindTrusts() {
 
           <div className="space-y-6">
             {/* Trust Details Section */}
-            <div>
-              <h4 className="text-sm font-semibold text-slate-700 mb-4">🏛️ Trust Details</h4>
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <h4 className="text-sm font-semibold text-blue-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-blue-600 rounded"></span>🏛️ Trust Details</h4>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Trust name</label>
@@ -666,12 +666,12 @@ export default function FactFindTrusts() {
                     <option value="5">Other</option>
                   </select>
                 </div>
-              </div>
-            </div>
+                </div>
+                </div>
 
-            {/* Beneficiaries Section */}
-            <div>
-              <h4 className="text-sm font-semibold text-slate-700 mb-4">👥 Trustee Beneficiaries</h4>
+                {/* Beneficiaries Section */}
+                <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                <h4 className="text-sm font-semibold text-purple-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-purple-600 rounded"></span>👥 Trustee Beneficiaries</h4>
               <div className="benef-list space-y-2 mb-3">
                 {/* Beneficiary rows go here */}
               </div>
@@ -693,8 +693,8 @@ export default function FactFindTrusts() {
 
           <div className="space-y-6">
             {/* Company Details Section */}
-            <div>
-              <h4 className="text-sm font-semibold text-slate-700 mb-4">🏢 Company Details</h4>
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <h4 className="text-sm font-semibold text-blue-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-blue-600 rounded"></span>🏢 Company Details</h4>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Company name</label>
@@ -760,11 +760,11 @@ export default function FactFindTrusts() {
                   </div>
                 </div>
               </div>
-            </div>
+              </div>
 
-            {/* Shareholders Section */}
-            <div>
-              <h4 className="text-sm font-semibold text-slate-700 mb-4">📊 Shareholders</h4>
+              {/* Shareholders Section */}
+              <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+              <h4 className="text-sm font-semibold text-orange-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-orange-600 rounded"></span>📊 Shareholders</h4>
               <div className="sh-list space-y-2 mb-3">
                 {/* Shareholder rows go here */}
               </div>
