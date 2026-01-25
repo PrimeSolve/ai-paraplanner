@@ -237,12 +237,12 @@ export default function FactFindDependants() {
                           setShowChildForm(false);
                           setEditingChildIndex(null);
                           setChildFormData({
-                            name: '',
-                            date_of_birth: '',
-                            financially_dependent: '',
-                            education_status: '',
-                            dependent_age: '',
-                            health_issues: ''
+                            child_name: '',
+                            child_dob: '',
+                            child_fin_dep: '',
+                            child_edu: '',
+                            child_fin_age: '',
+                            child_health: ''
                           });
                         }}
                         className="border-slate-300"
