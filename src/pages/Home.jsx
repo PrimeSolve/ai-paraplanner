@@ -20,7 +20,25 @@ export default function Home() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
         
-        // Check if there's an ID in the URL
+        // Role-based routing
+        if (currentUser.role === 'admin') {
+          window.location.href = createPageUrl('AdminDashboard');
+          return;
+        }
+        
+        // Check for adviser role (stored in custom user field)
+        if (currentUser.user_type === 'adviser') {
+          window.location.href = createPageUrl('AdviserDashboard');
+          return;
+        }
+        
+        // Check for advice group role
+        if (currentUser.user_type === 'advice_group') {
+          window.location.href = createPageUrl('AdviceGroupDashboard');
+          return;
+        }
+        
+        // Default: client portal - continue loading fact find
         const urlParams = new URLSearchParams(window.location.search);
         const factFindId = urlParams.get('id');
         
