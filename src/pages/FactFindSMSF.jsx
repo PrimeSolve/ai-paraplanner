@@ -244,7 +244,10 @@ export default function FactFindSMSF() {
 
   const createAccountRow = useCallback((card, data = {}) => {
     const row = document.createElement('div');
-    row.className = 'acct-row grid grid-cols-9 gap-2 items-center pb-2 border-b border-slate-200 last:border-b-0';
+    row.className = 'acct-row items-center py-2 border-b border-slate-200 last:border-b-0';
+    row.style.display = 'grid';
+    row.style.gridTemplateColumns = 'repeat(9, minmax(0, 1fr))';
+    row.style.gap = '0.5rem';
 
     const clientName = factFind?.personal?.client?.first_name 
       ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
