@@ -203,6 +203,12 @@ export default function FactFindTrusts() {
             benefContainer.appendChild(row);
           });
         }
+        const benefTable = card.querySelector('.benef-list-table');
+        const benefEmpty = card.querySelector('.benef-list-empty');
+        const benefBtn = card.querySelector('.add-benef');
+        benefTable?.classList.remove('hidden');
+        benefEmpty?.classList.add('hidden');
+        benefBtn?.classList.remove('hidden');
       }
     } else {
       const nameInput = card.querySelector('input[name="company_name"]');
@@ -238,6 +244,12 @@ export default function FactFindTrusts() {
             shContainer.appendChild(row);
           });
         }
+        const shTable = card.querySelector('.sh-list-table');
+        const shEmpty = card.querySelector('.sh-list-empty');
+        const shBtn = card.querySelector('.add-shareholder');
+        shTable?.classList.remove('hidden');
+        shEmpty?.classList.add('hidden');
+        shBtn?.classList.remove('hidden');
       }
     }
   }, []);
