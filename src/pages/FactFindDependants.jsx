@@ -217,6 +217,11 @@ export default function FactFindDependants() {
   };
 
   const handleDeleteDependant = async (index) => {
+    if (!factFind?.id) {
+      toast.error('Unable to save data');
+      return;
+    }
+
     try {
       const updated = dependants.filter((_, i) => i !== index);
       setDependants(updated);
