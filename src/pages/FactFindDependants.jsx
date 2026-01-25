@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, MessageSquare, RefreshCw, Info, Plus, Trash2, Edit2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, MessageSquare, RefreshCw, Info, Plus, Trash2, Edit2, Baby, Users } from 'lucide-react';
 
 export default function FactFindDependants() {
   const navigate = useNavigate();
@@ -351,10 +351,14 @@ export default function FactFindDependants() {
                       <Card key={index} className="border-slate-200 shadow-sm">
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="font-bold text-slate-800">Child {index + 1}</span>
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <Baby className="w-5 h-5 text-blue-600" />
                               </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="font-bold text-slate-800">Child {index + 1}</span>
+                                </div>
                               <div className="space-y-1 text-sm text-slate-600">
                                 <p><strong>Name:</strong> {child.name}</p>
                                 {child.date_of_birth && <p><strong>DOB:</strong> {child.date_of_birth}</p>}
@@ -364,7 +368,8 @@ export default function FactFindDependants() {
                                 {child.health_issues && <p><strong>Health Issues:</strong> {child.health_issues}</p>}
                               </div>
                             </div>
-                            <div className="flex gap-2">
+                            </div>
+                            <div className="flex gap-2 ml-2">
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -534,10 +539,14 @@ export default function FactFindDependants() {
                       <Card key={index} className="border-slate-200 shadow-sm">
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="font-bold text-slate-800">Dependant {index + 1}</span>
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                <Users className="w-5 h-5 text-purple-600" />
                               </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="font-bold text-slate-800">Dependant {index + 1}</span>
+                                </div>
                               <div className="space-y-1 text-sm text-slate-600">
                                 <p><strong>Name:</strong> {dep.name}</p>
                                 {dep.date_of_birth && <p><strong>DOB:</strong> {dep.date_of_birth}</p>}
@@ -546,7 +555,8 @@ export default function FactFindDependants() {
                                 {dep.interdependency && <p><strong>Interdependency:</strong> {dep.interdependency}</p>}
                               </div>
                             </div>
-                            <div className="flex gap-2">
+                            </div>
+                            <div className="flex gap-2 ml-2">
                               <Button
                                 variant="outline"
                                 size="sm"
