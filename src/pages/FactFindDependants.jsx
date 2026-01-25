@@ -366,12 +366,23 @@ export default function FactFindDependants() {
                       <h4 className="font-bold text-slate-800">
                         {selectedChildIndex !== null ? 'Edit Child' : 'Child Information'}
                       </h4>
+                      {selectedChildIndex !== null && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteChild(selectedChildIndex)}
+                          className="border-red-300 text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
                           setShowChildForm(false);
-                          setEditingChildIndex(null);
+                          setSelectedChildIndex(null);
                           setChildFormData({
                             child_name: '',
                             child_dob: '',
