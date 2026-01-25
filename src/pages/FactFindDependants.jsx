@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
@@ -16,7 +16,6 @@ export default function FactFindDependants() {
   const [saving, setSaving] = useState(false);
   const [currentTab, setCurrentTab] = useState('children');
   const [activeIndex, setActiveIndex] = useState(0);
-  const [renderKey, setRenderKey] = useState(0);
   const [childrenCount, setChildrenCount] = useState(0);
   const [dependantsCount, setDependantsCount] = useState(0);
 
@@ -30,69 +29,156 @@ export default function FactFindDependants() {
     }
   });
 
-  const wrapForTab = (tab) => {
+  // ============================================
+  // CORE DOM MANIPULATION FUNCTIONS
+  // ============================================
+
+  const wrapForTab = useCallback((tab) => {
     const id = tab === 'children' ? 'childrenWrap' : 'dependantsWrap';
     return document.getElementById(id);
-  };
+  }, []);
 
-  const cloneTemplateDiv = (id) => {
+  const cloneTemplateDiv = useCallback((id) => {
     const src = document.getElementById(id);
+    if (!src) {
+      console.error(`Template not found: ${id}`);
+      return null;
+    }
     const tmp = document.createElement('div');
-    tmp.innerHTML = (src?.innerHTML || '').trim();
+    tmp.innerHTML = (src.innerHTML || '').trim();
     return tmp.firstElementChild;
-  };
+  }, []);
 
-  const readTabToArray = (tab) => {
+  // ============================================
+  // READ DATA FROM DOM
+  // ============================================
+
+  const readTabToArray = useCallback((tab) => {
     const wrap = wrapForTab(tab);
     if (!wrap) return [];
-    
+
     const cards = [...wrap.querySelectorAll('.entry')];
-    return cards.map(card => {
+    return cards.map((card) => {
       const data = {};
       const inputs = card.querySelectorAll('input, select, textarea');
+      
       inputs.forEach(input => {
-        if (input.type === 'radio' || input.type === 'checkbox') {
-          if (input.checked) data[input.name] = input.value;
+        // Handle radio buttons - normalize the name by removing suffix
+        if (input.type === 'radio') {
+          const baseName = input.name.replace(/__\d+$/, '');
+          if (input.checked) {
+            data[baseName] = input.value;
+          }
+        } else if (input.type === 'checkbox') {
+          if (input.checked) {
+            data[input.name] = input.value;
+          }
         } else {
           data[input.name] = input.value;
         }
       });
+      
       return data;
     });
-  };
+  }, [wrapForTab]);
 
-  const renumber = (tab) => {
+  // ============================================
+  // RENUMBER ENTRIES
+  // ============================================
+
+  const renumber = useCallback((tab) => {
     const wrap = wrapForTab(tab);
     if (!wrap) return;
 
     [...wrap.querySelectorAll('.entry')].forEach((card, i) => {
       const idxSpan = card.querySelector('.idx');
       if (idxSpan) idxSpan.textContent = i + 1;
-      
-      // Update radio button names for uniqueness
+
       if (tab === 'children') {
-        card.querySelectorAll('input[type="radio"][name^="child_fin_dep__"]')
+        card.querySelectorAll('input[type="radio"][name^="child_fin_dep"]')
           .forEach(r => { r.name = 'child_fin_dep__' + (i + 1); });
+      } else {
+        card.querySelectorAll('input[type="radio"][name^="dep_interdep"]')
+          .forEach(r => { r.name = 'dep_interdep__' + (i + 1); });
       }
     });
-  };
+  }, [wrapForTab]);
 
-  const updatePills = (index = activeIndex) => {
-    const pillsContainer = document.getElementById(currentTab === 'children' ? 'childPills' : 'dependantPills');
+  // ============================================
+  // FILL CARD WITH DATA
+  // ============================================
+
+  const fillCardFromData = useCallback((card, tab, data) => {
+    if (!data || !card) return;
+
+    if (tab === 'children') {
+      const nameInput = card.querySelector('input[name="child_name"]');
+      if (nameInput && data.child_name) nameInput.value = data.child_name;
+
+      const dobInput = card.querySelector('input[name="child_dob"]');
+      if (dobInput && data.child_dob) dobInput.value = data.child_dob;
+
+      const eduSelect = card.querySelector('select[name="child_edu"]');
+      if (eduSelect && data.child_edu) eduSelect.value = data.child_edu;
+
+      const finAgeInput = card.querySelector('input[name="child_fin_age"]');
+      if (finAgeInput && data.child_fin_age) finAgeInput.value = data.child_fin_age;
+
+      const healthInput = card.querySelector('input[name="child_health"]');
+      if (healthInput && data.child_health) healthInput.value = data.child_health;
+
+      // Radio: Financially dependent
+      if (data.child_fin_dep) {
+        const radios = card.querySelectorAll('input[type="radio"][name^="child_fin_dep"]');
+        radios.forEach(r => {
+          r.checked = r.value === data.child_fin_dep;
+        });
+      }
+    } else {
+      const nameInput = card.querySelector('input[name="dep_name"]');
+      if (nameInput && data.dep_name) nameInput.value = data.dep_name;
+
+      const dobInput = card.querySelector('input[name="dep_dob"]');
+      if (dobInput && data.dep_dob) dobInput.value = data.dep_dob;
+
+      const ageInput = card.querySelector('input[name="dep_until_age"]');
+      if (ageInput && data.dep_until_age) ageInput.value = data.dep_until_age;
+
+      const relSelect = card.querySelector('select[name="dep_relationship"]');
+      if (relSelect && data.dep_relationship) relSelect.value = data.dep_relationship;
+
+      // Radio: Interdependency
+      if (data.dep_interdep) {
+        const radios = card.querySelectorAll('input[type="radio"][name^="dep_interdep"]');
+        radios.forEach(r => {
+          r.checked = r.value === data.dep_interdep;
+        });
+      }
+    }
+  }, []);
+
+  // ============================================
+  // UPDATE PILL NAVIGATION
+  // ============================================
+
+  const updatePills = useCallback((tab, index) => {
+    const pillsId = tab === 'children' ? 'childPills' : 'dependantPills';
+    const pillsContainer = document.getElementById(pillsId);
     if (!pillsContainer) return;
 
     pillsContainer.innerHTML = '';
-    const wrap = wrapForTab(currentTab);
+    const wrap = wrapForTab(tab);
     if (!wrap) return;
 
     const cards = [...wrap.querySelectorAll('.entry')];
+    
     cards.forEach((card, i) => {
       const pill = document.createElement('button');
       const isActive = i === index;
       pill.type = 'button';
 
       let displayName = '';
-      if (currentTab === 'children') {
+      if (tab === 'children') {
         const nameInput = card.querySelector('input[name="child_name"]');
         displayName = nameInput && nameInput.value.trim()
           ? nameInput.value.trim()
@@ -110,40 +196,49 @@ export default function FactFindDependants() {
           : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
       }`;
       pill.textContent = displayName;
+
       pill.onclick = (e) => {
         e.preventDefault();
         setActiveIndex(i);
-        showOnlyActiveEntry(i);
+        showOnlyActiveEntry(tab, i);
       };
 
       pillsContainer.appendChild(pill);
     });
-  };
+  }, [wrapForTab]);
 
-  const showOnlyActiveEntry = (index = activeIndex) => {
-    const wrap = wrapForTab(currentTab);
+  // ============================================
+  // SHOW ONLY ACTIVE ENTRY
+  // ============================================
+
+  const showOnlyActiveEntry = useCallback((tab, index) => {
+    const wrap = wrapForTab(tab);
     if (!wrap) return;
 
     const cards = [...wrap.querySelectorAll('.entry')];
     cards.forEach((card, i) => {
       card.style.display = i === index ? '' : 'none';
     });
-  };
+  }, [wrapForTab]);
 
-  const addEntry = (tab = currentTab) => {
+  // ============================================
+  // ADD ENTRY
+  // ============================================
+
+  const addEntry = useCallback((tab, existingData = null) => {
     const wrap = wrapForTab(tab);
     if (!wrap) return;
 
-    // Add empty entry to global state first
-    if (tab === 'children') {
-      globalStateRef.current.dependants.children.push({});
-    } else {
-      globalStateRef.current.dependants.dependants_list.push({});
-    }
-
     const templateId = tab === 'children' ? 'childTemplate' : 'depTemplate';
     const node = cloneTemplateDiv(templateId);
+    if (!node) return;
+
     wrap.appendChild(node);
+
+    // Fill with existing data if provided
+    if (existingData) {
+      fillCardFromData(node, tab, existingData);
+    }
 
     // Setup remove button
     const removeBtn = node.querySelector('.entry-remove');
@@ -155,70 +250,50 @@ export default function FactFindDependants() {
     }
 
     renumber(tab);
-    const newIndex = wrap.querySelectorAll('.entry').length - 1;
-    setActiveIndex(newIndex);
-    setRenderKey(k => k + 1);
+    const newCount = wrap.querySelectorAll('.entry').length;
     if (tab === 'children') {
-      setChildrenCount(newIndex + 1);
+      setChildrenCount(newCount);
     } else {
-      setDependantsCount(newIndex + 1);
+      setDependantsCount(newCount);
     }
-    updatePills(newIndex);
-    showOnlyActiveEntry(newIndex);
-    };
 
-  const removeEntry = (node, tab = currentTab) => {
+    const newIndex = newCount - 1;
+    setActiveIndex(newIndex);
+    updatePills(tab, newIndex);
+    showOnlyActiveEntry(tab, newIndex);
+  }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry]);
+
+  // ============================================
+  // REMOVE ENTRY
+  // ============================================
+
+  const removeEntry = useCallback((node, tab) => {
     node.remove();
     const wrap = wrapForTab(tab);
     const remaining = wrap.querySelectorAll('.entry').length;
     renumber(tab);
+    
     if (tab === 'children') {
       setChildrenCount(remaining);
     } else {
       setDependantsCount(remaining);
     }
-    updatePills();
 
     if (remaining > 0) {
-      setActiveIndex(Math.max(0, remaining - 1));
-      showOnlyActiveEntry();
+      const newIndex = Math.max(0, remaining - 1);
+      setActiveIndex(newIndex);
+      showOnlyActiveEntry(tab, newIndex);
+      updatePills(tab, newIndex);
     } else {
       setActiveIndex(0);
     }
-  };
+  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
 
-  const setupInputListeners = () => {
-    document.addEventListener('input', (e) => {
-      if (e.target.matches('input[name="child_name"], input[name="dep_name"]')) {
-        updatePills();
-      }
+  // ============================================
+  // LOAD DATA
+  // ============================================
 
-      // Debounced save
-      clearTimeout(window._depSaveTimeout);
-      window._depSaveTimeout = setTimeout(() => {
-        saveDependantsState();
-      }, 500);
-    });
-  };
-
-  const saveDependantsState = async () => {
-    if (!factFind?.id) return;
-
-    try {
-      globalStateRef.current.dependants.children = readTabToArray('children');
-      globalStateRef.current.dependants.dependants_list = readTabToArray('dependants');
-      globalStateRef.current.dependants.currentTab = currentTab;
-      globalStateRef.current.dependants.activeIndex = activeIndex;
-
-      await base44.entities.FactFind.update(factFind.id, {
-        dependants: globalStateRef.current.dependants
-      });
-    } catch (error) {
-      console.error('Save failed:', error);
-    }
-  };
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
@@ -241,7 +316,49 @@ export default function FactFindDependants() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // ============================================
+  // SETUP INPUT LISTENERS
+  // ============================================
+
+  const setupInputListeners = useCallback(() => {
+    document.addEventListener('input', (e) => {
+      if (e.target.matches('input[name="child_name"], input[name="dep_name"]')) {
+        updatePills(currentTab, activeIndex);
+      }
+
+      clearTimeout(window._depSaveTimeout);
+      window._depSaveTimeout = setTimeout(() => {
+        saveDependantsState();
+      }, 500);
+    });
+  }, [currentTab, activeIndex]);
+
+  // ============================================
+  // SAVE STATE
+  // ============================================
+
+  const saveDependantsState = useCallback(async () => {
+    if (!factFind?.id) return;
+
+    try {
+      globalStateRef.current.dependants.children = readTabToArray('children');
+      globalStateRef.current.dependants.dependants_list = readTabToArray('dependants');
+      globalStateRef.current.dependants.currentTab = currentTab;
+      globalStateRef.current.dependants.activeIndex = activeIndex;
+
+      await base44.entities.FactFind.update(factFind.id, {
+        dependants: globalStateRef.current.dependants
+      });
+    } catch (error) {
+      console.error('Save failed:', error);
+    }
+  }, [factFind?.id, readTabToArray, currentTab, activeIndex]);
+
+  // ============================================
+  // INITIALIZE DOM
+  // ============================================
 
   useEffect(() => {
     loadData();
@@ -250,7 +367,6 @@ export default function FactFindDependants() {
 
   useEffect(() => {
     if (!loading && factFind?.id) {
-      // Initialize DOM with data
       setTimeout(() => {
         const childrenWrap = document.getElementById('childrenWrap');
         const dependantsWrap = document.getElementById('dependantsWrap');
@@ -258,45 +374,30 @@ export default function FactFindDependants() {
         if (childrenWrap) childrenWrap.innerHTML = '';
         if (dependantsWrap) dependantsWrap.innerHTML = '';
 
-        // Add children
+        // Add children with existing data
         if (globalStateRef.current.dependants.children?.length > 0) {
-          globalStateRef.current.dependants.children.forEach(() => {
-            addEntry('children');
+          globalStateRef.current.dependants.children.forEach((childData) => {
+            addEntry('children', childData);
           });
         }
 
-        // Add dependants
+        // Add dependants with existing data
         if (globalStateRef.current.dependants.dependants_list?.length > 0) {
-          globalStateRef.current.dependants.dependants_list.forEach(() => {
-            addEntry('dependants');
+          globalStateRef.current.dependants.dependants_list.forEach((depData) => {
+            addEntry('dependants', depData);
           });
         }
-
-        // Fill in data
-        const allInputs = document.querySelectorAll('input, select, textarea');
-        allInputs.forEach(input => {
-          const tabData = currentTab === 'children'
-            ? globalStateRef.current.dependants.children
-            : globalStateRef.current.dependants.dependants_list;
-
-          const entryIndex = [...input.closest('.entry')?.parentNode.querySelectorAll('.entry')].indexOf(input.closest('.entry'));
-          if (tabData[entryIndex] && tabData[entryIndex][input.name]) {
-            if (input.type === 'radio' || input.type === 'checkbox') {
-              input.checked = input.value === tabData[entryIndex][input.name];
-            } else {
-              input.value = tabData[entryIndex][input.name];
-            }
-          }
-        });
 
         setActiveIndex(globalStateRef.current.dependants.activeIndex || 0);
-        setChildrenCount(globalStateRef.current.dependants.children?.length || 0);
-        setDependantsCount(globalStateRef.current.dependants.dependants_list?.length || 0);
-        updatePills();
-        showOnlyActiveEntry();
+        updatePills(currentTab, globalStateRef.current.dependants.activeIndex || 0);
+        showOnlyActiveEntry(currentTab, globalStateRef.current.dependants.activeIndex || 0);
       }, 50);
     }
-  }, [loading, factFind?.id]);
+  }, [loading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
+
+  // ============================================
+  // NAVIGATION
+  // ============================================
 
   const handleNext = async () => {
     if (!factFind?.id) {
@@ -357,7 +458,7 @@ export default function FactFindDependants() {
         onTabChange={(tab) => {
           setCurrentTab(tab);
           setActiveIndex(0);
-          setTimeout(() => updatePills(), 0);
+          setTimeout(() => updatePills(tab, 0), 0);
         }}
       />
 
@@ -466,11 +567,11 @@ export default function FactFindDependants() {
               <label className="block text-sm font-semibold text-slate-700 mb-3">Is there interdependency?</label>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="dep_interdep" value="1" className="w-4 h-4" />
+                  <input type="radio" name="dep_interdep__1" value="1" className="w-4 h-4" />
                   <span className="text-sm text-slate-700">Yes</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="dep_interdep" value="2" className="w-4 h-4" />
+                  <input type="radio" name="dep_interdep__1" value="2" className="w-4 h-4" />
                   <span className="text-sm text-slate-700">No</span>
                 </label>
               </div>
@@ -480,15 +581,13 @@ export default function FactFindDependants() {
       </div>
 
       {/* Content */}
-      <div key={renderKey} className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
-          {/* Hidden containers - always rendered so addEntry can find them */}
-          <div id="childrenWrap" className="space-y-4" style={{ display: globalStateRef.current.dependants.children?.length === 0 && currentTab === 'children' ? 'none' : '' }}>
-          </div>
-          <div id="dependantsWrap" className="space-y-4" style={{ display: globalStateRef.current.dependants.dependants_list?.length === 0 && currentTab === 'dependants' ? 'none' : '' }}>
-          </div>
+          {/* Containers - Always exist, visibility based on active tab */}
+          <div id="childrenWrap" className="space-y-4" style={{ display: currentTab === 'children' ? 'block' : 'none' }} />
+          <div id="dependantsWrap" className="space-y-4" style={{ display: currentTab === 'dependants' ? 'block' : 'none' }} />
 
-          {/* Welcome Screen - Show if no entries exist */}
+          {/* Welcome Screen */}
           {(currentTab === 'children' ? childrenCount : dependantsCount) === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
               <div className="text-5xl mb-6">
@@ -511,10 +610,9 @@ export default function FactFindDependants() {
             </div>
           ) : (
             <>
-              {/* Pills Navigation - Horizontal Scrollable */}
+              {/* Pills Navigation */}
               <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                <div id={currentTab === 'children' ? 'childPills' : 'dependantPills'} className="flex gap-2">
-                </div>
+                <div id={currentTab === 'children' ? 'childPills' : 'dependantPills'} className="flex gap-2" />
                 <button
                   onClick={() => addEntry(currentTab)}
                   className="ml-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0 shadow-sm"
