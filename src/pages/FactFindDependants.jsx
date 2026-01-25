@@ -148,19 +148,42 @@ export default function FactFindDependants() {
     }
   };
 
-  const handleAddDependant = () => {
+  const handleAddDependant = async () => {
     if (!dependantFormData.dep_name) {
       toast.error('Please enter dependant name');
       return;
     }
 
-    if (editingDependantIndex !== null) {
-      const updated = [...dependants];
-      updated[editingDependantIndex] = dependantFormData;
-      setDependants(updated);
-      setEditingDependantIndex(null);
-    } else {
-      setDependants([...dependants, dependantFormData]);
+    try {
+      let updated;
+      if (editingDependantIndex !== null) {
+        updated = [...dependants];
+        updated[editingDependantIndex] = dependantFormData;
+        setDependants(updated);
+        setEditingDependantIndex(null);
+      } else {
+        updated = [...dependants, dependantFormData];
+        setDependants(updated);
+      }
+
+      // Auto-save to database
+      const sectionsCompleted = factFind.sections_completed || [];
+      if (!sectionsCompleted.includes('dependants')) {
+        sectionsCompleted.push('dependants');
+      }
+      await base44.entities.FactFind.update(factFind.id, {
+        dependants: { 
+          children: children,
+          dependants_list: updated 
+        },
+        sections_completed: sectionsCompleted,
+        completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
+      });
+
+      toast.success(editingDependantIndex !== null ? 'Dependant updated' : 'Dependant added');
+    } catch (error) {
+      toast.error('Failed to save dependant');
+      console.error(error);
     }
 
     setDependantFormData({
