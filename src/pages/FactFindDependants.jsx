@@ -387,7 +387,6 @@ export default function FactFindDependants() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setShowChildForm(false);
                           setSelectedChildIndex(null);
                           setChildFormData({
                             child_name: '',
