@@ -345,7 +345,17 @@ export default function FactFindDependants() {
                     <h4 className="font-bold text-slate-800 mb-2 text-lg">Do you have any children?</h4>
                     <p className="text-slate-600 mb-6">Add details about your children to help us understand your family situation.</p>
                     <Button
-                      onClick={() => setShowChildForm(true)}
+                      onClick={() => {
+                        setSelectedChildIndex(null);
+                        setChildFormData({
+                          child_name: '',
+                          child_dob: '',
+                          child_fin_dep: '',
+                          child_edu: '',
+                          child_fin_age: '',
+                          child_health: ''
+                        });
+                      }}
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       <Plus className="w-4 h-4 mr-2" />
