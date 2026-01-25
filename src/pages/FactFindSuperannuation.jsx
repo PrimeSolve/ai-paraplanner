@@ -232,7 +232,21 @@ export default function FactFindSuperannuation() {
 
     if (tab === 'pension') {
       const ownerSelect = card.querySelector('select[name="owner"]');
-      if (ownerSelect && data.owner) ownerSelect.value = data.owner;
+      if (ownerSelect) {
+        // Populate with principal names
+        ownerSelect.innerHTML = '<option value="">Select owner…</option>';
+        const clientName = factFind?.personal?.client?.first_name 
+          ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
+          : null;
+        const partnerName = factFind?.personal?.partner?.first_name 
+          ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
+          : null;
+        
+        if (clientName) ownerSelect.innerHTML += `<option value="client">${clientName}</option>`;
+        if (partnerName) ownerSelect.innerHTML += `<option value="partner">${partnerName}</option>`;
+        
+        if (data.owner) ownerSelect.value = data.owner;
+      }
 
       const pTypeSelect = card.querySelector('select[name="p_type"]');
       if (pTypeSelect && data.p_type) pTypeSelect.value = data.p_type;
