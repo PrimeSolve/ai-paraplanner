@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import AdminLayout from '../components/admin/AdminLayout';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Search, Building2, Users, FileText, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -13,6 +16,15 @@ export default function AdminAdviceGroups() {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    slug: '',
+    contact_email: '',
+    contact_phone: '',
+    status: 'active',
+    subscription_tier: 'professional'
+  });
 
   useEffect(() => {
     loadGroups();
@@ -33,6 +45,25 @@ export default function AdminAdviceGroups() {
     group.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await base44.entities.AdviceGroup.create(formData);
+      setDialogOpen(false);
+      setFormData({
+        name: '',
+        slug: '',
+        contact_email: '',
+        contact_phone: '',
+        status: 'active',
+        subscription_tier: 'professional'
+      });
+      loadGroups();
+    } catch (error) {
+      console.error('Failed to create advice group:', error);
+    }
+  };
+
   return (
     <AdminLayout currentPage="AdminAdviceGroups">
       <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
@@ -41,10 +72,95 @@ export default function AdminAdviceGroups() {
             <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">Advice Groups</h1>
             <p className="text-sm text-slate-600 mt-1">Manage licensees and dealer groups</p>
           </div>
-          <Button className="bg-indigo-600 hover:bg-indigo-700">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Advice Group
-          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-indigo-600 hover:bg-indigo-700">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Advice Group
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Create New Advice Group</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Group Name *</Label>
+                    <Input
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      placeholder="e.g., PrimeSolve Group"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Slug</Label>
+                    <Input
+                      value={formData.slug}
+                      onChange={(e) => setFormData({...formData, slug: e.target.value})}
+                      placeholder="e.g., primesolve"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Contact Email</Label>
+                    <Input
+                      type="email"
+                      value={formData.contact_email}
+                      onChange={(e) => setFormData({...formData, contact_email: e.target.value})}
+                      placeholder="contact@advicegroup.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Contact Phone</Label>
+                    <Input
+                      value={formData.contact_phone}
+                      onChange={(e) => setFormData({...formData, contact_phone: e.target.value})}
+                      placeholder="+61 2 1234 5678"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="suspended">Suspended</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Subscription Tier</Label>
+                    <Select value={formData.subscription_tier} onValueChange={(value) => setFormData({...formData, subscription_tier: value})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="starter">Starter</SelectItem>
+                        <SelectItem value="professional">Professional</SelectItem>
+                        <SelectItem value="enterprise">Enterprise</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">
+                    Create Advice Group
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 

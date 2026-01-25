@@ -26,6 +26,9 @@ import AdviserFactFinds from './pages/AdviserFactFinds';
 import AdviserSOARequests from './pages/AdviserSOARequests';
 import AdviserSOATemplate from './pages/AdviserSOATemplate';
 import AdviserSettings from './pages/AdviserSettings';
+import ClientDocuments from './pages/ClientDocuments';
+import ClientMessages from './pages/ClientMessages';
+import ClientSettings from './pages/ClientSettings';
 import FactFindAboutYou from './pages/FactFindAboutYou';
 import FactFindAdviceReason from './pages/FactFindAdviceReason';
 import FactFindAssetsLiabilities from './pages/FactFindAssetsLiabilities';
@@ -44,6 +47,10 @@ import FactFindSuperannuation from './pages/FactFindSuperannuation';
 import FactFindTrusts from './pages/FactFindTrusts';
 import FactFindWelcome from './pages/FactFindWelcome';
 import Home from './pages/Home';
+import PublicAbout from './pages/PublicAbout';
+import PublicContact from './pages/PublicContact';
+import PublicHome from './pages/PublicHome';
+import PublicPricing from './pages/PublicPricing';
 import SOAManagement from './pages/SOAManagement';
 import SOARequestAssumptions from './pages/SOARequestAssumptions';
 import SOARequestDetails from './pages/SOARequestDetails';
@@ -56,13 +63,6 @@ import SOARequestScope from './pages/SOARequestScope';
 import SOARequestStrategy from './pages/SOARequestStrategy';
 import SOARequestTransactions from './pages/SOARequestTransactions';
 import SOARequestWelcome from './pages/SOARequestWelcome';
-import ClientDocuments from './pages/ClientDocuments';
-import ClientMessages from './pages/ClientMessages';
-import ClientSettings from './pages/ClientSettings';
-import PublicHome from './pages/PublicHome';
-import PublicAbout from './pages/PublicAbout';
-import PublicPricing from './pages/PublicPricing';
-import PublicContact from './pages/PublicContact';
 import __Layout from './Layout.jsx';
 
 
@@ -95,6 +95,9 @@ export const PAGES = {
     "AdviserSOARequests": AdviserSOARequests,
     "AdviserSOATemplate": AdviserSOATemplate,
     "AdviserSettings": AdviserSettings,
+    "ClientDocuments": ClientDocuments,
+    "ClientMessages": ClientMessages,
+    "ClientSettings": ClientSettings,
     "FactFindAboutYou": FactFindAboutYou,
     "FactFindAdviceReason": FactFindAdviceReason,
     "FactFindAssetsLiabilities": FactFindAssetsLiabilities,
@@ -113,6 +116,10 @@ export const PAGES = {
     "FactFindTrusts": FactFindTrusts,
     "FactFindWelcome": FactFindWelcome,
     "Home": Home,
+    "PublicAbout": PublicAbout,
+    "PublicContact": PublicContact,
+    "PublicHome": PublicHome,
+    "PublicPricing": PublicPricing,
     "SOAManagement": SOAManagement,
     "SOARequestAssumptions": SOARequestAssumptions,
     "SOARequestDetails": SOARequestDetails,
@@ -125,13 +132,6 @@ export const PAGES = {
     "SOARequestStrategy": SOARequestStrategy,
     "SOARequestTransactions": SOARequestTransactions,
     "SOARequestWelcome": SOARequestWelcome,
-    "ClientDocuments": ClientDocuments,
-    "ClientMessages": ClientMessages,
-    "ClientSettings": ClientSettings,
-    "PublicHome": PublicHome,
-    "PublicAbout": PublicAbout,
-    "PublicPricing": PublicPricing,
-    "PublicContact": PublicContact,
 }
 
 export const pagesConfig = {
