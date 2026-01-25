@@ -160,6 +160,24 @@ export default function FactFindInvestment() {
         if (clientName) ownerSelect.innerHTML += `<option value="client">${clientName}</option>`;
         if (partnerName) ownerSelect.innerHTML += `<option value="partner">${partnerName}</option>`;
 
+        // Add trusts
+        const trusts = factFind?.trusts_companies?.entities?.filter(e => e.entity_type === 'trust') || [];
+        trusts.forEach((trust, i) => {
+          ownerSelect.innerHTML += `<option value="trust-${i}">${trust.entity_name || `Trust ${i + 1}`}</option>`;
+        });
+
+        // Add companies
+        const companies = factFind?.trusts_companies?.entities?.filter(e => e.entity_type === 'company') || [];
+        companies.forEach((company, i) => {
+          ownerSelect.innerHTML += `<option value="company-${i}">${company.entity_name || `Company ${i + 1}`}</option>`;
+        });
+
+        // Add SMSFs
+        const smsfFunds = factFind?.smsf?.funds || [];
+        smsfFunds.forEach((smsf, i) => {
+          ownerSelect.innerHTML += `<option value="smsf-${i}">${smsf.smsf_name || `SMSF ${i + 1}`}</option>`;
+        });
+
         if (data.w_owner) ownerSelect.value = data.w_owner;
       }
 
