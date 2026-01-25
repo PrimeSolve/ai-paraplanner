@@ -561,12 +561,23 @@ export default function FactFindDependants() {
                       <h4 className="font-bold text-slate-800">
                         {selectedDependantIndex !== null ? 'Edit Dependant' : 'Dependant Information'}
                       </h4>
+                      {selectedDependantIndex !== null && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteDependant(selectedDependantIndex)}
+                          className="border-red-300 text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
                           setShowDependantForm(false);
-                          setEditingDependantIndex(null);
+                          setSelectedDependantIndex(null);
                           setDependantFormData({
                             dep_name: '',
                             dep_dob: '',
@@ -579,7 +590,7 @@ export default function FactFindDependants() {
                       >
                         Cancel
                       </Button>
-                    </div>
+                      </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
