@@ -588,7 +588,6 @@ export default function FactFindDependants() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setShowDependantForm(false);
                           setSelectedDependantIndex(null);
                           setDependantFormData({
                             dep_name: '',
