@@ -50,7 +50,7 @@ export default function FactFindDependants() {
           const finds = await base44.entities.FactFind.filter({ id });
           if (finds[0]) {
             setFactFind(finds[0]);
-            if (finds[0].dependants?.children) {
+            if (finds[0].dependants?.children && finds[0].dependants.children.length > 0) {
               setChildren(finds[0].dependants.children);
               setSelectedChildIndex(0);
               setChildFormData(finds[0].dependants.children[0] || {
