@@ -30,8 +30,9 @@ export default function FactFindPersonal() {
   const [activeTab, setActiveTab] = useState('client');
   const [activeSubSection, setActiveSubSection] = useState('basic');
   const [user, setUser] = useState(null);
-  const [formData, setFormData] = useState({
-    // Basic
+  const [hasPartner, setHasPartner] = useState(false);
+  
+  const initialFormState = {
     first_name: '',
     last_name: '',
     gender: '',
@@ -39,7 +40,6 @@ export default function FactFindPersonal() {
     marital_status: '',
     living_status: '',
     resident_status: '',
-    // Contact
     address: '',
     suburb: '',
     state: '',
@@ -47,12 +47,10 @@ export default function FactFindPersonal() {
     postcode: '',
     mobile: '',
     email: '',
-    // Health
     health_status: '',
     smoker_status: '',
     health_insurance: '',
     health_issues: '',
-    // Employment
     employment_status: '',
     occupation: '',
     hours_per_week: '',
@@ -62,16 +60,20 @@ export default function FactFindPersonal() {
     long_service_leave: '',
     employer_name: '',
     employment_length: '',
-    // Estate
     has_will: '',
     will_updated: '',
     testamentary_trust: '',
     power_of_attorney: '',
-    // Centrelink
     centrelink_benefits: '',
     benefit_type: '',
     concession_cards: ''
-  });
+  };
+  
+  const [clientData, setClientData] = useState(initialFormState);
+  const [partnerData, setPartnerData] = useState(initialFormState);
+  
+  const formData = activeTab === 'client' ? clientData : partnerData;
+  const setFormData = activeTab === 'client' ? setClientData : setPartnerData;
 
   useEffect(() => {
     const loadData = async () => {
@@ -86,8 +88,12 @@ export default function FactFindPersonal() {
           const finds = await base44.entities.FactFind.filter({ id });
           if (finds[0]) {
             setFactFind(finds[0]);
-            if (finds[0].personal) {
-              setFormData({ ...formData, ...finds[0].personal });
+            if (finds[0].personal?.client) {
+              setClientData({ ...initialFormState, ...finds[0].personal.client });
+            }
+            if (finds[0].personal?.partner) {
+              setPartnerData({ ...initialFormState, ...finds[0].personal.partner });
+              setHasPartner(true);
             }
           }
         }
@@ -105,8 +111,12 @@ export default function FactFindPersonal() {
 
     setSaving(true);
     try {
+      const personalData = {
+        client: clientData,
+        ...(hasPartner && { partner: partnerData })
+      };
       await base44.entities.FactFind.update(factFind.id, {
-        personal: formData,
+        personal: personalData,
         current_section: 'personal'
       });
       toast.success('Progress saved successfully');
@@ -120,8 +130,8 @@ export default function FactFindPersonal() {
   const handleSaveAndContinue = async () => {
     // Validation for basic section
     if (activeSubSection === 'basic') {
-      if (!formData.first_name || !formData.last_name) {
-        toast.error('Please fill in required fields');
+      if (!clientData.first_name || !clientData.last_name) {
+        toast.error('Please fill in client first and last name');
         return;
       }
     }
@@ -129,8 +139,12 @@ export default function FactFindPersonal() {
     // Save current data
     setSaving(true);
     try {
+      const personalData = {
+        client: clientData,
+        ...(hasPartner && { partner: partnerData })
+      };
       await base44.entities.FactFind.update(factFind.id, {
-        personal: formData,
+        personal: personalData,
         current_section: 'personal'
       });
 
@@ -146,8 +160,12 @@ export default function FactFindPersonal() {
           sectionsCompleted.push('personal');
         }
 
+        const personalData = {
+          client: clientData,
+          ...(hasPartner && { partner: partnerData })
+        };
         await base44.entities.FactFind.update(factFind.id, {
-          personal: formData,
+          personal: personalData,
           current_section: 'dependants',
           sections_completed: sectionsCompleted,
           completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
@@ -186,9 +204,11 @@ export default function FactFindPersonal() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const clientName = formData.first_name && formData.last_name 
-    ? `${formData.first_name} ${formData.last_name}`
+  const clientName = clientData.first_name && clientData.last_name 
+    ? `${clientData.first_name} ${clientData.last_name}`
     : user?.full_name || user?.email || 'Client';
+
+  const partnerName = partnerData.first_name || 'Partner';
 
   return (
     <FactFindLayout currentSection="personal" factFind={factFind}>
@@ -206,62 +226,42 @@ export default function FactFindPersonal() {
               {/* Client Information Bar */}
               <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-                    <span className="text-blue-700 font-bold text-sm">
-                      {getInitials(clientName)}
-                    </span>
+                  <div className="font-semibold text-slate-700 text-sm">Client Information</div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setActiveTab('client')}
+                      className={cn(
+                        "px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
+                        activeTab === 'client'
+                          ? "bg-blue-600 text-white"
+                          : "bg-white border border-slate-300 text-slate-600 hover:bg-slate-50"
+                      )}
+                    >
+                      {clientData.first_name || 'Client'}
+                    </button>
+                    {hasPartner ? (
+                      <button
+                        onClick={() => setActiveTab('partner')}
+                        className={cn(
+                          "px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
+                          activeTab === 'partner'
+                            ? "bg-blue-600 text-white"
+                            : "bg-white border border-slate-300 text-slate-600 hover:bg-slate-50"
+                        )}
+                      >
+                        {partnerData.first_name || 'Partner'}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setHasPartner(true)}
+                        className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-1"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+                        Add Partner
+                      </button>
+                    )}
                   </div>
-                  <div className="font-bold text-slate-800">{clientName}</div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="px-3 py-1.5 rounded-full border border-slate-300 bg-white text-xs font-semibold text-slate-700">
-                    Primary
-                  </div>
-                  <div className="px-3 py-1.5 rounded-full border border-slate-300 bg-white text-xs font-semibold text-slate-700">
-                    Individual
-                  </div>
-                  <div className="px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                    Live
-                  </div>
-                </div>
-              </div>
-
-              {/* Tabs */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setActiveTab('client')}
-                  className={cn(
-                    "px-4 py-2 rounded-full text-sm font-bold transition-all",
-                    activeTab === 'client'
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  )}
-                >
-                  Client
-                </button>
-                <button
-                  onClick={() => setActiveTab('partner')}
-                  className={cn(
-                    "px-4 py-2 rounded-full text-sm font-bold transition-all",
-                    activeTab === 'partner'
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  )}
-                >
-                  Partner
-                </button>
-                <button
-                  onClick={() => setActiveTab('joint')}
-                  className={cn(
-                    "px-4 py-2 rounded-full text-sm font-bold transition-all",
-                    activeTab === 'joint'
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  )}
-                >
-                  Joint
-                </button>
               </div>
 
               {/* Sub-section Tabs */}
