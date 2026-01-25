@@ -491,7 +491,7 @@ export default function FactFindDependants() {
           {/* Dependants Tab */}
           {activeTab === 'dependants' && (
             <>
-              {dependants.length > 0 && (
+              {dependants.length > 0 && !isAddingDependant && selectedDependantIndex === null && (
                 <div className="flex gap-2 mb-4 flex-wrap">
                   {dependants.map((dep, index) => (
                     <button
