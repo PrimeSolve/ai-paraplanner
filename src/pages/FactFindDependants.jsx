@@ -154,10 +154,8 @@ export default function FactFindDependants() {
     renumber(tab);
     const newIndex = wrap.querySelectorAll('.entry').length - 1;
     setActiveIndex(newIndex);
-    setTimeout(() => {
-      updatePills();
-      showOnlyActiveEntry();
-    }, 0);
+    updatePills(newIndex);
+    showOnlyActiveEntry(newIndex);
   };
 
   const removeEntry = (node, tab = currentTab) => {
