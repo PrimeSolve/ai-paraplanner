@@ -296,7 +296,10 @@ export default function FactFindPersonal() {
                 {subSections.map(section => (
                   <button
                     key={section.id}
-                    onClick={() => setActiveSubSection(section.id)}
+                    onClick={() => {
+                      setActiveSubSection(section.id);
+                      setActiveTab('client');
+                    }}
                     className={cn(
                       "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border",
                       activeSubSection === section.id
