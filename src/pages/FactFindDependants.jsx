@@ -156,14 +156,14 @@ export default function FactFindDependants() {
 
     try {
       let updated;
-      if (editingDependantIndex !== null) {
+      if (selectedDependantIndex !== null) {
         updated = [...dependants];
-        updated[editingDependantIndex] = dependantFormData;
+        updated[selectedDependantIndex] = dependantFormData;
         setDependants(updated);
-        setEditingDependantIndex(null);
       } else {
         updated = [...dependants, dependantFormData];
         setDependants(updated);
+        setSelectedDependantIndex(updated.length - 1);
       }
 
       // Auto-save to database
@@ -180,7 +180,7 @@ export default function FactFindDependants() {
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
 
-      toast.success(editingDependantIndex !== null ? 'Dependant updated' : 'Dependant added');
+      toast.success(selectedDependantIndex !== null ? 'Dependant updated' : 'Dependant added');
     } catch (error) {
       toast.error('Failed to save dependant');
       console.error(error);
