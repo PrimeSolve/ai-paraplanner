@@ -290,6 +290,8 @@ export default function FactFindDependants() {
         });
 
         setActiveIndex(globalStateRef.current.dependants.activeIndex || 0);
+        setChildrenCount(globalStateRef.current.dependants.children?.length || 0);
+        setDependantsCount(globalStateRef.current.dependants.dependants_list?.length || 0);
         updatePills();
         showOnlyActiveEntry();
       }, 50);
