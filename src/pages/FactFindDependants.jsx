@@ -229,18 +229,13 @@ export default function FactFindDependants() {
   };
 
   const handleNext = async () => {
-    console.log('handleNext called, factFind:', factFind);
-    
     if (!factFind?.id) {
-      console.error('No factFind ID');
       toast.error('Unable to save data');
       return;
     }
     
     setSaving(true);
     try {
-      console.log('Updating factFind with children:', children, 'dependants:', dependants);
-      
       const sectionsCompleted = [...(factFind.sections_completed || [])];
       if (!sectionsCompleted.includes('dependants')) {
         sectionsCompleted.push('dependants');
@@ -251,21 +246,20 @@ export default function FactFindDependants() {
           children: children,
           dependants_list: dependants 
         },
-        current_section: 'trusts',
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       };
-      
-      console.log('Update data:', updateData);
 
       await base44.entities.FactFind.update(factFind.id, updateData);
       
-      console.log('Update successful, navigating...');
-      const url = createPageUrl('FactFindTrusts') + `?id=${factFind.id}`;
-      console.log('Navigation URL:', url);
-      navigate(url);
+      // If on children tab, switch to dependants tab; otherwise go to trusts
+      if (activeTab === 'children') {
+        setActiveTab('dependants');
+      } else {
+        const url = createPageUrl('FactFindTrusts') + `?id=${factFind.id}`;
+        navigate(url);
+      }
     } catch (error) {
-      console.error('Error in handleNext:', error);
       toast.error('Failed to save data: ' + error.message);
     } finally {
       setSaving(false);
