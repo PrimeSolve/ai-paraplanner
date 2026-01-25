@@ -85,7 +85,7 @@ export default function FactFindDependants() {
     const cards = [...wrap.querySelectorAll('.entry')];
     cards.forEach((card, i) => {
       const pill = document.createElement('button');
-      pill.className = 'pill' + (i === activeIndex ? ' active' : '');
+      const isActive = i === activeIndex;
       pill.type = 'button';
 
       let displayName = '';
@@ -101,6 +101,11 @@ export default function FactFindDependants() {
           : `Dependant ${i + 1}`;
       }
 
+      pill.className = `px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+        isActive
+          ? 'bg-blue-600 text-white shadow-md'
+          : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+      }`;
       pill.textContent = displayName;
       pill.onclick = (e) => {
         e.preventDefault();
