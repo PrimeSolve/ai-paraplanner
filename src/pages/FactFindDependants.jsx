@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, MessageSquare, RefreshCw, Info, Plus, Trash2, Edit2, Baby, Users } from 'lucide-react';
+import { ArrowRight, ArrowLeft, MessageSquare, RefreshCw, Info, Plus, Trash2, Edit2, Baby, Users, UserCircle } from 'lucide-react';
 
 export default function FactFindDependants() {
   const navigate = useNavigate();
@@ -204,13 +204,9 @@ export default function FactFindDependants() {
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-8 text-center">
                     <div className="flex justify-center mb-4">
-                      <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="32" cy="30" r="12" fill="#fecaca"/>
-                        <path d="M26 42h12c4 0 6 2 6 6v20c0 2-1 3-3 3h-2v18c0 2-1.5 3-3 3s-3-1-3-3V71h-2v18c0 2-1.5 3-3 3s-3-1-3-3V71h-2c-2 0-3-1-3-3V48c0-4 2-6 6-6Z" fill="#fecaca"/>
-                        <circle cx="68" cy="33" r="9" fill="#bfdbfe"/>
-                        <path d="M63 42h10c3 0 5 1.5 5 4.5v15c0 1.5-.7 2.5-2 2.5h-1.5v20c0 1.5-1 2.5-2.5 2.5s-2.5-1-2.5-2.5V64H68v20c0 1.5-1 2.5-2.5 2.5S63 85.5 63 84V64h-1.5c-1.3 0-2-1-2-2.5v-15c0-3 2-4.5 5-4.5Z" fill="#bfdbfe"/>
-                        <path d="M44 50h19" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round"/>
-                      </svg>
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-pink-100 flex items-center justify-center">
+                        <Baby className="w-10 h-10 text-blue-600" />
+                      </div>
                     </div>
                     <h4 className="font-bold text-slate-800 mb-2 text-lg">Do you have any children?</h4>
                     <p className="text-slate-600 mb-6">Add details about your children to help us understand your family situation.</p>
@@ -413,13 +409,9 @@ export default function FactFindDependants() {
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-8 text-center">
                     <div className="flex justify-center mb-4">
-                      <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="32" cy="30" r="12" fill="#fecaca"/>
-                        <path d="M26 42h12c4 0 6 2 6 6v20c0 2-1 3-3 3h-2v18c0 2-1.5 3-3 3s-3-1-3-3V71h-2v18c0 2-1.5 3-3 3s-3-1-3-3V71h-2c-2 0-3-1-3-3V48c0-4 2-6 6-6Z" fill="#fecaca"/>
-                        <circle cx="68" cy="33" r="9" fill="#bfdbfe"/>
-                        <path d="M63 42h10c3 0 5 1.5 5 4.5v15c0 1.5-.7 2.5-2 2.5h-1.5v20c0 1.5-1 2.5-2.5 2.5s-2.5-1-2.5-2.5V64H68v20c0 1.5-1 2.5-2.5 2.5S63 85.5 63 84V64h-1.5c-1.3 0-2-1-2-2.5v-15c0-3 2-4.5 5-4.5Z" fill="#bfdbfe"/>
-                        <path d="M44 50h19" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round"/>
-                      </svg>
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-slate-100 flex items-center justify-center">
+                        <UserCircle className="w-10 h-10 text-slate-600" />
+                      </div>
                     </div>
                     <h4 className="font-bold text-slate-800 mb-2 text-lg">Do you have any dependants?</h4>
                     <p className="text-slate-600 mb-6">Add details about other financial dependants, such as parents or relatives.</p>
