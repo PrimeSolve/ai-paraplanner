@@ -1063,12 +1063,24 @@ export default function FactFindSuperannuation() {
             <div className="bg-green-50 rounded-lg p-4 border border-green-200">
               <h4 className="text-sm font-semibold text-green-700 mb-4">💵 Payments</h4>
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="a_income" placeholder="Income" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
-                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="a_deductible" placeholder="Deductible" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Income</label>
+                  <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="a_income" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Deductible</label>
+                  <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="a_deductible" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4 mt-4">
-                <input type="text" name="a_taxfree_pct" placeholder="Tax free %" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
-                <input type="text" name="a_index_rate" placeholder="Index rate" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Tax free %</label>
+                  <input type="text" name="a_taxfree_pct" placeholder="e.g. 50%" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Index rate</label>
+                  <input type="text" name="a_index_rate" placeholder="" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                </div>
               </div>
               <div className="mt-4"><label className="block text-sm font-semibold text-slate-700 mb-2">Reversionary?</label><label className="flex items-center gap-2"><input type="radio" name="a_rev__1" value="1" className="w-4 h-4" /><span className="text-sm">Yes</span></label><label className="flex items-center gap-2"><input type="radio" name="a_rev__1" value="2" className="w-4 h-4" /><span className="text-sm">No</span></label></div>
             </div>
