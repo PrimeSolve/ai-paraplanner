@@ -243,84 +243,86 @@ export default function FactFindSMSF() {
   // ============================================
 
   const createAccountRow = useCallback((card, data = {}) => {
-    const row = document.createElement('div');
-    row.className = 'acct-row py-2 border-b border-slate-100 last:border-b-0';
-    row.style.display = 'grid';
-    row.style.gridTemplateColumns = '120px 120px 100px 90px 100px 90px 100px 110px 80px';
-    row.style.gap = '0.5rem';
-    row.style.alignItems = 'center';
-    row.style.minWidth = '1100px';
+   const row = document.createElement('tr');
+   row.className = 'border-b border-slate-100 hover:bg-orange-50/50';
 
-    const clientName = factFind?.personal?.client?.first_name 
-      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
-      : 'Client';
+   const clientName = factFind?.personal?.client?.first_name 
+     ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
+     : 'Client';
 
-    row.innerHTML = `
-      <div class="px-1">
-        <select name="acct_owner" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
-          <option value="">Select…</option>
-          <option value="client">${clientName}</option>
-        </select>
-      </div>
-      <div class="px-1">
-        <select name="tax_env" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
-          <option value="">Select…</option>
-          <option value="1">Superannuation</option>
-          <option value="2">Pension</option>
-        </select>
-      </div>
-      <div class="px-1">
-        <div class="relative">
-          <span class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
-          <input type="number" name="tax_free_amt" placeholder="0.00" step="0.01" min="0" class="w-full pl-5 pr-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
-        </div>
-      </div>
-      <div class="px-1">
-        <input type="text" name="tax_free_pct" placeholder="e.g. 30%" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
-      </div>
-      <div class="px-1">
-        <div class="relative">
-          <span class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
-          <input type="number" name="unp_amt" placeholder="0.00" step="0.01" min="0" class="w-full pl-5 pr-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
-        </div>
-      </div>
-      <div class="px-1">
-        <select name="super_guarantee" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
-          <option value="">Select…</option>
-          <option value="1">Yes</option>
-          <option value="2">No</option>
-        </select>
-      </div>
-      <div class="px-1">
-        <input type="text" name="salary_sacrifice" placeholder="" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
-      </div>
-      <div class="px-1">
-        <div class="relative">
-          <span class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
-          <input type="number" name="after_tax" placeholder="0.00" step="0.01" min="0" class="w-full pl-5 pr-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
-        </div>
-      </div>
-      <div class="px-1 text-center">
-        <button type="button" class="remove-acct text-red-500 hover:text-red-700 text-xs font-medium">Remove</button>
-      </div>
-    `;
+   const partnerName = factFind?.personal?.partner?.first_name 
+     ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
+     : null;
 
-    const removeBtn = row.querySelector('.remove-acct');
-    removeBtn.onclick = (e) => {
-      e.preventDefault();
-      row.remove();
-    };
+   const partnerOption = partnerName ? `<option value="partner">${partnerName}</option>` : '';
 
-    if (data?.acct_owner) row.querySelector('select[name="acct_owner"]').value = data.acct_owner;
-    if (data?.tax_env) row.querySelector('select[name="tax_env"]').value = data.tax_env;
-    if (data?.tax_free_amt) row.querySelector('input[name="tax_free_amt"]').value = data.tax_free_amt;
-    if (data?.tax_free_pct) row.querySelector('input[name="tax_free_pct"]').value = data.tax_free_pct;
-    if (data?.unp_amt) row.querySelector('input[name="unp_amt"]').value = data.unp_amt;
-    if (data?.super_guarantee) row.querySelector('select[name="super_guarantee"]').value = data.super_guarantee;
-    if (data?.salary_sacrifice) row.querySelector('input[name="salary_sacrifice"]').value = data.salary_sacrifice;
-    if (data?.after_tax) row.querySelector('input[name="after_tax"]').value = data.after_tax;
+   row.innerHTML = `
+     <td class="py-2 px-2">
+       <select name="acct_owner" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+         <option value="">Select…</option>
+         <option value="client">${clientName}</option>
+         ${partnerOption}
+       </select>
+     </td>
+     <td class="py-2 px-2">
+       <select name="tax_env" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+         <option value="">Select…</option>
+         <option value="1">Superannuation</option>
+         <option value="2">Pension</option>
+       </select>
+     </td>
+     <td class="py-2 px-2">
+       <div class="flex items-center">
+         <span class="text-slate-400 text-xs mr-1">$</span>
+         <input type="number" name="tax_free_amt" placeholder="0.00" step="0.01" min="0" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+       </div>
+     </td>
+     <td class="py-2 px-2">
+       <input type="text" name="tax_free_pct" placeholder="e.g. 30%" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+     </td>
+     <td class="py-2 px-2">
+       <div class="flex items-center">
+         <span class="text-slate-400 text-xs mr-1">$</span>
+         <input type="number" name="unp_amt" placeholder="0.00" step="0.01" min="0" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+       </div>
+     </td>
+     <td class="py-2 px-2">
+       <select name="super_guarantee" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+         <option value="">Select…</option>
+         <option value="1">Yes</option>
+         <option value="2">No</option>
+       </select>
+     </td>
+     <td class="py-2 px-2">
+       <input type="text" name="salary_sacrifice" placeholder="" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+     </td>
+     <td class="py-2 px-2">
+       <div class="flex items-center">
+         <span class="text-slate-400 text-xs mr-1">$</span>
+         <input type="number" name="after_tax" placeholder="0.00" step="0.01" min="0" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+       </div>
+     </td>
+     <td class="py-2 px-2 text-center">
+       <button type="button" class="remove-acct text-red-500 hover:text-red-700 text-xs font-medium">Remove</button>
+     </td>
+   `;
 
-    return row;
+   const removeBtn = row.querySelector('.remove-acct');
+   removeBtn.onclick = (e) => {
+     e.preventDefault();
+     row.remove();
+   };
+
+   if (data?.acct_owner) row.querySelector('select[name="acct_owner"]').value = data.acct_owner;
+   if (data?.tax_env) row.querySelector('select[name="tax_env"]').value = data.tax_env;
+   if (data?.tax_free_amt) row.querySelector('input[name="tax_free_amt"]').value = data.tax_free_amt;
+   if (data?.tax_free_pct) row.querySelector('input[name="tax_free_pct"]').value = data.tax_free_pct;
+   if (data?.unp_amt) row.querySelector('input[name="unp_amt"]').value = data.unp_amt;
+   if (data?.super_guarantee) row.querySelector('select[name="super_guarantee"]').value = data.super_guarantee;
+   if (data?.salary_sacrifice) row.querySelector('input[name="salary_sacrifice"]').value = data.salary_sacrifice;
+   if (data?.after_tax) row.querySelector('input[name="after_tax"]').value = data.after_tax;
+
+   return row;
   }, [factFind]);
 
   // ============================================
