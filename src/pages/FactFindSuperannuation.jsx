@@ -748,7 +748,9 @@ export default function FactFindSuperannuation() {
                     <label className="flex items-center gap-2"><input type="radio" name="sg__1" value="1" className="w-4 h-4" /><span className="text-sm">Yes</span></label>
                     <label className="flex items-center gap-2"><input type="radio" name="sg__1" value="2" className="w-4 h-4" /><span className="text-sm">No</span></label>
                   </div>
-                  <input type="text" name="product" placeholder="Superannuation product" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                  <select name="product" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
+                    <option value="">Select product…</option>
+                  </select>
                 </div>
               </div>
             </div>
