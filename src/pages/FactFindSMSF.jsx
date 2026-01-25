@@ -337,13 +337,9 @@ export default function FactFindSMSF() {
       ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
       : 'Client';
 
-    const childrenOptions = factFind?.dependants?.children
-      ?.map((c, i) => `<option value="child-${i}">${c.child_name || `Child ${i + 1}`}</option>`)
-      .join('') || '';
-
-    const dependantsOptions = factFind?.dependants?.dependants_list
-      ?.map((d, i) => `<option value="dependent-${i}">${d.dep_name || `Dependant ${i + 1}`}</option>`)
-      .join('') || '';
+    const partnerName = factFind?.personal?.partner?.first_name 
+      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
+      : null;
 
     row.innerHTML = `
       <td class="py-2 px-2">
@@ -355,8 +351,7 @@ export default function FactFindSMSF() {
         <select name="benef_who" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select entity…</option>
           <option value="client">${clientName}</option>
-          ${childrenOptions}
-          ${dependantsOptions}
+          ${partnerName ? `<option value="partner">${partnerName}</option>` : ''}
         </select>
       </td>
       <td class="py-2 px-2">
