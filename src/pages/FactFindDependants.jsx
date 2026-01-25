@@ -466,7 +466,7 @@ export default function FactFindDependants() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
+      <div key={renderKey} className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
           {/* Hidden containers - always rendered so addEntry can find them */}
           <div id="childrenWrap" className="space-y-4" style={{ display: globalStateRef.current.dependants.children?.length === 0 && currentTab === 'children' ? 'none' : '' }}>
