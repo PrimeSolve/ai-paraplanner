@@ -379,22 +379,20 @@ export default function FactFindDependants() {
                       </Button>
                     </div>
 
-                    {/* Form - shown always when there are children or form is open */}
-                    {(children.length > 0 || isAddingChild) && (
+                    {/* Form - always shown when children exist */}
+                    {children.length > 0 && (
                       <div className="space-y-4 border-t pt-4">
                         <div className="flex items-center justify-between">
                           <h5 className="font-semibold text-slate-700">
-                            {isAddingChild ? 'New Child' : `Child ${(selectedChildIndex ?? 0) + 1}`}
+                            {`Child ${(selectedChildIndex ?? 0) + 1}`}
                           </h5>
-                          {selectedChildIndex !== null && !isAddingChild && (
-                            <Button
-                              onClick={() => handleDeleteChild(selectedChildIndex)}
-                              variant="destructive"
-                              size="sm"
-                            >
-                              Remove
-                            </Button>
-                          )}
+                          <Button
+                            onClick={() => handleDeleteChild(selectedChildIndex ?? 0)}
+                            variant="destructive"
+                            size="sm"
+                          >
+                            Remove
+                          </Button>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-4">
