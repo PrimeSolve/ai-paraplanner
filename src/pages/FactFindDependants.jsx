@@ -17,6 +17,8 @@ export default function FactFindDependants() {
   const [currentTab, setCurrentTab] = useState('children');
   const [activeIndex, setActiveIndex] = useState(0);
   const [renderKey, setRenderKey] = useState(0);
+  const [childrenCount, setChildrenCount] = useState(0);
+  const [dependantsCount, setDependantsCount] = useState(0);
 
   // Global state for form data
   const globalStateRef = React.useRef({
