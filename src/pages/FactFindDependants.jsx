@@ -268,6 +268,16 @@ export default function FactFindDependants() {
     
     setSaving(true);
     try {
+      // First save current form data if adding/editing child
+      let updatedChildren = [...children];
+      if (isAddingChild && childFormData.child_name) {
+        if (selectedChildIndex >= children.length) {
+          updatedChildren.push(childFormData);
+        } else {
+          updatedChildren[selectedChildIndex] = childFormData;
+        }
+      }
+
       const sectionsCompleted = [...(factFind.sections_completed || [])];
       if (!sectionsCompleted.includes('dependants')) {
         sectionsCompleted.push('dependants');
@@ -275,7 +285,7 @@ export default function FactFindDependants() {
 
       const updateData = {
         dependants: { 
-          children: children,
+          children: updatedChildren,
           dependants_list: dependants 
         },
         sections_completed: sectionsCompleted,
@@ -283,6 +293,7 @@ export default function FactFindDependants() {
       };
 
       await base44.entities.FactFind.update(factFind.id, updateData);
+      setChildren(updatedChildren);
       
       if (activeTab === 'children') {
         setActiveTab('dependants');
