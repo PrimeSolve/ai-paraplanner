@@ -323,7 +323,6 @@ export default function FactFindDependants() {
                         child_fin_age: '',
                         child_health: ''
                       });
-                      setShowChildForm(true);
                     }}
                     className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium"
                   >
@@ -333,7 +332,7 @@ export default function FactFindDependants() {
                 </div>
               )}
 
-              {children.length === 0 && !showChildForm && (
+              {children.length === 0 && selectedChildIndex === null && (
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-8 text-center">
                     <div className="flex justify-center mb-4">
