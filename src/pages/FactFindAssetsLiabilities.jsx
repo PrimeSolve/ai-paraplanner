@@ -1,181 +1,207 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, MessageSquare, RefreshCw, Info, Plus, Trash2, Edit2, Home, Briefcase } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-const tabs = [
-  { id: 'assets', label: 'Assets', icon: '💰' },
-  { id: 'liabilities', label: 'Liabilities', icon: '📋' }
-];
+import { ArrowRight, ArrowLeft, Edit2, Trash2 } from 'lucide-react';
 
 export default function FactFindAssetsLiabilities() {
   const navigate = useNavigate();
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('assets');
-  const [assets, setAssets] = useState([]);
-  const [liabilities, setLiabilities] = useState([]);
+  const [currentTab, setCurrentTab] = useState('assets');
+  const [assetsList, setAssetsList] = useState([]);
+  const [debtsList, setDebtsList] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
-  const [assetFormData, setAssetFormData] = useState({
-    asset_name: '',
-    asset_type: '',
-    ownership_type: '',
-    owner: '',
-    current_value: '',
-    purchase_price: '',
-    purchase_date: '',
-    address: '',
-    notes: ''
-  });
-  const [liabilityFormData, setLiabilityFormData] = useState({
-    debt_name: '',
-    debt_type: '',
-    ownership_type: '',
-    owner: '',
-    lender: '',
-    current_balance: '',
-    original_amount: '',
-    interest_rate: '',
-    repayment_amount: '',
-    repayment_frequency: '',
-    loan_term: '',
-    notes: ''
+
+  // Form states
+  const [assetForm, setAssetForm] = useState({
+    a_name: '', a_ownType: '', a_owner: '', a_type: '',
+    a_value: '', a_purchase_price: '', a_purchase_date: '',
+    a_rental_income: '', a_rental_freq: ''
   });
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
+  const [debtForm, setDebtForm] = useState({
+    d_name: '', d_ownType: '', d_owner: '', d_type: '', d_rate: '',
+    d_freq: '', d_repayments: '', d_term: '', d_balance: '',
+    d_io: '', d_fixed: '', d_redraw: '', d_security: []
+  });
 
-        if (id) {
-          const finds = await base44.entities.FactFind.filter({ id });
-          if (finds[0]) {
-            setFactFind(finds[0]);
-            if (finds[0].assets_liabilities?.assets) {
-              setAssets(finds[0].assets_liabilities.assets);
-            }
-            if (finds[0].assets_liabilities?.liabilities) {
-              setLiabilities(finds[0].assets_liabilities.liabilities);
-            }
+  const getOwnerOptions = useCallback(() => {
+    if (!factFind) return [];
+    const opts = [];
+
+    // Principals
+    const clientName = factFind?.personal?.client?.first_name
+      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
+      : null;
+    const partnerName = factFind?.personal?.partner?.first_name
+      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
+      : null;
+
+    if (clientName) opts.push({ label: clientName, value: 'client' });
+    if (partnerName) opts.push({ label: partnerName, value: 'partner' });
+
+    // Children
+    (factFind?.dependants?.children || []).forEach((child, i) => {
+      opts.push({ label: child.child_name || `Child ${i + 1}`, value: `child-${i}` });
+    });
+
+    // Other dependants
+    (factFind?.dependants?.dependants_list || []).forEach((dep, i) => {
+      opts.push({ label: dep.dep_name || `Dependant ${i + 1}`, value: `dependent-${i}` });
+    });
+
+    // Trusts
+    (factFind?.trusts_companies?.entities || [])
+      .filter(e => e.entity_type === 'trust')
+      .forEach((trust, i) => {
+        opts.push({ label: trust.entity_name || `Trust ${i + 1}`, value: `trust-${i}` });
+      });
+
+    // Companies
+    (factFind?.trusts_companies?.entities || [])
+      .filter(e => e.entity_type === 'company')
+      .forEach((company, i) => {
+        opts.push({ label: company.entity_name || `Company ${i + 1}`, value: `company-${i}` });
+      });
+
+    // SMSFs
+    (factFind?.smsf?.funds || []).forEach((smsf, i) => {
+      opts.push({ label: smsf.smsf_name || `SMSF ${i + 1}`, value: `smsf-${i}` });
+    });
+
+    return opts;
+  }, [factFind]);
+
+  const getOwnerLabel = useCallback((ownerValue) => {
+    const opts = getOwnerOptions();
+    return opts.find(o => o.value === ownerValue)?.label || ownerValue;
+  }, [getOwnerOptions]);
+
+  const loadData = useCallback(async () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+
+      if (id) {
+        const finds = await base44.entities.FactFind.filter({ id });
+        if (finds[0]) {
+          setFactFind(finds[0]);
+          if (finds[0].assets?.assetsList) {
+            setAssetsList(finds[0].assets.assetsList);
+          }
+          if (finds[0].assets?.debtsList) {
+            setDebtsList(finds[0].assets.debtsList);
           }
         }
-      } catch (error) {
-        console.error('Error loading fact find:', error);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error('Error loading fact find:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
     loadData();
   }, []);
 
-  const handleAddAsset = () => {
-    if (!assetFormData.asset_name) {
+  const resetAssetForm = useCallback(() => {
+    setAssetForm({
+      a_name: '', a_ownType: '', a_owner: '', a_type: '',
+      a_value: '', a_purchase_price: '', a_purchase_date: '',
+      a_rental_income: '', a_rental_freq: ''
+    });
+    setEditingIndex(null);
+  }, []);
+
+  const resetDebtForm = useCallback(() => {
+    setDebtForm({
+      d_name: '', d_ownType: '', d_owner: '', d_type: '', d_rate: '',
+      d_freq: '', d_repayments: '', d_term: '', d_balance: '',
+      d_io: '', d_fixed: '', d_redraw: '', d_security: []
+    });
+    setEditingIndex(null);
+  }, []);
+
+  const handleSaveAsset = use=> {
+    if (!assetForm.a_name.trim()) {
       toast.error('Please enter asset name');
       return;
     }
 
     if (editingIndex !== null) {
-      const updated = [...assets];
-      updated[editingIndex] = assetFormData;
-      setAssets(updated);
-      setEditingIndex(null);
+      const updated = [...assetsList];
+      updated[editingIndex] = assetForm;
+      setAssetsList(updated);
     } else {
-      setAssets([...assets, assetFormData]);
+      setAssetsList([...assetsList, assetForm]);
     }
 
     resetAssetForm();
   };
 
-  const handleAddLiability = () => {
-    if (!liabilityFormData.debt_name) {
+  const handleSaveDebt = useCallback(() => {
+    if (!debtForm.d_name.trim()) {
       toast.error('Please enter debt name');
       return;
     }
 
     if (editingIndex !== null) {
-      const updated = [...liabilities];
-      updated[editingIndex] = liabilityFormData;
-      setLiabilities(updated);
-      setEditingIndex(null);
+      const updated = [...debtsList];
+      updated[editingIndex] = debtForm;
+      setDebtsList(updated);
     } else {
-      setLiabilities([...liabilities, liabilityFormData]);
+      setDebtsList([...debtsList, debtForm]);
     }
 
-    resetLiabilityForm();
-  };
+    resetDebtForm();
+  }, [debtForm, debtsList, editingIndex]);
 
-  const resetAssetForm = () => {
-    setAssetFormData({
-      asset_name: '',
-      asset_type: '',
-      ownership_type: '',
-      owner: '',
-      current_value: '',
-      purchase_price: '',
-      purchase_date: '',
-      address: '',
-      notes: ''
-    });
-  };
+  const handleEditAsset = useCallback((idx) => {
+    setAssetForm(assetsList[idx]);
+    setEditingIndex(idx);
+  }, [assetsList]);
 
-  const resetLiabilityForm = () => {
-    setLiabilityFormData({
-      debt_name: '',
-      debt_type: '',
-      ownership_type: '',
-      owner: '',
-      lender: '',
-      current_balance: '',
-      original_amount: '',
-      interest_rate: '',
-      repayment_amount: '',
-      repayment_frequency: '',
-      loan_term: '',
-      notes: ''
-    });
-  };
+  const handleDeleteAsset = useCallback((idx) => {
+    setAssetsList(assetsList.filter((_, i) => i !== idx));
+  }, [assetsList]);
 
-  const handleEditAsset = (index) => {
-    setAssetFormData(assets[index]);
-    setEditingIndex(index);
-  };
+  const handleEditDebt = useCallback((idx) => {
+    setDebtForm(debtsList[idx]);
+    setEditingIndex(idx);
+  }, [debtsList]);
 
-  const handleDeleteAsset = (index) => {
-    setAssets(assets.filter((_, i) => i !== index));
-  };
-
-  const handleEditLiability = (index) => {
-    setLiabilityFormData(liabilities[index]);
-    setEditingIndex(index);
-  };
-
-  const handleDeleteLiability = (index) => {
-    setLiabilities(liabilities.filter((_, i) => i !== index));
-  };
+  const handleDeleteDebt = useCallback((idx) => {
+    setDebtsList(debtsList.filter((_, i) => i !== idx));
+  }, [debtsList]);
 
   const handleNext = async () => {
+    if (!factFind?.id) {
+      toast.error('Unable to save data');
+      return;
+    }
+
     setSaving(true);
     try {
-      const sectionsCompleted = factFind.sections_completed || [];
+      const sectionsCompleted = [...(factFind.sections_completed || [])];
       if (!sectionsCompleted.includes('assets_liabilities')) {
         sectionsCompleted.push('assets_liabilities');
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        assets_liabilities: { assets, liabilities },
-        current_section: 'income_expenses',
+        assets: {
+          currentTab,
+          activeIdx: { assets: 0, debts: 0 },
+          assetsList,
+          debtsList
+        },
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
@@ -202,212 +228,69 @@ export default function FactFindAssetsLiabilities() {
     );
   }
 
-  const handleTabChange = (newTab) => {
-    setActiveTab(newTab);
-    setEditingIndex(null);
-  };
+  const ownerOptions = getOwnerOptions();
 
   return (
     <FactFindLayout currentSection="assets_liabilities" factFind={factFind}>
       <FactFindHeader
         title="Assets & Liabilities"
         description="Add your assets and debts. Use the summary to select an item; edit its full details below."
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
+        tabs={[
+          { id: 'assets', label: 'Assets' },
+          { id: 'debts', label: 'Liabilities' }
+        ]}
+        activeTab={currentTab}
+        onTabChange={(tab) => {
+          setCurrentTab(tab);
+          resetAssetForm();
+          resetDebtForm();
+        }}
         factFind={factFind}
       />
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="w-full space-y-4">
-          {activeTab === 'assets' ? (
+      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="w-full space-y-6">
+          {currentTab === 'assets' ? (
             <>
-              {/* Asset Form */}
-              <Card className="border-slate-200 shadow-sm">
-                <div className="bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-3 rounded-t-lg">
-                  <h4 className="font-bold text-white">
-                    {editingIndex !== null ? 'Edit Asset' : 'Add an Asset'}
-                  </h4>
+              {/* Summary Table */}
+              {assetsList.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <div className="text-5xl mb-6">🏠</div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">Do you have any assets?</h3>
+                  <p className="text-slate-600 text-center mb-8 max-w-md">Add details about your property, vehicles, investments, cash, and other assets.</p>
                 </div>
-                <CardContent className="p-6 space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Asset name</Label>
-                      <Input
-                        value={assetFormData.asset_name}
-                        onChange={(e) => setAssetFormData({ ...assetFormData, asset_name: e.target.value })}
-                        placeholder="Enter asset name"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Asset type</Label>
-                      <Select value={assetFormData.asset_type} onValueChange={(value) => setAssetFormData({ ...assetFormData, asset_type: value })}>
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="property">Property</SelectItem>
-                          <SelectItem value="vehicle">Vehicle</SelectItem>
-                          <SelectItem value="cash">Cash/Savings</SelectItem>
-                          <SelectItem value="shares">Shares</SelectItem>
-                          <SelectItem value="business">Business</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Ownership type</Label>
-                      <Select value={assetFormData.ownership_type} onValueChange={(value) => setAssetFormData({ ...assetFormData, ownership_type: value })}>
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="individual">Individual</SelectItem>
-                          <SelectItem value="joint">Joint</SelectItem>
-                          <SelectItem value="trust">Trust</SelectItem>
-                          <SelectItem value="company">Company</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Owner</Label>
-                      <Input
-                        value={assetFormData.owner}
-                        onChange={(e) => setAssetFormData({ ...assetFormData, owner: e.target.value })}
-                        placeholder="Enter owner name"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Current value ($)</Label>
-                      <Input
-                        type="number"
-                        value={assetFormData.current_value}
-                        onChange={(e) => setAssetFormData({ ...assetFormData, current_value: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Purchase price ($)</Label>
-                      <Input
-                        type="number"
-                        value={assetFormData.purchase_price}
-                        onChange={(e) => setAssetFormData({ ...assetFormData, purchase_price: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Purchase date</Label>
-                      <Input
-                        type="date"
-                        value={assetFormData.purchase_date}
-                        onChange={(e) => setAssetFormData({ ...assetFormData, purchase_date: e.target.value })}
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Address (if property)</Label>
-                      <Input
-                        value={assetFormData.address}
-                        onChange={(e) => setAssetFormData({ ...assetFormData, address: e.target.value })}
-                        placeholder="Enter address"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold text-sm">Additional notes</Label>
-                    <Input
-                      value={assetFormData.notes}
-                      onChange={(e) => setAssetFormData({ ...assetFormData, notes: e.target.value })}
-                      placeholder="Any other relevant information"
-                      className="border-slate-300"
-                    />
-                  </div>
-
-                  <div className="flex justify-end gap-2 pt-2">
-                    {editingIndex !== null && (
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setEditingIndex(null);
-                          resetAssetForm();
-                        }}
-                        className="border-slate-300"
-                      >
-                        Cancel
-                      </Button>
-                    )}
-                    <Button
-                      onClick={handleAddAsset}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      {editingIndex !== null ? 'Update Asset' : 'Add Asset'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Assets Summary */}
-              {assets.length === 0 ? (
-                <Card className="border-slate-200 shadow-sm">
-                  <CardContent className="p-12 text-center">
-                    <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-                      <Home className="w-5 h-5 text-emerald-600" />
-                    </div>
-                    <h4 className="font-bold text-slate-800 mb-2">No assets added yet</h4>
-                    <p className="text-sm text-slate-600 mb-4">
-                      Add your first asset using the form above.
-                    </p>
-                  </CardContent>
-                </Card>
               ) : (
                 <Card className="border-slate-200 shadow-sm">
-                  <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-3">
-                    <h4 className="font-bold text-white">📊 Assets Summary ({assets.length})</h4>
+                  <div className="bg-slate-100 border-b border-slate-200 px-6 py-3">
+                    <h4 className="font-bold text-slate-800">📊 Assets Summary ({assetsList.length})</h4>
                   </div>
                   <CardContent className="p-0">
                     <div className="overflow-x-auto">
-                      <table className="w-full">
+                      <table className="w-full text-sm">
                         <thead className="bg-slate-50 border-b border-slate-200">
                           <tr>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Asset name</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Ownership type</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Owner</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Current value</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Actions</th>
+                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Asset name</th>
+                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Ownership type</th>
+                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Owner</th>
+                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Current value</th>
+                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
-                          {assets.map((asset, index) => (
-                            <tr key={index} className="hover:bg-slate-50">
-                              <td className="px-4 py-3 text-sm text-slate-800 font-medium">{asset.asset_name}</td>
-                              <td className="px-4 py-3 text-sm text-slate-600 capitalize">{asset.ownership_type}</td>
-                              <td className="px-4 py-3 text-sm text-slate-600">{asset.owner}</td>
-                              <td className="px-4 py-3 text-sm text-slate-800 font-semibold">
-                                {asset.current_value ? `$${parseFloat(asset.current_value).toLocaleString()}` : '-'}
+                          {assetsList.map((asset, idx) => (
+                            <tr key={idx} className="hover:bg-slate-50">
+                              <td className="px-4 py-3 font-medium text-slate-800">{asset.a_name}</td>
+                              <td className="px-4 py-3 text-slate-600">{asset.a_ownType === '2' ? 'Joint' : 'Sole'}</td>
+                              <td className="px-4 py-3 text-slate-600">{getOwnerLabel(asset.a_owner)}</td>
+                              <td className="px-4 py-3 font-semibold text-slate-800">
+                                {asset.a_value ? `$${parseFloat(asset.a_value).toLocaleString()}` : '-'}
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex gap-2">
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleEditAsset(index)}
+                                    onClick={() => handleEditAsset(idx)}
                                     className="border-slate-300"
                                   >
                                     <Edit2 className="w-3 h-3" />
@@ -415,7 +298,7 @@ export default function FactFindAssetsLiabilities() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleDeleteAsset(index)}
+                                    onClick={() => handleDeleteAsset(idx)}
                                     className="border-red-300 text-red-600 hover:bg-red-50"
                                   >
                                     <Trash2 className="w-3 h-3" />
@@ -430,241 +313,223 @@ export default function FactFindAssetsLiabilities() {
                   </CardContent>
                 </Card>
               )}
-            </>
-          ) : (
-            <>
-              {/* Liability Form */}
+
+              {/* Asset Editor */}
               <Card className="border-slate-200 shadow-sm">
-                <div className="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-3 rounded-t-lg">
-                  <h4 className="font-bold text-white">
-                    {editingIndex !== null ? 'Edit Liability' : 'Add a Liability'}
+                <div className="bg-blue-50 border-b border-blue-200 px-6 py-3">
+                  <h4 className="font-bold text-blue-700">
+                    {editingIndex !== null ? 'Edit Asset' : 'Add Asset'}
                   </h4>
                 </div>
                 <CardContent className="p-6 space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Debt name</Label>
-                      <Input
-                        value={liabilityFormData.debt_name}
-                        onChange={(e) => setLiabilityFormData({ ...liabilityFormData, debt_name: e.target.value })}
-                        placeholder="Enter debt name"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Debt type</Label>
-                      <Select value={liabilityFormData.debt_type} onValueChange={(value) => setLiabilityFormData({ ...liabilityFormData, debt_type: value })}>
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="home_loan">Home loan</SelectItem>
-                          <SelectItem value="investment_loan">Investment loan</SelectItem>
-                          <SelectItem value="personal_loan">Personal loan</SelectItem>
-                          <SelectItem value="credit_card">Credit card</SelectItem>
-                          <SelectItem value="car_loan">Car loan</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Ownership type</Label>
-                      <Select value={liabilityFormData.ownership_type} onValueChange={(value) => setLiabilityFormData({ ...liabilityFormData, ownership_type: value })}>
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="individual">Individual</SelectItem>
-                          <SelectItem value="joint">Joint</SelectItem>
-                          <SelectItem value="trust">Trust</SelectItem>
-                          <SelectItem value="company">Company</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Owner</Label>
-                      <Input
-                        value={liabilityFormData.owner}
-                        onChange={(e) => setLiabilityFormData({ ...liabilityFormData, owner: e.target.value })}
-                        placeholder="Enter owner name"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Lender</Label>
-                      <Input
-                        value={liabilityFormData.lender}
-                        onChange={(e) => setLiabilityFormData({ ...liabilityFormData, lender: e.target.value })}
-                        placeholder="Enter lender name"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Current balance ($)</Label>
-                      <Input
-                        type="number"
-                        value={liabilityFormData.current_balance}
-                        onChange={(e) => setLiabilityFormData({ ...liabilityFormData, current_balance: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Original amount ($)</Label>
-                      <Input
-                        type="number"
-                        value={liabilityFormData.original_amount}
-                        onChange={(e) => setLiabilityFormData({ ...liabilityFormData, original_amount: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Interest rate (%)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={liabilityFormData.interest_rate}
-                        onChange={(e) => setLiabilityFormData({ ...liabilityFormData, interest_rate: e.target.value })}
-                        placeholder="0.00"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Repayment amount ($)</Label>
-                      <Input
-                        type="number"
-                        value={liabilityFormData.repayment_amount}
-                        onChange={(e) => setLiabilityFormData({ ...liabilityFormData, repayment_amount: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Repayment frequency</Label>
-                      <Select value={liabilityFormData.repayment_frequency} onValueChange={(value) => setLiabilityFormData({ ...liabilityFormData, repayment_frequency: value })}>
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="weekly">Weekly</SelectItem>
-                          <SelectItem value="fortnightly">Fortnightly</SelectItem>
-                          <SelectItem value="monthly">Monthly</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold text-sm">Loan term (years)</Label>
-                    <Input
-                      type="number"
-                      value={liabilityFormData.loan_term}
-                      onChange={(e) => setLiabilityFormData({ ...liabilityFormData, loan_term: e.target.value })}
-                      placeholder="e.g., 30"
-                      className="border-slate-300"
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Asset name</label>
+                    <input
+                      type="text"
+                      value={assetForm.a_name}
+                      onChange={(e) => setAssetForm({ ...assetForm, a_name: e.target.value })}
+                      placeholder="e.g. Family Home Melbourne"
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold text-sm">Additional notes</Label>
-                    <Input
-                      value={liabilityFormData.notes}
-                      onChange={(e) => setLiabilityFormData({ ...liabilityFormData, notes: e.target.value })}
-                      placeholder="Any other relevant information"
-                      className="border-slate-300"
-                    />
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Asset ownership type</label>
+                      <select
+                        value={assetForm.a_ownType}
+                        onChange={(e) => setAssetForm({ ...assetForm, a_ownType: e.target.value })}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select…</option>
+                        <option value="2">Joint</option>
+                        <option value="1">Sole ownership</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
+                      <select
+                        value={assetForm.a_owner}
+                        onChange={(e) => setAssetForm({ ...assetForm, a_owner: e.target.value })}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select…</option>
+                        {ownerOptions.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Asset type</label>
+                      <select
+                        value={assetForm.a_type}
+                        onChange={(e) => setAssetForm({ ...assetForm, a_type: e.target.value })}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select…</option>
+                        <option value="1">Home</option>
+                        <option value="18">Investment property</option>
+                        <option value="2">Vehicle</option>
+                        <option value="8">Cash</option>
+                        <option value="9">Term deposits</option>
+                        <option value="12">Australian shares</option>
+                        <option value="13">International shares</option>
+                        <option value="26">Managed funds</option>
+                        <option value="10">Bonds - Australian</option>
+                        <option value="11">Bonds - International</option>
+                        <option value="7">Lifestyle - Other</option>
+                        <option value="42">Investment - Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Current value</label>
+                      <div className="flex items-center">
+                        <span className="text-slate-500 mr-2">$</span>
+                        <input
+                          type="number"
+                          value={assetForm.a_value}
+                          onChange={(e) => setAssetForm({ ...assetForm, a_value: e.target.value })}
+                          step="0.01"
+                          min="0"
+                          className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Purchase price</label>
+                      <div className="flex items-center">
+                        <span className="text-slate-500 mr-2">$</span>
+                        <input
+                          type="number"
+                          value={assetForm.a_purchase_price}
+                          onChange={(e) => setAssetForm({ ...assetForm, a_purchase_price: e.target.value })}
+                          step="0.01"
+                          min="0"
+                          className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Purchase date</label>
+                      <input
+                        type="date"
+                        value={assetForm.a_purchase_date}
+                        onChange={(e) => setAssetForm({ ...assetForm, a_purchase_date: e.target.value })}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Rental income</label>
+                      <div className="flex items-center">
+                        <span className="text-slate-500 mr-2">$</span>
+                        <input
+                          type="number"
+                          value={assetForm.a_rental_income}
+                          onChange={(e) => setAssetForm({ ...assetForm, a_rental_income: e.target.value })}
+                          step="0.01"
+                          min="0"
+                          className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Rental frequency</label>
+                      <select
+                        value={assetForm.a_rental_freq}
+                        onChange={(e) => setAssetForm({ ...assetForm, a_rental_freq: e.target.value })}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select…</option>
+                        <option value="1">Weekly</option>
+                        <option value="2">Fortnightly</option>
+                        <option value="3">Monthly</option>
+                        <option value="4">Quarterly</option>
+                        <option value="5">Annual</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div className="flex justify-end gap-2 pt-2">
                     {editingIndex !== null && (
                       <Button
                         variant="outline"
-                        onClick={() => {
-                          setEditingIndex(null);
-                          resetLiabilityForm();
-                        }}
+                        onClick={resetAssetForm}
                         className="border-slate-300"
                       >
                         Cancel
                       </Button>
                     )}
                     <Button
-                      onClick={handleAddLiability}
-                      className="bg-red-600 hover:bg-red-700 text-white"
+                      onClick={handleSaveAsset}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
-                      <Plus className="w-4 h-4 mr-2" />
-                      {editingIndex !== null ? 'Update Liability' : 'Add Liability'}
+                      {editingIndex !== null ? 'Update Asset' : 'Add Asset'}
                     </Button>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Liabilities Summary */}
-              {liabilities.length === 0 ? (
-                <Card className="border-slate-200 shadow-sm">
-                  <CardContent className="p-12 text-center">
-                    <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-                      <Briefcase className="w-5 h-5 text-red-600" />
-                    </div>
-                    <h4 className="font-bold text-slate-800 mb-2">No liabilities added yet</h4>
-                    <p className="text-sm text-slate-600 mb-4">
-                      Add your first liability using the form above.
-                    </p>
-                  </CardContent>
-                </Card>
+              {assetsList.length > 0 && (
+                <Button
+                  onClick={() => {
+                    resetAssetForm();
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+                >
+                  + Add Another Asset
+                </Button>
+              )}
+            </>
+          ) : (
+            <>
+              {/* Debts Summary Table */}
+              {debtsList.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <div className="text-5xl mb-6">💳</div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">Do you have any debts or liabilities?</h3>
+                  <p className="text-slate-600 text-center mb-8 max-w-md">Add details about your loans, mortgages, credit cards, and other debts.</p>
+                </div>
               ) : (
                 <Card className="border-slate-200 shadow-sm">
-                  <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-3">
-                    <h4 className="font-bold text-white">📊 Liabilities Summary ({liabilities.length})</h4>
+                  <div className="bg-slate-100 border-b border-slate-200 px-6 py-3">
+                    <h4 className="font-bold text-slate-800">📊 Liabilities Summary ({debtsList.length})</h4>
                   </div>
                   <CardContent className="p-0">
                     <div className="overflow-x-auto">
-                      <table className="w-full">
+                      <table className="w-full text-sm">
                         <thead className="bg-slate-50 border-b border-slate-200">
                           <tr>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Debt name</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Ownership type</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Owner</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Debt type</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Current value</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Repayments</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Actions</th>
+                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Debt name</th>
+                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Ownership type</th>
+                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Owner</th>
+                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Balance</th>
+                            <th className="px-4 py-3 text-left font-semibold text-slate-700">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
-                          {liabilities.map((liability, index) => (
-                            <tr key={index} className="hover:bg-slate-50">
-                              <td className="px-4 py-3 text-sm text-slate-800 font-medium">{liability.debt_name}</td>
-                              <td className="px-4 py-3 text-sm text-slate-600 capitalize">{liability.ownership_type}</td>
-                              <td className="px-4 py-3 text-sm text-slate-600">{liability.owner}</td>
-                              <td className="px-4 py-3 text-sm text-slate-600 capitalize">{liability.debt_type?.replace('_', ' ')}</td>
-                              <td className="px-4 py-3 text-sm text-slate-800 font-semibold">
-                                {liability.current_balance ? `$${parseFloat(liability.current_balance).toLocaleString()}` : '-'}
-                              </td>
-                              <td className="px-4 py-3 text-sm text-slate-600">
-                                {liability.repayment_amount && liability.repayment_frequency 
-                                  ? `$${parseFloat(liability.repayment_amount).toLocaleString()} ${liability.repayment_frequency}`
-                                  : '-'}
+                          {debtsList.map((debt, idx) => (
+                            <tr key={idx} className="hover:bg-slate-50">
+                              <td className="px-4 py-3 font-medium text-slate-800">{debt.d_name}</td>
+                              <td className="px-4 py-3 text-slate-600">{debt.d_ownType === '2' ? 'Joint' : 'Sole'}</td>
+                              <td className="px-4 py-3 text-slate-600">{getOwnerLabel(debt.d_owner)}</td>
+                              <td className="px-4 py-3 font-semibold text-slate-800">
+                                {debt.d_balance ? `$${parseFloat(debt.d_balance).toLocaleString()}` : '-'}
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex gap-2">
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleEditLiability(index)}
+                                    onClick={() => handleEditDebt(idx)}
                                     className="border-slate-300"
                                   >
                                     <Edit2 className="w-3 h-3" />
@@ -672,7 +537,7 @@ export default function FactFindAssetsLiabilities() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleDeleteLiability(index)}
+                                    onClick={() => handleDeleteDebt(idx)}
                                     className="border-red-300 text-red-600 hover:bg-red-50"
                                   >
                                     <Trash2 className="w-3 h-3" />
@@ -686,6 +551,208 @@ export default function FactFindAssetsLiabilities() {
                     </div>
                   </CardContent>
                 </Card>
+              )}
+
+              {/* Debt Editor */}
+              <Card className="border-slate-200 shadow-sm">
+                <div className="bg-red-50 border-b border-red-200 px-6 py-3">
+                  <h4 className="font-bold text-red-700">
+                    {editingIndex !== null ? 'Edit Liability' : 'Add Liability'}
+                  </h4>
+                </div>
+                <CardContent className="p-6 space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Debt name</label>
+                    <input
+                      type="text"
+                      value={debtForm.d_name}
+                      onChange={(e) => setDebtForm({ ...debtForm, d_name: e.target.value })}
+                      placeholder="e.g. Home Loan - XYZ Bank"
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Ownership type</label>
+                      <select
+                        value={debtForm.d_ownType}
+                        onChange={(e) => setDebtForm({ ...debtForm, d_ownType: e.target.value })}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select…</option>
+                        <option value="2">Joint</option>
+                        <option value="1">Sole ownership</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
+                      <select
+                        value={debtForm.d_owner}
+                        onChange={(e) => setDebtForm({ ...debtForm, d_owner: e.target.value })}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select…</option>
+                        {ownerOptions.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Debt type</label>
+                      <select
+                        value={debtForm.d_type}
+                        onChange={(e) => setDebtForm({ ...debtForm, d_type: e.target.value })}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select…</option>
+                        <option value="1">Home loan</option>
+                        <option value="2">Investment loan</option>
+                        <option value="3">Personal loan</option>
+                        <option value="4">Credit card</option>
+                        <option value="5">Car loan</option>
+                        <option value="6">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Interest rate (%)</label>
+                      <input
+                        type="number"
+                        value={debtForm.d_rate}
+                        onChange={(e) => setDebtForm({ ...debtForm, d_rate: e.target.value })}
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Repayment frequency</label>
+                      <select
+                        value={debtForm.d_freq}
+                        onChange={(e) => setDebtForm({ ...debtForm, d_freq: e.target.value })}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select…</option>
+                        <option value="1">Weekly</option>
+                        <option value="2">Fortnightly</option>
+                        <option value="3">Monthly</option>
+                        <option value="4">Quarterly</option>
+                        <option value="5">Annual</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Repayment amount</label>
+                      <div className="flex items-center">
+                        <span className="text-slate-500 mr-2">$</span>
+                        <input
+                          type="number"
+                          value={debtForm.d_repayments}
+                          onChange={(e) => setDebtForm({ ...debtForm, d_repayments: e.target.value })}
+                          step="0.01"
+                          min="0"
+                          className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Term (years)</label>
+                      <input
+                        type="number"
+                        value={debtForm.d_term}
+                        onChange={(e) => setDebtForm({ ...debtForm, d_term: e.target.value })}
+                        min="0"
+                        placeholder="e.g. 30"
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Current balance</label>
+                      <div className="flex items-center">
+                        <span className="text-slate-500 mr-2">$</span>
+                        <input
+                          type="number"
+                          value={debtForm.d_balance}
+                          onChange={(e) => setDebtForm({ ...debtForm, d_balance: e.target.value })}
+                          step="0.01"
+                          min="0"
+                          className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">Debt security - Linked assets</label>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {assetsList.length === 0 ? (
+                        <p className="text-sm text-slate-500 italic">No assets added yet</p>
+                      ) : (
+                        assetsList.map((asset, idx) => (
+                          <label key={idx} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={debtForm.d_security.includes(idx)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setDebtForm({
+                                    ...debtForm,
+                                    d_security: [...debtForm.d_security, idx]
+                                  });
+                                } else {
+                                  setDebtForm({
+                                    ...debtForm,
+                                    d_security: debtForm.d_security.filter(i => i !== idx)
+                                  });
+                                }
+                              }}
+                              className="w-4 h-4 border-slate-300 rounded"
+                            />
+                            <span className="text-sm text-slate-700">{asset.a_name}</span>
+                          </label>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-2">
+                    {editingIndex !== null && (
+                      <Button
+                        variant="outline"
+                        onClick={resetDebtForm}
+                        className="border-slate-300"
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                    <Button
+                      onClick={handleSaveDebt}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      {editingIndex !== null ? 'Update Liability' : 'Add Liability'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {debtsList.length > 0 && (
+                <Button
+                  onClick={() => {
+                    resetDebtForm();
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+                >
+                  + Add Another Liability
+                </Button>
               )}
             </>
           )}
@@ -716,7 +783,7 @@ export default function FactFindAssetsLiabilities() {
                     </>
                   ) : (
                     <>
-                      Continue
+                      Save & continue
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </>
                   )}
