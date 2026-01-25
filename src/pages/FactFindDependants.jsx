@@ -496,7 +496,42 @@ export default function FactFindDependants() {
           {/* Dependants Tab */}
           {activeTab === 'dependants' && (
             <>
-              {!showDependantForm && dependants.length === 0 && (
+              {dependants.length > 0 && (
+                <div className="flex gap-2 mb-4 flex-wrap">
+                  {dependants.map((dep, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleSelectDependant(index)}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                        selectedDependantIndex === index
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {dep.dep_name || `Dependant ${index + 1}`}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => {
+                      setSelectedDependantIndex(null);
+                      setDependantFormData({
+                        dep_name: '',
+                        dep_dob: '',
+                        dep_until_age: '',
+                        dep_relationship: '',
+                        dep_interdep: ''
+                      });
+                      setShowDependantForm(true);
+                    }}
+                    className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium"
+                  >
+                    <Plus className="w-4 h-4 inline mr-2" />
+                    Add Dependant
+                  </button>
+                </div>
+              )}
+
+              {dependants.length === 0 && !showDependantForm && (
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-8 text-center">
                     <div className="flex justify-center mb-4">
