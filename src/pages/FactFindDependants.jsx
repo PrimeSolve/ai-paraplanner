@@ -624,7 +624,7 @@ export default function FactFindDependants() {
                     </>
                   ) : (
                     <>
-                      Continue
+                      Save and Continue
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </>
                   )}
