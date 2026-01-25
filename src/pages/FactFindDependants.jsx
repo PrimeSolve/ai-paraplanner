@@ -417,16 +417,12 @@ export default function FactFindDependants() {
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-8 text-center">
                     <div className="flex justify-center mb-4">
-                      <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="28" cy="22" r="8" fill="#fecaca"/>
-                        <rect x="24" y="30" width="8" height="16" rx="2" fill="#fecaca"/>
-                        <rect x="20" y="46" width="6" height="10" rx="2" fill="#fecaca"/>
-                        <rect x="30" y="46" width="6" height="10" rx="2" fill="#fecaca"/>
-                        <circle cx="52" cy="24" r="6" fill="#bfdbfe"/>
-                        <rect x="49" y="30" width="6" height="12" rx="2" fill="#bfdbfe"/>
-                        <rect x="47" y="42" width="4" height="8" rx="2" fill="#bfdbfe"/>
-                        <rect x="53" y="42" width="4" height="8" rx="2" fill="#bfdbfe"/>
-                        <line x1="32" y1="36" x2="49" y2="36" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round"/>
+                      <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="32" cy="30" r="12" fill="#fecaca"/>
+                        <path d="M26 42h12c4 0 6 2 6 6v20c0 2-1 3-3 3h-2v18c0 2-1.5 3-3 3s-3-1-3-3V71h-2v18c0 2-1.5 3-3 3s-3-1-3-3V71h-2c-2 0-3-1-3-3V48c0-4 2-6 6-6Z" fill="#fecaca"/>
+                        <circle cx="68" cy="33" r="9" fill="#bfdbfe"/>
+                        <path d="M63 42h10c3 0 5 1.5 5 4.5v15c0 1.5-.7 2.5-2 2.5h-1.5v20c0 1.5-1 2.5-2.5 2.5s-2.5-1-2.5-2.5V64H68v20c0 1.5-1 2.5-2.5 2.5S63 85.5 63 84V64h-1.5c-1.3 0-2-1-2-2.5v-15c0-3 2-4.5 5-4.5Z" fill="#bfdbfe"/>
+                        <path d="M44 50h19" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round"/>
                       </svg>
                     </div>
                     <h4 className="font-bold text-slate-800 mb-2 text-lg">Do you have any dependants?</h4>
