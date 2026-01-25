@@ -204,9 +204,11 @@ export default function FactFindDependants() {
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-8 text-center">
                     <div className="flex justify-center mb-4">
-                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-pink-100 flex items-center justify-center">
-                        <Baby className="w-10 h-10 text-blue-600" />
-                      </div>
+                      <img 
+                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/a5dbbe56a_image.png" 
+                        alt="Child" 
+                        className="w-32 h-32"
+                      />
                     </div>
                     <h4 className="font-bold text-slate-800 mb-2 text-lg">Do you have any children?</h4>
                     <p className="text-slate-600 mb-6">Add details about your children to help us understand your family situation.</p>
