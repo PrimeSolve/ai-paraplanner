@@ -59,6 +59,10 @@ import SOARequestWelcome from './pages/SOARequestWelcome';
 import ClientDocuments from './pages/ClientDocuments';
 import ClientMessages from './pages/ClientMessages';
 import ClientSettings from './pages/ClientSettings';
+import PublicHome from './pages/PublicHome';
+import PublicAbout from './pages/PublicAbout';
+import PublicPricing from './pages/PublicPricing';
+import PublicContact from './pages/PublicContact';
 import __Layout from './Layout.jsx';
 
 
@@ -124,6 +128,10 @@ export const PAGES = {
     "ClientDocuments": ClientDocuments,
     "ClientMessages": ClientMessages,
     "ClientSettings": ClientSettings,
+    "PublicHome": PublicHome,
+    "PublicAbout": PublicAbout,
+    "PublicPricing": PublicPricing,
+    "PublicContact": PublicContact,
 }
 
 export const pagesConfig = {
