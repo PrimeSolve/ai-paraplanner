@@ -577,24 +577,7 @@ export default function FactFindDependants() {
                           Delete
                         </Button>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedDependantIndex(null);
-                          setIsAddingDependant(false);
-                          setDependantFormData({
-                            dep_name: '',
-                            dep_dob: '',
-                            dep_until_age: '',
-                            dep_relationship: '',
-                            dep_interdep: ''
-                          });
-                        }}
-                        className="border-slate-300"
-                      >
-                        Cancel
-                      </Button>
+
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
