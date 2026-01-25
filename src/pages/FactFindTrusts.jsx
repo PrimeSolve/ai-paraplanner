@@ -463,20 +463,68 @@ export default function FactFindTrusts() {
   // ============================================
 
   useEffect(() => {
-    const handler = (e) => {
+    const clickHandler = (e) => {
+      if (e.target.closest('.add-benef')) {
+        e.preventDefault();
+        const card = e.target.closest('.entry');
+        const list = card.querySelector('.benef-list');
+        const row = document.createElement('div');
+        row.className = 'benef-row flex gap-2 items-end pb-2';
+        row.innerHTML = `
+          <select name="benef_entity" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Select entity…</option>
+            <option value="client">Client</option>
+            <option value="partner">Partner</option>
+          </select>
+          <input type="text" name="benef_entitlement" placeholder="e.g. 25% or fixed amount" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <button type="button" class="remove-benef px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium">Remove</button>
+        `;
+        row.querySelector('.remove-benef').onclick = () => row.remove();
+        list.appendChild(row);
+      }
+      if (e.target.closest('.add-shareholder')) {
+        e.preventDefault();
+        const card = e.target.closest('.entry');
+        const list = card.querySelector('.sh-list');
+        const row = document.createElement('div');
+        row.className = 'sh-row flex gap-2 items-end pb-2';
+        row.innerHTML = `
+          <select name="sh_entity" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Select entity…</option>
+            <option value="client">Client</option>
+            <option value="partner">Partner</option>
+          </select>
+          <input type="text" name="sh_pct" placeholder="e.g. 25%" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <button type="button" class="remove-sh px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium">Remove</button>
+        `;
+        row.querySelector('.remove-sh').onclick = () => row.remove();
+        list.appendChild(row);
+      }
+      if (e.target.closest('.entry-remove')) {
+        e.preventDefault();
+        const node = e.target.closest('.entry');
+        const tab = currentTab;
+        removeEntry(node, tab);
+      }
+    };
+
+    const inputHandler = (e) => {
       if (e.target.matches('input[name="trust_name"], input[name="company_name"]')) {
         updatePills(currentTab, activeIndex);
       }
-
       clearTimeout(window._trustsSaveTimeout);
       window._trustsSaveTimeout = setTimeout(() => {
         saveTrustsState();
       }, 500);
     };
 
-    document.addEventListener('input', handler);
-    return () => document.removeEventListener('input', handler);
-  }, [currentTab, activeIndex, updatePills, saveTrustsState]);
+    document.addEventListener('click', clickHandler);
+    document.addEventListener('input', inputHandler);
+    return () => {
+      document.removeEventListener('click', clickHandler);
+      document.removeEventListener('input', inputHandler);
+    };
+  }, [currentTab, activeIndex, updatePills, saveTrustsState, removeEntry]);
 
   // ============================================
   // NAVIGATION
