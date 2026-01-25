@@ -346,20 +346,20 @@ export default function FactFindSMSF() {
       .join('') || '';
 
     row.innerHTML = `
-      <div class="px-1">
+      <td class="py-2 px-2">
         <select name="benef_account" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select…</option>
         </select>
-      </div>
-      <div class="px-1">
+      </td>
+      <td class="py-2 px-2">
         <select name="benef_who" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select entity…</option>
           <option value="client">${clientName}</option>
           ${childrenOptions}
           ${dependantsOptions}
         </select>
-      </div>
-      <div class="px-1">
+      </td>
+      <td class="py-2 px-2">
         <select name="benef_type" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select…</option>
           <option value="1">Binding</option>
@@ -367,13 +367,13 @@ export default function FactFindSMSF() {
           <option value="3">Reversionary</option>
           <option value="4">Not sure</option>
         </select>
-      </div>
-      <div class="px-1">
+      </td>
+      <td class="py-2 px-2">
         <input type="text" name="benef_entitlement" placeholder="e.g. 50%" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
-      </div>
-      <div class="px-1 text-center">
+      </td>
+      <td class="py-2 px-2 text-center">
         <button type="button" class="remove-benef text-red-500 hover:text-red-700 text-xs font-medium">Remove</button>
-      </div>
+      </td>
     `;
 
     const removeBtn = row.querySelector('.remove-benef');
