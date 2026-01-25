@@ -75,14 +75,14 @@ export default function FactFindDependants() {
 
     try {
       let updated;
-      if (editingChildIndex !== null) {
+      if (selectedChildIndex !== null) {
         updated = [...children];
-        updated[editingChildIndex] = childFormData;
+        updated[selectedChildIndex] = childFormData;
         setChildren(updated);
-        setEditingChildIndex(null);
       } else {
         updated = [...children, childFormData];
         setChildren(updated);
+        setSelectedChildIndex(updated.length - 1);
       }
 
       // Auto-save to database
@@ -99,7 +99,7 @@ export default function FactFindDependants() {
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
 
-      toast.success(editingChildIndex !== null ? 'Child updated' : 'Child added');
+      toast.success(selectedChildIndex !== null ? 'Child updated' : 'Child added');
     } catch (error) {
       toast.error('Failed to save child');
       console.error(error);
