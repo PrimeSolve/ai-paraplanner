@@ -68,7 +68,7 @@ export default function FactFindDependants() {
   }, []);
 
   const handleAddChild = () => {
-    if (!childFormData.name) {
+    if (!childFormData.child_name) {
       toast.error('Please enter child name');
       return;
     }
@@ -83,12 +83,12 @@ export default function FactFindDependants() {
     }
 
     setChildFormData({
-      name: '',
-      date_of_birth: '',
-      financially_dependent: '',
-      education_status: '',
-      dependent_age: '',
-      health_issues: ''
+      child_name: '',
+      child_dob: '',
+      child_fin_dep: '',
+      child_edu: '',
+      child_fin_age: '',
+      child_health: ''
     });
     setShowChildForm(false);
   };
