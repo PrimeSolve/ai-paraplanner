@@ -798,10 +798,19 @@ export default function FactFindSuperannuation() {
             <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
               <h4 className="text-sm font-semibold text-yellow-700 mb-4">📋 Tax Components</h4>
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="unp" placeholder="Unrestricted non-preserved" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
-                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="taxable_portion" placeholder="Taxable portion" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">UNP amount</label>
+                  <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="unp" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Taxable portion</label>
+                  <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="taxable_portion" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                </div>
               </div>
-              <div className="flex items-center mt-4"><span className="text-slate-500 mr-2">$</span><input type="number" name="tax_free" placeholder="Tax free portion" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+              <div className="mt-4">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Tax free portion</label>
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="tax_free" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+              </div>
             </div>
 
             <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
