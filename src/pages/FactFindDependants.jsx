@@ -672,42 +672,40 @@ export default function FactFindDependants() {
             </>
           )}
 
-          {/* Navigation - only show when NOT editing any form */}
-          {!isAddingChild && selectedChildIndex === null && !isAddingDependant && selectedDependantIndex === null && (
-            <Card className="border-slate-200 shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <Button
-                    onClick={handleBack}
-                    variant="outline"
-                    disabled={saving}
-                    className="border-slate-300 text-slate-700 hover:bg-slate-50"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back
-                  </Button>
+          {/* Navigation - always visible */}
+          <Card className="border-slate-200 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <Button
+                  onClick={handleBack}
+                  variant="outline"
+                  disabled={saving}
+                  className="border-slate-300 text-slate-700 hover:bg-slate-50"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back
+                </Button>
 
-                  <Button
-                    onClick={handleNext}
-                    disabled={saving}
-                    className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
-                  >
-                    {saving ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        Save and Continue
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                <Button
+                  onClick={handleNext}
+                  disabled={saving}
+                  className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
+                >
+                  {saving ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      Save and Continue
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </FactFindLayout>
