@@ -123,6 +123,11 @@ export default function FactFindDependants() {
   };
 
   const handleDeleteChild = async (index) => {
+    if (!factFind?.id) {
+      toast.error('Unable to save data');
+      return;
+    }
+
     try {
       const updated = children.filter((_, i) => i !== index);
       setChildren(updated);
