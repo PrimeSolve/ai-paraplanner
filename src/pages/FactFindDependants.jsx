@@ -204,9 +204,17 @@ export default function FactFindDependants() {
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-8 text-center">
                     <div className="flex justify-center mb-4">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-pink-100 flex items-center justify-center">
-                        <Baby className="w-8 h-8 text-blue-600" />
-                      </div>
+                      <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="28" cy="22" r="8" fill="#fecaca"/>
+                        <rect x="24" y="30" width="8" height="16" rx="2" fill="#fecaca"/>
+                        <rect x="20" y="46" width="6" height="10" rx="2" fill="#fecaca"/>
+                        <rect x="30" y="46" width="6" height="10" rx="2" fill="#fecaca"/>
+                        <circle cx="52" cy="24" r="6" fill="#bfdbfe"/>
+                        <rect x="49" y="30" width="6" height="12" rx="2" fill="#bfdbfe"/>
+                        <rect x="47" y="42" width="4" height="8" rx="2" fill="#bfdbfe"/>
+                        <rect x="53" y="42" width="4" height="8" rx="2" fill="#bfdbfe"/>
+                        <line x1="32" y1="36" x2="49" y2="36" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
                     </div>
                     <h4 className="font-bold text-slate-800 mb-2 text-lg">Do you have any children?</h4>
                     <p className="text-slate-600 mb-6">Add details about your children to help us understand your family situation.</p>
@@ -409,9 +417,17 @@ export default function FactFindDependants() {
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-8 text-center">
                     <div className="flex justify-center mb-4">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
-                        <Users className="w-8 h-8 text-purple-600" />
-                      </div>
+                      <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="28" cy="22" r="8" fill="#fecaca"/>
+                        <rect x="24" y="30" width="8" height="16" rx="2" fill="#fecaca"/>
+                        <rect x="20" y="46" width="6" height="10" rx="2" fill="#fecaca"/>
+                        <rect x="30" y="46" width="6" height="10" rx="2" fill="#fecaca"/>
+                        <circle cx="52" cy="24" r="6" fill="#bfdbfe"/>
+                        <rect x="49" y="30" width="6" height="12" rx="2" fill="#bfdbfe"/>
+                        <rect x="47" y="42" width="4" height="8" rx="2" fill="#bfdbfe"/>
+                        <rect x="53" y="42" width="4" height="8" rx="2" fill="#bfdbfe"/>
+                        <line x1="32" y1="36" x2="49" y2="36" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
                     </div>
                     <h4 className="font-bold text-slate-800 mb-2 text-lg">Do you have any dependants?</h4>
                     <p className="text-slate-600 mb-6">Add details about other financial dependants, such as parents or relatives.</p>
