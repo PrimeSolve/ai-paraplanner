@@ -544,7 +544,7 @@ export default function FactFindDependants() {
                 </div>
               )}
 
-              {dependants.length === 0 && selectedDependantIndex === null && (
+              {dependants.length === 0 && !isAddingDependant && (
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-8 text-center">
                     <div className="flex justify-center mb-4">
@@ -559,6 +559,7 @@ export default function FactFindDependants() {
                     <Button
                       onClick={() => {
                         setSelectedDependantIndex(null);
+                        setIsAddingDependant(true);
                         setDependantFormData({
                           dep_name: '',
                           dep_dob: '',
