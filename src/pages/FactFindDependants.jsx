@@ -554,12 +554,12 @@ export default function FactFindDependants() {
                 </Card>
               )}
 
-              {showDependantForm && (
+              {(showDependantForm || selectedDependantIndex !== null) && (
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-center justify-between mb-4">
                       <h4 className="font-bold text-slate-800">
-                        {editingDependantIndex !== null ? 'Edit Dependant' : 'Dependant Information'}
+                        {selectedDependantIndex !== null ? 'Edit Dependant' : 'Dependant Information'}
                       </h4>
                       <Button
                         variant="outline"
