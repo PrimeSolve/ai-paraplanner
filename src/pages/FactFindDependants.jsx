@@ -23,6 +23,8 @@ export default function FactFindDependants() {
 
   const [selectedChildIndex, setSelectedChildIndex] = useState(null);
   const [selectedDependantIndex, setSelectedDependantIndex] = useState(null);
+  const [isAddingChild, setIsAddingChild] = useState(false);
+  const [isAddingDependant, setIsAddingDependant] = useState(false);
   const [childFormData, setChildFormData] = useState({
     child_name: '',
     child_dob: '',
