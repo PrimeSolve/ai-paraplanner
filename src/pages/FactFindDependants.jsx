@@ -444,11 +444,11 @@ export default function FactFindDependants() {
                           setShowDependantForm(false);
                           setEditingDependantIndex(null);
                           setDependantFormData({
-                            name: '',
-                            date_of_birth: '',
-                            dependent_until_age: '',
-                            relationship: '',
-                            interdependency: ''
+                            dep_name: '',
+                            dep_dob: '',
+                            dep_until_age: '',
+                            dep_relationship: '',
+                            dep_interdep: ''
                           });
                         }}
                         className="border-slate-300"
