@@ -499,17 +499,6 @@ export default function FactFindDependants() {
                           className="border-slate-300"
                         />
                       </div>
-
-                      {isAddingChild && (
-                        <div className="flex justify-end pt-4 border-t">
-                          <Button
-                            onClick={handleAddChild}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            Add Child
-                          </Button>
-                        </div>
-                      )}
                       </div>
                       </CardContent>
                       </Card>
