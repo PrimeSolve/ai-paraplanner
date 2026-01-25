@@ -21,10 +21,8 @@ export default function FactFindDependants() {
   const [children, setChildren] = useState([]);
   const [dependants, setDependants] = useState([]);
 
-  const [selectedChildIndex, setSelectedChildIndex] = useState(null);
+  const [selectedChildIndex, setSelectedChildIndex] = useState(0);
   const [selectedDependantIndex, setSelectedDependantIndex] = useState(null);
-  const [isAddingChild, setIsAddingChild] = useState(false);
-  const [isAddingDependant, setIsAddingDependant] = useState(false);
   const [childFormData, setChildFormData] = useState({
     child_name: '',
     child_dob: '',
@@ -33,6 +31,7 @@ export default function FactFindDependants() {
     child_fin_age: '',
     child_health: ''
   });
+  const [isAddingDependant, setIsAddingDependant] = useState(false);
   const [dependantFormData, setDependantFormData] = useState({
     dep_name: '',
     dep_dob: '',
