@@ -642,12 +642,28 @@ export default function FactFindDependants() {
                        </div>
                      </div>
 
-                    <div className="flex justify-end pt-2">
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setIsAddingDependant(false);
+                          setDependantFormData({
+                            dep_name: '',
+                            dep_dob: '',
+                            dep_until_age: '',
+                            dep_relationship: '',
+                            dep_interdep: ''
+                          });
+                        }}
+                        className="border-slate-300 text-slate-700"
+                      >
+                        Cancel
+                      </Button>
                       <Button
                         onClick={handleAddDependant}
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                       >
-                        Save Changes
+                        Add Dependant
                       </Button>
                     </div>
                     </CardContent>
