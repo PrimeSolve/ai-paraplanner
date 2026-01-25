@@ -300,7 +300,7 @@ export default function FactFindDependants() {
     );
   }
 
-  const isAddingChild = selectedChildIndex >= children.length;
+  const isAddingChild = selectedChildIndex !== null && selectedChildIndex >= children.length;
 
   return (
     <FactFindLayout currentSection="dependants" factFind={factFind}>
