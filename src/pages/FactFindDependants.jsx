@@ -565,25 +565,14 @@ export default function FactFindDependants() {
                 </Card>
               )}
 
-              {(selectedDependantIndex !== null || isAddingDependant) && (
+              {isAddingDependant && (
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-6 space-y-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-bold text-slate-800">
-                        {selectedDependantIndex !== null ? 'Edit Dependant' : 'Dependant Information'}
-                      </h4>
-                      {selectedDependantIndex !== null && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteDependant(selectedDependantIndex)}
-                          className="border-red-300 text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete
-                        </Button>
+                    <div className="flex items-center gap-2 mb-4">
+                      <h4 className="font-bold text-slate-800">Dependant Information</h4>
+                      {dependants.length > 0 && (
+                        <span className="text-slate-600">— {dependants.map(d => d.dep_name).join(', ')}</span>
                       )}
-
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
