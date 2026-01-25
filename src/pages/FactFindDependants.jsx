@@ -105,7 +105,7 @@ export default function FactFindDependants() {
   };
 
   const handleAddDependant = () => {
-    if (!dependantFormData.name) {
+    if (!dependantFormData.dep_name) {
       toast.error('Please enter dependant name');
       return;
     }
@@ -120,11 +120,11 @@ export default function FactFindDependants() {
     }
 
     setDependantFormData({
-      name: '',
-      date_of_birth: '',
-      dependent_until_age: '',
-      relationship: '',
-      interdependency: ''
+      dep_name: '',
+      dep_dob: '',
+      dep_until_age: '',
+      dep_relationship: '',
+      dep_interdep: ''
     });
     setShowDependantForm(false);
   };
