@@ -254,6 +254,14 @@ export default function FactFindTrusts() {
       ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
       : 'Client';
     
+    const childrenOptions = factFind?.dependants?.children
+      ?.map((c, i) => `<option value="child-${i}">${c.child_name || `Child ${i + 1}`}</option>`)
+      .join('') || '';
+    
+    const dependantsOptions = factFind?.dependants?.dependants_list
+      ?.map((d, i) => `<option value="dependent-${i}">${d.dep_name || `Dependant ${i + 1}`}</option>`)
+      .join('') || '';
+    
     const trustOptions = globalStateRef.current.trusts.trusts
       .map((t, i) => `<option value="trust-${i}">${t.trust_name || `Trust ${i + 1}`}</option>`)
       .join('');
@@ -266,6 +274,8 @@ export default function FactFindTrusts() {
       <select name="benef_entity" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         <option value="">Select entity…</option>
         <option value="client">${clientName}</option>
+        ${childrenOptions}
+        ${dependantsOptions}
         ${trustOptions}
         ${companyOptions}
       </select>
@@ -301,6 +311,14 @@ export default function FactFindTrusts() {
       ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
       : 'Client';
     
+    const childrenOptions = factFind?.dependants?.children
+      ?.map((c, i) => `<option value="child-${i}">${c.child_name || `Child ${i + 1}`}</option>`)
+      .join('') || '';
+    
+    const dependantsOptions = factFind?.dependants?.dependants_list
+      ?.map((d, i) => `<option value="dependent-${i}">${d.dep_name || `Dependant ${i + 1}`}</option>`)
+      .join('') || '';
+    
     const trustOptions = globalStateRef.current.trusts.trusts
       .map((t, i) => `<option value="trust-${i}">${t.trust_name || `Trust ${i + 1}`}</option>`)
       .join('');
@@ -313,6 +331,8 @@ export default function FactFindTrusts() {
       <select name="sh_entity" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         <option value="">Select entity…</option>
         <option value="client">${clientName}</option>
+        ${childrenOptions}
+        ${dependantsOptions}
         ${trustOptions}
         ${companyOptions}
       </select>
