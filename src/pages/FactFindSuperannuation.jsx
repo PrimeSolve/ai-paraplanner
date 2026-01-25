@@ -34,10 +34,6 @@ export default function FactFindSuperannuation() {
     }
   });
 
-  // ============================================
-  // CORE DOM MANIPULATION
-  // ============================================
-
   const wrapForTab = useCallback((tab) => {
     const id = tab === 'super' ? 'superWrap' : tab === 'pension' ? 'pensionWrap' : 'annuitiesWrap';
     return document.getElementById(id);
@@ -54,10 +50,6 @@ export default function FactFindSuperannuation() {
     return tmp.firstElementChild;
   }, []);
 
-  // ============================================
-  // READ DATA FROM DOM
-  // ============================================
-
   const readTabToArray = useCallback((tab) => {
     const wrap = wrapForTab(tab);
     if (!wrap) return [];
@@ -65,7 +57,6 @@ export default function FactFindSuperannuation() {
     const cards = [...wrap.querySelectorAll('.entry')];
     return cards.map((card) => {
       const data = {};
-
       const inputs = card.querySelectorAll('input:not([type="button"]), select, textarea');
       inputs.forEach(input => {
         if (input.type === 'radio') {
@@ -73,12 +64,21 @@ export default function FactFindSuperannuation() {
           if (input.checked) {
             data[baseName] = input.value;
           }
+        } else if (input.type === 'checkbox') {
+          const baseName = input.name.replace(/__\d+$/, '');
+          if (!data[baseName]) data[baseName] = [];
+          if (input.checked) data[baseName].push(input.value);
         } else if (input.type !== 'button') {
           data[input.name] = input.value;
         }
       });
 
-      // Read beneficiaries
+      // Multi-select
+      const multiSelects = card.querySelectorAll('select[multiple]');
+      multiSelects.forEach(select => {
+        data[select.name] = [...select.selectedOptions].map(o => o.value);
+      });
+
       const benefRows = card.querySelectorAll('tbody.benef-list tr');
       data.beneficiaries = Array.from(benefRows).map(row => ({
         benef_who: row.querySelector('select[name="benef_who"]')?.value || '',
@@ -86,7 +86,6 @@ export default function FactFindSuperannuation() {
         benef_type: row.querySelector('select[name="benef_type"]')?.value || ''
       }));
 
-      // Read portfolio
       const portfolioRows = card.querySelectorAll('tbody.portfolio-list tr');
       data.portfolio = Array.from(portfolioRows).map(row => ({
         asset_type: row.querySelector('select[name="asset_type"]')?.value || '',
@@ -97,10 +96,6 @@ export default function FactFindSuperannuation() {
       return data;
     });
   }, [wrapForTab]);
-
-  // ============================================
-  // RENUMBER ENTRIES
-  // ============================================
 
   const renumber = useCallback((tab) => {
     const wrap = wrapForTab(tab);
@@ -114,12 +109,17 @@ export default function FactFindSuperannuation() {
         card.querySelectorAll('input[type="radio"][name^="sg"]')
           .forEach(r => { r.name = 'sg__' + (i + 1); });
       }
+
+      if (tab === 'annuities') {
+        card.querySelectorAll('input[type="radio"][name^="a_type"]')
+          .forEach(r => { r.name = 'a_type__' + (i + 1); });
+        card.querySelectorAll('input[type="radio"][name^="a_life"]')
+          .forEach(r => { r.name = 'a_life__' + (i + 1); });
+        card.querySelectorAll('input[type="radio"][name^="a_rev"]')
+          .forEach(r => { r.name = 'a_rev__' + (i + 1); });
+      }
     });
   }, [wrapForTab]);
-
-  // ============================================
-  // UPDATE PILL NAVIGATION
-  // ============================================
 
   const updatePills = useCallback((tab, index) => {
     const pillsId = tab === 'super' ? 'superPills' : tab === 'pension' ? 'pensionPills' : 'annuitiesPills';
@@ -131,22 +131,15 @@ export default function FactFindSuperannuation() {
     if (!wrap) return;
 
     const cards = [...wrap.querySelectorAll('.entry')];
-
     cards.forEach((card, i) => {
       const pill = document.createElement('button');
       const isActive = i === index;
       pill.type = 'button';
 
-      let displayName = '';
-      if (tab === 'super') {
-        const nameInput = card.querySelector('input[name="fund_name"]');
-        displayName = nameInput?.value?.trim() || `Super ${i + 1}`;
-      } else if (tab === 'pension') {
-        const nameInput = card.querySelector('input[name="fund_name"]');
-        displayName = nameInput?.value?.trim() || `Pension ${i + 1}`;
-      } else {
-        const nameInput = card.querySelector('input[name="fund_name"]');
-        displayName = nameInput?.value?.trim() || `Annuity ${i + 1}`;
+      const nameInput = card.querySelector('input[name="fund_name"]');
+      let displayName = nameInput?.value?.trim();
+      if (!displayName) {
+        displayName = tab === 'super' ? `Super ${i + 1}` : tab === 'pension' ? `Pension ${i + 1}` : `Annuity ${i + 1}`;
       }
 
       pill.className = `px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
@@ -166,10 +159,6 @@ export default function FactFindSuperannuation() {
     });
   }, [wrapForTab]);
 
-  // ============================================
-  // SHOW ONLY ACTIVE ENTRY
-  // ============================================
-
   const showOnlyActiveEntry = useCallback((tab, index) => {
     const wrap = wrapForTab(tab);
     if (!wrap) return;
@@ -179,10 +168,6 @@ export default function FactFindSuperannuation() {
       card.style.display = i === index ? '' : 'none';
     });
   }, [wrapForTab]);
-
-  // ============================================
-  // FILL CARD WITH DATA
-  // ============================================
 
   const fillCardFromData = useCallback((card, tab, data) => {
     if (!data || !card) return;
@@ -231,8 +216,96 @@ export default function FactFindSuperannuation() {
       if (taxFreeInput && data.tax_free) taxFreeInput.value = data.tax_free;
     }
 
-    // Fill beneficiaries
-    if (Array.isArray(data.beneficiaries) && data.beneficiaries.length > 0) {
+    if (tab === 'pension') {
+      const ownerSelect = card.querySelector('select[name="owner"]');
+      if (ownerSelect && data.owner) ownerSelect.value = data.owner;
+
+      const pTypeSelect = card.querySelector('select[name="p_type"]');
+      if (pTypeSelect && data.p_type) pTypeSelect.value = data.p_type;
+
+      const pBalanceInput = card.querySelector('input[name="p_balance"]');
+      if (pBalanceInput && data.p_balance) pBalanceInput.value = data.p_balance;
+
+      const pProviderInput = card.querySelector('input[name="p_provider"]');
+      if (pProviderInput && data.p_provider) pProviderInput.value = data.p_provider;
+
+      const pIncomeInput = card.querySelector('input[name="p_income"]');
+      if (pIncomeInput && data.p_income) pIncomeInput.value = data.p_income;
+
+      const pFrequencySelect = card.querySelector('select[name="p_frequency"]');
+      if (pFrequencySelect && data.p_frequency) pFrequencySelect.value = data.p_frequency;
+
+      const pDeductibleInput = card.querySelector('input[name="p_deductible"]');
+      if (pDeductibleInput && data.p_deductible) pDeductibleInput.value = data.p_deductible;
+
+      const pTaxfreePctInput = card.querySelector('input[name="p_taxfree_pct"]');
+      if (pTaxfreePctInput && data.p_taxfree_pct) pTaxfreePctInput.value = data.p_taxfree_pct;
+
+      const pIndexRateInput = card.querySelector('input[name="p_index_rate"]');
+      if (pIndexRateInput && data.p_index_rate) pIndexRateInput.value = data.p_index_rate;
+
+      const pPurchaseInput = card.querySelector('input[name="p_purchase"]');
+      if (pPurchaseInput && data.p_purchase) pPurchaseInput.value = data.p_purchase;
+
+      const pStartInput = card.querySelector('input[name="p_start"]');
+      if (pStartInput && data.p_start) pStartInput.value = data.p_start;
+
+      const pTermInput = card.querySelector('input[name="p_term"]');
+      if (pTermInput && data.p_term) pTermInput.value = data.p_term;
+    }
+
+    if (tab === 'annuities') {
+      const ownersSelect = card.querySelector('select[name="owners"]');
+      if (ownersSelect && Array.isArray(data.owners)) {
+        [...ownersSelect.options].forEach(opt => {
+          opt.selected = data.owners.includes(opt.value);
+        });
+      }
+
+      if (data.a_type) {
+        card.querySelectorAll('input[type="radio"][name^="a_type"]').forEach(r => {
+          r.checked = r.value === data.a_type;
+        });
+      }
+
+      if (data.a_life) {
+        card.querySelectorAll('input[type="radio"][name^="a_life"]').forEach(r => {
+          r.checked = r.value === data.a_life;
+        });
+      }
+
+      const aPurchaseDateInput = card.querySelector('input[name="a_purchase_date"]');
+      if (aPurchaseDateInput && data.a_purchase_date) aPurchaseDateInput.value = data.a_purchase_date;
+
+      const aPurchasePriceInput = card.querySelector('input[name="a_purchase_price"]');
+      if (aPurchasePriceInput && data.a_purchase_price) aPurchasePriceInput.value = data.a_purchase_price;
+
+      const aResidualInput = card.querySelector('input[name="a_residual"]');
+      if (aResidualInput && data.a_residual) aResidualInput.value = data.a_residual;
+
+      const aTermInput = card.querySelector('input[name="a_term"]');
+      if (aTermInput && data.a_term) aTermInput.value = data.a_term;
+
+      const aIncomeInput = card.querySelector('input[name="a_income"]');
+      if (aIncomeInput && data.a_income) aIncomeInput.value = data.a_income;
+
+      const aDeductibleInput = card.querySelector('input[name="a_deductible"]');
+      if (aDeductibleInput && data.a_deductible) aDeductibleInput.value = data.a_deductible;
+
+      const aTaxfreePctInput = card.querySelector('input[name="a_taxfree_pct"]');
+      if (aTaxfreePctInput && data.a_taxfree_pct) aTaxfreePctInput.value = data.a_taxfree_pct;
+
+      const aIndexRateInput = card.querySelector('input[name="a_index_rate"]');
+      if (aIndexRateInput && data.a_index_rate) aIndexRateInput.value = data.a_index_rate;
+
+      if (data.a_rev) {
+        card.querySelectorAll('input[type="radio"][name^="a_rev"]').forEach(r => {
+          r.checked = r.value === data.a_rev;
+        });
+      }
+    }
+
+    if (tab !== 'annuities' && Array.isArray(data.beneficiaries) && data.beneficiaries.length > 0) {
       const benefContainer = card.querySelector('.benef-list');
       if (benefContainer) {
         benefContainer.innerHTML = '';
@@ -249,8 +322,7 @@ export default function FactFindSuperannuation() {
       benefBtn?.classList.remove('hidden');
     }
 
-    // Fill portfolio
-    if (Array.isArray(data.portfolio) && data.portfolio.length > 0) {
+    if (tab !== 'annuities' && Array.isArray(data.portfolio) && data.portfolio.length > 0) {
       const portfolioContainer = card.querySelector('.portfolio-list');
       if (portfolioContainer) {
         portfolioContainer.innerHTML = '';
@@ -267,10 +339,6 @@ export default function FactFindSuperannuation() {
       portfolioBtn?.classList.remove('hidden');
     }
   }, []);
-
-  // ============================================
-  // CREATE BENEFICIARY ROW
-  // ============================================
 
   const createBeneficiaryRow = useCallback((card, data = {}) => {
     const row = document.createElement('tr');
@@ -295,7 +363,7 @@ export default function FactFindSuperannuation() {
     row.innerHTML = `
       <td class="py-2 px-2">
         <select name="benef_who" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
-          <option value="">Select entity…</option>
+          <option value="">Select…</option>
           <option value="client">${clientName}</option>
           ${partnerName ? `<option value="partner">${partnerName}</option>` : ''}
           ${childrenOptions}
@@ -330,10 +398,6 @@ export default function FactFindSuperannuation() {
 
     return row;
   }, [factFind]);
-
-  // ============================================
-  // CREATE PORTFOLIO ROW
-  // ============================================
 
   const createPortfolioRow = useCallback((card, data = {}) => {
     const row = document.createElement('tr');
@@ -376,10 +440,6 @@ export default function FactFindSuperannuation() {
     return row;
   }, []);
 
-  // ============================================
-  // ADD ENTRY
-  // ============================================
-
   const addEntry = useCallback((tab, existingData = null) => {
     const wrap = wrapForTab(tab);
     if (!wrap) return;
@@ -410,10 +470,6 @@ export default function FactFindSuperannuation() {
     showOnlyActiveEntry(tab, newIndex);
   }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry]);
 
-  // ============================================
-  // REMOVE ENTRY
-  // ============================================
-
   const removeEntry = useCallback((node, tab) => {
     node.remove();
     const wrap = wrapForTab(tab);
@@ -437,10 +493,6 @@ export default function FactFindSuperannuation() {
       setActiveIndex(0);
     }
   }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
-
-  // ============================================
-  // LOAD DATA
-  // ============================================
 
   const loadData = useCallback(async () => {
     try {
@@ -466,10 +518,6 @@ export default function FactFindSuperannuation() {
       setLoading(false);
     }
   }, []);
-
-  // ============================================
-  // INITIALIZE DOM
-  // ============================================
 
   useEffect(() => {
     loadData();
@@ -512,10 +560,6 @@ export default function FactFindSuperannuation() {
     }
   }, [loading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
 
-  // ============================================
-  // SETUP INPUT LISTENERS
-  // ============================================
-
   useEffect(() => {
     const updateTableVisibility = (card, type) => {
       const table = type === 'benef' ? card.querySelector('.benef-list-table') : card.querySelector('.portfolio-list-table');
@@ -556,8 +600,7 @@ export default function FactFindSuperannuation() {
       if (e.target.closest('.entry-remove')) {
         e.preventDefault();
         const node = e.target.closest('.entry');
-        const tab = currentTab;
-        removeEntry(node, tab);
+        removeEntry(node, currentTab);
       }
       if (e.target.closest('.remove-benef')) {
         const card = e.target.closest('.entry');
@@ -587,10 +630,6 @@ export default function FactFindSuperannuation() {
     };
   }, [currentTab, activeIndex, updatePills, removeEntry, createBeneficiaryRow, createPortfolioRow]);
 
-  // ============================================
-  // SAVE STATE
-  // ============================================
-
   const saveSuperState = useCallback(async () => {
     if (!factFind?.id) return;
 
@@ -612,10 +651,6 @@ export default function FactFindSuperannuation() {
       console.error('Save failed:', error);
     }
   }, [factFind?.id, readTabToArray, currentTab, activeIndex]);
-
-  // ============================================
-  // NAVIGATION
-  // ============================================
 
   const handleNext = async () => {
     if (!factFind?.id) {
@@ -692,189 +727,83 @@ export default function FactFindSuperannuation() {
           </div>
 
           <div className="space-y-6">
-            {/* Fund Details */}
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
               <h4 className="text-sm font-semibold text-blue-700 mb-4">🏦 Fund Details</h4>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Superannuation fund name</label>
-                  <input type="text" name="fund_name" placeholder="e.g. Australian Super" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-
+                <input type="text" name="fund_name" placeholder="e.g. Australian Super" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
-                    <select name="owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                      <option value="">Select owner…</option>
-                      <option value="client">Client</option>
-                      <option value="partner">Partner</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Balance</label>
-                    <div className="flex items-center">
-                      <span className="text-slate-500 mr-2">$</span>
-                      <input type="number" name="balance" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    </div>
+                  <select name="owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
+                    <option value="">Select owner…</option>
+                    <option value="client">Client</option>
+                    <option value="partner">Partner</option>
+                  </select>
+                  <div className="flex items-center">
+                    <span className="text-slate-500 mr-2">$</span>
+                    <input type="number" name="balance" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" />
                   </div>
                 </div>
-
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-3">Is this fund used for super guarantee?</label>
-                    <div className="flex flex-col gap-2">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="sg__1" value="1" className="w-4 h-4" />
-                        <span className="text-sm text-slate-700">Yes</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="sg__1" value="2" className="w-4 h-4" />
-                        <span className="text-sm text-slate-700">No</span>
-                      </label>
-                    </div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">Super guarantee?</label>
+                    <label className="flex items-center gap-2"><input type="radio" name="sg__1" value="1" className="w-4 h-4" /><span className="text-sm">Yes</span></label>
+                    <label className="flex items-center gap-2"><input type="radio" name="sg__1" value="2" className="w-4 h-4" /><span className="text-sm">No</span></label>
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Superannuation product</label>
-                    <input type="text" name="product" placeholder="" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  </div>
+                  <input type="text" name="product" placeholder="Superannuation product" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
                 </div>
               </div>
             </div>
 
-            {/* Contributions */}
             <div className="bg-green-50 rounded-lg p-4 border border-green-200">
               <h4 className="text-sm font-semibold text-green-700 mb-4">💰 Contributions</h4>
-              <div className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Salary sacrifice to this fund</label>
-                    <div className="flex items-center">
-                      <span className="text-slate-500 mr-2">$</span>
-                      <input type="number" name="salary_sacrifice" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">After tax contributions to this fund</label>
-                    <div className="flex items-center">
-                      <span className="text-slate-500 mr-2">$</span>
-                      <input type="number" name="after_tax" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Spouse contribution received</label>
-                    <div className="flex items-center">
-                      <span className="text-slate-500 mr-2">$</span>
-                      <input type="number" name="spouse_received" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Contribution splitting received</label>
-                    <div className="flex items-center">
-                      <span className="text-slate-500 mr-2">$</span>
-                      <input type="number" name="split_received" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Concessional contribution</label>
-                  <div className="flex items-center">
-                    <span className="text-slate-500 mr-2">$</span>
-                    <input type="number" name="concessional" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  </div>
-                </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="salary_sacrifice" placeholder="Salary sacrifice" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="after_tax" placeholder="After tax" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="spouse_received" placeholder="Spouse received" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="split_received" placeholder="Split received" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
               </div>
+              <div className="flex items-center mt-4"><span className="text-slate-500 mr-2">$</span><input type="number" name="concessional" placeholder="Concessional contribution" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
             </div>
 
-            {/* Tax Components */}
             <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
               <h4 className="text-sm font-semibold text-yellow-700 mb-4">📋 Tax Components</h4>
-              <div className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Unrestricted non-preserved</label>
-                    <div className="flex items-center">
-                      <span className="text-slate-500 mr-2">$</span>
-                      <input type="number" name="unp" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Taxable portion</label>
-                    <div className="flex items-center">
-                      <span className="text-slate-500 mr-2">$</span>
-                      <input type="number" name="taxable_portion" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Tax free portion</label>
-                  <div className="flex items-center">
-                    <span className="text-slate-500 mr-2">$</span>
-                    <input type="number" name="tax_free" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  </div>
-                </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="unp" placeholder="Unrestricted non-preserved" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="taxable_portion" placeholder="Taxable portion" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
               </div>
+              <div className="flex items-center mt-4"><span className="text-slate-500 mr-2">$</span><input type="number" name="tax_free" placeholder="Tax free portion" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
             </div>
 
-            {/* Beneficiaries */}
             <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
               <h4 className="text-sm font-semibold text-purple-700 mb-4">👥 Beneficiaries</h4>
-
               <div className="benef-container">
                 <div className="benef-list-table hidden mb-3 overflow-x-auto">
                   <table className="w-full text-xs border-collapse min-w-[600px]">
-                    <thead>
-                      <tr className="border-b border-purple-200">
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Who is the beneficiary</th>
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Percentage entitlement</th>
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Beneficiary type</th>
-                        <th className="w-16"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="benef-list">
-                      {/* Beneficiary rows */}
-                    </tbody>
+                    <thead><tr className="border-b border-purple-200"><th className="text-left py-2 px-2">Who</th><th className="text-left py-2 px-2">%</th><th className="text-left py-2 px-2">Type</th><th className="w-16"></th></tr></thead>
+                    <tbody className="benef-list"></tbody>
                   </table>
                 </div>
-
                 <div className="benef-list-empty text-center py-4">
                   <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
+                  <button type="button" className="add-first-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First Beneficiary</button>
                 </div>
-
-                <button type="button" className="add-benef hidden px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
+                <button type="button" className="add-benef hidden mt-3 px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
               </div>
             </div>
 
-            {/* Portfolio */}
             <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
               <h4 className="text-sm font-semibold text-orange-700 mb-4">📊 Portfolio</h4>
-
               <div className="portfolio-container">
                 <div className="portfolio-list-table hidden mb-3 overflow-x-auto">
                   <table className="w-full text-xs border-collapse min-w-[600px]">
-                    <thead>
-                      <tr className="border-b border-orange-200">
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Asset type</th>
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Description</th>
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Portfolio %</th>
-                        <th className="w-16"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="portfolio-list">
-                      {/* Portfolio rows */}
-                    </tbody>
+                    <thead><tr className="border-b border-orange-200"><th className="text-left py-2 px-2">Asset Type</th><th className="text-left py-2 px-2">Desc</th><th className="text-left py-2 px-2">%</th><th className="w-16"></th></tr></thead>
+                    <tbody className="portfolio-list"></tbody>
                   </table>
                 </div>
-
                 <div className="portfolio-list-empty text-center py-4">
                   <p className="text-sm text-slate-600 mb-3">No portfolio assets added yet</p>
+                  <button type="button" className="add-first-portfolio px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First Asset</button>
                 </div>
-
-                <button type="button" className="add-portfolio hidden px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add asset</button>
+                <button type="button" className="add-portfolio hidden mt-3 px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add asset</button>
               </div>
             </div>
           </div>
@@ -884,68 +813,74 @@ export default function FactFindSuperannuation() {
       <div id="pensionTemplate" style={{ display: 'none' }}>
         <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-4">
           <div className="flex justify-between items-start mb-6">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Pension <span className="idx">1</span></h3>
-              <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
-            </div>
+            <h3 className="text-lg font-bold text-slate-900">Pension <span className="idx">1</span></h3>
             <button type="button" className="entry-remove px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">Remove</button>
           </div>
-
           <div className="space-y-6">
-            {/* Pension Details */}
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <h4 className="text-sm font-semibold text-blue-700 mb-4">🏦 Pension Details</h4>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Fund name</label>
-                  <input type="text" name="fund_name" placeholder="e.g. My Pension" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
-                    <select name="owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                      <option value="">Select owner…</option>
-                      <option value="client">Client</option>
-                      <option value="partner">Partner</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Balance</label>
-                    <div className="flex items-center">
-                      <span className="text-slate-500 mr-2">$</span>
-                      <input type="number" name="balance" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                  </div>
-                </div>
+              <h4 className="text-sm font-semibold text-blue-700 mb-4">🕰️ Pension Details</h4>
+              <input type="text" name="fund_name" placeholder="Pension name" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm mb-4" />
+              <div className="grid md:grid-cols-2 gap-4">
+                <select name="owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"><option value="">Owner</option><option value="client">Client</option><option value="partner">Partner</option></select>
+                <select name="p_type" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"><option value="">Type</option><option value="1">Account based</option><option value="2">Term allocated</option><option value="3">Lifetime</option><option value="4">Defined benefit</option><option value="5">Foreign - UK</option><option value="6">Foreign - Other</option><option value="7">Transition to retirement</option></select>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="p_balance" placeholder="Balance" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                <input type="text" name="p_provider" placeholder="Provider" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
               </div>
             </div>
-
-            {/* Beneficiaries */}
+            <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+              <h4 className="text-sm font-semibold text-green-700 mb-4">💵 Income</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="p_income" placeholder="Income" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                <select name="p_frequency" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"><option value="">Frequency</option><option value="1">Weekly</option><option value="2">Fortnightly</option><option value="3">Monthly</option><option value="4">Quarterly</option><option value="5">Annual</option></select>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="p_deductible" placeholder="Deductible amt" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                <input type="text" name="p_taxfree_pct" placeholder="Tax free %" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+              </div>
+            </div>
+            <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+              <h4 className="text-sm font-semibold text-yellow-700 mb-4">⚙️ Settings</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <input type="text" name="p_index_rate" placeholder="Index rate" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="p_purchase" placeholder="Purchase price" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                <input type="date" name="p_start" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Start date" />
+                <input type="text" name="p_term" placeholder="Term" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+              </div>
+            </div>
             <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
               <h4 className="text-sm font-semibold text-purple-700 mb-4">👥 Beneficiaries</h4>
-
               <div className="benef-container">
                 <div className="benef-list-table hidden mb-3 overflow-x-auto">
                   <table className="w-full text-xs border-collapse min-w-[600px]">
-                    <thead>
-                      <tr className="border-b border-purple-200">
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Who is the beneficiary</th>
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Percentage entitlement</th>
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Beneficiary type</th>
-                        <th className="w-16"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="benef-list">
-                      {/* Beneficiary rows */}
-                    </tbody>
+                    <thead><tr className="border-b border-purple-200"><th className="text-left py-2 px-2">Who</th><th className="text-left py-2 px-2">%</th><th className="text-left py-2 px-2">Type</th><th className="w-16"></th></tr></thead>
+                    <tbody className="benef-list"></tbody>
                   </table>
                 </div>
-
                 <div className="benef-list-empty text-center py-4">
-                  <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
+                  <p className="text-sm text-slate-600 mb-3">No beneficiaries added</p>
+                  <button type="button" className="add-first-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First</button>
                 </div>
-
-                <button type="button" className="add-benef hidden px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
+                <button type="button" className="add-benef hidden mt-3 px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add</button>
+              </div>
+            </div>
+            <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+              <h4 className="text-sm font-semibold text-orange-700 mb-4">📊 Portfolio</h4>
+              <div className="portfolio-container">
+                <div className="portfolio-list-table hidden mb-3 overflow-x-auto">
+                  <table className="w-full text-xs border-collapse min-w-[600px]">
+                    <thead><tr className="border-b border-orange-200"><th className="text-left py-2 px-2">Asset</th><th className="text-left py-2 px-2">Desc</th><th className="text-left py-2 px-2">%</th><th className="w-16"></th></tr></thead>
+                    <tbody className="portfolio-list"></tbody>
+                  </table>
+                </div>
+                <div className="portfolio-list-empty text-center py-4">
+                  <p className="text-sm text-slate-600 mb-3">No assets added</p>
+                  <button type="button" className="add-first-portfolio px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First</button>
+                </div>
+                <button type="button" className="add-portfolio hidden mt-3 px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add</button>
               </div>
             </div>
           </div>
@@ -955,146 +890,68 @@ export default function FactFindSuperannuation() {
       <div id="annuitiesTemplate" style={{ display: 'none' }}>
         <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-4">
           <div className="flex justify-between items-start mb-6">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Annuity <span className="idx">1</span></h3>
-              <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
-            </div>
+            <h3 className="text-lg font-bold text-slate-900">Annuity <span className="idx">1</span></h3>
             <button type="button" className="entry-remove px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">Remove</button>
           </div>
-
           <div className="space-y-6">
-            {/* Annuity Details */}
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <h4 className="text-sm font-semibold text-blue-700 mb-4">📊 Annuity Details</h4>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Fund name</label>
-                  <input type="text" name="fund_name" placeholder="e.g. My Annuity" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
-                    <select name="owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                      <option value="">Select owner…</option>
-                      <option value="client">Client</option>
-                      <option value="partner">Partner</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Balance</label>
-                    <div className="flex items-center">
-                      <span className="text-slate-500 mr-2">$</span>
-                      <input type="number" name="balance" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                  </div>
-                </div>
+              <h4 className="text-sm font-semibold text-blue-700 mb-4">📈 Annuity Details</h4>
+              <input type="text" name="fund_name" placeholder="Annuity name" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm mb-4" />
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Owner(s) - Hold Ctrl/Cmd for multiple</label>
+              <select name="owners" multiple size={2} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm mb-4"><option value="client">Client</option><option value="partner">Partner</option></select>
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <div><label className="block text-sm font-semibold text-slate-700 mb-2">Type</label><label className="flex items-center gap-2"><input type="radio" name="a_type__1" value="1" className="w-4 h-4" /><span className="text-sm">Superannuation</span></label><label className="flex items-center gap-2"><input type="radio" name="a_type__1" value="2" className="w-4 h-4" /><span className="text-sm">Non-superannuation</span></label></div>
+                <div><label className="block text-sm font-semibold text-slate-700 mb-2">Lifetime annuity?</label><label className="flex items-center gap-2"><input type="radio" name="a_life__1" value="1" className="w-4 h-4" /><span className="text-sm">Yes</span></label><label className="flex items-center gap-2"><input type="radio" name="a_life__1" value="2" className="w-4 h-4" /><span className="text-sm">No</span></label></div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <input type="date" name="a_purchase_date" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Purchase date" />
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="a_purchase_price" placeholder="Purchase price" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="a_residual" placeholder="Residual value" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                <input type="text" name="a_term" placeholder="Term" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
               </div>
             </div>
-
-            {/* Beneficiaries */}
-            <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-              <h4 className="text-sm font-semibold text-purple-700 mb-4">👥 Beneficiaries</h4>
-
-              <div className="benef-container">
-                <div className="benef-list-table hidden mb-3 overflow-x-auto">
-                  <table className="w-full text-xs border-collapse min-w-[600px]">
-                    <thead>
-                      <tr className="border-b border-purple-200">
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Who is the beneficiary</th>
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Percentage entitlement</th>
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Beneficiary type</th>
-                        <th className="w-16"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="benef-list">
-                      {/* Beneficiary rows */}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="benef-list-empty text-center py-4">
-                  <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
-                </div>
-
-                <button type="button" className="add-benef hidden px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
+            <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+              <h4 className="text-sm font-semibold text-green-700 mb-4">💵 Payments</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="a_income" placeholder="Income" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="a_deductible" placeholder="Deductible" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
               </div>
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                <input type="text" name="a_taxfree_pct" placeholder="Tax free %" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                <input type="text" name="a_index_rate" placeholder="Index rate" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+              </div>
+              <div className="mt-4"><label className="block text-sm font-semibold text-slate-700 mb-2">Reversionary?</label><label className="flex items-center gap-2"><input type="radio" name="a_rev__1" value="1" className="w-4 h-4" /><span className="text-sm">Yes</span></label><label className="flex items-center gap-2"><input type="radio" name="a_rev__1" value="2" className="w-4 h-4" /><span className="text-sm">No</span></label></div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
           <div id="superWrap" style={{ display: currentTab === 'super' ? 'block' : 'none' }} className="space-y-4" />
           <div id="pensionWrap" style={{ display: currentTab === 'pension' ? 'block' : 'none' }} className="space-y-4" />
           <div id="annuitiesWrap" style={{ display: currentTab === 'annuities' ? 'block' : 'none' }} className="space-y-4" />
 
-          {/* Welcome Screen */}
           {currentCount === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
-              <div className="text-5xl mb-6">
-                {currentTab === 'super' ? '🏦' : currentTab === 'pension' ? '💰' : '📊'}
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                Do you have any {tabLabels[currentTab].toLowerCase()}?
-              </h3>
-              <p className="text-slate-600 text-center mb-8 max-w-md">
-                {currentTab === 'super' ? 'Add details about your superannuation accounts to track your retirement savings.' : 'Add details about your pension or annuity accounts.'}
-              </p>
-              <Button
-                onClick={() => addEntry(currentTab)}
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
-              >
-                + Add {tabLabels[currentTab]}
-              </Button>
+              <div className="text-5xl mb-6">{currentTab === 'super' ? '🏦' : currentTab === 'pension' ? '🕰️' : '📈'}</div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Do you have any {tabLabels[currentTab].toLowerCase()}?</h3>
+              <Button onClick={() => addEntry(currentTab)} className="bg-blue-600 hover:bg-blue-700 text-white mt-4">+ Add {tabLabels[currentTab]}</Button>
             </div>
           ) : (
-            <>
-              {/* Pills Navigation */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                <div id={currentTab === 'super' ? 'superPills' : currentTab === 'pension' ? 'pensionPills' : 'annuitiesPills'} className="flex gap-2" />
-                <button
-                  onClick={() => addEntry(currentTab)}
-                  className="ml-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0 shadow-sm"
-                >
-                  + Add {tabLabels[currentTab]}
-                </button>
-              </div>
-            </>
+            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+              <div id={currentTab === 'super' ? 'superPills' : currentTab === 'pension' ? 'pensionPills' : 'annuitiesPills'} className="flex gap-2" />
+              <button onClick={() => addEntry(currentTab)} className="ml-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex-shrink-0">+ Add {tabLabels[currentTab]}</button>
+            </div>
           )}
 
-          {/* Navigation */}
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
-                <Button
-                  onClick={handleBack}
-                  variant="outline"
-                  disabled={saving}
-                  className="border-slate-300 text-slate-700 hover:bg-slate-50"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Button>
-
-                <Button
-                  onClick={handleNext}
-                  disabled={saving}
-                  className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
-                >
-                  {saving ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      Save & continue
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </>
-                  )}
-                </Button>
+                <Button onClick={handleBack} variant="outline" disabled={saving} className="border-slate-300"><ArrowLeft className="w-4 h-4 mr-2" />Back</Button>
+                <Button onClick={handleNext} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white">{saving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" /> : <>Save & continue<ArrowRight className="w-4 h-4 ml-2" /></>}</Button>
               </div>
             </CardContent>
           </Card>
