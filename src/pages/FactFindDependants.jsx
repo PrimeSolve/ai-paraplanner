@@ -116,10 +116,9 @@ export default function FactFindDependants() {
     setShowChildForm(false);
   };
 
-  const handleEditChild = (index) => {
+  const handleSelectChild = (index) => {
+    setSelectedChildIndex(index);
     setChildFormData(children[index]);
-    setEditingChildIndex(index);
-    setShowChildForm(true);
   };
 
   const handleDeleteChild = async (index) => {
@@ -141,6 +140,7 @@ export default function FactFindDependants() {
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
 
+      setSelectedChildIndex(null);
       toast.success('Child removed');
     } catch (error) {
       toast.error('Failed to delete child');
