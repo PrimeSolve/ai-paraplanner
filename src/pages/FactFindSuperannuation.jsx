@@ -284,10 +284,34 @@ export default function FactFindSuperannuation() {
 
     if (tab === 'annuities') {
       const ownersSelect = card.querySelector('select[name="owners"]');
-      if (ownersSelect && Array.isArray(data.owners)) {
-        [...ownersSelect.options].forEach(opt => {
-          opt.selected = data.owners.includes(opt.value);
-        });
+      if (ownersSelect) {
+        // Populate with principal names
+        ownersSelect.innerHTML = '';
+        const clientName = factFind?.personal?.client?.first_name 
+          ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
+          : null;
+        const partnerName = factFind?.personal?.partner?.first_name 
+          ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
+          : null;
+        
+        if (clientName) {
+          const opt = document.createElement('option');
+          opt.value = 'client';
+          opt.textContent = clientName;
+          ownersSelect.appendChild(opt);
+        }
+        if (partnerName) {
+          const opt = document.createElement('option');
+          opt.value = 'partner';
+          opt.textContent = partnerName;
+          ownersSelect.appendChild(opt);
+        }
+        
+        if (Array.isArray(data.owners)) {
+          [...ownersSelect.options].forEach(opt => {
+            opt.selected = data.owners.includes(opt.value);
+          });
+        }
       }
 
       if (data.a_type) {
