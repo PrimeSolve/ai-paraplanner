@@ -130,6 +130,15 @@ export default function FactFindDependants() {
 
   const addEntry = (tab = currentTab) => {
     const wrap = wrapForTab(tab);
+    if (!wrap) return;
+
+    // Add empty entry to global state first
+    if (tab === 'children') {
+      globalStateRef.current.dependants.children.push({});
+    } else {
+      globalStateRef.current.dependants.dependants_list.push({});
+    }
+
     const templateId = tab === 'children' ? 'childTemplate' : 'depTemplate';
     const node = cloneTemplateDiv(templateId);
     wrap.appendChild(node);
@@ -144,9 +153,12 @@ export default function FactFindDependants() {
     }
 
     renumber(tab);
-    setActiveIndex(wrap.querySelectorAll('.entry').length - 1);
-    updatePills();
-    showOnlyActiveEntry();
+    const newIndex = wrap.querySelectorAll('.entry').length - 1;
+    setActiveIndex(newIndex);
+    setTimeout(() => {
+      updatePills();
+      showOnlyActiveEntry();
+    }, 0);
   };
 
   const removeEntry = (node, tab = currentTab) => {
