@@ -489,65 +489,7 @@ export default function FactFindDependants() {
                 </Card>
               )}
 
-              {children.length > 0 && !showChildForm && (
-                <>
-                  <div className="flex justify-end mb-4">
-                    <Button
-                      onClick={() => setShowChildForm(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Child
-                    </Button>
-                  </div>
-                  <div className="space-y-3">
-                    {children.map((child, index) => (
-                      <Card key={index} className="border-slate-200 shadow-sm">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3 flex-1">
-                              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                <Baby className="w-5 h-5 text-blue-600" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className="font-bold text-slate-800">Child {index + 1}</span>
-                                </div>
-                              <div className="space-y-1 text-sm text-slate-600">
-                                 <p><strong>Name:</strong> {child.child_name}</p>
-                                 {child.child_dob && <p><strong>DOB:</strong> {child.child_dob}</p>}
-                                 {child.child_fin_dep && <p><strong>Financially Dependent:</strong> {child.child_fin_dep === '1' ? 'Yes' : 'No'}</p>}
-                                 {child.child_edu && <p><strong>Education:</strong> {['Primary', 'Secondary', 'Tertiary', 'TAFE/Trade', 'Not in education'][parseInt(child.child_edu) - 1]}</p>}
-                                 {child.child_fin_age && <p><strong>Dependent Age:</strong> {child.child_fin_age}</p>}
-                                 {child.child_health && <p><strong>Health Issues:</strong> {child.child_health}</p>}
-                               </div>
-                            </div>
-                            </div>
-                            <div className="flex gap-2 ml-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEditChild(index)}
-                                className="border-slate-300"
-                              >
-                                <Edit2 className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteChild(index)}
-                                className="border-red-300 text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </>
-              )}
+
             </>
           )}
 
