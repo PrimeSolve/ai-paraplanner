@@ -196,10 +196,9 @@ export default function FactFindDependants() {
     setShowDependantForm(false);
   };
 
-  const handleEditDependant = (index) => {
+  const handleSelectDependant = (index) => {
+    setSelectedDependantIndex(index);
     setDependantFormData(dependants[index]);
-    setEditingDependantIndex(index);
-    setShowDependantForm(true);
   };
 
   const handleDeleteDependant = async (index) => {
@@ -221,6 +220,7 @@ export default function FactFindDependants() {
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
 
+      setSelectedDependantIndex(null);
       toast.success('Dependant removed');
     } catch (error) {
       toast.error('Failed to delete dependant');
