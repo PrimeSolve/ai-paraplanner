@@ -223,6 +223,7 @@ export default function FactFindDependants() {
       });
 
       setSelectedDependantIndex(null);
+      setIsAddingDependant(false);
       toast.success('Dependant removed');
     } catch (error) {
       toast.error('Failed to delete dependant');
