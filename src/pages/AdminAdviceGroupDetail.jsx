@@ -17,6 +17,7 @@ export default function AdminAdviceGroupDetail() {
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -112,7 +113,7 @@ export default function AdminAdviceGroupDetail() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => document.querySelector('[data-value="settings"]')?.click()}>
+            <Button variant="outline" onClick={() => setActiveTab('settings')}>
               <Settings className="w-4 h-4 mr-2" />
               Settings
             </Button>
@@ -208,7 +209,7 @@ export default function AdminAdviceGroupDetail() {
       </div>
 
       <div className="p-8">
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="advisers">Advisers</TabsTrigger>
