@@ -764,13 +764,35 @@ export default function FactFindSuperannuation() {
 
             <div className="bg-green-50 rounded-lg p-4 border border-green-200">
               <h4 className="text-sm font-semibold text-green-700 mb-4">💰 Contributions</h4>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="salary_sacrifice" placeholder="Salary sacrifice" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
-                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="after_tax" placeholder="After tax" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
-                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="spouse_received" placeholder="Spouse received" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
-                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="split_received" placeholder="Split received" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Super guarantee?</label>
+                  <label className="flex items-center gap-2"><input type="radio" name="sg__1" value="1" className="w-4 h-4" /><span className="text-sm">Yes</span></label>
+                  <label className="flex items-center gap-2"><input type="radio" name="sg__1" value="2" className="w-4 h-4" /><span className="text-sm">No</span></label>
+                </div>
               </div>
-              <div className="flex items-center mt-4"><span className="text-slate-500 mr-2">$</span><input type="number" name="concessional" placeholder="Concessional contribution" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Salary sacrifice</label>
+                  <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="salary_sacrifice" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">After tax</label>
+                  <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="after_tax" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Spouse received</label>
+                  <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="spouse_received" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Split received</label>
+                  <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="split_received" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                </div>
+              </div>
+              <div className="mt-4">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Concessional contribution</label>
+                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="concessional" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+              </div>
             </div>
 
             <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
