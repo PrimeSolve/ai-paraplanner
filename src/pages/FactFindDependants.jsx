@@ -293,30 +293,30 @@ export default function FactFindDependants() {
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Education status</Label>
-                        <Select value={childFormData.education_status} onValueChange={(value) => setChildFormData({ ...childFormData, education_status: value })}>
-                          <SelectTrigger className="border-slate-300">
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="primary">Primary</SelectItem>
-                            <SelectItem value="secondary">Secondary</SelectItem>
-                            <SelectItem value="tertiary">Tertiary</SelectItem>
-                            <SelectItem value="tafe_trade">TAFE/Trade</SelectItem>
-                            <SelectItem value="not_in_education">Not in education</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Financial Dependant Age</Label>
-                        <Input
-                          type="number"
-                          value={childFormData.dependent_age}
-                          onChange={(e) => setChildFormData({ ...childFormData, dependent_age: e.target.value })}
-                          placeholder="Enter age"
-                          className="border-slate-300"
-                        />
-                      </div>
+                         <Label className="text-slate-700 font-semibold text-sm">Education status</Label>
+                         <Select value={childFormData.child_edu} onValueChange={(value) => setChildFormData({ ...childFormData, child_edu: value })}>
+                           <SelectTrigger className="border-slate-300">
+                             <SelectValue placeholder="Select..." />
+                           </SelectTrigger>
+                           <SelectContent>
+                             <SelectItem value="1">Primary</SelectItem>
+                             <SelectItem value="2">Secondary</SelectItem>
+                             <SelectItem value="3">Tertiary</SelectItem>
+                             <SelectItem value="4">TAFE/Trade</SelectItem>
+                             <SelectItem value="5">Not in education</SelectItem>
+                           </SelectContent>
+                         </Select>
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-slate-700 font-semibold text-sm">Financial Dependant Age</Label>
+                         <Input
+                           type="number"
+                           value={childFormData.child_fin_age}
+                           onChange={(e) => setChildFormData({ ...childFormData, child_fin_age: e.target.value })}
+                           placeholder="Enter age"
+                           className="border-slate-300"
+                         />
+                       </div>
                     </div>
 
                     <div className="space-y-2">
