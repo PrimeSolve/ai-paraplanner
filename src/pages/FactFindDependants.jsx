@@ -498,29 +498,6 @@ export default function FactFindDependants() {
                           className="border-slate-300"
                         />
                       </div>
-
-                      {isAddingChild && (
-                        <div className="flex justify-end gap-2 pt-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedChildIndex(Math.max(0, children.length - 1));
-                              if (children.length > 0) {
-                                setChildFormData(children[children.length - 1]);
-                              }
-                            }}
-                            className="border-slate-300 text-slate-700"
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            onClick={handleAddChild}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            Add Child
-                          </Button>
-                        </div>
-                      )}
                     </div>
                   </CardContent>
                 </Card>
