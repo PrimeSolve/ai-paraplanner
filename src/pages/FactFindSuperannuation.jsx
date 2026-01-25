@@ -1040,12 +1040,24 @@ export default function FactFindSuperannuation() {
                 <div><label className="block text-sm font-semibold text-slate-700 mb-2">Lifetime annuity?</label><label className="flex items-center gap-2"><input type="radio" name="a_life__1" value="1" className="w-4 h-4" /><span className="text-sm">Yes</span></label><label className="flex items-center gap-2"><input type="radio" name="a_life__1" value="2" className="w-4 h-4" /><span className="text-sm">No</span></label></div>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
-                <input type="date" name="a_purchase_date" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Purchase date" />
-                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="a_purchase_price" placeholder="Purchase price" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Purchase date</label>
+                  <input type="date" name="a_purchase_date" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Purchase price</label>
+                  <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="a_purchase_price" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4 mt-4">
-                <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="a_residual" placeholder="Residual value" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
-                <input type="text" name="a_term" placeholder="Term" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Residual value</label>
+                  <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="a_residual" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Term</label>
+                  <input type="text" name="a_term" placeholder="" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
+                </div>
               </div>
             </div>
             <div className="bg-green-50 rounded-lg p-4 border border-green-200">
