@@ -22,8 +22,8 @@ export default function FactFindDependants() {
   const [dependants, setDependants] = useState([]);
   const [showChildForm, setShowChildForm] = useState(false);
   const [showDependantForm, setShowDependantForm] = useState(false);
-  const [editingChildIndex, setEditingChildIndex] = useState(null);
-  const [editingDependantIndex, setEditingDependantIndex] = useState(null);
+  const [selectedChildIndex, setSelectedChildIndex] = useState(null);
+  const [selectedDependantIndex, setSelectedDependantIndex] = useState(null);
   const [childFormData, setChildFormData] = useState({
     child_name: '',
     child_dob: '',
