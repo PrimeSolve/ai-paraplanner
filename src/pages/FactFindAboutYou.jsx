@@ -275,7 +275,10 @@ export default function FactFindPersonal() {
                       </button>
                     ) : (
                       <button
-                        onClick={() => setHasPartner(true)}
+                        onClick={() => {
+                          setHasPartner(true);
+                          setActiveTab('partner');
+                        }}
                         className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-1"
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
