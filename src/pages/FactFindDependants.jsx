@@ -301,43 +301,7 @@ export default function FactFindDependants() {
           {/* Children Tab */}
           {activeTab === 'children' && (
             <>
-              {children.length > 0 && !isAddingChild && selectedChildIndex === null && (
-                <div className="flex gap-2 mb-4 flex-wrap">
-                  {children.map((child, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleSelectChild(index)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                        selectedChildIndex === index
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      {child.child_name || `Child ${index + 1}`}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => {
-                      setSelectedChildIndex(null);
-                      setIsAddingChild(true);
-                      setChildFormData({
-                        child_name: '',
-                        child_dob: '',
-                        child_fin_dep: '',
-                        child_edu: '',
-                        child_fin_age: '',
-                        child_health: ''
-                      });
-                    }}
-                    className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium"
-                  >
-                    <Plus className="w-4 h-4 inline mr-2" />
-                    Add Child
-                  </button>
-                </div>
-              )}
-
-              {children.length === 0 && !isAddingChild && (
+              {children.length === 0 && selectedChildIndex === null && !isAddingChild ? (
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-8 text-center">
                     <div className="flex justify-center mb-4">
@@ -369,101 +333,35 @@ export default function FactFindDependants() {
                     </Button>
                   </CardContent>
                 </Card>
-              )}
-
-              {isAddingChild && (
+              ) : (
                 <Card className="border-slate-200 shadow-sm">
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <h4 className="font-bold text-slate-800">Child Information</h4>
-                      {children.length > 0 && (
-                        <span className="text-slate-600">— {children.map(c => c.child_name).join(', ')}</span>
-                      )}
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                         <Label className="text-slate-700 font-semibold text-sm">Child name</Label>
-                         <Input
-                           value={childFormData.child_name}
-                           onChange={(e) => setChildFormData({ ...childFormData, child_name: e.target.value })}
-                           placeholder="Enter child name"
-                           className="border-slate-300"
-                         />
-                       </div>
-                       <div className="space-y-2">
-                         <Label className="text-slate-700 font-semibold text-sm">Child date of birth</Label>
-                         <Input
-                           type="date"
-                           value={childFormData.child_dob}
-                           onChange={(e) => setChildFormData({ ...childFormData, child_dob: e.target.value })}
-                           className="border-slate-300"
-                         />
-                       </div>
-                    </div>
-
-                    <div className="space-y-2">
-                       <Label className="text-slate-700 font-semibold text-sm">Is child financially dependent?</Label>
-                       <div className="flex gap-3">
-                         {[{ label: 'Yes', value: '1' }, { label: 'No', value: '2' }].map(option => (
-                           <button
-                             key={option.value}
-                             onClick={() => setChildFormData({ ...childFormData, child_fin_dep: option.value })}
-                             className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                               childFormData.child_fin_dep === option.value
-                                 ? 'bg-blue-600 text-white border-blue-600'
-                                 : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                             }`}
-                           >
-                             {option.label}
-                           </button>
-                         ))}
-                       </div>
-                     </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                         <Label className="text-slate-700 font-semibold text-sm">Education status</Label>
-                         <Select value={childFormData.child_edu} onValueChange={(value) => setChildFormData({ ...childFormData, child_edu: value })}>
-                           <SelectTrigger className="border-slate-300">
-                             <SelectValue placeholder="Select..." />
-                           </SelectTrigger>
-                           <SelectContent>
-                             <SelectItem value="1">Primary</SelectItem>
-                             <SelectItem value="2">Secondary</SelectItem>
-                             <SelectItem value="3">Tertiary</SelectItem>
-                             <SelectItem value="4">TAFE/Trade</SelectItem>
-                             <SelectItem value="5">Not in education</SelectItem>
-                           </SelectContent>
-                         </Select>
-                       </div>
-                       <div className="space-y-2">
-                         <Label className="text-slate-700 font-semibold text-sm">Financial Dependant Age</Label>
-                         <Input
-                           type="number"
-                           value={childFormData.child_fin_age}
-                           onChange={(e) => setChildFormData({ ...childFormData, child_fin_age: e.target.value })}
-                           placeholder="Enter age"
-                           className="border-slate-300"
-                         />
-                       </div>
-                    </div>
-
-                    <div className="space-y-2">
-                       <Label className="text-slate-700 font-semibold text-sm">Child health issues</Label>
-                       <Input
-                         value={childFormData.child_health}
-                         onChange={(e) => setChildFormData({ ...childFormData, child_health: e.target.value })}
-                         placeholder="Enter any health issues"
-                         className="border-slate-300"
-                       />
-                     </div>
-
-                    <div className="flex justify-end gap-2 pt-2">
+                  <CardContent className="p-6 space-y-6">
+                    {/* Child tabs header */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex gap-2 items-center">
+                        <h4 className="font-bold text-slate-800">Children Information</h4>
+                        {children.map((child, index) => (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              setSelectedChildIndex(index);
+                              setIsAddingChild(false);
+                              setChildFormData(children[index]);
+                            }}
+                            className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                              selectedChildIndex === index && !isAddingChild
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                            }`}
+                          >
+                            CHILD{index + 1}
+                          </button>
+                        ))}
+                      </div>
                       <Button
-                        variant="outline"
                         onClick={() => {
-                          setIsAddingChild(false);
+                          setIsAddingChild(true);
+                          setSelectedChildIndex(null);
                           setChildFormData({
                             child_name: '',
                             child_dob: '',
@@ -473,22 +371,138 @@ export default function FactFindDependants() {
                             child_health: ''
                           });
                         }}
-                        className="border-slate-300 text-slate-700"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleAddChild}
+                        size="sm"
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                       >
+                        <Plus className="w-3 h-3 mr-1" />
                         Add Child
                       </Button>
                     </div>
-                    </CardContent>
-                    </Card>
+
+                    {/* Form - shown always when there are children or form is open */}
+                    {(children.length > 0 || isAddingChild) && (
+                      <div className="space-y-4 border-t pt-4">
+                        <div className="flex items-center justify-between">
+                          <h5 className="font-semibold text-slate-700">
+                            {isAddingChild ? 'New Child' : `Child ${(selectedChildIndex ?? 0) + 1}`}
+                          </h5>
+                          {selectedChildIndex !== null && !isAddingChild && (
+                            <Button
+                              onClick={() => handleDeleteChild(selectedChildIndex)}
+                              variant="destructive"
+                              size="sm"
+                            >
+                              Remove
+                            </Button>
+                          )}
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-slate-700 font-semibold text-sm">Child name</Label>
+                            <Input
+                              value={childFormData.child_name}
+                              onChange={(e) => setChildFormData({ ...childFormData, child_name: e.target.value })}
+                              placeholder="Enter child name"
+                              className="border-slate-300"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-slate-700 font-semibold text-sm">Child date of birth</Label>
+                            <Input
+                              type="date"
+                              value={childFormData.child_dob}
+                              onChange={(e) => setChildFormData({ ...childFormData, child_dob: e.target.value })}
+                              className="border-slate-300"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-slate-700 font-semibold text-sm">Is child financially dependent?</Label>
+                          <div className="flex gap-3">
+                            {[{ label: 'Yes', value: '1' }, { label: 'No', value: '2' }].map(option => (
+                              <button
+                                key={option.value}
+                                onClick={() => setChildFormData({ ...childFormData, child_fin_dep: option.value })}
+                                className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                                  childFormData.child_fin_dep === option.value
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                                }`}
+                              >
+                                {option.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-slate-700 font-semibold text-sm">Education status</Label>
+                            <Select value={childFormData.child_edu} onValueChange={(value) => setChildFormData({ ...childFormData, child_edu: value })}>
+                              <SelectTrigger className="border-slate-300">
+                                <SelectValue placeholder="Select..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">Primary</SelectItem>
+                                <SelectItem value="2">Secondary</SelectItem>
+                                <SelectItem value="3">Tertiary</SelectItem>
+                                <SelectItem value="4">TAFE/Trade</SelectItem>
+                                <SelectItem value="5">Not in education</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-slate-700 font-semibold text-sm">Financial Dependant Age</Label>
+                            <Input
+                              type="number"
+                              value={childFormData.child_fin_age}
+                              onChange={(e) => setChildFormData({ ...childFormData, child_fin_age: e.target.value })}
+                              placeholder="Enter age"
+                              className="border-slate-300"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-slate-700 font-semibold text-sm">Child health issues</Label>
+                          <Input
+                            value={childFormData.child_health}
+                            onChange={(e) => setChildFormData({ ...childFormData, child_health: e.target.value })}
+                            placeholder="Enter any health issues"
+                            className="border-slate-300"
+                          />
+                        </div>
+
+                        {isAddingChild && (
+                          <div className="flex justify-end gap-2 pt-2">
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setIsAddingChild(false);
+                                setSelectedChildIndex(children.length > 0 ? 0 : null);
+                                if (children.length > 0) {
+                                  setChildFormData(children[0]);
+                                }
+                              }}
+                              className="border-slate-300 text-slate-700"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              onClick={handleAddChild}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              Add Child
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     )}
-
-
+                  </CardContent>
+                </Card>
+              )}
             </>
           )}
 
