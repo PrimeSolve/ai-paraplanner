@@ -491,24 +491,34 @@ export default function FactFindTrusts() {
   // ============================================
 
   useEffect(() => {
+    const updateTableVisibility = (card, type) => {
+      const container = type === 'benef' ? card.querySelector('.benef-container') : card.querySelector('.sh-container');
+      const table = type === 'benef' ? card.querySelector('.benef-list-table') : card.querySelector('.sh-list-table');
+      const empty = type === 'benef' ? card.querySelector('.benef-list-empty') : card.querySelector('.sh-list-empty');
+      const addBtn = type === 'benef' ? card.querySelector('.add-benef') : card.querySelector('.add-shareholder');
+      const list = type === 'benef' ? card.querySelector('.benef-list') : card.querySelector('.sh-list');
+
+      const hasRows = list.querySelectorAll(type === 'benef' ? 'tr.benef-row' : 'tr.sh-row').length > 0;
+
+      if (hasRows) {
+        table?.classList.remove('hidden');
+        empty?.classList.add('hidden');
+        addBtn?.classList.remove('hidden');
+      } else {
+        table?.classList.add('hidden');
+        empty?.classList.remove('hidden');
+        addBtn?.classList.add('hidden');
+      }
+    };
+
     const clickHandler = (e) => {
       if (e.target.closest('.add-benef')) {
         e.preventDefault();
         const card = e.target.closest('.entry');
         const list = card.querySelector('.benef-list');
-        const row = document.createElement('div');
-        row.className = 'benef-row flex gap-2 items-end pb-2';
-        row.innerHTML = `
-          <select name="benef_entity" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">Select entity…</option>
-            <option value="client">Client</option>
-            <option value="partner">Partner</option>
-          </select>
-          <input type="text" name="benef_entitlement" placeholder="e.g. 25% or fixed amount" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          <button type="button" class="remove-benef px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium">Remove</button>
-        `;
-        row.querySelector('.remove-benef').onclick = () => row.remove();
+        const row = createBeneficiaryRow(card);
         list.appendChild(row);
+        updateTableVisibility(card, 'benef');
       }
       if (e.target.closest('.add-shareholder')) {
         e.preventDefault();
@@ -516,12 +526,21 @@ export default function FactFindTrusts() {
         const list = card.querySelector('.sh-list');
         const row = createShareholderRow(card);
         list.appendChild(row);
+        updateTableVisibility(card, 'sh');
       }
       if (e.target.closest('.entry-remove')) {
         e.preventDefault();
         const node = e.target.closest('.entry');
         const tab = currentTab;
         removeEntry(node, tab);
+      }
+      if (e.target.closest('.remove-benef')) {
+        const card = e.target.closest('.entry');
+        setTimeout(() => updateTableVisibility(card, 'benef'), 0);
+      }
+      if (e.target.closest('.remove-sh')) {
+        const card = e.target.closest('.entry');
+        setTimeout(() => updateTableVisibility(card, 'sh'), 0);
       }
     };
 
