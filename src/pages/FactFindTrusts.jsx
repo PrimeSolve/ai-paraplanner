@@ -62,7 +62,7 @@ export default function FactFindTrusts() {
     const cards = [...wrap.querySelectorAll('.entry')];
     return cards.map((card) => {
       const data = {};
-      
+
       // Get all inputs/selects
       const inputs = card.querySelectorAll('input:not([type="button"]), select, textarea');
       inputs.forEach(input => {
@@ -78,13 +78,13 @@ export default function FactFindTrusts() {
 
       // Read beneficiaries/shareholders rows
       if (tab === 'trust') {
-        const benefRows = card.querySelectorAll('.benef-row');
+        const benefRows = card.querySelectorAll('tbody.benef-list tr');
         data.beneficiaries = Array.from(benefRows).map(row => ({
           benef_entity: row.querySelector('select[name="benef_entity"]')?.value || '',
           benef_entitlement: row.querySelector('input[name="benef_entitlement"]')?.value || ''
         }));
       } else {
-        const shRows = card.querySelectorAll('.sh-row');
+        const shRows = card.querySelectorAll('tbody.sh-list tr');
         data.shareholders = Array.from(shRows).map(row => ({
           sh_entity: row.querySelector('select[name="sh_entity"]')?.value || '',
           sh_pct: row.querySelector('input[name="sh_pct"]')?.value || ''
@@ -247,40 +247,31 @@ export default function FactFindTrusts() {
   // ============================================
 
   const createBeneficiaryRow = useCallback((card, data = {}) => {
-    const row = document.createElement('div');
-    row.className = 'benef-row flex gap-2 items-end pb-2';
-    
+    const row = document.createElement('tr');
+    row.className = 'benef-row border-b border-slate-100 hover:bg-purple-50/50';
+
     const clientName = factFind?.personal?.client?.first_name 
       ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
       : 'Client';
-    
-    const childrenOptions = factFind?.dependants?.children
-      ?.map((c, i) => `<option value="child-${i}">${c.child_name || `Child ${i + 1}`}</option>`)
-      .join('') || '';
-    
-    const dependantsOptions = factFind?.dependants?.dependants_list
-      ?.map((d, i) => `<option value="dependent-${i}">${d.dep_name || `Dependant ${i + 1}`}</option>`)
-      .join('') || '';
-    
-    const trustOptions = globalStateRef.current.trusts.trusts
-      .map((t, i) => `<option value="trust-${i}">${t.trust_name || `Trust ${i + 1}`}</option>`)
-      .join('');
-    
-    const companyOptions = globalStateRef.current.trusts.companies
-      .map((c, i) => `<option value="company-${i}">${c.company_name || `Company ${i + 1}`}</option>`)
-      .join('');
-    
+
+    const partnerName = factFind?.personal?.partner?.first_name 
+      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
+      : null;
+
     row.innerHTML = `
-      <select name="benef_entity" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <option value="">Select entity…</option>
-        <option value="client">${clientName}</option>
-        ${childrenOptions}
-        ${dependantsOptions}
-        ${trustOptions}
-        ${companyOptions}
-      </select>
-      <input type="text" name="benef_entitlement" placeholder="e.g. 25% or fixed amount" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      <button type="button" class="remove-benef px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium">Remove</button>
+      <td class="py-2 px-2">
+        <select name="benef_entity" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="">Select entity…</option>
+          <option value="client">${clientName}</option>
+          ${partnerName ? `<option value="partner">${partnerName}</option>` : ''}
+        </select>
+      </td>
+      <td class="py-2 px-2">
+        <input type="text" name="benef_entitlement" placeholder="e.g. 25% or fixed amount" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+      </td>
+      <td class="py-2 px-2 text-center">
+        <button type="button" class="remove-benef text-red-500 hover:text-red-700 text-xs font-medium">Remove</button>
+      </td>
     `;
 
     const removeBtn = row.querySelector('.remove-benef');
@@ -304,40 +295,31 @@ export default function FactFindTrusts() {
   // ============================================
 
   const createShareholderRow = useCallback((card, data = {}) => {
-    const row = document.createElement('div');
-    row.className = 'sh-row flex gap-2 items-end pb-2';
-    
+    const row = document.createElement('tr');
+    row.className = 'sh-row border-b border-slate-100 hover:bg-orange-50/50';
+
     const clientName = factFind?.personal?.client?.first_name 
       ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
       : 'Client';
-    
-    const childrenOptions = factFind?.dependants?.children
-      ?.map((c, i) => `<option value="child-${i}">${c.child_name || `Child ${i + 1}`}</option>`)
-      .join('') || '';
-    
-    const dependantsOptions = factFind?.dependants?.dependants_list
-      ?.map((d, i) => `<option value="dependent-${i}">${d.dep_name || `Dependant ${i + 1}`}</option>`)
-      .join('') || '';
-    
-    const trustOptions = globalStateRef.current.trusts.trusts
-      .map((t, i) => `<option value="trust-${i}">${t.trust_name || `Trust ${i + 1}`}</option>`)
-      .join('');
-    
-    const companyOptions = globalStateRef.current.trusts.companies
-      .map((c, i) => `<option value="company-${i}">${c.company_name || `Company ${i + 1}`}</option>`)
-      .join('');
-    
+
+    const partnerName = factFind?.personal?.partner?.first_name 
+      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
+      : null;
+
     row.innerHTML = `
-      <select name="sh_entity" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <option value="">Select entity…</option>
-        <option value="client">${clientName}</option>
-        ${childrenOptions}
-        ${dependantsOptions}
-        ${trustOptions}
-        ${companyOptions}
-      </select>
-      <input type="text" name="sh_pct" placeholder="e.g. 25%" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      <button type="button" class="remove-sh px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium">Remove</button>
+      <td class="py-2 px-2">
+        <select name="sh_entity" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="">Select entity…</option>
+          <option value="client">${clientName}</option>
+          ${partnerName ? `<option value="partner">${partnerName}</option>` : ''}
+        </select>
+      </td>
+      <td class="py-2 px-2">
+        <input type="text" name="sh_pct" placeholder="e.g. 25%" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+      </td>
+      <td class="py-2 px-2 text-center">
+        <button type="button" class="remove-sh text-red-500 hover:text-red-700 text-xs font-medium">Remove</button>
+      </td>
     `;
 
     const removeBtn = row.querySelector('.remove-sh');
