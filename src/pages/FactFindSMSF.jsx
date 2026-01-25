@@ -341,10 +341,18 @@ export default function FactFindSMSF() {
       ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
       : null;
 
+    // Get account count from the card
+    const acctList = card.querySelector('.acct-list');
+    const accountCount = acctList ? acctList.querySelectorAll('.acct-row').length : 0;
+    const accountOptions = Array.from({ length: accountCount }, (_, i) => 
+      `<option value="account-${i + 1}">Account ${i + 1}</option>`
+    ).join('');
+
     row.innerHTML = `
       <td class="py-2 px-2">
         <select name="benef_account" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select…</option>
+          ${accountOptions}
         </select>
       </td>
       <td class="py-2 px-2">
