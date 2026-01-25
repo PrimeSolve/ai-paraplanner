@@ -1,139 +1,393 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, MessageSquare, RefreshCw, Info, Plus, Trash2, Edit2, TrendingUp, PieChart } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-const investmentTypes = [
-  { id: 'wrap', label: 'Wrap / Mastertrust', icon: '📁' },
-  { id: 'bond', label: 'Investment bonds', icon: '💎' }
-];
+import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 export default function FactFindInvestment() {
   const navigate = useNavigate();
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('wrap');
-  const [activeOwner, setActiveOwner] = useState('client');
-  const [investments, setInvestments] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [formData, setFormData] = useState({
-    type: 'wrap',
-    owner: 'client',
-    platform_name: '',
-    account_number: '',
-    platform_type: '',
-    current_value: '',
-    investment_strategy: '',
-    asset_allocation: '',
-    adviser_name: '',
-    annual_fees: '',
-    bond_provider: '',
-    bond_type: '',
-    investment_amount: '',
-    term_years: '',
-    annual_contribution: '',
-    notes: ''
+  const [currentTab, setCurrentTab] = useState('wrap');
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [wrapCount, setWrapCount] = useState(0);
+  const [bondCount, setBondCount] = useState(0);
+
+  const globalStateRef = React.useRef({
+    investment: {
+      currentTab: 'wrap',
+      activeIdx: { wrap: 0, bonds: 0 },
+      wraps: [],
+      bonds: []
+    }
   });
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
+  const wrapForTab = useCallback((tab) => {
+    const id = tab === 'wrap' ? 'wrapWrap' : 'bondsWrap';
+    return document.getElementById(id);
+  }, []);
 
-        if (id) {
-          const finds = await base44.entities.FactFind.filter({ id });
-          if (finds[0]) {
-            setFactFind(finds[0]);
-            if (finds[0].investment?.investments) {
-              setInvestments(finds[0].investment.investments);
-            }
+  const cloneTemplateDiv = useCallback((id) => {
+    const src = document.getElementById(id);
+    if (!src) {
+      console.error(`Template not found: ${id}`);
+      return null;
+    }
+    const tmp = document.createElement('div');
+    tmp.innerHTML = (src.innerHTML || '').trim();
+    return tmp.firstElementChild;
+  }, []);
+
+  const readTabToArray = useCallback((tab) => {
+    const wrap = wrapForTab(tab);
+    if (!wrap) return [];
+
+    const cards = [...wrap.querySelectorAll('.entry')];
+    return cards.map((card) => {
+      const data = {};
+      const inputs = card.querySelectorAll('input:not([type="button"]), select, textarea');
+      inputs.forEach(input => {
+        if (input.type === 'radio') {
+          const baseName = input.name.replace(/__\d+$/, '');
+          if (input.checked) {
+            data[baseName] = input.value;
+          }
+        } else if (input.type !== 'button') {
+          data[input.name] = input.value;
+        }
+      });
+      return data;
+    });
+  }, [wrapForTab]);
+
+  const renumber = useCallback((tab) => {
+    const wrap = wrapForTab(tab);
+    if (!wrap) return;
+
+    [...wrap.querySelectorAll('.entry')].forEach((card, i) => {
+      const idxSpan = card.querySelector('.idx');
+      if (idxSpan) idxSpan.textContent = i + 1;
+
+      if (tab === 'wrap') {
+        card.querySelectorAll('input[type="radio"][name^="w_owner_type"]')
+          .forEach(r => { r.name = 'w_owner_type__' + (i + 1); });
+      } else {
+        card.querySelectorAll('input[type="radio"][name^="b_owner_type"]')
+          .forEach(r => { r.name = 'b_owner_type__' + (i + 1); });
+        card.querySelectorAll('input[type="radio"][name^="b_type"]')
+          .forEach(r => { r.name = 'b_type__' + (i + 1); });
+      }
+    });
+  }, [wrapForTab]);
+
+  const updatePills = useCallback((tab, index) => {
+    const pillsId = tab === 'wrap' ? 'wrapPills' : 'bondsPills';
+    const pillsContainer = document.getElementById(pillsId);
+    if (!pillsContainer) return;
+
+    pillsContainer.innerHTML = '';
+    const wrap = wrapForTab(tab);
+    if (!wrap) return;
+
+    const cards = [...wrap.querySelectorAll('.entry')];
+    cards.forEach((card, i) => {
+      const pill = document.createElement('button');
+      const isActive = i === index;
+      pill.type = 'button';
+
+      const nameInput = card.querySelector('input[name="investment_name"], input[name="bond_name"]');
+      let displayName = nameInput?.value?.trim();
+      if (!displayName) {
+        displayName = tab === 'wrap' ? `Wrap ${i + 1}` : `Bond ${i + 1}`;
+      }
+
+      pill.className = `px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+        isActive
+          ? 'bg-blue-600 text-white shadow-md'
+          : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+      }`;
+      pill.textContent = displayName;
+
+      pill.onclick = (e) => {
+        e.preventDefault();
+        setActiveIndex(i);
+        showOnlyActiveEntry(tab, i);
+      };
+
+      pillsContainer.appendChild(pill);
+    });
+  }, [wrapForTab]);
+
+  const showOnlyActiveEntry = useCallback((tab, index) => {
+    const wrap = wrapForTab(tab);
+    if (!wrap) return;
+
+    const cards = [...wrap.querySelectorAll('.entry')];
+    cards.forEach((card, i) => {
+      card.style.display = i === index ? '' : 'none';
+    });
+  }, [wrapForTab]);
+
+  const fillCardFromData = useCallback((card, tab, data) => {
+    if (!data || !card) return;
+
+    if (tab === 'wrap') {
+      const nameInput = card.querySelector('input[name="investment_name"]');
+      if (nameInput && data.investment_name) nameInput.value = data.investment_name;
+
+      if (data.w_owner_type) {
+        card.querySelectorAll('input[type="radio"][name^="w_owner_type"]').forEach(r => {
+          r.checked = r.value === data.w_owner_type;
+        });
+      }
+
+      const ownerSelect = card.querySelector('select[name="w_owner"]');
+      if (ownerSelect) {
+        ownerSelect.innerHTML = '<option value="">Select owner…</option>';
+        const clientName = factFind?.personal?.client?.first_name
+          ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
+          : null;
+        const partnerName = factFind?.personal?.partner?.first_name
+          ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
+          : null;
+
+        if (clientName) ownerSelect.innerHTML += `<option value="client">${clientName}</option>`;
+        if (partnerName) ownerSelect.innerHTML += `<option value="partner">${partnerName}</option>`;
+
+        if (data.w_owner) ownerSelect.value = data.w_owner;
+      }
+
+      const providerInput = card.querySelector('input[name="w_provider"]');
+      if (providerInput && data.w_provider) providerInput.value = data.w_provider;
+    }
+
+    if (tab === 'bonds') {
+      const nameInput = card.querySelector('input[name="bond_name"]');
+      if (nameInput && data.bond_name) nameInput.value = data.bond_name;
+
+      if (data.b_owner_type) {
+        card.querySelectorAll('input[type="radio"][name^="b_owner_type"]').forEach(r => {
+          r.checked = r.value === data.b_owner_type;
+        });
+      }
+
+      const ownerSelect = card.querySelector('select[name="b_owner"]');
+      if (ownerSelect) {
+        ownerSelect.innerHTML = '<option value="">Select owner…</option>';
+        const clientName = factFind?.personal?.client?.first_name
+          ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
+          : null;
+        const partnerName = factFind?.personal?.partner?.first_name
+          ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
+          : null;
+
+        if (clientName) ownerSelect.innerHTML += `<option value="client">${clientName}</option>`;
+        if (partnerName) ownerSelect.innerHTML += `<option value="partner">${partnerName}</option>`;
+
+        if (data.b_owner) ownerSelect.value = data.b_owner;
+      }
+
+      if (data.b_type) {
+        card.querySelectorAll('input[type="radio"][name^="b_type"]').forEach(r => {
+          r.checked = r.value === data.b_type;
+        });
+      }
+
+      const providerInput = card.querySelector('input[name="b_provider"]');
+      if (providerInput && data.b_provider) providerInput.value = data.b_provider;
+
+      const valueInput = card.querySelector('input[name="b_value"]');
+      if (valueInput && data.b_value) valueInput.value = data.b_value;
+
+      const contribInput = card.querySelector('input[name="b_contrib"]');
+      if (contribInput && data.b_contrib) contribInput.value = data.b_contrib;
+    }
+  }, [factFind]);
+
+  const addEntry = useCallback((tab, existingData = null) => {
+    const wrap = wrapForTab(tab);
+    if (!wrap) return;
+
+    const templateId = tab === 'wrap' ? 'wrapTemplate' : 'bondTemplate';
+    const node = cloneTemplateDiv(templateId);
+    if (!node) return;
+
+    wrap.appendChild(node);
+
+    if (existingData) {
+      fillCardFromData(node, tab, existingData);
+    }
+
+    renumber(tab);
+    const newCount = wrap.querySelectorAll('.entry').length;
+    if (tab === 'wrap') {
+      setWrapCount(newCount);
+    } else {
+      setBondCount(newCount);
+    }
+
+    const newIndex = newCount - 1;
+    setActiveIndex(newIndex);
+    updatePills(tab, newIndex);
+    showOnlyActiveEntry(tab, newIndex);
+  }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry]);
+
+  const removeEntry = useCallback((node, tab) => {
+    node.remove();
+    const wrap = wrapForTab(tab);
+    const remaining = wrap.querySelectorAll('.entry').length;
+    renumber(tab);
+
+    if (tab === 'wrap') {
+      setWrapCount(remaining);
+    } else {
+      setBondCount(remaining);
+    }
+
+    if (remaining > 0) {
+      const newIndex = Math.max(0, remaining - 1);
+      setActiveIndex(newIndex);
+      showOnlyActiveEntry(tab, newIndex);
+      updatePills(tab, newIndex);
+    } else {
+      setActiveIndex(0);
+    }
+  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
+
+  const loadData = useCallback(async () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+
+      if (id) {
+        const finds = await base44.entities.FactFind.filter({ id });
+        if (finds[0]) {
+          setFactFind(finds[0]);
+          if (finds[0].investment) {
+            globalStateRef.current.investment = {
+              ...finds[0].investment,
+              currentTab: finds[0].investment.currentTab || 'wrap',
+              activeIdx: finds[0].investment.activeIdx || { wrap: 0, bonds: 0 }
+            };
           }
         }
-      } catch (error) {
-        console.error('Error loading fact find:', error);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error('Error loading fact find:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
     loadData();
   }, []);
 
-  const handleAddInvestment = () => {
-    if (!formData.platform_name && !formData.bond_provider) {
-      toast.error('Please enter required information');
+  useEffect(() => {
+    if (!loading && factFind?.id) {
+      setTimeout(() => {
+        const wrapWrap = document.getElementById('wrapWrap');
+        const bondsWrap = document.getElementById('bondsWrap');
+
+        if (wrapWrap) wrapWrap.innerHTML = '';
+        if (bondsWrap) bondsWrap.innerHTML = '';
+
+        if (globalStateRef.current.investment.wraps?.length > 0) {
+          globalStateRef.current.investment.wraps.forEach((data) => {
+            addEntry('wrap', data);
+          });
+        }
+
+        if (globalStateRef.current.investment.bonds?.length > 0) {
+          globalStateRef.current.investment.bonds.forEach((data) => {
+            addEntry('bonds', data);
+          });
+        }
+
+        const activeIdx = globalStateRef.current.investment.activeIdx?.[currentTab] || 0;
+        setActiveIndex(activeIdx);
+        updatePills(currentTab, activeIdx);
+        showOnlyActiveEntry(currentTab, activeIdx);
+      }, 50);
+    }
+  }, [loading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
+
+  useEffect(() => {
+    const clickHandler = (e) => {
+      if (e.target.closest('.add-first-wrap') || e.target.closest('.add-wrap')) {
+        e.preventDefault();
+        addEntry('wrap');
+      }
+      if (e.target.closest('.add-first-bond') || e.target.closest('.add-bond')) {
+        e.preventDefault();
+        addEntry('bonds');
+      }
+      if (e.target.closest('.entry-remove')) {
+        e.preventDefault();
+        const node = e.target.closest('.entry');
+        removeEntry(node, currentTab);
+      }
+    };
+
+    const inputHandler = (e) => {
+      if (e.target.matches('input[name="investment_name"], input[name="bond_name"]')) {
+        updatePills(currentTab, activeIndex);
+      }
+      clearTimeout(window._investmentSaveTimeout);
+      window._investmentSaveTimeout = setTimeout(() => {
+        saveInvestmentState();
+      }, 500);
+    };
+
+    document.addEventListener('click', clickHandler);
+    document.addEventListener('input', inputHandler);
+    return () => {
+      document.removeEventListener('click', clickHandler);
+      document.removeEventListener('input', inputHandler);
+    };
+  }, [currentTab, activeIndex, updatePills, addEntry, removeEntry]);
+
+  const saveInvestmentState = useCallback(async () => {
+    if (!factFind?.id) return;
+
+    try {
+      globalStateRef.current.investment.wraps = readTabToArray('wrap');
+      globalStateRef.current.investment.bonds = readTabToArray('bonds');
+      globalStateRef.current.investment.currentTab = currentTab;
+      globalStateRef.current.investment.activeIdx = {
+        wrap: currentTab === 'wrap' ? activeIndex : globalStateRef.current.investment.activeIdx?.wrap || 0,
+        bonds: currentTab === 'bonds' ? activeIndex : globalStateRef.current.investment.activeIdx?.bonds || 0
+      };
+
+      await base44.entities.FactFind.update(factFind.id, {
+        investment: globalStateRef.current.investment
+      });
+    } catch (error) {
+      console.error('Save failed:', error);
+    }
+  }, [factFind?.id, readTabToArray, currentTab, activeIndex]);
+
+  const handleNext = async () => {
+    if (!factFind?.id) {
+      toast.error('Unable to save data');
       return;
     }
 
-    const investmentData = { ...formData, type: activeTab, owner: activeOwner };
-
-    if (editingIndex !== null) {
-      const updated = [...investments];
-      updated[editingIndex] = investmentData;
-      setInvestments(updated);
-      setEditingIndex(null);
-    } else {
-      setInvestments([...investments, investmentData]);
-    }
-
-    resetForm();
-  };
-
-  const resetForm = () => {
-    setFormData({
-      type: activeTab,
-      owner: activeOwner,
-      platform_name: '',
-      account_number: '',
-      platform_type: '',
-      current_value: '',
-      investment_strategy: '',
-      asset_allocation: '',
-      adviser_name: '',
-      annual_fees: '',
-      bond_provider: '',
-      bond_type: '',
-      investment_amount: '',
-      term_years: '',
-      annual_contribution: '',
-      notes: ''
-    });
-  };
-
-  const handleEdit = (index) => {
-    setFormData(investments[index]);
-    setEditingIndex(index);
-    setActiveTab(investments[index].type);
-    setActiveOwner(investments[index].owner);
-  };
-
-  const handleDelete = (index) => {
-    const updated = investments.filter((_, i) => i !== index);
-    setInvestments(updated);
-  };
-
-  const handleNext = async () => {
     setSaving(true);
     try {
-      const sectionsCompleted = factFind.sections_completed || [];
+      const sectionsCompleted = [...(factFind.sections_completed || [])];
       if (!sectionsCompleted.includes('investment')) {
         sectionsCompleted.push('investment');
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        investment: { investments },
-        current_section: 'assets_liabilities',
+        investment: globalStateRef.current.investment,
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
@@ -160,366 +414,195 @@ export default function FactFindInvestment() {
     );
   }
 
-  const filteredInvestments = investments.filter(inv => inv.type === activeTab && inv.owner === activeOwner);
-
-  const handleTabChange = (newTab) => {
-    setActiveTab(newTab);
-    if (editingIndex === null) {
-      setFormData({ ...formData, type: newTab });
-    }
-  };
+  const currentCount = currentTab === 'wrap' ? wrapCount : bondCount;
 
   return (
     <FactFindLayout currentSection="investment" factFind={factFind}>
       <FactFindHeader
         title="Investments"
         description="Capture Wrap/Mastertrusts and Investment bonds."
-        tabs={investmentTypes}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
+        tabs={[
+          { id: 'wrap', label: 'Wrap / Mastertrust' },
+          { id: 'bonds', label: 'Investment bonds' }
+        ]}
+        activeTab={currentTab}
+        onTabChange={(tab) => {
+          setCurrentTab(tab);
+          setActiveIndex(0);
+          setTimeout(() => updatePills(tab, 0), 0);
+        }}
         factFind={factFind}
       />
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="w-full space-y-4">
-          {/* Owner Bar */}
-          <div className="flex items-center justify-between bg-slate-100 border border-slate-200 rounded-lg px-4 py-3">
-            <div className="flex items-center gap-3">
-              <span className="font-bold text-slate-800 text-sm">Owner:</span>
-              <div className="flex gap-2">
-                {['client', 'partner', 'joint'].map(owner => (
-                  <button
-                    key={owner}
-                    onClick={() => {
-                      setActiveOwner(owner);
-                      if (editingIndex === null) {
-                        setFormData({ ...formData, owner });
-                      }
-                    }}
-                    className={cn(
-                      "px-3 py-1.5 rounded-full text-xs font-bold border transition-all capitalize",
-                      activeOwner === owner
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
-                    )}
-                  >
-                    {owner}
-                  </button>
-                ))}
+      {/* Hidden Templates */}
+      <div id="wrapTemplate" style={{ display: 'none' }}>
+        <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-4">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Wrap <span className="idx">1</span></h3>
+              <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
+            </div>
+            <button type="button" className="entry-remove px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">Remove</button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Investment name</label>
+              <input type="text" name="investment_name" placeholder="e.g. Smith Family Wrap Account" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-3">Ownership type</label>
+                <div className="flex flex-col gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="w_owner_type__1" value="2" className="w-4 h-4" />
+                    <span className="text-sm text-slate-700">Joint</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="w_owner_type__1" value="1" className="w-4 h-4" />
+                    <span className="text-sm text-slate-700">Sole ownership</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Wrap owner</label>
+                <select name="w_owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select owner…</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Wrap product provider</label>
+              <input type="text" name="w_provider" placeholder="" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="bondTemplate" style={{ display: 'none' }}>
+        <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-4">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Bond <span className="idx">1</span></h3>
+              <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
+            </div>
+            <button type="button" className="entry-remove px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">Remove</button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Bond name</label>
+              <input type="text" name="bond_name" placeholder="e.g. Smith Education Bond" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-3">Bond ownership type</label>
+                <div className="flex flex-col gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="b_owner_type__1" value="2" className="w-4 h-4" />
+                    <span className="text-sm text-slate-700">Joint</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="b_owner_type__1" value="1" className="w-4 h-4" />
+                    <span className="text-sm text-slate-700">Sole ownership</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Bond owner</label>
+                <select name="b_owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select owner…</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-3">Bond type</label>
+                <div className="flex flex-col gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="b_type__1" value="1" className="w-4 h-4" />
+                    <span className="text-sm text-slate-700">Investment bond</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="b_type__1" value="2" className="w-4 h-4" />
+                    <span className="text-sm text-slate-700">Education bond</span>
+                  </label>
+                </div>
+              </div>
+
+              <div></div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Bond provider</label>
+              <input type="text" name="b_provider" placeholder="" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Bond value</label>
+                <div className="flex items-center">
+                  <span className="text-slate-500 mr-2">$</span>
+                  <input type="number" name="b_value" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Contribution</label>
+                <div className="flex items-center">
+                  <span className="text-slate-500 mr-2">$</span>
+                  <input type="number" name="b_contrib" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Add/Edit Form */}
-          <Card className="border-slate-200 shadow-sm">
-            <div className={cn(
-              "px-6 py-3 rounded-t-lg",
-              activeTab === 'wrap' && "bg-gradient-to-r from-indigo-600 to-blue-600",
-              activeTab === 'bond' && "bg-gradient-to-r from-pink-600 to-rose-600"
-            )}>
-              <h4 className="font-bold text-white">
-                {editingIndex !== null ? `Edit ${activeTab === 'wrap' ? 'Wrap/Mastertrust' : 'Investment Bond'}` : `Add a ${activeTab === 'wrap' ? 'Wrap/Mastertrust' : 'Investment Bond'}`}
-              </h4>
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="w-full space-y-6">
+          <div id="wrapWrap" style={{ display: currentTab === 'wrap' ? 'block' : 'none' }} className="space-y-4" />
+          <div id="bondsWrap" style={{ display: currentTab === 'bonds' ? 'block' : 'none' }} className="space-y-4" />
+
+          {currentCount === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="text-5xl mb-6">{currentTab === 'wrap' ? '📊' : '💰'}</div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                Do you have any {currentTab === 'wrap' ? 'Wrap or Mastertrust accounts?' : 'Investment bonds?'}
+              </h3>
+              <p className="text-slate-600 text-center mb-8 max-w-md">
+                {currentTab === 'wrap'
+                  ? 'Add details about your investment platform accounts and portfolios.'
+                  : 'Add details about your investment bond accounts and contributions.'}
+              </p>
+              <Button
+                onClick={() => addEntry(currentTab)}
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
+              >
+                + Add {currentTab === 'wrap' ? 'Wrap / Mastertrust' : 'Investment Bond'}
+              </Button>
             </div>
-            <CardContent className="p-6 space-y-4">
-              {activeTab === 'wrap' && (
-                <>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Platform name</Label>
-                      <Input
-                        value={formData.platform_name}
-                        onChange={(e) => setFormData({ ...formData, platform_name: e.target.value })}
-                        placeholder="Enter platform name"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Account number</Label>
-                      <Input
-                        value={formData.account_number}
-                        onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
-                        placeholder="Enter account number"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Platform type</Label>
-                      <Select value={formData.platform_type} onValueChange={(value) => setFormData({ ...formData, platform_type: value })}>
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="wrap">Wrap account</SelectItem>
-                          <SelectItem value="mastertrust">Mastertrust</SelectItem>
-                          <SelectItem value="idps">IDPS</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Current value ($)</Label>
-                      <Input
-                        type="number"
-                        value={formData.current_value}
-                        onChange={(e) => setFormData({ ...formData, current_value: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Investment strategy</Label>
-                      <Input
-                        value={formData.investment_strategy}
-                        onChange={(e) => setFormData({ ...formData, investment_strategy: e.target.value })}
-                        placeholder="e.g., Balanced, Growth"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Asset allocation</Label>
-                      <Input
-                        value={formData.asset_allocation}
-                        onChange={(e) => setFormData({ ...formData, asset_allocation: e.target.value })}
-                        placeholder="e.g., 60% shares, 40% fixed"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Adviser name</Label>
-                      <Input
-                        value={formData.adviser_name}
-                        onChange={(e) => setFormData({ ...formData, adviser_name: e.target.value })}
-                        placeholder="Enter adviser name"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Annual fees ($)</Label>
-                      <Input
-                        type="number"
-                        value={formData.annual_fees}
-                        onChange={(e) => setFormData({ ...formData, annual_fees: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {activeTab === 'bond' && (
-                <>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Bond provider</Label>
-                      <Input
-                        value={formData.bond_provider}
-                        onChange={(e) => setFormData({ ...formData, bond_provider: e.target.value })}
-                        placeholder="Enter provider name"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Bond type</Label>
-                      <Select value={formData.bond_type} onValueChange={(value) => setFormData({ ...formData, bond_type: value })}>
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="investment">Investment bond</SelectItem>
-                          <SelectItem value="insurance">Insurance bond</SelectItem>
-                          <SelectItem value="education">Education bond</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Investment amount ($)</Label>
-                      <Input
-                        type="number"
-                        value={formData.investment_amount}
-                        onChange={(e) => setFormData({ ...formData, investment_amount: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Current value ($)</Label>
-                      <Input
-                        type="number"
-                        value={formData.current_value}
-                        onChange={(e) => setFormData({ ...formData, current_value: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Term (years)</Label>
-                      <Input
-                        type="number"
-                        value={formData.term_years}
-                        onChange={(e) => setFormData({ ...formData, term_years: e.target.value })}
-                        placeholder="e.g., 10"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Annual contribution ($)</Label>
-                      <Input
-                        type="number"
-                        value={formData.annual_contribution}
-                        onChange={(e) => setFormData({ ...formData, annual_contribution: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <div className="space-y-2">
-                <Label className="text-slate-700 font-semibold text-sm">Additional notes</Label>
-                <Input
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Any other relevant information"
-                  className="border-slate-300"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                {editingIndex !== null && (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setEditingIndex(null);
-                      resetForm();
-                    }}
-                    className="border-slate-300"
-                  >
-                    Cancel
-                  </Button>
-                )}
-                <Button
-                  onClick={handleAddInvestment}
-                  className={cn(
-                    "text-white",
-                    activeTab === 'wrap' && "bg-indigo-600 hover:bg-indigo-700",
-                    activeTab === 'bond' && "bg-pink-600 hover:bg-pink-700"
-                  )}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  {editingIndex !== null ? 'Update' : 'Add'} {activeTab === 'wrap' ? 'Wrap/Mastertrust' : 'Investment Bond'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Empty State or List */}
-          {filteredInvestments.length === 0 ? (
-            <Card className="border-slate-200 shadow-sm">
-              <CardContent className="p-12 text-center">
-                <div className={cn(
-                  "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4",
-                  activeTab === 'wrap' && "bg-indigo-100",
-                  activeTab === 'bond' && "bg-pink-100"
-                )}>
-                  {activeTab === 'wrap' ? (
-                    <TrendingUp className={cn("w-8 h-8", "text-indigo-600")} />
-                  ) : (
-                    <PieChart className={cn("w-8 h-8", "text-pink-600")} />
-                  )}
-                </div>
-                <h4 className="font-bold text-slate-800 mb-2">
-                  No {activeTab === 'wrap' ? 'Wrap/Mastertrust accounts' : 'investment bonds'} added yet
-                </h4>
-                <p className="text-sm text-slate-600 mb-4">
-                  Add your first {activeTab === 'wrap' ? 'wrap account' : 'investment bond'} using the form above.
-                </p>
-              </CardContent>
-            </Card>
           ) : (
-            <Card className="border-slate-200 shadow-sm">
-              <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-3">
-                <h4 className="font-bold text-white capitalize">
-                  {activeOwner}'s {activeTab === 'wrap' ? 'Wrap/Mastertrust' : 'Investment Bonds'} ({filteredInvestments.length})
-                </h4>
+            <>
+              <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                <div id={currentTab === 'wrap' ? 'wrapPills' : 'bondsPills'} className="flex gap-2" />
+                <button
+                  onClick={() => addEntry(currentTab)}
+                  className="ml-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0 shadow-sm"
+                >
+                  + Add {currentTab === 'wrap' ? 'Wrap' : 'Bond'}
+                </button>
               </div>
-              <CardContent className="p-6">
-                <div className="space-y-3">
-                  {filteredInvestments.map((investment, index) => {
-                    const globalIndex = investments.findIndex(inv => inv === investment);
-                    return (
-                      <div
-                        key={index}
-                        className="flex items-start justify-between p-4 bg-slate-50 rounded-lg border border-slate-200"
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className="font-bold text-slate-800">
-                              {investment.platform_name || investment.bond_provider}
-                            </span>
-                            {investment.current_value && (
-                              <span className={cn(
-                                "px-2 py-0.5 rounded text-xs font-semibold",
-                                activeTab === 'wrap' && "bg-indigo-100 text-indigo-700",
-                                activeTab === 'bond' && "bg-pink-100 text-pink-700"
-                              )}>
-                                ${parseFloat(investment.current_value).toLocaleString()}
-                              </span>
-                            )}
-                          </div>
-                          <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-slate-600">
-                            {investment.account_number && <span><strong>Account:</strong> {investment.account_number}</span>}
-                            {investment.platform_type && <span><strong>Type:</strong> {investment.platform_type}</span>}
-                            {investment.investment_strategy && <span><strong>Strategy:</strong> {investment.investment_strategy}</span>}
-                            {investment.annual_fees && <span><strong>Fees:</strong> ${parseFloat(investment.annual_fees).toLocaleString()}</span>}
-                            {investment.bond_type && <span><strong>Type:</strong> {investment.bond_type}</span>}
-                            {investment.term_years && <span><strong>Term:</strong> {investment.term_years} years</span>}
-                          </div>
-                        </div>
-                        <div className="flex gap-2 ml-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(globalIndex)}
-                            className="border-slate-300"
-                          >
-                            <Edit2 className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDelete(globalIndex)}
-                            className="border-red-300 text-red-600 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+            </>
           )}
 
-          {/* Navigation */}
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -545,7 +628,7 @@ export default function FactFindInvestment() {
                     </>
                   ) : (
                     <>
-                      Continue
+                      Save & continue
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </>
                   )}
