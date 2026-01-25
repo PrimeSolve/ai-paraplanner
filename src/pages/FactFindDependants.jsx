@@ -373,25 +373,14 @@ export default function FactFindDependants() {
                 </Card>
               )}
 
-              {(selectedChildIndex !== null || isAddingChild) && (
+              {isAddingChild && (
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-6 space-y-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-bold text-slate-800">
-                        {selectedChildIndex !== null ? 'Edit Child' : 'Child Information'}
-                      </h4>
-                      {selectedChildIndex !== null && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteChild(selectedChildIndex)}
-                          className="border-red-300 text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete
-                        </Button>
+                    <div className="flex items-center gap-2 mb-4">
+                      <h4 className="font-bold text-slate-800">Child Information</h4>
+                      {children.length > 0 && (
+                        <span className="text-slate-600">— {children.map(c => c.child_name).join(', ')}</span>
                       )}
-
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
