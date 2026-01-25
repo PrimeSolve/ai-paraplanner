@@ -1,4 +1,31 @@
+import AdminAdviceGroupDetail from './pages/AdminAdviceGroupDetail';
+import AdminAdviceGroups from './pages/AdminAdviceGroups';
+import AdminAdvisers from './pages/AdminAdvisers';
+import AdminClients from './pages/AdminClients';
+import AdminCompleted from './pages/AdminCompleted';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminQueue from './pages/AdminQueue';
+import AdminSettings from './pages/AdminSettings';
+import AdminTeam from './pages/AdminTeam';
+import AdminTemplate from './pages/AdminTemplate';
+import AdviceGroupAdvisers from './pages/AdviceGroupAdvisers';
+import AdviceGroupClients from './pages/AdviceGroupClients';
+import AdviceGroupDashboard from './pages/AdviceGroupDashboard';
+import AdviceGroupModelPortfolios from './pages/AdviceGroupModelPortfolios';
+import AdviceGroupRiskProfiles from './pages/AdviceGroupRiskProfiles';
+import AdviceGroupSOARequests from './pages/AdviceGroupSOARequests';
+import AdviceGroupSOATemplate from './pages/AdviceGroupSOATemplate';
+import AdviceGroupSettings from './pages/AdviceGroupSettings';
+import AdviserAnalytics from './pages/AdviserAnalytics';
+import AdviserCalendar from './pages/AdviserCalendar';
+import AdviserClientDetail from './pages/AdviserClientDetail';
+import AdviserClients from './pages/AdviserClients';
+import AdviserDashboard from './pages/AdviserDashboard';
+import AdviserDocuments from './pages/AdviserDocuments';
+import AdviserFactFinds from './pages/AdviserFactFinds';
+import AdviserSOARequests from './pages/AdviserSOARequests';
+import AdviserSOATemplate from './pages/AdviserSOATemplate';
+import AdviserSettings from './pages/AdviserSettings';
 import FactFindAboutYou from './pages/FactFindAboutYou';
 import FactFindAdviceReason from './pages/FactFindAdviceReason';
 import FactFindAssetsLiabilities from './pages/FactFindAssetsLiabilities';
@@ -29,38 +56,41 @@ import SOARequestScope from './pages/SOARequestScope';
 import SOARequestStrategy from './pages/SOARequestStrategy';
 import SOARequestTransactions from './pages/SOARequestTransactions';
 import SOARequestWelcome from './pages/SOARequestWelcome';
-import AdminAdviceGroups from './pages/AdminAdviceGroups';
-import AdminAdviceGroupDetail from './pages/AdminAdviceGroupDetail';
-import AdminQueue from './pages/AdminQueue';
-import AdminCompleted from './pages/AdminCompleted';
-import AdminAdvisers from './pages/AdminAdvisers';
-import AdminClients from './pages/AdminClients';
-import AdminTemplate from './pages/AdminTemplate';
-import AdminTeam from './pages/AdminTeam';
-import AdminSettings from './pages/AdminSettings';
-import AdviceGroupDashboard from './pages/AdviceGroupDashboard';
-import AdviceGroupAdvisers from './pages/AdviceGroupAdvisers';
-import AdviceGroupClients from './pages/AdviceGroupClients';
-import AdviceGroupSOARequests from './pages/AdviceGroupSOARequests';
-import AdviceGroupRiskProfiles from './pages/AdviceGroupRiskProfiles';
-import AdviceGroupModelPortfolios from './pages/AdviceGroupModelPortfolios';
-import AdviceGroupSOATemplate from './pages/AdviceGroupSOATemplate';
-import AdviceGroupSettings from './pages/AdviceGroupSettings';
-import AdviserDashboard from './pages/AdviserDashboard';
-import AdviserClients from './pages/AdviserClients';
-import AdviserClientDetail from './pages/AdviserClientDetail';
-import AdviserSOARequests from './pages/AdviserSOARequests';
-import AdviserFactFinds from './pages/AdviserFactFinds';
-import AdviserSOATemplate from './pages/AdviserSOATemplate';
-import AdviserDocuments from './pages/AdviserDocuments';
-import AdviserCalendar from './pages/AdviserCalendar';
-import AdviserAnalytics from './pages/AdviserAnalytics';
-import AdviserSettings from './pages/AdviserSettings';
+import ClientDocuments from './pages/ClientDocuments';
+import ClientMessages from './pages/ClientMessages';
+import ClientSettings from './pages/ClientSettings';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AdminAdviceGroupDetail": AdminAdviceGroupDetail,
+    "AdminAdviceGroups": AdminAdviceGroups,
+    "AdminAdvisers": AdminAdvisers,
+    "AdminClients": AdminClients,
+    "AdminCompleted": AdminCompleted,
     "AdminDashboard": AdminDashboard,
+    "AdminQueue": AdminQueue,
+    "AdminSettings": AdminSettings,
+    "AdminTeam": AdminTeam,
+    "AdminTemplate": AdminTemplate,
+    "AdviceGroupAdvisers": AdviceGroupAdvisers,
+    "AdviceGroupClients": AdviceGroupClients,
+    "AdviceGroupDashboard": AdviceGroupDashboard,
+    "AdviceGroupModelPortfolios": AdviceGroupModelPortfolios,
+    "AdviceGroupRiskProfiles": AdviceGroupRiskProfiles,
+    "AdviceGroupSOARequests": AdviceGroupSOARequests,
+    "AdviceGroupSOATemplate": AdviceGroupSOATemplate,
+    "AdviceGroupSettings": AdviceGroupSettings,
+    "AdviserAnalytics": AdviserAnalytics,
+    "AdviserCalendar": AdviserCalendar,
+    "AdviserClientDetail": AdviserClientDetail,
+    "AdviserClients": AdviserClients,
+    "AdviserDashboard": AdviserDashboard,
+    "AdviserDocuments": AdviserDocuments,
+    "AdviserFactFinds": AdviserFactFinds,
+    "AdviserSOARequests": AdviserSOARequests,
+    "AdviserSOATemplate": AdviserSOATemplate,
+    "AdviserSettings": AdviserSettings,
     "FactFindAboutYou": FactFindAboutYou,
     "FactFindAdviceReason": FactFindAdviceReason,
     "FactFindAssetsLiabilities": FactFindAssetsLiabilities,
@@ -91,33 +121,9 @@ export const PAGES = {
     "SOARequestStrategy": SOARequestStrategy,
     "SOARequestTransactions": SOARequestTransactions,
     "SOARequestWelcome": SOARequestWelcome,
-    "AdminAdviceGroups": AdminAdviceGroups,
-    "AdminAdviceGroupDetail": AdminAdviceGroupDetail,
-    "AdminQueue": AdminQueue,
-    "AdminCompleted": AdminCompleted,
-    "AdminAdvisers": AdminAdvisers,
-    "AdminClients": AdminClients,
-    "AdminTemplate": AdminTemplate,
-    "AdminTeam": AdminTeam,
-    "AdminSettings": AdminSettings,
-    "AdviceGroupDashboard": AdviceGroupDashboard,
-    "AdviceGroupAdvisers": AdviceGroupAdvisers,
-    "AdviceGroupClients": AdviceGroupClients,
-    "AdviceGroupSOARequests": AdviceGroupSOARequests,
-    "AdviceGroupRiskProfiles": AdviceGroupRiskProfiles,
-    "AdviceGroupModelPortfolios": AdviceGroupModelPortfolios,
-    "AdviceGroupSOATemplate": AdviceGroupSOATemplate,
-    "AdviceGroupSettings": AdviceGroupSettings,
-    "AdviserDashboard": AdviserDashboard,
-    "AdviserClients": AdviserClients,
-    "AdviserClientDetail": AdviserClientDetail,
-    "AdviserSOARequests": AdviserSOARequests,
-    "AdviserFactFinds": AdviserFactFinds,
-    "AdviserSOATemplate": AdviserSOATemplate,
-    "AdviserDocuments": AdviserDocuments,
-    "AdviserCalendar": AdviserCalendar,
-    "AdviserAnalytics": AdviserAnalytics,
-    "AdviserSettings": AdviserSettings,
+    "ClientDocuments": ClientDocuments,
+    "ClientMessages": ClientMessages,
+    "ClientSettings": ClientSettings,
 }
 
 export const pagesConfig = {

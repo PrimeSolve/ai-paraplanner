@@ -1,0 +1,112 @@
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import ClientLayout from '../components/client/ClientLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { User, Mail, Phone } from 'lucide-react';
+import { toast } from 'sonner';
+
+export default function ClientSettings() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [user, setUser] = useState(null);
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    phone: ''
+  });
+
+  useEffect(() => {
+    loadUser();
+  }, []);
+
+  const loadUser = async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      setFormData({
+        full_name: currentUser.full_name || '',
+        email: currentUser.email || '',
+        phone: currentUser.phone || ''
+      });
+    } catch (error) {
+      console.error('Failed to load user:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await base44.auth.updateMe({
+        full_name: formData.full_name,
+        phone: formData.phone
+      });
+      toast.success('Settings saved successfully');
+      loadUser();
+    } catch (error) {
+      toast.error('Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <ClientLayout currentPage="ClientSettings">
+      <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
+        <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">Settings</h1>
+        <p className="text-sm text-slate-600 mt-1">Manage your account preferences</p>
+      </div>
+
+      <div className="p-8 max-w-4xl">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              Personal Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label>Full Name</Label>
+              <Input
+                value={formData.full_name}
+                onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                placeholder="Your name"
+              />
+            </div>
+            <div>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={formData.email}
+                disabled
+                className="bg-slate-50"
+              />
+              <p className="text-xs text-slate-500 mt-1">Email cannot be changed</p>
+            </div>
+            <div>
+              <Label>Phone</Label>
+              <Input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                placeholder="+61 4XX XXX XXX"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-end gap-3 mt-6">
+          <Button variant="outline" onClick={loadUser}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving} className="bg-purple-600 hover:bg-purple-700">
+            {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
+      </div>
+    </ClientLayout>
+  );
+}
