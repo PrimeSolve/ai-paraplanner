@@ -532,18 +532,7 @@ export default function FactFindTrusts() {
         e.preventDefault();
         const card = e.target.closest('.entry');
         const list = card.querySelector('.sh-list');
-        const row = document.createElement('div');
-        row.className = 'sh-row flex gap-2 items-end pb-2';
-        row.innerHTML = `
-          <select name="sh_entity" class="flex-1 px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">Select entity…</option>
-            <option value="client">Client</option>
-            <option value="partner">Partner</option>
-          </select>
-          <input type="text" name="sh_pct" placeholder="e.g. 25%" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          <button type="button" class="remove-sh px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium">Remove</button>
-        `;
-        row.querySelector('.remove-sh').onclick = () => row.remove();
+        const row = createShareholderRow(card);
         list.appendChild(row);
       }
       if (e.target.closest('.entry-remove')) {
@@ -569,8 +558,8 @@ export default function FactFindTrusts() {
     return () => {
       document.removeEventListener('click', clickHandler);
       document.removeEventListener('input', inputHandler);
-    };
-  }, [currentTab, activeIndex, updatePills, saveTrustsState, removeEntry]);
+      };
+      }, [currentTab, activeIndex, updatePills, saveTrustsState, removeEntry, createShareholderRow, createBeneficiaryRow]);
 
   // ============================================
   // NAVIGATION
