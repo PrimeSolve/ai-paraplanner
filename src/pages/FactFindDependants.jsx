@@ -229,6 +229,11 @@ export default function FactFindDependants() {
   };
 
   const handleNext = async () => {
+    if (!factFind) {
+      toast.error('Unable to save data');
+      return;
+    }
+    
     setSaving(true);
     try {
       const sectionsCompleted = factFind.sections_completed || [];
@@ -249,6 +254,7 @@ export default function FactFindDependants() {
       navigate(createPageUrl('FactFindTrusts') + `?id=${factFind.id}`);
     } catch (error) {
       toast.error('Failed to save data');
+      console.error(error);
     } finally {
       setSaving(false);
     }
