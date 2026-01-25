@@ -675,8 +675,7 @@ export default function FactFindDependants() {
                         onClick={handleAddDependant}
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                       >
-                        <Plus className="w-4 h-4 mr-2" />
-                        {selectedDependantIndex !== null ? 'Update Dependant' : 'Add Dependant'}
+                        Save Changes
                       </Button>
                     </div>
                     </CardContent>
