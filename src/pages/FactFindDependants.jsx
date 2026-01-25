@@ -74,7 +74,7 @@ export default function FactFindDependants() {
     });
   };
 
-  const updatePills = () => {
+  const updatePills = (index = activeIndex) => {
     const pillsContainer = document.getElementById(currentTab === 'children' ? 'childPills' : 'dependantPills');
     if (!pillsContainer) return;
 
@@ -85,7 +85,7 @@ export default function FactFindDependants() {
     const cards = [...wrap.querySelectorAll('.entry')];
     cards.forEach((card, i) => {
       const pill = document.createElement('button');
-      const isActive = i === activeIndex;
+      const isActive = i === index;
       pill.type = 'button';
 
       let displayName = '';
@@ -110,8 +110,7 @@ export default function FactFindDependants() {
       pill.onclick = (e) => {
         e.preventDefault();
         setActiveIndex(i);
-        updatePills();
-        showOnlyActiveEntry();
+        showOnlyActiveEntry(i);
       };
 
       pillsContainer.appendChild(pill);
