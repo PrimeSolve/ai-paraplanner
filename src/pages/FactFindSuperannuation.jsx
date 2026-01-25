@@ -747,8 +747,6 @@ export default function FactFindSuperannuation() {
                     <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
                     <select name="owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
                       <option value="">Select owner…</option>
-                      <option value="client">Client</option>
-                      <option value="partner">Partner</option>
                     </select>
                   </div>
                   <div>
