@@ -155,9 +155,10 @@ export default function FactFindDependants() {
     renumber(tab);
     const newIndex = wrap.querySelectorAll('.entry').length - 1;
     setActiveIndex(newIndex);
+    setRenderKey(k => k + 1);
     updatePills(newIndex);
     showOnlyActiveEntry(newIndex);
-  };
+    };
 
   const removeEntry = (node, tab = currentTab) => {
     node.remove();
