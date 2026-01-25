@@ -547,7 +547,16 @@ export default function FactFindDependants() {
                     <h4 className="font-bold text-slate-800 mb-2 text-lg">Do you have any dependants?</h4>
                     <p className="text-slate-600 mb-6">Add details about other financial dependants, such as parents or relatives.</p>
                     <Button
-                      onClick={() => setShowDependantForm(true)}
+                      onClick={() => {
+                        setSelectedDependantIndex(null);
+                        setDependantFormData({
+                          dep_name: '',
+                          dep_dob: '',
+                          dep_until_age: '',
+                          dep_relationship: '',
+                          dep_interdep: ''
+                        });
+                      }}
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       <Plus className="w-4 h-4 mr-2" />
