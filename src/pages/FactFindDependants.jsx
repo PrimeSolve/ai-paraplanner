@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, MessageSquare, RefreshCw, Info, Plus, Trash2, Edit2, Baby, Users, UserCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Plus } from 'lucide-react';
 
 export default function FactFindDependants() {
   const navigate = useNavigate();
@@ -31,7 +31,6 @@ export default function FactFindDependants() {
     child_fin_age: '',
     child_health: ''
   });
-  const [isAddingDependant, setIsAddingDependant] = useState(false);
   const [dependantFormData, setDependantFormData] = useState({
     dep_name: '',
     dep_dob: '',
@@ -39,6 +38,7 @@ export default function FactFindDependants() {
     dep_relationship: '',
     dep_interdep: ''
   });
+  const [isAddingDependant, setIsAddingDependant] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -52,6 +52,15 @@ export default function FactFindDependants() {
             setFactFind(finds[0]);
             if (finds[0].dependants?.children) {
               setChildren(finds[0].dependants.children);
+              setSelectedChildIndex(0);
+              setChildFormData(finds[0].dependants.children[0] || {
+                child_name: '',
+                child_dob: '',
+                child_fin_dep: '',
+                child_edu: '',
+                child_fin_age: '',
+                child_health: ''
+              });
             }
             if (finds[0].dependants?.dependants_list) {
               setDependants(finds[0].dependants.dependants_list);
@@ -244,7 +253,6 @@ export default function FactFindDependants() {
 
       await base44.entities.FactFind.update(factFind.id, updateData);
       
-      // If on children tab, switch to dependants tab; otherwise go to trusts
       if (activeTab === 'children') {
         setActiveTab('dependants');
       } else {
@@ -271,6 +279,8 @@ export default function FactFindDependants() {
       </FactFindLayout>
     );
   }
+
+  const isAddingChild = selectedChildIndex >= children.length;
 
   return (
     <FactFindLayout currentSection="dependants" factFind={factFind}>
@@ -306,8 +316,7 @@ export default function FactFindDependants() {
                     <p className="text-slate-600 mb-6">Add details about your children to help us understand your family situation.</p>
                     <Button
                       onClick={() => {
-                        setSelectedChildIndex(null);
-                        setIsAddingChild(true);
+                        setSelectedChildIndex(0);
                         setChildFormData({
                           child_name: '',
                           child_dob: '',
@@ -336,22 +345,27 @@ export default function FactFindDependants() {
                             key={index}
                             onClick={() => {
                               setSelectedChildIndex(index);
-                              setIsAddingChild(false);
                               setChildFormData(children[index]);
                             }}
                             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                              selectedChildIndex === index && !isAddingChild
+                              selectedChildIndex === index
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
                             }`}
                           >
-                            CHILD {index + 1}
+                            {child.child_name || `Child ${index + 1}`}
                           </button>
                         ))}
+                        {isAddingChild && (
+                          <button
+                            className="px-3 py-1.5 rounded-full text-xs font-medium bg-blue-600 text-white"
+                          >
+                            Child {children.length + 1}
+                          </button>
+                        )}
                         <Button
                           onClick={() => {
-                            setIsAddingChild(true);
-                            setSelectedChildIndex(null);
+                            setSelectedChildIndex(children.length);
                             setChildFormData({
                               child_name: '',
                               child_dob: '',
@@ -372,21 +386,20 @@ export default function FactFindDependants() {
 
                     {/* Form section */}
                     <div className="space-y-4 border-t pt-4">
-                      <h5 className="font-semibold text-slate-700">
-                        {isAddingChild ? 'New Child' : `Child ${(selectedChildIndex ?? 0) + 1}`}
-                      </h5>
-
-                      {!isAddingChild && (
-                        <div className="flex justify-end">
+                      <div className="flex items-center justify-between">
+                        <h5 className="font-semibold text-slate-700">
+                          {isAddingChild ? 'New Child' : `Child ${selectedChildIndex + 1}`}
+                        </h5>
+                        {!isAddingChild && (
                           <Button
-                            onClick={() => handleDeleteChild(selectedChildIndex ?? 0)}
+                            onClick={() => handleDeleteChild(selectedChildIndex)}
                             variant="destructive"
                             size="sm"
                           >
                             Remove
                           </Button>
-                        </div>
-                      )}
+                        )}
+                      </div>
 
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -471,10 +484,9 @@ export default function FactFindDependants() {
                           <Button
                             variant="outline"
                             onClick={() => {
-                              setIsAddingChild(false);
+                              setSelectedChildIndex(Math.max(0, children.length - 1));
                               if (children.length > 0) {
-                                setSelectedChildIndex(0);
-                                setChildFormData(children[0]);
+                                setChildFormData(children[children.length - 1]);
                               }
                             }}
                             className="border-slate-300 text-slate-700"
@@ -669,8 +681,8 @@ export default function FactFindDependants() {
                       </Button>
                     </div>
                     </CardContent>
-                    </Card>
-                    )}
+                  </Card>
+                  )}
             </>
           )}
 
