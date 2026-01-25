@@ -373,7 +373,7 @@ export default function FactFindDependants() {
                 </Card>
               )}
 
-              {selectedChildIndex !== null && (
+              {(selectedChildIndex !== null || isAddingChild) && (
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-center justify-between mb-4">
@@ -396,6 +396,7 @@ export default function FactFindDependants() {
                         size="sm"
                         onClick={() => {
                           setSelectedChildIndex(null);
+                          setIsAddingChild(false);
                           setChildFormData({
                             child_name: '',
                             child_dob: '',
