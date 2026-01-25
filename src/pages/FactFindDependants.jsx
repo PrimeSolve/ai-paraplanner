@@ -165,6 +165,11 @@ export default function FactFindDependants() {
       return;
     }
 
+    if (!factFind?.id) {
+      toast.error('Unable to save data');
+      return;
+    }
+
     try {
       let updated;
       if (selectedDependantIndex !== null) {
