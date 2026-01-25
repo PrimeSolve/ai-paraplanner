@@ -244,7 +244,7 @@ export default function FactFindSMSF() {
 
   const createAccountRow = useCallback((card, data = {}) => {
    const row = document.createElement('tr');
-   row.className = 'border-b border-slate-100 hover:bg-orange-50/50';
+   row.className = 'acct-row border-b border-slate-100 hover:bg-orange-50/50';
 
    const clientName = factFind?.personal?.client?.first_name 
      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
@@ -331,7 +331,7 @@ export default function FactFindSMSF() {
 
   const createBeneficiaryRow = useCallback((card, data = {}) => {
     const row = document.createElement('tr');
-    row.className = 'border-b border-slate-100 hover:bg-purple-50/50';
+    row.className = 'benef-row border-b border-slate-100 hover:bg-purple-50/50';
 
     const clientName = factFind?.personal?.client?.first_name 
       ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
