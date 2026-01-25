@@ -525,7 +525,6 @@ export default function FactFindDependants() {
                         dep_relationship: '',
                         dep_interdep: ''
                       });
-                      setShowDependantForm(true);
                     }}
                     className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium"
                   >
@@ -535,7 +534,7 @@ export default function FactFindDependants() {
                 </div>
               )}
 
-              {dependants.length === 0 && !showDependantForm && (
+              {dependants.length === 0 && selectedDependantIndex === null && (
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-8 text-center">
                     <div className="flex justify-center mb-4">
