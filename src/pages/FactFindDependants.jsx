@@ -67,19 +67,42 @@ export default function FactFindDependants() {
     loadData();
   }, []);
 
-  const handleAddChild = () => {
+  const handleAddChild = async () => {
     if (!childFormData.child_name) {
       toast.error('Please enter child name');
       return;
     }
 
-    if (editingChildIndex !== null) {
-      const updated = [...children];
-      updated[editingChildIndex] = childFormData;
-      setChildren(updated);
-      setEditingChildIndex(null);
-    } else {
-      setChildren([...children, childFormData]);
+    try {
+      let updated;
+      if (editingChildIndex !== null) {
+        updated = [...children];
+        updated[editingChildIndex] = childFormData;
+        setChildren(updated);
+        setEditingChildIndex(null);
+      } else {
+        updated = [...children, childFormData];
+        setChildren(updated);
+      }
+
+      // Auto-save to database
+      const sectionsCompleted = factFind.sections_completed || [];
+      if (!sectionsCompleted.includes('dependants')) {
+        sectionsCompleted.push('dependants');
+      }
+      await base44.entities.FactFind.update(factFind.id, {
+        dependants: { 
+          children: updated,
+          dependants_list: dependants 
+        },
+        sections_completed: sectionsCompleted,
+        completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
+      });
+
+      toast.success(editingChildIndex !== null ? 'Child updated' : 'Child added');
+    } catch (error) {
+      toast.error('Failed to save child');
+      console.error(error);
     }
 
     setChildFormData({
