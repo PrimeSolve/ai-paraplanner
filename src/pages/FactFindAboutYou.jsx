@@ -365,7 +365,7 @@ export default function FactFindPersonal() {
                           <SelectContent>
                             <SelectItem value="own">Own home</SelectItem>
                             <SelectItem value="renting">Renting</SelectItem>
-                            <SelectItem value="aged_care">Live in aged care</SelectItem>
+                            <SelectItem value="aged_care">Live if aged care</SelectItem>
                             <SelectItem value="other">Other</SelectItem>
                           </SelectContent>
                         </Select>
