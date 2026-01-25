@@ -320,14 +320,14 @@ export default function FactFindDependants() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Child health issues</Label>
-                      <Input
-                        value={childFormData.health_issues}
-                        onChange={(e) => setChildFormData({ ...childFormData, health_issues: e.target.value })}
-                        placeholder="Enter any health issues"
-                        className="border-slate-300"
-                      />
-                    </div>
+                       <Label className="text-slate-700 font-semibold text-sm">Child health issues</Label>
+                       <Input
+                         value={childFormData.child_health}
+                         onChange={(e) => setChildFormData({ ...childFormData, child_health: e.target.value })}
+                         placeholder="Enter any health issues"
+                         className="border-slate-300"
+                       />
+                     </div>
 
                     <div className="flex justify-end pt-2">
                       <Button
