@@ -562,11 +562,11 @@ export default function FactFindDependants() {
                                   <span className="font-bold text-slate-800">Dependant {index + 1}</span>
                                 </div>
                               <div className="space-y-1 text-sm text-slate-600">
-                                <p><strong>Name:</strong> {dep.name}</p>
-                                {dep.date_of_birth && <p><strong>DOB:</strong> {dep.date_of_birth}</p>}
-                                {dep.dependent_until_age && <p><strong>Dependent Until Age:</strong> {dep.dependent_until_age}</p>}
-                                {dep.relationship && <p><strong>Relationship:</strong> {dep.relationship}</p>}
-                                {dep.interdependency && <p><strong>Interdependency:</strong> {dep.interdependency}</p>}
+                                <p><strong>Name:</strong> {dep.dep_name}</p>
+                                {dep.dep_dob && <p><strong>DOB:</strong> {dep.dep_dob}</p>}
+                                {dep.dep_until_age && <p><strong>Dependent Until Age:</strong> {dep.dep_until_age}</p>}
+                                {dep.dep_relationship && <p><strong>Relationship:</strong> {['Child', 'Parent', 'Relative', 'Other'][parseInt(dep.dep_relationship) - 1]}</p>}
+                                {dep.dep_interdep && <p><strong>Interdependency:</strong> {dep.dep_interdep === '1' ? 'Yes' : 'No'}</p>}
                               </div>
                             </div>
                             </div>
