@@ -26,6 +26,7 @@ export default function FactFindAssetsLiabilities() {
     if (!factFind) return [];
     const opts = [];
 
+    // Principals
     const clientName = factFind?.personal?.client?.first_name
       ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
       : null;
@@ -36,26 +37,21 @@ export default function FactFindAssetsLiabilities() {
     if (clientName) opts.push({ label: clientName, value: 'client' });
     if (partnerName) opts.push({ label: partnerName, value: 'partner' });
 
-    (factFind?.dependants?.children || []).forEach((child, i) => {
-      opts.push({ label: child.child_name || `Child ${i + 1}`, value: `child-${i}` });
-    });
-
-    (factFind?.dependants?.dependants_list || []).forEach((dep, i) => {
-      opts.push({ label: dep.dep_name || `Dependant ${i + 1}`, value: `dependent-${i}` });
-    });
-
+    // Trusts
     (factFind?.trusts_companies?.entities || [])
       .filter(e => e.entity_type === 'trust')
       .forEach((trust, i) => {
         opts.push({ label: trust.entity_name || `Trust ${i + 1}`, value: `trust-${i}` });
       });
 
+    // Companies
     (factFind?.trusts_companies?.entities || [])
       .filter(e => e.entity_type === 'company')
       .forEach((company, i) => {
         opts.push({ label: company.entity_name || `Company ${i + 1}`, value: `company-${i}` });
       });
 
+    // SMSFs
     (factFind?.smsf?.funds || []).forEach((smsf, i) => {
       opts.push({ label: smsf.smsf_name || `SMSF ${i + 1}`, value: `smsf-${i}` });
     });
