@@ -314,9 +314,24 @@ export default function AdminAdviceGroups() {
                         <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
                           Manage
                         </button>
-                        <button className="p-1.5 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </button>
+                        <div className="relative group">
+                          <button className="p-1.5 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </button>
+                          <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                            <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-slate-700 border-b border-slate-100">
+                              <FileText className="w-4 h-4" />
+                              Edit Template
+                            </button>
+                            <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-slate-700 border-b border-slate-100">
+                              <Users className="w-4 h-4" />
+                              View Advisers
+                            </button>
+                            <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-red-700">
+                              Delete Group
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </td>
                   </tr>
