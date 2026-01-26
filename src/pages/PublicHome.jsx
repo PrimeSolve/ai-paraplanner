@@ -321,15 +321,26 @@ export default function PublicHome() {
             {/* Feature 1 */}
             <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#f97316] to-[#ea580c] flex items-center justify-center mb-6">
-                <span className="text-2xl">🤖</span>
+                <span className="text-2xl">✨</span>
               </div>
-              <h3 className="text-[20px] font-bold text-white mb-3">AI-Powered Fact Find</h3>
+              <h3 className="text-[20px] font-bold text-white mb-3">Smart Pre-Fill</h3>
               <p className="text-[15px] text-[#94a3b8] leading-relaxed">
-                AI extracts data from documents and pre-fills forms. Clients chat naturally with an assistant that asks clarifying questions, explains complex terms, and captures everything accurately. Hours of data entry eliminated.
+                AI extracts data from documents and pre-fills forms. Clients verify instead of typing. Hours of data entry eliminated.
               </p>
             </div>
 
             {/* Feature 2 */}
+            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#ec4899] to-[#be185d] flex items-center justify-center mb-6">
+                <span className="text-2xl">💬</span>
+              </div>
+              <h3 className="text-[20px] font-bold text-white mb-3">AI Fact Find Assistant</h3>
+              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
+                Clients chat naturally. The AI asks clarifying questions, explains complex terms, and captures everything accurately.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
             <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#ec4899] to-[#be185d] flex items-center justify-center mb-6">
                 <span className="text-2xl">🎯</span>
@@ -340,10 +351,21 @@ export default function PublicHome() {
               </p>
             </div>
 
-            {/* Feature 3 */}
+            {/* Feature 4 */}
+            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#06b6d4] to-[#0891b2] flex items-center justify-center mb-6">
+                <span className="text-2xl">📈</span>
+              </div>
+              <h3 className="text-[20px] font-bold text-white mb-3">Optimised Modelling</h3>
+              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
+                AI Paraplanner leverages PrimeSolve's advanced optimisation modelling to ensure the ultimate pathway for your client can be achieved. Every recommendation is backed by rigorous scenario analysis.
+              </p>
+            </div>
+
+            {/* Feature 5 */}
             <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#f59e0b] to-[#d97706] flex items-center justify-center mb-6">
-                <span className="text-2xl">📝</span>
+                <span className="text-2xl">⚡</span>
               </div>
               <h3 className="text-[20px] font-bold text-white mb-3">AI SOA Builder</h3>
               <p className="text-[15px] text-[#94a3b8] leading-relaxed">
@@ -351,10 +373,21 @@ export default function PublicHome() {
               </p>
             </div>
 
-            {/* Feature 4 */}
+            {/* Feature 6 */}
+            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] flex items-center justify-center mb-6">
+                <span className="text-2xl">👥</span>
+              </div>
+              <h3 className="text-[20px] font-bold text-white mb-3">LLM Council</h3>
+              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
+                Four independent AI models generate, debate, and vote on every response. The council reviews all perspectives and formulates the optimal answer. Dramatically reduces errors and eliminates hallucinations.
+              </p>
+            </div>
+
+            {/* Feature 7 */}
             <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#ef4444] to-[#dc2626] flex items-center justify-center mb-6">
-                <span className="text-2xl">✓</span>
+                <span className="text-2xl">🛡️</span>
               </div>
               <h3 className="text-[20px] font-bold text-white mb-3">Human Oversight</h3>
               <p className="text-[15px] text-[#94a3b8] leading-relaxed">
@@ -362,9 +395,9 @@ export default function PublicHome() {
               </p>
             </div>
 
-            {/* Feature 5 */}
+            {/* Feature 8 */}
             <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#fb923c] to-[#f97316] flex items-center justify-center mb-6">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#f97316] to-[#ea580c] flex items-center justify-center mb-6">
                 <span className="text-2xl">👤</span>
               </div>
               <h3 className="text-[20px] font-bold text-white mb-3">Avatar Delivery</h3>
@@ -373,47 +406,14 @@ export default function PublicHome() {
               </p>
             </div>
 
-            {/* Feature 6 */}
+            {/* Feature 9 */}
             <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#3b82f6] to-[#1d4ed8] flex items-center justify-center mb-6">
-                <span className="text-2xl">⚙️</span>
+                <span className="text-2xl">📄</span>
               </div>
               <h3 className="text-[20px] font-bold text-white mb-3">Your Templates, Your Way</h3>
               <p className="text-[15px] text-[#94a3b8] leading-relaxed">
                 Use AI Paraplanner's professionally designed templates or bring your own. Fully customisable to match your brand, your tone, your way of delivering advice.
-              </p>
-            </div>
-
-            {/* Feature 7 */}
-            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] flex items-center justify-center mb-6">
-                <span className="text-2xl">📊</span>
-              </div>
-              <h3 className="text-[20px] font-bold text-white mb-3">PrimeSolve Integration</h3>
-              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
-                Built on Australia's most powerful modelling engine. Run projections, compare scenarios, and stress test strategies with unmatched depth and accuracy.
-              </p>
-            </div>
-
-            {/* Feature 8 */}
-            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#14b8a6] to-[#0d9488] flex items-center justify-center mb-6">
-                <span className="text-2xl">🔒</span>
-              </div>
-              <h3 className="text-[20px] font-bold text-white mb-3">Bank-Grade Security</h3>
-              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
-                Your client data is protected with enterprise-level encryption, SOC 2 compliance, and regular security audits. Peace of mind guaranteed.
-              </p>
-            </div>
-
-            {/* Feature 9 */}
-            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#06b6d4] to-[#0891b2] flex items-center justify-center mb-6">
-                <span className="text-2xl">⚡</span>
-              </div>
-              <h3 className="text-[20px] font-bold text-white mb-3">Lightning Fast Turnaround</h3>
-              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
-                24-hour SOA delivery as standard. Rush service available for urgent cases. Never miss a deadline again.
               </p>
             </div>
           </div>
