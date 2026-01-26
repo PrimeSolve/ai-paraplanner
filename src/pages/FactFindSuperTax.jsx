@@ -132,11 +132,7 @@ export default function FactFindSuperTax() {
     }));
   }, [personKey]);
 
-  // Add partner
-  const handleAddPartner = useCallback(() => {
-    setHasPartner(true);
-    setActivePerson('c2');
-  }, []);
+
 
   // Navigation
   const handleNext = async () => {
@@ -202,40 +198,31 @@ export default function FactFindSuperTax() {
           {/* Person Pills */}
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActivePerson('c1')}
+                  className={cn(
+                    "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                    activePerson === 'c1'
+                      ? "bg-blue-600 text-white"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  )}
+                >
+                  {principalNames.client}
+                </button>
+                {hasPartner && (
                   <button
-                    onClick={() => setActivePerson('c1')}
+                    onClick={() => setActivePerson('c2')}
                     className={cn(
                       "px-4 py-2 rounded-full text-sm font-bold transition-all",
-                      activePerson === 'c1'
+                      activePerson === 'c2'
                         ? "bg-blue-600 text-white"
                         : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                     )}
                   >
-                    {principalNames.client}
+                    {principalNames.partner}
                   </button>
-                  {hasPartner ? (
-                    <button
-                      onClick={() => setActivePerson('c2')}
-                      className={cn(
-                        "px-4 py-2 rounded-full text-sm font-bold transition-all",
-                        activePerson === 'c2'
-                          ? "bg-blue-600 text-white"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      )}
-                    >
-                      {principalNames.partner}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleAddPartner}
-                      className="px-4 py-2 rounded-full text-sm font-bold bg-green-50 text-green-700 border-2 border-dashed border-green-300 hover:bg-green-100 transition-all"
-                    >
-                      + Add Partner
-                    </button>
-                  )}
-                </div>
+                )}
               </div>
             </CardContent>
           </Card>
