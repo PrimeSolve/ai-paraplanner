@@ -11,22 +11,40 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, MessageSquare, RefreshCw, Info, RotateCcw } from 'lucide-react';
+import { ArrowRight, ArrowLeft, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
   { id: 'questionnaire', label: 'Risk profile questionnaire', icon: '📋' },
-  { id: 'additional', label: 'Risk profile – Additional information', icon: '💬' }
+  { id: 'info', label: 'Risk profile – Additional information', icon: '💬' }
 ];
 
-const riskProfiles = [
-  { value: 'cash', label: 'Cash', growth: 0, defensive: 100 },
-  { value: 'conservative', label: 'Conservative', growth: 30, defensive: 70 },
-  { value: 'moderately_conservative', label: 'Moderately Conservative', growth: 50, defensive: 50 },
-  { value: 'balanced', label: 'Balanced', growth: 70, defensive: 30 },
-  { value: 'growth', label: 'Growth', growth: 85, defensive: 15 },
-  { value: 'high_growth', label: 'High Growth', growth: 98, defensive: 2 }
+const PROFILE_VALUES = [
+  { value: '2301', label: 'Cash' },
+  { value: '2382', label: 'Conservative' },
+  { value: '2383', label: 'Moderately Conservative' },
+  { value: '2384', label: 'Balanced' },
+  { value: '2385', label: 'Growth' },
+  { value: '2386', label: 'High Growth' }
 ];
+
+const PROFILE_DISPLAY = {
+  '2301': 'Cash Management',
+  '2382': 'Conservative',
+  '2383': 'Moderately Conservative',
+  '2384': 'Balanced',
+  '2385': 'Growth',
+  '2386': 'High Growth'
+};
+
+const ASSET_ALLOCATIONS = {
+  'Cash Management': { growth: 0, defensive: 100 },
+  'Conservative': { growth: 30, defensive: 70 },
+  'Moderately Conservative': { growth: 50, defensive: 50 },
+  'Balanced': { growth: 70, defensive: 30 },
+  'Growth': { growth: 85, defensive: 15 },
+  'High Growth': { growth: 98, defensive: 2 }
+};
 
 const questions = [
   {
@@ -34,10 +52,10 @@ const questions = [
     text: 'Accessibility of your funds – desired liquidity',
     subtext: 'Based on your stated goals, how long can these funds remain invested before you will need access?',
     options: [
-      { label: 'Less than one year', score: 1 },
-      { label: '1 – 3 years', score: 2 },
-      { label: '3 to 5 years', score: 3 },
-      { label: 'More than 5 years', score: 4 }
+      { label: 'Less than one year', value: '1' },
+      { label: '1 – 3 years', value: '2' },
+      { label: '3 to 5 years', value: '3' },
+      { label: 'More than 5 years', value: '4' }
     ]
   },
   {
@@ -45,9 +63,9 @@ const questions = [
     text: 'Your desired rate of return',
     subtext: 'What annual rate of return do you expect your investments to achieve to meet your goals?',
     options: [
-      { label: 'Less than 5%', score: 1 },
-      { label: '5% – 10%', score: 2 },
-      { label: 'More than 10%', score: 3 }
+      { label: 'Less than 5%', value: '1' },
+      { label: '5% – 10%', value: '2' },
+      { label: 'More than 10%', value: '3' }
     ]
   },
   {
@@ -55,10 +73,10 @@ const questions = [
     text: 'Your attitude to capital risk',
     subtext: 'Which statement best describes how you feel about potential losses on your investments?',
     options: [
-      { label: 'The safety of my capital is most important. I am happy with lower returns to avoid significant losses.', score: 1 },
-      { label: 'I prefer my capital to remain relatively stable, but it must also meet my income needs.', score: 2 },
-      { label: 'I understand values may fluctuate and accept this as the price for potentially higher long-term returns.', score: 3 },
-      { label: 'I am comfortable with a high degree of risk to pursue higher returns.', score: 4 }
+      { label: 'The safety of my capital is most important. I am happy with lower returns to avoid significant losses.', value: '1' },
+      { label: 'I prefer my capital to remain relatively stable, but it must also meet my income needs.', value: '2' },
+      { label: 'I understand values may fluctuate and accept this as the price for potentially higher long-term returns.', value: '3' },
+      { label: 'I am comfortable with a high degree of risk to pursue higher returns.', value: '4' }
     ]
   },
   {
@@ -66,11 +84,11 @@ const questions = [
     text: 'Your concerns about inflation',
     subtext: 'How worried are you that inflation will erode the purchasing power of your savings and investments?',
     options: [
-      { label: 'Not concerned', score: 1 },
-      { label: 'Slightly concerned', score: 2 },
-      { label: 'Moderately concerned', score: 3 },
-      { label: 'Very concerned', score: 4 },
-      { label: 'Highly concerned', score: 5 }
+      { label: 'Not concerned', value: '1' },
+      { label: 'Slightly concerned', value: '2' },
+      { label: 'Moderately concerned', value: '3' },
+      { label: 'Very concerned', value: '4' },
+      { label: 'Highly concerned', value: '5' }
     ]
   },
   {
@@ -78,10 +96,10 @@ const questions = [
     text: 'Your concerns about legislative risk',
     subtext: 'Would you rearrange your affairs to qualify for government benefits or tax advantages, knowing legislation may later change?',
     options: [
-      { label: 'Not if there is any chance I would be worse off.', score: 1 },
-      { label: 'I would consider it only if the chance of being worse off is small.', score: 2 },
-      { label: 'If changes are being considered, I would rearrange things to safeguard my financial position.', score: 3 },
-      { label: 'If I can be better off now, I would rearrange my affairs regardless of potential future changes.', score: 4 }
+      { label: 'Not if there is any chance I would be worse off.', value: '1' },
+      { label: 'I would consider it only if the chance of being worse off is small.', value: '2' },
+      { label: 'If changes are being considered, I would rearrange things to safeguard my financial position.', value: '3' },
+      { label: 'If I can be better off now, I would rearrange my affairs regardless of potential future changes.', value: '4' }
     ]
   },
   {
@@ -89,10 +107,10 @@ const questions = [
     text: 'Your investment knowledge & experience',
     subtext: 'How familiar are you with investment markets and how different asset classes behave?',
     options: [
-      { label: 'No experience at all.', score: 1 },
-      { label: 'Not very familiar.', score: 2 },
-      { label: 'I understand markets fluctuate and different sectors have different income, growth and tax characteristics. I value diversification.', score: 3 },
-      { label: 'Experienced with all investment sectors and the factors that influence performance.', score: 4 }
+      { label: 'No experience at all.', value: '1' },
+      { label: 'Not very familiar.', value: '2' },
+      { label: 'I understand markets fluctuate and different sectors have different income, growth and tax characteristics. I value diversification.', value: '3' },
+      { label: 'Experienced with all investment sectors and the factors that influence performance.', value: '4' }
     ]
   },
   {
@@ -100,10 +118,10 @@ const questions = [
     text: 'Your concern about volatility',
     subtext: 'What is the maximum fall in portfolio value you would tolerate in any single 12-month period?',
     options: [
-      { label: '0%', score: 1 },
-      { label: '1% to 15%', score: 2 },
-      { label: '16% to 20%', score: 3 },
-      { label: 'More than 20%', score: 4 }
+      { label: '0%', value: '1' },
+      { label: '1% to 15%', value: '2' },
+      { label: '16% to 20%', value: '3' },
+      { label: 'More than 20%', value: '4' }
     ]
   },
   {
@@ -111,11 +129,11 @@ const questions = [
     text: 'Your investment preferences – asset allocation',
     subtext: 'Which of the following best describes your preference for growth versus stability?',
     options: [
-      { label: 'I would only select investments that have a low degree of risk.', score: 1 },
-      { label: 'I prefer mostly low-risk investments but am willing to have a small higher-risk component to marginally improve returns. I accept a negative return roughly once every nine years.', score: 2 },
-      { label: 'I prefer a balanced spread of investments and accept a negative return roughly once every seven years.', score: 3 },
-      { label: 'I prefer a diversified portfolio with an emphasis on higher returns, keeping a small low-risk allocation. I accept a negative return roughly once every five years.', score: 4 },
-      { label: 'I prefer higher-risk investments aiming for higher returns and accept a negative return roughly once every three years.', score: 5 }
+      { label: 'I would only select investments that have a low degree of risk.', value: '2' },
+      { label: 'I prefer mostly low-risk investments but am willing to have a small higher-risk component to marginally improve returns. I accept a negative return roughly once every nine years.', value: '4' },
+      { label: 'I prefer a balanced spread of investments and accept a negative return roughly once every seven years.', value: '6' },
+      { label: 'I prefer a diversified portfolio with an emphasis on higher returns, keeping a small low-risk allocation. I accept a negative return roughly once every five years.', value: '8' },
+      { label: 'I prefer higher-risk investments aiming for higher returns and accept a negative return roughly once every three years.', value: '10' }
     ]
   }
 ];
@@ -127,34 +145,35 @@ export default function FactFindRiskProfile() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('questionnaire');
   const [activeOwner, setActiveOwner] = useState('client');
-  const [mode, setMode] = useState('calculate');
+  const [mode, setMode] = useState('');
+  const [specifiedProfile, setSpecifiedProfile] = useState('');
+  const [adjustRisk, setAdjustRisk] = useState('no');
 
-  const [answers, setAnswers] = useState({
-    client: {},
-    partner: {}
+  const [clientData, setClientData] = useState({
+    answers: {},
+    score: 0,
+    profile: '',
+    adviserComments: '',
+    clientComments: '',
+    adjustedProfile: '',
+    adjustmentReason: ''
   });
 
-  const [calculatedScore, setCalculatedScore] = useState({
-    client: 0,
-    partner: 0
+  const [partnerData, setPartnerData] = useState({
+    answers: {},
+    score: 0,
+    profile: '',
+    adviserComments: '',
+    clientComments: '',
+    adjustedProfile: '',
+    adjustmentReason: ''
   });
 
-  const [calculatedProfile, setCalculatedProfile] = useState({
-    client: '',
-    partner: ''
-  });
-
-  const [manualProfile, setManualProfile] = useState({
-    client: '',
-    partner: ''
-  });
-
-  const [additionalInfo, setAdditionalInfo] = useState({
-    adviser_comments: '',
-    client_comments: '',
-    adjust_risk_profile: 'no',
-    adjusted_profile: '',
-    adjustment_reason: ''
+  const [otherInfo, setOtherInfo] = useState({
+    esg: '',
+    restrictions: '',
+    experience: '',
+    notes: ''
   });
 
   useEffect(() => {
@@ -167,14 +186,14 @@ export default function FactFindRiskProfile() {
           const finds = await base44.entities.FactFind.filter({ id });
           if (finds[0]) {
             setFactFind(finds[0]);
-            if (finds[0].risk_profile) {
-              const data = finds[0].risk_profile;
-              if (data.answers) setAnswers(data.answers);
-              if (data.calculated_score) setCalculatedScore(data.calculated_score);
-              if (data.calculated_profile) setCalculatedProfile(data.calculated_profile);
-              if (data.manual_profile) setManualProfile(data.manual_profile);
-              if (data.additional_info) setAdditionalInfo(data.additional_info);
+            if (finds[0].riskProfile) {
+              const data = finds[0].riskProfile;
               if (data.mode) setMode(data.mode);
+              if (data.specifiedProfile) setSpecifiedProfile(data.specifiedProfile);
+              if (data.adjustRisk) setAdjustRisk(data.adjustRisk);
+              if (data.client) setClientData(data.client);
+              if (data.partner) setPartnerData(data.partner);
+              if (data.otherInfo) setOtherInfo(data.otherInfo);
             }
           }
         }
@@ -187,42 +206,42 @@ export default function FactFindRiskProfile() {
     loadData();
   }, []);
 
-  const calculateRiskScore = (owner) => {
-    const ownerAnswers = answers[owner];
+  const currentData = activeOwner === 'client' ? clientData : partnerData;
+  const setCurrentData = activeOwner === 'client' ? setClientData : setPartnerData;
+
+  const calculateRiskScore = () => {
+    const answers = currentData.answers;
     let totalScore = 0;
     let answeredCount = 0;
 
     questions.forEach(q => {
-      const answer = ownerAnswers[q.id];
-      if (answer !== undefined) {
-        const option = q.options[answer];
-        if (option) {
-          totalScore += option.score;
-          answeredCount++;
-        }
+      const answer = answers[q.id];
+      if (answer) {
+        totalScore += parseInt(answer);
+        answeredCount++;
       }
     });
 
-    if (answeredCount === 0) return 0;
-    
-    const avgScore = totalScore / answeredCount;
-    
-    let profile = '';
-    if (avgScore <= 1.5) profile = 'cash';
-    else if (avgScore <= 2.0) profile = 'conservative';
-    else if (avgScore <= 2.5) profile = 'moderately_conservative';
-    else if (avgScore <= 3.0) profile = 'balanced';
-    else if (avgScore <= 3.5) profile = 'growth';
-    else profile = 'high_growth';
+    if (answeredCount === 0) return;
 
-    setCalculatedScore({ ...calculatedScore, [owner]: Math.round(avgScore * 10) });
-    setCalculatedProfile({ ...calculatedProfile, [owner]: profile });
+    let profile = '';
+    if (totalScore <= 15) profile = 'Cash Management';
+    else if (totalScore <= 20) profile = 'Conservative';
+    else if (totalScore <= 25) profile = 'Moderately Conservative';
+    else if (totalScore <= 30) profile = 'Balanced';
+    else if (totalScore <= 35) profile = 'Growth';
+    else profile = 'High Growth';
+
+    setCurrentData({ ...currentData, score: totalScore, profile });
   };
 
-  const resetQuiz = (owner) => {
-    setAnswers({ ...answers, [owner]: {} });
-    setCalculatedScore({ ...calculatedScore, [owner]: 0 });
-    setCalculatedProfile({ ...calculatedProfile, [owner]: '' });
+  const resetQuiz = () => {
+    setCurrentData({
+      ...currentData,
+      answers: {},
+      score: 0,
+      profile: ''
+    });
   };
 
   const handleNext = async () => {
@@ -234,13 +253,16 @@ export default function FactFindRiskProfile() {
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        risk_profile: {
+        riskProfile: {
+          currentPerson: activeOwner,
+          currentTab: activeTab,
           mode,
-          answers,
-          calculated_score: calculatedScore,
-          calculated_profile: calculatedProfile,
-          manual_profile: manualProfile,
-          additional_info: additionalInfo
+          specifiedProfile,
+          adjustRisk,
+          client: clientData,
+          partner: partnerData,
+          otherInfo,
+          completionPct: 0
         },
         current_section: 'review',
         sections_completed: sectionsCompleted,
@@ -269,9 +291,9 @@ export default function FactFindRiskProfile() {
     );
   }
 
-  const selectedProfile = mode === 'calculate' 
-    ? riskProfiles.find(p => p.value === calculatedProfile[activeOwner])
-    : riskProfiles.find(p => p.value === manualProfile[activeOwner]);
+  const selectedProfileAllocation = mode === 'specify' 
+    ? ASSET_ALLOCATIONS[PROFILE_DISPLAY[specifiedProfile]]
+    : ASSET_ALLOCATIONS[currentData.profile];
 
   return (
     <FactFindLayout currentSection="risk_profile" factFind={factFind}>
@@ -284,12 +306,10 @@ export default function FactFindRiskProfile() {
         factFind={factFind}
       />
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
         <div className="w-full space-y-4">
           {activeTab === 'questionnaire' ? (
             <>
-              {/* Info Card */}
               <Card className="border-slate-200 shadow-sm bg-gradient-to-r from-blue-50 to-indigo-50">
                 <CardContent className="p-6">
                   <div className="flex gap-3">
@@ -305,7 +325,6 @@ export default function FactFindRiskProfile() {
                 </CardContent>
               </Card>
 
-              {/* Mode Selection */}
               <Card className="border-slate-200 shadow-sm">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
@@ -339,35 +358,16 @@ export default function FactFindRiskProfile() {
                   {mode === 'specify' && (
                     <div className="mt-4 space-y-3">
                       <div>
-                        <Label className="text-slate-700 font-semibold text-sm mb-2 block">Applies to:</Label>
-                        <div className="flex gap-2">
-                          {['client', 'partner'].map(owner => (
-                            <button
-                              key={owner}
-                              onClick={() => setActiveOwner(owner)}
-                              className={cn(
-                                "px-3 py-1.5 rounded-full text-xs font-bold border transition-all capitalize",
-                                activeOwner === owner
-                                  ? "bg-blue-600 text-white border-blue-600"
-                                  : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
-                              )}
-                            >
-                              {owner}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
                         <Label className="text-slate-700 font-semibold text-sm mb-2 block">Select risk profile</Label>
                         <Select
-                          value={manualProfile[activeOwner]}
-                          onValueChange={(value) => setManualProfile({ ...manualProfile, [activeOwner]: value })}
+                          value={specifiedProfile}
+                          onValueChange={setSpecifiedProfile}
                         >
                           <SelectTrigger className="border-slate-300">
                             <SelectValue placeholder="Select..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {riskProfiles.map(profile => (
+                            {PROFILE_VALUES.map(profile => (
                               <SelectItem key={profile.value} value={profile.value}>
                                 {profile.label}
                               </SelectItem>
@@ -382,7 +382,6 @@ export default function FactFindRiskProfile() {
 
               {mode === 'calculate' && (
                 <>
-                  {/* Owner Selection */}
                   <div className="flex items-center justify-between bg-slate-100 border border-slate-200 rounded-lg px-4 py-3">
                     <div className="flex items-center gap-3">
                       <span className="font-bold text-slate-800 text-sm">Applies to:</span>
@@ -406,7 +405,7 @@ export default function FactFindRiskProfile() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => resetQuiz(activeOwner)}
+                      onClick={resetQuiz}
                       className="border-slate-300"
                     >
                       <RotateCcw className="w-4 h-4 mr-2" />
@@ -414,7 +413,6 @@ export default function FactFindRiskProfile() {
                     </Button>
                   </div>
 
-                  {/* Questions */}
                   {questions.map((question, qIndex) => (
                     <Card key={question.id} className="border-slate-200 shadow-sm">
                       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3 rounded-t-lg">
@@ -426,16 +424,16 @@ export default function FactFindRiskProfile() {
                           <p className="text-sm text-slate-600">{question.subtext}</p>
                         </div>
                         <div className="space-y-2">
-                          {question.options.map((option, optIndex) => (
+                          {question.options.map((option) => (
                             <button
-                              key={optIndex}
-                              onClick={() => setAnswers({
-                                ...answers,
-                                [activeOwner]: { ...answers[activeOwner], [question.id]: optIndex }
+                              key={option.value}
+                              onClick={() => setCurrentData({
+                                ...currentData,
+                                answers: { ...currentData.answers, [question.id]: option.value }
                               })}
                               className={cn(
                                 "w-full text-left px-4 py-3 rounded-lg border-2 transition-all text-sm",
-                                answers[activeOwner]?.[question.id] === optIndex
+                                currentData.answers[question.id] === option.value
                                   ? "bg-blue-50 border-blue-600 font-semibold"
                                   : "bg-white border-slate-200 hover:border-slate-300"
                               )}
@@ -448,11 +446,10 @@ export default function FactFindRiskProfile() {
                     </Card>
                   ))}
 
-                  {/* Calculate Button */}
                   <Card className="border-slate-200 shadow-sm">
                     <CardContent className="p-6 text-center">
                       <Button
-                        onClick={() => calculateRiskScore(activeOwner)}
+                        onClick={calculateRiskScore}
                         className="bg-green-600 hover:bg-green-700 text-white"
                         size="lg"
                       >
@@ -463,8 +460,7 @@ export default function FactFindRiskProfile() {
                 </>
               )}
 
-              {/* Results */}
-              {((mode === 'calculate' && calculatedProfile[activeOwner]) || (mode === 'specify' && manualProfile[activeOwner])) && (
+              {((mode === 'calculate' && currentData.profile) || (mode === 'specify' && specifiedProfile)) && (
                 <Card className="border-slate-200 shadow-sm">
                   <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-3">
                     <h4 className="font-bold text-white">Risk Profile Result</h4>
@@ -474,27 +470,29 @@ export default function FactFindRiskProfile() {
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
                           <div className="text-xs text-slate-500 mb-1">Risk Score</div>
-                          <div className="text-3xl font-bold text-blue-600">{calculatedScore[activeOwner]}</div>
+                          <div className="text-3xl font-bold text-blue-600">{currentData.score}</div>
                         </div>
                         <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
                           <div className="text-xs text-slate-500 mb-1">Profile</div>
-                          <div className="text-2xl font-bold text-slate-800 capitalize">
-                            {calculatedProfile[activeOwner]?.replace('_', ' ')}
+                          <div className="text-2xl font-bold text-slate-800">
+                            {currentData.profile}
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {selectedProfile && (
+                    {selectedProfileAllocation && (
                       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
-                        <h5 className="font-bold text-slate-800 text-lg mb-2">{selectedProfile.label}</h5>
+                        <h5 className="font-bold text-slate-800 text-lg mb-2">
+                          {mode === 'specify' ? PROFILE_DISPLAY[specifiedProfile] : currentData.profile}
+                        </h5>
                         <div className="text-sm text-slate-600 mb-3">
-                          Growth {selectedProfile.growth}% / Defensive {selectedProfile.defensive}%
+                          Growth {selectedProfileAllocation.growth}% / Defensive {selectedProfileAllocation.defensive}%
                         </div>
                         <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
                           <div
                             className="bg-gradient-to-r from-green-500 to-emerald-600 h-full transition-all"
-                            style={{ width: `${selectedProfile.growth}%` }}
+                            style={{ width: `${selectedProfileAllocation.growth}%` }}
                           />
                         </div>
                       </div>
@@ -505,17 +503,45 @@ export default function FactFindRiskProfile() {
             </>
           ) : (
             <>
-              {/* Additional Information */}
+              <Card className="border-slate-200 shadow-sm">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setActiveOwner('client')}
+                      className={cn(
+                        "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                        activeOwner === 'client'
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      )}
+                    >
+                      Client
+                    </button>
+                    <button
+                      onClick={() => setActiveOwner('partner')}
+                      className={cn(
+                        "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                        activeOwner === 'partner'
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      )}
+                    >
+                      Partner
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card className="border-slate-200 shadow-sm">
                 <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 rounded-t-lg">
-                  <h4 className="font-bold text-white">Comments & calculated profile</h4>
+                  <h4 className="font-bold text-white">Comments & calculated profile - {activeOwner}</h4>
                 </div>
                 <CardContent className="p-6 space-y-4">
                   <div className="space-y-2">
                     <Label className="text-slate-700 font-semibold text-sm">Adviser comments</Label>
                     <Textarea
-                      value={additionalInfo.adviser_comments}
-                      onChange={(e) => setAdditionalInfo({ ...additionalInfo, adviser_comments: e.target.value })}
+                      value={currentData.adviserComments}
+                      onChange={(e) => setCurrentData({ ...currentData, adviserComments: e.target.value })}
                       placeholder="Enter adviser comments"
                       className="border-slate-300 min-h-[100px]"
                     />
@@ -524,8 +550,8 @@ export default function FactFindRiskProfile() {
                   <div className="space-y-2">
                     <Label className="text-slate-700 font-semibold text-sm">Client comments</Label>
                     <Textarea
-                      value={additionalInfo.client_comments}
-                      onChange={(e) => setAdditionalInfo({ ...additionalInfo, client_comments: e.target.value })}
+                      value={currentData.clientComments}
+                      onChange={(e) => setCurrentData({ ...currentData, clientComments: e.target.value })}
                       placeholder="Enter client comments"
                       className="border-slate-300 min-h-[100px]"
                     />
@@ -534,8 +560,8 @@ export default function FactFindRiskProfile() {
                   <div className="space-y-2">
                     <Label className="text-slate-700 font-semibold text-sm">Adjust risk profile?</Label>
                     <Select
-                      value={additionalInfo.adjust_risk_profile}
-                      onValueChange={(value) => setAdditionalInfo({ ...additionalInfo, adjust_risk_profile: value })}
+                      value={adjustRisk}
+                      onValueChange={setAdjustRisk}
                     >
                       <SelectTrigger className="border-slate-300">
                         <SelectValue />
@@ -547,19 +573,19 @@ export default function FactFindRiskProfile() {
                     </Select>
                   </div>
 
-                  {additionalInfo.adjust_risk_profile === 'yes' && (
+                  {adjustRisk === 'yes' && (
                     <>
                       <div className="space-y-2">
                         <Label className="text-slate-700 font-semibold text-sm">Select adjusted risk profile</Label>
                         <Select
-                          value={additionalInfo.adjusted_profile}
-                          onValueChange={(value) => setAdditionalInfo({ ...additionalInfo, adjusted_profile: value })}
+                          value={currentData.adjustedProfile}
+                          onValueChange={(value) => setCurrentData({ ...currentData, adjustedProfile: value })}
                         >
                           <SelectTrigger className="border-slate-300">
                             <SelectValue placeholder="Select..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {riskProfiles.map(profile => (
+                            {PROFILE_VALUES.map(profile => (
                               <SelectItem key={profile.value} value={profile.value}>
                                 {profile.label}
                               </SelectItem>
@@ -571,8 +597,8 @@ export default function FactFindRiskProfile() {
                       <div className="space-y-2">
                         <Label className="text-slate-700 font-semibold text-sm">Reason for adjustment</Label>
                         <Textarea
-                          value={additionalInfo.adjustment_reason}
-                          onChange={(e) => setAdditionalInfo({ ...additionalInfo, adjustment_reason: e.target.value })}
+                          value={currentData.adjustmentReason}
+                          onChange={(e) => setCurrentData({ ...currentData, adjustmentReason: e.target.value })}
                           placeholder="Explain why the risk profile is being adjusted"
                           className="border-slate-300 min-h-[100px]"
                         />
@@ -581,10 +607,56 @@ export default function FactFindRiskProfile() {
                   )}
                 </CardContent>
               </Card>
+
+              <Card className="border-slate-200 shadow-sm">
+                <div className="bg-gradient-to-r from-slate-600 to-slate-700 px-6 py-3 rounded-t-lg">
+                  <h4 className="font-bold text-white">Other Information</h4>
+                </div>
+                <CardContent className="p-6 space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 font-semibold text-sm">ESG preferences</Label>
+                    <Textarea
+                      value={otherInfo.esg}
+                      onChange={(e) => setOtherInfo({ ...otherInfo, esg: e.target.value })}
+                      placeholder="Environmental, Social, Governance considerations"
+                      className="border-slate-300"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 font-semibold text-sm">Investment restrictions</Label>
+                    <Textarea
+                      value={otherInfo.restrictions}
+                      onChange={(e) => setOtherInfo({ ...otherInfo, restrictions: e.target.value })}
+                      placeholder="Any restrictions on investments"
+                      className="border-slate-300"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 font-semibold text-sm">Prior investment experience</Label>
+                    <Textarea
+                      value={otherInfo.experience}
+                      onChange={(e) => setOtherInfo({ ...otherInfo, experience: e.target.value })}
+                      placeholder="Details of past investment experience"
+                      className="border-slate-300"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 font-semibold text-sm">Additional notes</Label>
+                    <Textarea
+                      value={otherInfo.notes}
+                      onChange={(e) => setOtherInfo({ ...otherInfo, notes: e.target.value })}
+                      placeholder="Any other relevant information"
+                      className="border-slate-300"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
             </>
           )}
 
-          {/* Navigation */}
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
