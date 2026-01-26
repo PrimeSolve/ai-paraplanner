@@ -63,6 +63,7 @@ import SOARequestScope from './pages/SOARequestScope';
 import SOARequestStrategy from './pages/SOARequestStrategy';
 import SOARequestTransactions from './pages/SOARequestTransactions';
 import SOARequestWelcome from './pages/SOARequestWelcome';
+import Register from './pages/Register';
 import __Layout from './Layout.jsx';
 
 
@@ -132,6 +133,7 @@ export const PAGES = {
     "SOARequestStrategy": SOARequestStrategy,
     "SOARequestTransactions": SOARequestTransactions,
     "SOARequestWelcome": SOARequestWelcome,
+    "Register": Register,
 }
 
 export const pagesConfig = {
