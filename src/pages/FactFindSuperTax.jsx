@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
@@ -6,60 +6,66 @@ import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, MessageSquare, RefreshCw, Info } from 'lucide-react';
+import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const tabs = [
+const TABS = [
   { id: 'super', label: 'Superannuation', icon: '💰' },
   { id: 'tax', label: 'Tax', icon: '📋' }
 ];
+
+const EMPTY_SUPER = {
+  sg_mode: '',
+  specify_sg: '',
+  tbc_used: '',
+  tbc_used_amt: '',
+  tbc_current: '',
+  ncc_trigger: '',
+  ncc_year: '',
+  ncc_amount_used: ''
+};
+
+const EMPTY_TAX = {
+  pre_losses: '',
+  pre_cgt_losses: ''
+};
 
 export default function FactFindSuperTax() {
   const navigate = useNavigate();
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('super');
-  const [activeOwner, setActiveOwner] = useState('client');
+  
+  const [currentTab, setCurrentTab] = useState('super');
+  const [activePerson, setActivePerson] = useState('c1');
+  const [hasPartner, setHasPartner] = useState(false);
 
-  const [superData, setSuperData] = useState({
-    client: {
-      sg_type: 'default',
-      sg_amount: '',
-      used_transfer_cap: 'no',
-      transfer_cap_used: '',
-      current_transfer_cap: '',
-      triggered_bring_forward: 'no',
-      bring_forward_year: '',
-      bring_forward_amount: ''
-    },
-    partner: {
-      sg_type: 'default',
-      sg_amount: '',
-      used_transfer_cap: 'no',
-      transfer_cap_used: '',
-      current_transfer_cap: '',
-      triggered_bring_forward: 'no',
-      bring_forward_year: '',
-      bring_forward_amount: ''
-    }
+  const [data, setData] = useState({
+    client: { super: { ...EMPTY_SUPER }, tax: { ...EMPTY_TAX } },
+    partner: { super: { ...EMPTY_SUPER }, tax: { ...EMPTY_TAX } }
   });
 
-  const [taxData, setTaxData] = useState({
-    client: {
-      pre_existing_losses: '',
-      pre_existing_cgt_losses: ''
-    },
-    partner: {
-      pre_existing_losses: '',
-      pre_existing_cgt_losses: ''
-    }
-  });
+  // Get principal names for pill labels
+  const principalNames = useMemo(() => {
+    const clientName = factFind?.personal?.client?.first_name
+      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name || ''}`.trim()
+      : 'Client';
+    const partnerName = factFind?.personal?.partner?.first_name
+      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim()
+      : 'Partner';
 
+    return { client: clientName, partner: partnerName };
+  }, [factFind]);
+
+  // Check if partner exists
+  useEffect(() => {
+    if (factFind?.personal?.partner?.first_name) {
+      setHasPartner(true);
+    }
+  }, [factFind]);
+
+  // Load data
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -70,11 +76,23 @@ export default function FactFindSuperTax() {
           const finds = await base44.entities.FactFind.filter({ id });
           if (finds[0]) {
             setFactFind(finds[0]);
-            if (finds[0].super_tax?.super_strategy) {
-              setSuperData(finds[0].super_tax.super_strategy);
-            }
-            if (finds[0].super_tax?.tax_planning) {
-              setTaxData(finds[0].super_tax.tax_planning);
+
+            // Load existing supertax data
+            if (finds[0].supertax) {
+              const st = finds[0].supertax;
+              setData({
+                client: {
+                  super: st.client?.super || { ...EMPTY_SUPER },
+                  tax: st.client?.tax || { ...EMPTY_TAX }
+                },
+                partner: {
+                  super: st.partner?.super || { ...EMPTY_SUPER },
+                  tax: st.partner?.tax || { ...EMPTY_TAX }
+                }
+              });
+              if (st.currentTab) setCurrentTab(st.currentTab);
+              if (st.activePerson) setActivePerson(st.activePerson);
+              if (st.hasPartner !== undefined) setHasPartner(st.hasPartner);
             }
           }
         }
@@ -87,20 +105,61 @@ export default function FactFindSuperTax() {
     loadData();
   }, []);
 
+  // Get current person key
+  const personKey = activePerson === 'c1' ? 'client' : 'partner';
+  const currentSuper = data[personKey].super;
+  const currentTax = data[personKey].tax;
+
+  // Update super field
+  const updateSuper = useCallback((field, value) => {
+    setData(prev => ({
+      ...prev,
+      [personKey]: {
+        ...prev[personKey],
+        super: { ...prev[personKey].super, [field]: value }
+      }
+    }));
+  }, [personKey]);
+
+  // Update tax field
+  const updateTax = useCallback((field, value) => {
+    setData(prev => ({
+      ...prev,
+      [personKey]: {
+        ...prev[personKey],
+        tax: { ...prev[personKey].tax, [field]: value }
+      }
+    }));
+  }, [personKey]);
+
+  // Add partner
+  const handleAddPartner = useCallback(() => {
+    setHasPartner(true);
+    setActivePerson('c2');
+  }, []);
+
+  // Navigation
   const handleNext = async () => {
+    if (!factFind?.id) {
+      toast.error('Unable to save data');
+      return;
+    }
+
     setSaving(true);
     try {
-      const sectionsCompleted = factFind.sections_completed || [];
+      const sectionsCompleted = [...(factFind.sections_completed || [])];
       if (!sectionsCompleted.includes('super_tax')) {
         sectionsCompleted.push('super_tax');
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        super_tax: {
-          super_strategy: superData,
-          tax_planning: taxData
+        supertax: {
+          currentTab,
+          activePerson,
+          hasPartner,
+          client: data.client,
+          partner: data.partner
         },
-        current_section: 'advice_reason',
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
@@ -132,242 +191,281 @@ export default function FactFindSuperTax() {
       <FactFindHeader
         title="Super & Tax"
         description="Enter superannuation and tax details. Switch between Client and Partner as needed."
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
+        tabs={TABS}
+        activeTab={currentTab}
+        onTabChange={setCurrentTab}
         factFind={factFind}
       />
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="w-full space-y-4">
-          {/* Owner Selection */}
-          <div className="flex items-center justify-between bg-slate-100 border border-slate-200 rounded-lg px-4 py-3">
-            <div className="flex items-center gap-3">
-              <span className="font-bold text-slate-800 text-sm">Person:</span>
-              <div className="flex gap-2">
-                {['client', 'partner'].map(owner => (
+      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="w-full space-y-6">
+          {/* Person Pills */}
+          <Card className="border-slate-200 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
                   <button
-                    key={owner}
-                    onClick={() => setActiveOwner(owner)}
+                    onClick={() => setActivePerson('c1')}
                     className={cn(
-                      "px-3 py-1.5 rounded-full text-xs font-bold border transition-all capitalize",
-                      activeOwner === owner
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
+                      "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                      activePerson === 'c1'
+                        ? "bg-blue-600 text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                     )}
                   >
-                    {owner}
+                    {principalNames.client}
                   </button>
-                ))}
+                  {hasPartner ? (
+                    <button
+                      onClick={() => setActivePerson('c2')}
+                      className={cn(
+                        "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                        activePerson === 'c2'
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      )}
+                    >
+                      {principalNames.partner}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleAddPartner}
+                      className="px-4 py-2 rounded-full text-sm font-bold bg-green-50 text-green-700 border-2 border-dashed border-green-300 hover:bg-green-100 transition-all"
+                    >
+                      + Add Partner
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          {activeTab === 'super' ? (
+          {/* Super Tab */}
+          {currentTab === 'super' && (
             <Card className="border-slate-200 shadow-sm">
               <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3 rounded-t-lg">
-                <h4 className="font-bold text-white capitalize">
-                  {activeOwner} - Superannuation Details
+                <h4 className="font-bold text-white">
+                  {activePerson === 'c1' ? principalNames.client : principalNames.partner} - Superannuation
                 </h4>
               </div>
               <CardContent className="p-6 space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
                     How much superannuation guarantee do you receive?
-                  </Label>
-                  <Select 
-                    value={superData[activeOwner].sg_type}
-                    onValueChange={(value) => setSuperData({
-                      ...superData,
-                      [activeOwner]: { ...superData[activeOwner], sg_type: value }
-                    })}
-                  >
-                    <SelectTrigger className="border-slate-300">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="default">Use default SG</SelectItem>
-                      <SelectItem value="specify">Specify SG</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  </label>
+                  <div className="flex gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name={`sg_mode_${activePerson}`}
+                        value="default"
+                        checked={currentSuper.sg_mode === 'default'}
+                        onChange={(e) => updateSuper('sg_mode', e.target.value)}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <span className="text-sm text-slate-700">Use default SG</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name={`sg_mode_${activePerson}`}
+                        value="specify"
+                        checked={currentSuper.sg_mode === 'specify'}
+                        onChange={(e) => updateSuper('sg_mode', e.target.value)}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <span className="text-sm text-slate-700">Specify SG</span>
+                    </label>
+                  </div>
                 </div>
 
-                {superData[activeOwner].sg_type === 'specify' && (
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold text-sm">Specify SG ($)</Label>
-                    <Input
-                      type="number"
-                      value={superData[activeOwner].sg_amount}
-                      onChange={(e) => setSuperData({
-                        ...superData,
-                        [activeOwner]: { ...superData[activeOwner], sg_amount: e.target.value }
-                      })}
-                      placeholder="0"
-                      className="border-slate-300"
-                    />
+                {currentSuper.sg_mode === 'specify' && (
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Specify SG</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input
+                        type="number"
+                        value={currentSuper.specify_sg}
+                        onChange={(e) => updateSuper('specify_sg', e.target.value)}
+                        step="0.01"
+                        min="0"
+                        className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Have you used any amounts against your Transfer Balance Cap?
-                  </Label>
-                  <Select 
-                    value={superData[activeOwner].used_transfer_cap}
-                    onValueChange={(value) => setSuperData({
-                      ...superData,
-                      [activeOwner]: { ...superData[activeOwner], used_transfer_cap: value }
-                    })}
-                  >
-                    <SelectTrigger className="border-slate-300">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="yes">Yes</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  </label>
+                  <div className="flex gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name={`tbc_used_${activePerson}`}
+                        value="Yes"
+                        checked={currentSuper.tbc_used === 'Yes'}
+                        onChange={(e) => updateSuper('tbc_used', e.target.value)}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <span className="text-sm text-slate-700">Yes</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name={`tbc_used_${activePerson}`}
+                        value="No"
+                        checked={currentSuper.tbc_used === 'No'}
+                        onChange={(e) => updateSuper('tbc_used', e.target.value)}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <span className="text-sm text-slate-700">No</span>
+                    </label>
+                  </div>
                 </div>
 
-                {superData[activeOwner].used_transfer_cap === 'yes' && (
+                {currentSuper.tbc_used === 'Yes' && (
                   <>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">
-                        Transfer balance cap already used ($)
-                      </Label>
-                      <Input
-                        type="number"
-                        value={superData[activeOwner].transfer_cap_used}
-                        onChange={(e) => setSuperData({
-                          ...superData,
-                          [activeOwner]: { ...superData[activeOwner], transfer_cap_used: e.target.value }
-                        })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                        Transfer balance cap already used
+                      </label>
+                      <div className="flex items-center">
+                        <span className="text-slate-500 mr-2">$</span>
+                        <input
+                          type="number"
+                          value={currentSuper.tbc_used_amt}
+                          onChange={(e) => updateSuper('tbc_used_amt', e.target.value)}
+                          step="0.01"
+                          min="0"
+                          className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">
-                        Current Transfer Balance Cap ($)
-                      </Label>
-                      <Input
-                        type="number"
-                        value={superData[activeOwner].current_transfer_cap}
-                        onChange={(e) => setSuperData({
-                          ...superData,
-                          [activeOwner]: { ...superData[activeOwner], current_transfer_cap: e.target.value }
-                        })}
-                        placeholder="0"
-                        className="border-slate-300"
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                        Current Transfer Balance Cap
+                      </label>
+                      <input
+                        type="text"
+                        value={currentSuper.tbc_current}
+                        onChange={(e) => updateSuper('tbc_current', e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </>
                 )}
 
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Have you triggered the bring forward trigger for NCC?
-                  </Label>
-                  <Select 
-                    value={superData[activeOwner].triggered_bring_forward}
-                    onValueChange={(value) => setSuperData({
-                      ...superData,
-                      [activeOwner]: { ...superData[activeOwner], triggered_bring_forward: value }
-                    })}
-                  >
-                    <SelectTrigger className="border-slate-300">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="yes">Yes</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  </label>
+                  <div className="flex gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name={`ncc_trigger_${activePerson}`}
+                        value="Yes"
+                        checked={currentSuper.ncc_trigger === 'Yes'}
+                        onChange={(e) => updateSuper('ncc_trigger', e.target.value)}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <span className="text-sm text-slate-700">Yes</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name={`ncc_trigger_${activePerson}`}
+                        value="No"
+                        checked={currentSuper.ncc_trigger === 'No'}
+                        onChange={(e) => updateSuper('ncc_trigger', e.target.value)}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <span className="text-sm text-slate-700">No</span>
+                    </label>
+                  </div>
                 </div>
 
-                {superData[activeOwner].triggered_bring_forward === 'yes' && (
+                {currentSuper.ncc_trigger === 'Yes' && (
                   <>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
                         Year bring forward was triggered?
-                      </Label>
-                      <Select 
-                        value={superData[activeOwner].bring_forward_year}
-                        onValueChange={(value) => setSuperData({
-                          ...superData,
-                          [activeOwner]: { ...superData[activeOwner], bring_forward_year: value }
-                        })}
+                      </label>
+                      <select
+                        value={currentSuper.ncc_year}
+                        onChange={(e) => updateSuper('ncc_year', e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select year..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="2023/2024">2023/2024</SelectItem>
-                          <SelectItem value="2024/2025">2024/2025</SelectItem>
-                          <SelectItem value="2025/2026">2025/2026</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <option value="">Select year…</option>
+                        <option value="2024">2023/2024</option>
+                        <option value="2025">2024/2025</option>
+                        <option value="2026">2025/2026</option>
+                      </select>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">
-                        Amount used against bring forward ($)
-                      </Label>
-                      <Input
-                        type="number"
-                        value={superData[activeOwner].bring_forward_amount}
-                        onChange={(e) => setSuperData({
-                          ...superData,
-                          [activeOwner]: { ...superData[activeOwner], bring_forward_amount: e.target.value }
-                        })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                        Amount used against bring forward
+                      </label>
+                      <div className="flex items-center">
+                        <span className="text-slate-500 mr-2">$</span>
+                        <input
+                          type="number"
+                          value={currentSuper.ncc_amount_used}
+                          onChange={(e) => updateSuper('ncc_amount_used', e.target.value)}
+                          step="0.01"
+                          min="0"
+                          className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
                     </div>
                   </>
                 )}
               </CardContent>
             </Card>
-          ) : (
+          )}
+
+          {/* Tax Tab */}
+          {currentTab === 'tax' && (
             <Card className="border-slate-200 shadow-sm">
               <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 rounded-t-lg">
-                <h4 className="font-bold text-white capitalize">
-                  {activeOwner} - Tax Details
+                <h4 className="font-bold text-white">
+                  {activePerson === 'c1' ? principalNames.client : principalNames.partner} - Tax
                 </h4>
               </div>
               <CardContent className="p-6 space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">
-                    Pre-existing losses ($)
-                  </Label>
-                  <Input
-                    type="number"
-                    value={taxData[activeOwner].pre_existing_losses}
-                    onChange={(e) => setTaxData({
-                      ...taxData,
-                      [activeOwner]: { ...taxData[activeOwner], pre_existing_losses: e.target.value }
-                    })}
-                    placeholder="0"
-                    className="border-slate-300"
-                  />
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Pre-existing losses</label>
+                  <div className="flex items-center">
+                    <span className="text-slate-500 mr-2">$</span>
+                    <input
+                      type="number"
+                      value={currentTax.pre_losses}
+                      onChange={(e) => updateTax('pre_losses', e.target.value)}
+                      step="0.01"
+                      min="0"
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold text-sm">
-                    Pre-existing CGT losses ($)
-                  </Label>
-                  <Input
-                    type="number"
-                    value={taxData[activeOwner].pre_existing_cgt_losses}
-                    onChange={(e) => setTaxData({
-                      ...taxData,
-                      [activeOwner]: { ...taxData[activeOwner], pre_existing_cgt_losses: e.target.value }
-                    })}
-                    placeholder="0"
-                    className="border-slate-300"
-                  />
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Pre-existing CGT losses</label>
+                  <div className="flex items-center">
+                    <span className="text-slate-500 mr-2">$</span>
+                    <input
+                      type="number"
+                      value={currentTax.pre_cgt_losses}
+                      onChange={(e) => updateTax('pre_cgt_losses', e.target.value)}
+                      step="0.01"
+                      min="0"
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -399,7 +497,7 @@ export default function FactFindSuperTax() {
                     </>
                   ) : (
                     <>
-                      Continue
+                      Save & continue
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </>
                   )}
