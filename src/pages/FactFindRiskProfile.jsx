@@ -38,12 +38,174 @@ const PROFILE_DISPLAY = {
 };
 
 const ASSET_ALLOCATIONS = {
-  'Cash Management': { growth: 0, defensive: 100 },
-  'Conservative': { growth: 30, defensive: 70 },
-  'Moderately Conservative': { growth: 50, defensive: 50 },
-  'Balanced': { growth: 70, defensive: 30 },
-  'Growth': { growth: 85, defensive: 15 },
-  'High Growth': { growth: 98, defensive: 2 }
+  'Cash Management': { 
+    growth: 0, 
+    defensive: 100,
+    details: {
+      "Australian equities": 0.0,
+      "International equities": 0.0,
+      "Property & infrastructure": 0.0,
+      "Alternatives": 0.0,
+      "Australian fixed interest": 0.0,
+      "International fixed interest": 0.0,
+      "Cash": 100.0
+    }
+  },
+  'Conservative': { 
+    growth: 30, 
+    defensive: 70,
+    details: {
+      "Australian equities": 13.0,
+      "International equities": 13.0,
+      "Property & infrastructure": 4.0,
+      "Alternatives": 0.0,
+      "Australian fixed interest": 35.0,
+      "International fixed interest": 15.0,
+      "Cash": 20.0
+    }
+  },
+  'Moderately Conservative': { 
+    growth: 50, 
+    defensive: 50,
+    details: {
+      "Australian equities": 22.5,
+      "International equities": 22.5,
+      "Property & infrastructure": 5.0,
+      "Alternatives": 0.0,
+      "Australian fixed interest": 25.0,
+      "International fixed interest": 10.0,
+      "Cash": 15.0
+    }
+  },
+  'Balanced': { 
+    growth: 70, 
+    defensive: 30,
+    details: {
+      "Australian equities": 31.5,
+      "International equities": 31.5,
+      "Property & infrastructure": 7.0,
+      "Alternatives": 0.0,
+      "Australian fixed interest": 14.0,
+      "International fixed interest": 7.0,
+      "Cash": 9.0
+    }
+  },
+  'Growth': { 
+    growth: 85, 
+    defensive: 15,
+    details: {
+      "Australian equities": 39.0,
+      "International equities": 39.0,
+      "Property & infrastructure": 7.0,
+      "Alternatives": 0.0,
+      "Australian fixed interest": 7.5,
+      "International fixed interest": 4.5,
+      "Cash": 3.0
+    }
+  },
+  'High Growth': { 
+    growth: 98, 
+    defensive: 2,
+    details: {
+      "Australian equities": 45.0,
+      "International equities": 45.0,
+      "Property & infrastructure": 8.0,
+      "Alternatives": 0.0,
+      "Australian fixed interest": 1.5,
+      "International fixed interest": 0.5,
+      "Cash": 0.0
+    }
+  }
+};
+
+const PROFILE_DEFINITIONS = [
+  {
+    name: 'Cash Management',
+    growth: 0,
+    defensive: 100,
+    description: 'Suitable for investors with short-term goals or those who cannot tolerate any capital loss. This profile invests entirely in cash and cash equivalents.'
+  },
+  {
+    name: 'Conservative',
+    growth: 30,
+    defensive: 70,
+    description: 'Suitable for investors seeking stable returns with minimal volatility. A small allocation to growth assets provides some inflation protection while maintaining capital stability.'
+  },
+  {
+    name: 'Moderately Conservative',
+    growth: 50,
+    defensive: 50,
+    description: 'Balanced between growth and defensive assets. Suitable for investors who can tolerate moderate volatility in exchange for potentially higher long-term returns.'
+  },
+  {
+    name: 'Balanced',
+    growth: 70,
+    defensive: 30,
+    description: 'Emphasizes growth assets while maintaining a defensive component. Suitable for investors with medium to long-term horizons who can tolerate regular market fluctuations.'
+  },
+  {
+    name: 'Growth',
+    growth: 85,
+    defensive: 15,
+    description: 'Focuses on long-term capital growth through significant exposure to growth assets. Suitable for investors with long time horizons who can tolerate significant short-term volatility.'
+  },
+  {
+    name: 'High Growth',
+    growth: 98,
+    defensive: 2,
+    description: 'Maximum exposure to growth assets for long-term capital appreciation. Suitable for experienced investors with very long time horizons who can accept substantial short-term losses.'
+  }
+];
+
+const HISTORICAL_RETURNS = {
+  'Cash Management': {
+    annualReturn: 3.3,
+    realReturn: 1.9,
+    worstYear: 0.0,
+    bestYear: 7.8,
+    negativeChance: "0",
+    negativeProbability: 0.0
+  },
+  'Conservative': {
+    annualReturn: 5.8,
+    realReturn: 3.4,
+    worstYear: -4.2,
+    bestYear: 18.5,
+    negativeChance: "1 in 9",
+    negativeProbability: 11.1
+  },
+  'Moderately Conservative': {
+    annualReturn: 7.2,
+    realReturn: 4.8,
+    worstYear: -8.6,
+    bestYear: 25.3,
+    negativeChance: "1 in 7",
+    negativeProbability: 14.3
+  },
+  'Balanced': {
+    annualReturn: 8.5,
+    realReturn: 6.1,
+    worstYear: -13.1,
+    bestYear: 32.8,
+    negativeChance: "1 in 5",
+    negativeProbability: 20.0
+  },
+  'Growth': {
+    annualReturn: 9.3,
+    realReturn: 6.9,
+    worstYear: -16.8,
+    bestYear: 38.2,
+    negativeChance: "1 in 4",
+    negativeProbability: 25.0
+  },
+  'High Growth': {
+    annualReturn: 9.8,
+    realReturn: 7.4,
+    worstYear: -19.4,
+    bestYear: 42.1,
+    negativeChance: "1 in 3",
+    negativeProbability: 33.3
+  }
 };
 
 const questions = [
@@ -146,13 +308,13 @@ export default function FactFindRiskProfile() {
   const [activeTab, setActiveTab] = useState('questionnaire');
   const [activeOwner, setActiveOwner] = useState('client');
   const [mode, setMode] = useState('');
-  const [specifiedProfile, setSpecifiedProfile] = useState('');
   const [adjustRisk, setAdjustRisk] = useState('no');
 
   const [clientData, setClientData] = useState({
     answers: {},
     score: 0,
     profile: '',
+    specifiedProfile: '',
     adviserComments: '',
     clientComments: '',
     adjustedProfile: '',
@@ -163,6 +325,7 @@ export default function FactFindRiskProfile() {
     answers: {},
     score: 0,
     profile: '',
+    specifiedProfile: '',
     adviserComments: '',
     clientComments: '',
     adjustedProfile: '',
@@ -189,7 +352,6 @@ export default function FactFindRiskProfile() {
             if (finds[0].riskProfile) {
               const data = finds[0].riskProfile;
               if (data.mode) setMode(data.mode);
-              if (data.specifiedProfile) setSpecifiedProfile(data.specifiedProfile);
               if (data.adjustRisk) setAdjustRisk(data.adjustRisk);
               if (data.client) setClientData(data.client);
               if (data.partner) setPartnerData(data.partner);
@@ -257,7 +419,6 @@ export default function FactFindRiskProfile() {
           currentPerson: activeOwner,
           currentTab: activeTab,
           mode,
-          specifiedProfile,
           adjustRisk,
           client: clientData,
           partner: partnerData,
@@ -292,8 +453,14 @@ export default function FactFindRiskProfile() {
   }
 
   const selectedProfileAllocation = mode === 'specify' 
-    ? ASSET_ALLOCATIONS[PROFILE_DISPLAY[specifiedProfile]]
+    ? ASSET_ALLOCATIONS[PROFILE_DISPLAY[currentData.specifiedProfile]]
     : ASSET_ALLOCATIONS[currentData.profile];
+
+  const selectedProfileName = mode === 'specify'
+    ? PROFILE_DISPLAY[currentData.specifiedProfile]
+    : currentData.profile;
+
+  const selectedHistoricalReturns = selectedProfileName ? HISTORICAL_RETURNS[selectedProfileName] : null;
 
   return (
     <FactFindLayout currentSection="risk_profile" factFind={factFind}>
@@ -355,32 +522,10 @@ export default function FactFindRiskProfile() {
                     </div>
                   </div>
 
-                  {mode === 'specify' && (
-                    <div className="mt-4 space-y-3">
-                      <div>
-                        <Label className="text-slate-700 font-semibold text-sm mb-2 block">Select risk profile</Label>
-                        <Select
-                          value={specifiedProfile}
-                          onValueChange={setSpecifiedProfile}
-                        >
-                          <SelectTrigger className="border-slate-300">
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {PROFILE_VALUES.map(profile => (
-                              <SelectItem key={profile.value} value={profile.value}>
-                                {profile.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
 
-              {mode === 'calculate' && (
+              {(mode === 'calculate' || mode === 'specify') && (
                 <>
                   <div className="flex items-center justify-between bg-slate-100 border border-slate-200 rounded-lg px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -402,15 +547,48 @@ export default function FactFindRiskProfile() {
                         ))}
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={resetQuiz}
-                      className="border-slate-300"
-                    >
-                      <RotateCcw className="w-4 h-4 mr-2" />
-                      Refresh Quiz
-                    </Button>
+                    {mode === 'calculate' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={resetQuiz}
+                        className="border-slate-300"
+                      >
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        Refresh Quiz
+                      </Button>
+                    )}
+                  </div>
+
+                  {mode === 'specify' && (
+                    <Card className="border-slate-200 shadow-sm">
+                      <CardContent className="p-6">
+                        <Label className="text-slate-700 font-semibold text-sm mb-2 block">Select risk profile for {activeOwner}</Label>
+                        <Select
+                          value={currentData.specifiedProfile}
+                          onValueChange={(value) => setCurrentData({ ...currentData, specifiedProfile: value })}
+                        >
+                          <SelectTrigger className="border-slate-300">
+                            <SelectValue placeholder="Select..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PROFILE_VALUES.map(profile => (
+                              <SelectItem key={profile.value} value={profile.value}>
+                                {profile.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
+              )}
+
+              {mode === 'calculate' && (
+                <>
+                  <div className="bg-slate-100 border border-slate-200 rounded-lg px-4 py-3">
+                    <span className="font-bold text-slate-800 text-sm">Complete questionnaire for {activeOwner}</span>
                   </div>
 
                   {questions.map((question, qIndex) => (
@@ -460,7 +638,7 @@ export default function FactFindRiskProfile() {
                 </>
               )}
 
-              {((mode === 'calculate' && currentData.profile) || (mode === 'specify' && specifiedProfile)) && (
+              {((mode === 'calculate' && currentData.profile) || (mode === 'specify' && currentData.specifiedProfile)) && (
                 <Card className="border-slate-200 shadow-sm">
                   <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-3">
                     <h4 className="font-bold text-white">Risk Profile Result</h4>
@@ -481,21 +659,171 @@ export default function FactFindRiskProfile() {
                       </div>
                     )}
 
+                    {/* Profile Pills */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {PROFILE_DEFINITIONS.map(prof => (
+                        <div
+                          key={prof.name}
+                          className={cn(
+                            "px-4 py-2 rounded-full text-sm font-bold border-2 transition-all",
+                            selectedProfileName === prof.name
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-slate-100 text-slate-600 border-slate-200"
+                          )}
+                        >
+                          {prof.name}
+                        </div>
+                      ))}
+                    </div>
+
                     {selectedProfileAllocation && (
                       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
                         <h5 className="font-bold text-slate-800 text-lg mb-2">
-                          {mode === 'specify' ? PROFILE_DISPLAY[specifiedProfile] : currentData.profile}
+                          {selectedProfileName}
                         </h5>
                         <div className="text-sm text-slate-600 mb-3">
                           Growth {selectedProfileAllocation.growth}% / Defensive {selectedProfileAllocation.defensive}%
                         </div>
-                        <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                        <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden mb-4">
                           <div
                             className="bg-gradient-to-r from-green-500 to-emerald-600 h-full transition-all"
                             style={{ width: `${selectedProfileAllocation.growth}%` }}
                           />
                         </div>
+
+                        {/* Asset Allocation Details */}
+                        <div className="bg-white rounded-lg p-4 border border-slate-200">
+                          <h6 className="font-bold text-slate-800 mb-3">Asset Allocation</h6>
+                          <div className="space-y-2">
+                            {Object.entries(selectedProfileAllocation.details).map(([asset, percentage]) => (
+                              <div key={asset} className="flex justify-between items-center">
+                                <span className="text-sm text-slate-700">{asset}</span>
+                                <div className="flex items-center gap-3 flex-1 ml-4">
+                                  <div className="flex-1 bg-slate-200 rounded-full h-2">
+                                    <div
+                                      className="bg-blue-600 h-2 rounded-full"
+                                      style={{ width: `${percentage}%` }}
+                                    />
+                                  </div>
+                                  <span className="text-sm font-bold text-slate-800 w-12 text-right">{percentage}%</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
+                    )}
+
+                    {/* Historical Returns */}
+                    {selectedHistoricalReturns && (
+                      <div className="bg-slate-50 rounded-lg p-6 border border-slate-200">
+                        <h6 className="font-bold text-slate-800 mb-4">Historical Returns - {selectedProfileName}</h6>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          <div className="bg-white rounded-lg p-3 border border-slate-200">
+                            <div className="text-xs text-slate-500 mb-1">Annual Return</div>
+                            <div className="text-lg font-bold text-green-600">{selectedHistoricalReturns.annualReturn}%</div>
+                          </div>
+                          <div className="bg-white rounded-lg p-3 border border-slate-200">
+                            <div className="text-xs text-slate-500 mb-1">Real Return</div>
+                            <div className="text-lg font-bold text-blue-600">{selectedHistoricalReturns.realReturn}%</div>
+                          </div>
+                          <div className="bg-white rounded-lg p-3 border border-slate-200">
+                            <div className="text-xs text-slate-500 mb-1">Worst Year</div>
+                            <div className="text-lg font-bold text-red-600">{selectedHistoricalReturns.worstYear}%</div>
+                          </div>
+                          <div className="bg-white rounded-lg p-3 border border-slate-200">
+                            <div className="text-xs text-slate-500 mb-1">Best Year</div>
+                            <div className="text-lg font-bold text-green-600">{selectedHistoricalReturns.bestYear}%</div>
+                          </div>
+                          <div className="bg-white rounded-lg p-3 border border-slate-200">
+                            <div className="text-xs text-slate-500 mb-1">Negative Chance</div>
+                            <div className="text-lg font-bold text-orange-600">{selectedHistoricalReturns.negativeChance}</div>
+                          </div>
+                          <div className="bg-white rounded-lg p-3 border border-slate-200">
+                            <div className="text-xs text-slate-500 mb-1">Negative Probability</div>
+                            <div className="text-lg font-bold text-orange-600">{selectedHistoricalReturns.negativeProbability}%</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Comments Section - After Results */}
+              {((mode === 'calculate' && currentData.profile) || (mode === 'specify' && currentData.specifiedProfile)) && (
+                <Card className="border-slate-200 shadow-sm">
+                  <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 rounded-t-lg">
+                    <h4 className="font-bold text-white">Comments & calculated profile - {activeOwner}</h4>
+                  </div>
+                  <CardContent className="p-6 space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 font-semibold text-sm">Adviser comments</Label>
+                      <Textarea
+                        value={currentData.adviserComments}
+                        onChange={(e) => setCurrentData({ ...currentData, adviserComments: e.target.value })}
+                        placeholder="Enter adviser comments"
+                        className="border-slate-300 min-h-[100px]"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 font-semibold text-sm">Client comments</Label>
+                      <Textarea
+                        value={currentData.clientComments}
+                        onChange={(e) => setCurrentData({ ...currentData, clientComments: e.target.value })}
+                        placeholder="Enter client comments"
+                        className="border-slate-300 min-h-[100px]"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 font-semibold text-sm">Adjust risk profile?</Label>
+                      <Select
+                        value={adjustRisk}
+                        onValueChange={setAdjustRisk}
+                      >
+                        <SelectTrigger className="border-slate-300">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {adjustRisk === 'yes' && (
+                      <>
+                        <div className="space-y-2">
+                          <Label className="text-slate-700 font-semibold text-sm">Select adjusted risk profile</Label>
+                          <Select
+                            value={currentData.adjustedProfile}
+                            onValueChange={(value) => setCurrentData({ ...currentData, adjustedProfile: value })}
+                          >
+                            <SelectTrigger className="border-slate-300">
+                              <SelectValue placeholder="Select..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {PROFILE_VALUES.map(profile => (
+                                <SelectItem key={profile.value} value={profile.value}>
+                                  {profile.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-slate-700 font-semibold text-sm">Reason for adjustment</Label>
+                          <Textarea
+                            value={currentData.adjustmentReason}
+                            onChange={(e) => setCurrentData({ ...currentData, adjustmentReason: e.target.value })}
+                            placeholder="Explain why the risk profile is being adjusted"
+                            className="border-slate-300 min-h-[100px]"
+                          />
+                        </div>
+                      </>
                     )}
                   </CardContent>
                 </Card>
@@ -503,108 +831,61 @@ export default function FactFindRiskProfile() {
             </>
           ) : (
             <>
-              <Card className="border-slate-200 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setActiveOwner('client')}
-                      className={cn(
-                        "px-4 py-2 rounded-full text-sm font-bold transition-all",
-                        activeOwner === 'client'
-                          ? "bg-blue-600 text-white"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      )}
-                    >
-                      Client
-                    </button>
-                    <button
-                      onClick={() => setActiveOwner('partner')}
-                      className={cn(
-                        "px-4 py-2 rounded-full text-sm font-bold transition-all",
-                        activeOwner === 'partner'
-                          ? "bg-blue-600 text-white"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      )}
-                    >
-                      Partner
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-slate-200 shadow-sm">
-                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 rounded-t-lg">
-                  <h4 className="font-bold text-white">Comments & calculated profile - {activeOwner}</h4>
-                </div>
-                <CardContent className="p-6 space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold text-sm">Adviser comments</Label>
-                    <Textarea
-                      value={currentData.adviserComments}
-                      onChange={(e) => setCurrentData({ ...currentData, adviserComments: e.target.value })}
-                      placeholder="Enter adviser comments"
-                      className="border-slate-300 min-h-[100px]"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold text-sm">Client comments</Label>
-                    <Textarea
-                      value={currentData.clientComments}
-                      onChange={(e) => setCurrentData({ ...currentData, clientComments: e.target.value })}
-                      placeholder="Enter client comments"
-                      className="border-slate-300 min-h-[100px]"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold text-sm">Adjust risk profile?</Label>
-                    <Select
-                      value={adjustRisk}
-                      onValueChange={setAdjustRisk}
-                    >
-                      <SelectTrigger className="border-slate-300">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="yes">Yes</SelectItem>
-                        <SelectItem value="no">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {adjustRisk === 'yes' && (
-                    <>
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Select adjusted risk profile</Label>
-                        <Select
-                          value={currentData.adjustedProfile}
-                          onValueChange={(value) => setCurrentData({ ...currentData, adjustedProfile: value })}
-                        >
-                          <SelectTrigger className="border-slate-300">
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {PROFILE_VALUES.map(profile => (
-                              <SelectItem key={profile.value} value={profile.value}>
-                                {profile.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+              {/* Risk Profile Definitions */}
+              <div className="grid md:grid-cols-2 gap-4">
+                {PROFILE_DEFINITIONS.map((profile) => (
+                  <Card key={profile.name} className="border-slate-200 shadow-sm">
+                    <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-4 py-2 rounded-t-lg">
+                      <h5 className="font-bold text-white text-sm">{profile.name}</h5>
+                    </div>
+                    <CardContent className="p-4 space-y-3">
+                      <div className="text-xs text-slate-600 mb-2">
+                        Growth {profile.growth}% / Defensive {profile.defensive}%
                       </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Reason for adjustment</Label>
-                        <Textarea
-                          value={currentData.adjustmentReason}
-                          onChange={(e) => setCurrentData({ ...currentData, adjustmentReason: e.target.value })}
-                          placeholder="Explain why the risk profile is being adjusted"
-                          className="border-slate-300 min-h-[100px]"
+                      <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="bg-gradient-to-r from-green-500 to-emerald-600 h-full"
+                          style={{ width: `${profile.growth}%` }}
                         />
                       </div>
-                    </>
-                  )}
+                      <p className="text-sm text-slate-700 leading-relaxed">{profile.description}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Portfolio Historical Returns */}
+              <Card className="border-slate-200 shadow-sm">
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 rounded-t-lg">
+                  <h4 className="font-bold text-white">Portfolio Historical Returns</h4>
+                </div>
+                <CardContent className="p-6">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b-2 border-slate-300">
+                          <th className="text-left py-3 px-2 font-bold text-slate-800">Profile</th>
+                          <th className="text-right py-3 px-2 font-bold text-slate-800">Annual Return</th>
+                          <th className="text-right py-3 px-2 font-bold text-slate-800">Real Return</th>
+                          <th className="text-right py-3 px-2 font-bold text-slate-800">Worst Year</th>
+                          <th className="text-right py-3 px-2 font-bold text-slate-800">Best Year</th>
+                          <th className="text-right py-3 px-2 font-bold text-slate-800">Negative Chance</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(HISTORICAL_RETURNS).map(([profileName, returns]) => (
+                          <tr key={profileName} className="border-b border-slate-200">
+                            <td className="py-3 px-2 font-semibold text-slate-700">{profileName}</td>
+                            <td className="text-right py-3 px-2 text-green-600 font-semibold">{returns.annualReturn}%</td>
+                            <td className="text-right py-3 px-2 text-blue-600">{returns.realReturn}%</td>
+                            <td className="text-right py-3 px-2 text-red-600">{returns.worstYear}%</td>
+                            <td className="text-right py-3 px-2 text-green-600">{returns.bestYear}%</td>
+                            <td className="text-right py-3 px-2 text-orange-600">{returns.negativeChance}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </CardContent>
               </Card>
 
