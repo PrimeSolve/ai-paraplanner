@@ -135,15 +135,15 @@ export default function PublicHome() {
 
             <div className="grid grid-cols-3 gap-8">
               <div>
-                <div className="text-[36px] font-bold text-[#3b82f6] mb-1">75%</div>
+                <div className="text-[36px] font-bold text-[#0f172a] mb-1">75%</div>
                 <div className="text-[15px] text-[#64748b]">Faster Fact Finds</div>
               </div>
               <div>
-                <div className="text-[36px] font-bold text-[#f97316] mb-1">24hr</div>
+                <div className="text-[36px] font-bold text-[#0f172a] mb-1">24hr</div>
                 <div className="text-[15px] text-[#64748b]">SOA Turnaround</div>
               </div>
               <div>
-                <div className="text-[36px] font-bold text-[#10b981] mb-1">4+ hrs</div>
+                <div className="text-[36px] font-bold text-[#0f172a] mb-1">4+ hrs</div>
                 <div className="text-[15px] text-[#64748b]">Adviser Prep Time Saved</div>
               </div>
             </div>
