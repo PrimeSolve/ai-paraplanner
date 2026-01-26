@@ -314,20 +314,20 @@ export default function AdminAdviceGroups() {
                         <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
                           Manage
                         </button>
-                        <div className="relative">
+                        <div className="relative group/menu">
                           <button className="p-1.5 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
                             <MoreHorizontal className="w-4 h-4" />
                           </button>
-                          <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-xl opacity-0 invisible hover:opacity-100 hover:visible transition-all z-50 pointer-events-none hover:pointer-events-auto" onMouseEnter={(e) => e.currentTarget.parentElement.classList.add('visible')} onMouseLeave={(e) => e.currentTarget.parentElement.classList.remove('visible')}>
-                            <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-slate-700 border-b border-slate-100">
+                          <div className="invisible group-hover/menu:visible absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-2xl z-[9999]">
+                            <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-slate-700 border-b border-slate-100 transition-colors">
                               <FileText className="w-4 h-4" />
                               Edit Template
                             </button>
-                            <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-slate-700 border-b border-slate-100">
+                            <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-slate-700 border-b border-slate-100 transition-colors">
                               <Users className="w-4 h-4" />
                               View Advisers
                             </button>
-                            <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-red-700">
+                            <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-red-700 transition-colors">
                               Delete Group
                             </button>
                           </div>
