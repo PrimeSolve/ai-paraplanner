@@ -214,14 +214,20 @@ export default function AdminCompleted() {
                 className="h-11 w-40 border-slate-200"
               />
             </div>
-            <button className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2">
-              Jane Brown
-              <ChevronDown className="w-4 h-4" />
-            </button>
-            <button className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2">
-              Sarah Chen
-              <ChevronDown className="w-4 h-4" />
-            </button>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Advice Group</span>
+              <button className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
+                PrimeSolve Group
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Completed By</span>
+              <button className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
+                Sarah Chen
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
