@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 export default function PublicHome() {
   const [scrolled, setScrolled] = useState(false);
   const [showWhitepaper, setShowWhitepaper] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
 
   useEffect(() => {
@@ -21,6 +23,8 @@ export default function PublicHome() {
     e.preventDefault();
     toast.success('Whitepaper sent to your email!');
     setShowWhitepaper(false);
+    setFirstName('');
+    setLastName('');
     setEmail('');
   };
 
@@ -385,37 +389,79 @@ export default function PublicHome() {
                 Your AI avatar. <span className="text-[#f97316]">Explaining your advice.</span>
               </h2>
               <p className="text-[17px] text-[#334155] leading-relaxed mb-6">
-                Imagine your client receiving their SOA as a beautiful, interactive HTML document. They click play, and a digital version of you walks them through every recommendation.
+                Imagine your client receiving their SOA as a beautiful, interactive HTML document. They click play, and a digital version of you walks them through every recommendation, every strategy, every fee.
               </p>
-              <p className="text-[17px] text-[#334155] leading-relaxed mb-6">
-                They can ask questions anytime. The avatar has been fully trained on the SOA, your methodology, and their specific situation. It explains trade-offs, clarifies jargon, and helps them truly understand the advice.
-              </p>
-              <div className="space-y-3">
+              <div className="space-y-3 mb-8">
                 <div className="flex items-center gap-3">
                   <div className="w-6 h-6 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs font-bold">✓</div>
-                  <span className="text-[15px] text-[#334155]">Looks like you, sounds like you, explains like you would</span>
+                  <span className="text-[15px] text-[#334155]">Ask questions anytime — The AI knows your SOA inside out</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-6 h-6 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs font-bold">✓</div>
-                  <span className="text-[15px] text-[#334155]">Fully trained on the SOA and your advice process</span>
+                  <span className="text-[15px] text-[#334155]">Available 24/7 — Clients review advice on their schedule</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-6 h-6 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs font-bold">✓</div>
-                  <span className="text-[15px] text-[#334155]">Available 24/7 to answer client questions</span>
+                  <span className="text-[15px] text-[#334155]">Consistent messaging — Every explanation is accurate and compliant</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-6 h-6 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs font-bold">✓</div>
-                  <span className="text-[15px] text-[#334155]">Every conversation tracked for compliance</span>
+                  <span className="text-[15px] text-[#334155]">Beautiful presentation — Not PDF junk, but engaging HTML</span>
                 </div>
               </div>
+              <button 
+                onClick={() => base44.auth.redirectToLogin()}
+                className="px-8 py-4 rounded-[12px] text-[17px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all"
+              >
+                Create Your Avatar
+              </button>
             </div>
             <div>
-              <div className="rounded-2xl overflow-hidden shadow-2xl">
-                <iframe 
-                  src="https://app.heygen.com/embed/67699df2c2294868a5b586c42f2fa217"
-                  className="w-full aspect-video border-0"
-                  allow="fullscreen"
-                />
+              <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                {/* Chat Header */}
+                <div className="bg-gradient-to-r from-[#3b82f6] to-[#1d4ed8] p-4">
+                  <h3 className="text-white font-bold text-[17px]">AI Fact Find Assistant</h3>
+                  <p className="text-white/80 text-[14px]">Goals Discovery Session</p>
+                </div>
+                
+                {/* Chat Body */}
+                <div className="p-6 space-y-4 bg-slate-50">
+                  {/* Avatar Message 1 */}
+                  <div className="flex gap-3 items-start">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#3b82f6] to-[#1d4ed8] flex items-center justify-center text-white font-bold flex-shrink-0">
+                      AI
+                    </div>
+                    <div className="bg-[#f8fafc] rounded-2xl rounded-tl-sm p-4 max-w-[75%]">
+                      <p className="text-[14px] text-slate-700 leading-relaxed">
+                        Hi Sarah, we have successfully captured your relevant financial data now. We are going to switch gears now and work together to define your lifestyle and financial goals. Ready to get started?
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* User Message */}
+                  <div className="flex gap-3 items-start justify-end">
+                    <div className="bg-gradient-to-r from-[#3b82f6] to-[#1d4ed8] rounded-2xl rounded-tr-sm p-4 max-w-[75%]">
+                      <p className="text-[14px] text-white leading-relaxed">
+                        Sure, ask me what you need to know.
+                      </p>
+                    </div>
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#f97316] to-[#ea580c] flex items-center justify-center text-white font-bold flex-shrink-0">
+                      S
+                    </div>
+                  </div>
+
+                  {/* Avatar Message 2 */}
+                  <div className="flex gap-3 items-start">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#3b82f6] to-[#1d4ed8] flex items-center justify-center text-white font-bold flex-shrink-0">
+                      AI
+                    </div>
+                    <div className="bg-[#f8fafc] rounded-2xl rounded-tl-sm p-4 max-w-[75%]">
+                      <p className="text-[14px] text-slate-700 leading-relaxed">
+                        Great. We can see you have children currently in grade 5 and grade 3. Have you decided on where they might go to high school?
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -423,173 +469,164 @@ export default function PublicHome() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 bg-white">
-        <div className="max-w-[1200px] mx-auto px-12">
-          <div className="text-center mb-16">
-            <h2 className="font-['Playfair_Display'] text-[52px] font-semibold text-[#0f172a] mb-4">
-              Simple, Transparent <span className="text-[#f97316]">Pricing</span>
-            </h2>
-            <p className="text-[19px] text-[#334155]">
-              Choose the plan that fits your practice
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-8">
-            {/* Starter */}
-            <div className="bg-white border-2 border-[#e2e8f0] rounded-2xl p-8 hover:border-[#3b82f6] hover:shadow-xl transition-all">
-              <div className="text-sm font-bold text-[#3b82f6] uppercase tracking-wide mb-2">Starter</div>
-              <div className="mb-6">
-                <span className="text-[48px] font-bold text-[#0f172a]">$299</span>
-                <span className="text-[#64748b]">/month</span>
-              </div>
-              <div className="space-y-3 mb-8">
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs">✓</div>
-                  <span className="text-[15px] text-[#334155]">Up to 10 SOAs per month</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs">✓</div>
-                  <span className="text-[15px] text-[#334155]">AI fact find & client portal</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs">✓</div>
-                  <span className="text-[15px] text-[#334155]">1 adviser account</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs">✓</div>
-                  <span className="text-[15px] text-[#334155]">Email support</span>
-                </div>
-              </div>
-              <button 
-                onClick={() => base44.auth.redirectToLogin()}
-                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-[#0f172a] bg-white border-2 border-[#e2e8f0] hover:border-[#0f172a] transition-all"
-              >
-                Get Started
-              </button>
-            </div>
-
-            {/* Professional */}
-            <div className="bg-gradient-to-br from-[#3b82f6] to-[#1d4ed8] rounded-2xl p-8 text-white transform scale-105 shadow-2xl">
-              <div className="text-sm font-bold text-white/90 uppercase tracking-wide mb-2">Professional</div>
-              <div className="mb-6">
-                <span className="text-[48px] font-bold">$599</span>
-                <span className="text-white/80">/month</span>
-              </div>
-              <div className="space-y-3 mb-8">
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-white text-xs">✓</div>
-                  <span className="text-[15px]">Up to 25 SOAs per month</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-white text-xs">✓</div>
-                  <span className="text-[15px]">AI avatar included</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-white text-xs">✓</div>
-                  <span className="text-[15px]">Up to 3 adviser accounts</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-white text-xs">✓</div>
-                  <span className="text-[15px]">Priority support</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-white text-xs">✓</div>
-                  <span className="text-[15px]">Custom templates</span>
-                </div>
-              </div>
-              <button 
-                onClick={() => base44.auth.redirectToLogin()}
-                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-[#3b82f6] bg-white hover:bg-white/90 transition-all"
-              >
-                Get Started
-              </button>
-            </div>
-
-            {/* Enterprise */}
-            <div className="bg-white border-2 border-[#e2e8f0] rounded-2xl p-8 hover:border-[#3b82f6] hover:shadow-xl transition-all">
-              <div className="text-sm font-bold text-[#3b82f6] uppercase tracking-wide mb-2">Enterprise</div>
-              <div className="mb-6">
-                <span className="text-[48px] font-bold text-[#0f172a]">Custom</span>
-              </div>
-              <div className="space-y-3 mb-8">
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs">✓</div>
-                  <span className="text-[15px] text-[#334155]">Unlimited SOAs</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs">✓</div>
-                  <span className="text-[15px] text-[#334155]">Unlimited adviser accounts</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs">✓</div>
-                  <span className="text-[15px] text-[#334155]">White-label options</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs">✓</div>
-                  <span className="text-[15px] text-[#334155]">Dedicated account manager</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs">✓</div>
-                  <span className="text-[15px] text-[#334155]">API access</span>
-                </div>
-              </div>
-              <button 
-                onClick={() => base44.auth.redirectToLogin()}
-                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-[#0f172a] bg-white border-2 border-[#e2e8f0] hover:border-[#0f172a] transition-all"
-              >
-                Contact Sales
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Technical Infrastructure Section */}
-      <section className="py-24 bg-[#0f172a]">
+      <section id="pricing" className="py-24 bg-[#0f172a]">
         <div className="max-w-[1200px] mx-auto px-12">
           <div className="text-center mb-16">
             <h2 className="font-['Playfair_Display'] text-[52px] font-semibold text-white mb-4">
-              Built on <span className="text-[#22d3ee]">PrimeSolve</span>
+              Simple, transparent <span className="text-[#22d3ee]">pricing</span>
             </h2>
-            <p className="text-[19px] text-[#94a3b8] max-w-[700px] mx-auto">
-              The most advanced cashflow modelling and advice optimisation engine in Australia
+            <p className="text-[19px] text-[#94a3b8]">
+              Start with pay-as-you-go, upgrade when you're ready.
             </p>
           </div>
 
           <div className="grid grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="text-[48px] font-bold text-[#22d3ee] mb-2">50+</div>
-              <div className="text-[15px] text-[#94a3b8]">Strategy scenarios modelled</div>
+            {/* Tier 1 - Scaled Advice */}
+            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all">
+              <div className="text-sm font-bold text-[#22d3ee] uppercase tracking-wide mb-2">Scaled Advice</div>
+              <div className="mb-6">
+                <span className="text-[48px] font-bold text-white">$395</span>
+                <div className="text-[#94a3b8] text-[15px]">per transaction</div>
+              </div>
+              <div className="space-y-3 mb-8">
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-[#e2e8f0]">AI Fact Find with pre-fill</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-[#e2e8f0]">AI SOA Request builder</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-[#e2e8f0]">Human paraplanner review</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-[#e2e8f0]">48-hour turnaround</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-[#e2e8f0]">PDF + Word + HTML delivery</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => base44.auth.redirectToLogin()}
+                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-transparent border-2 border-white/20 hover:border-white hover:bg-white hover:text-[#0f172a] transition-all"
+              >
+                Get Started
+              </button>
             </div>
-            <div className="text-center">
-              <div className="text-[48px] font-bold text-[#22d3ee] mb-2">100%</div>
-              <div className="text-[15px] text-[#94a3b8]">Compliant calculations</div>
+
+            {/* Tier 2 - Comprehensive Advice (FEATURED) */}
+            <div className="bg-gradient-to-br from-[#22d3ee]/10 to-[#3b82f6]/10 border-2 border-[#22d3ee] rounded-2xl p-8 transform scale-105 shadow-[0_0_40px_rgba(34,211,238,0.3)] relative">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#22d3ee] to-[#3b82f6] text-[#0f172a] px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
+                Most Popular
+              </div>
+              <div className="text-sm font-bold text-[#22d3ee] uppercase tracking-wide mb-2">Comprehensive Advice</div>
+              <div className="mb-6">
+                <span className="text-[48px] font-bold text-white">$695</span>
+                <div className="text-[#94a3b8] text-[15px]">per transaction</div>
+              </div>
+              <div className="space-y-3 mb-8">
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-white font-medium">Everything in Tier 1</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-white">Custom AI avatar</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-white">SOA AI walkthroughs</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-white">Unlimited strategy recommendations</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-white">Unlimited cashflow models</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-white">Stress test report</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => base44.auth.redirectToLogin()}
+                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all"
+              >
+                Get Started
+              </button>
             </div>
-            <div className="text-center">
-              <div className="text-[48px] font-bold text-[#22d3ee] mb-2">24hr</div>
-              <div className="text-[15px] text-[#94a3b8]">Average turnaround</div>
+
+            {/* Tier 3 - Enterprise */}
+            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all">
+              <div className="text-sm font-bold text-[#22d3ee] uppercase tracking-wide mb-2">Enterprise</div>
+              <div className="mb-6">
+                <span className="text-[48px] font-bold text-white">Custom</span>
+                <div className="text-[#94a3b8] text-[15px]">volume pricing</div>
+              </div>
+              <div className="space-y-3 mb-8">
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-[#e2e8f0]">For advice groups</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-[#e2e8f0]">Prepaid client packages</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-[#e2e8f0]">Volume discounts available</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-[#e2e8f0]">Dedicated support</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <span className="text-[15px] text-[#e2e8f0]">Custom integrations</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => base44.auth.redirectToLogin()}
+                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-transparent border-2 border-white/20 hover:border-white hover:bg-white hover:text-[#0f172a] transition-all"
+              >
+                Contact Us
+              </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-[#f97316] to-[#ea580c]">
-        <div className="max-w-[800px] mx-auto px-12 text-center">
-          <h2 className="font-['Playfair_Display'] text-[52px] font-semibold text-white mb-6">
-            Ready to scale your practice?
-          </h2>
-          <p className="text-[20px] text-white/90 mb-10">
-            Join leading Australian financial advisers using AI Paraplanner
-          </p>
-          <button 
-            onClick={() => base44.auth.redirectToLogin()}
-            className="px-10 py-5 rounded-[12px] text-[18px] font-semibold text-[#f97316] bg-white hover:bg-white/90 hover:-translate-y-1 shadow-xl transition-all"
-          >
-            Get Started Today
-          </button>
+      {/* Footer */}
+      <footer className="py-12 bg-[#0a0f1a] border-t border-white/10">
+        <div className="max-w-[1400px] mx-auto px-12">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-[42px] h-[42px] bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] rounded-xl flex items-center justify-center font-bold text-white text-sm shadow-lg">
+                AI
+              </div>
+              <span className="font-['Playfair_Display'] text-[22px] font-semibold text-white">
+                AI <span className="text-[#3b82f6]">Paraplanner</span>
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-8">
+              <a href="#" className="text-[15px] text-[#94a3b8] hover:text-white transition-colors no-underline">Privacy Policy</a>
+              <a href="#" className="text-[15px] text-[#94a3b8] hover:text-white transition-colors no-underline">Terms of Service</a>
+              <a href="#" className="text-[15px] text-[#94a3b8] hover:text-white transition-colors no-underline">Contact</a>
+            </div>
+          </div>
+          
+          <div className="mt-8 pt-8 border-t border-white/10 text-center">
+            <p className="text-[14px] text-[#64748b]">© 2026 AI Paraplanner. All rights reserved.</p>
+          </div>
         </div>
-      </section>
+      </footer>
 
       {/* Whitepaper Modal */}
       <Dialog open={showWhitepaper} onOpenChange={setShowWhitepaper}>
@@ -608,12 +645,34 @@ export default function PublicHome() {
           </p>
           <form onSubmit={handleWhitepaperSubmit} className="space-y-4">
             <div>
+              <label className="block text-sm font-semibold text-slate-900 mb-2">First Name</label>
+              <Input 
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="John"
+                required
+                className="px-4 py-3 border-2 border-slate-200 rounded-[10px] focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-900 mb-2">Last Name</label>
+              <Input 
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Smith"
+                required
+                className="px-4 py-3 border-2 border-slate-200 rounded-[10px] focus:border-blue-500"
+              />
+            </div>
+            <div>
               <label className="block text-sm font-semibold text-slate-900 mb-2">Email Address</label>
               <Input 
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
+                placeholder="john@example.com"
                 required
                 className="px-4 py-3 border-2 border-slate-200 rounded-[10px] focus:border-blue-500"
               />
