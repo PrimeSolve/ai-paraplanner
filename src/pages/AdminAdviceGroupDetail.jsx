@@ -9,22 +9,31 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Building2, Users, FileText, Settings, Mail, Phone } from 'lucide-react';
+import { ArrowLeft, Building2, Users, FileText, Settings, Mail, Phone, Trash2, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
 export default function AdminAdviceGroupDetail() {
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
     contact_email: '',
     contact_phone: '',
     status: 'active',
-    subscription_tier: 'professional'
+    subscription_tier: 'professional',
+    logo_url: '',
+    abn: '',
+    afsl: '',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      postcode: ''
+    }
   });
 
   useEffect(() => {
@@ -46,7 +55,16 @@ export default function AdminAdviceGroupDetail() {
           contact_email: groupData.contact_email || '',
           contact_phone: groupData.contact_phone || '',
           status: groupData.status || 'active',
-          subscription_tier: groupData.subscription_tier || 'professional'
+          subscription_tier: groupData.subscription_tier || 'professional',
+          logo_url: groupData.logo_url || '',
+          abn: groupData.abn || '',
+          afsl: groupData.afsl || '',
+          address: groupData.address || {
+            street: '',
+            city: '',
+            state: '',
+            postcode: ''
+          }
         });
       }
     } catch (error) {
@@ -56,14 +74,16 @@ export default function AdminAdviceGroupDetail() {
     }
   };
 
-  const handleEditSubmit = async (e) => {
+  const handleSaveChanges = async (e) => {
     e.preventDefault();
+    setIsSaving(true);
     try {
       await base44.entities.AdviceGroup.update(group.id, formData);
-      setEditDialogOpen(false);
       loadGroup();
     } catch (error) {
       console.error('Failed to update advice group:', error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -79,202 +99,196 @@ export default function AdminAdviceGroupDetail() {
 
   return (
     <AdminLayout currentPage="AdminAdviceGroups">
-      <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
-        <div className="flex items-center gap-4 mb-4">
-          <Link to={createPageUrl('AdminAdviceGroups')}>
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-          </Link>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-indigo-100 rounded-xl flex items-center justify-center text-2xl">
-            🏢
-          </div>
-          <div className="flex-1">
-            <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">
-              {group?.name || 'Advice Group'}
-            </h1>
-            <div className="flex items-center gap-4 text-sm text-slate-600 mt-1">
-              <span className="flex items-center gap-1">
-                <Users className="w-4 h-4" />
-                15 advisers
-              </span>
-              <span className="flex items-center gap-1">
-                <Users className="w-4 h-4" />
-                243 clients
-              </span>
-              <span className="flex items-center gap-1">
-                <FileText className="w-4 h-4" />
-                127 SOAs
-              </span>
+      {/* Header */}
+      <div className="bg-white px-8 py-4 border-b border-slate-200 sticky top-0 z-10">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <Link to={createPageUrl('AdminAdviceGroups')} className="text-sm text-slate-600 hover:text-slate-900 no-underline">Advice Groups</Link>
+            <h1 className="font-['Playfair_Display'] text-2xl font-semibold text-slate-900 mt-1">{group?.name || 'Advice Group'}</h1>
+            <div className="flex items-center gap-3 mt-2 text-sm">
+              <span className="text-slate-600">AFSL 123456</span>
+              <span className="text-slate-600">5 advisers</span>
+              <Badge className="bg-cyan-100 text-cyan-700">Custom template</Badge>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setActiveTab('settings')}>
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
-            </Button>
-            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => setEditDialogOpen(true)}>
-              Edit Details
-            </Button>
-          </div>
+          <button className="text-slate-600 hover:text-red-600 transition-colors flex items-center gap-2 px-4 py-2">
+            <Trash2 className="w-4 h-4" />
+            <span className="text-sm font-medium">Delete Group</span>
+          </button>
+        </div>
 
-          <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Edit Advice Group Details</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleEditSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Group Name *</Label>
-                    <Input
-                      required
-                      value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      placeholder="e.g., PrimeSolve Group"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Slug</Label>
-                    <Input
-                      value={formData.slug}
-                      onChange={(e) => setFormData({...formData, slug: e.target.value})}
-                      placeholder="e.g., primesolve"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Contact Email</Label>
-                    <Input
-                      type="email"
-                      value={formData.contact_email}
-                      onChange={(e) => setFormData({...formData, contact_email: e.target.value})}
-                      placeholder="contact@advicegroup.com"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Contact Phone</Label>
-                    <Input
-                      value={formData.contact_phone}
-                      onChange={(e) => setFormData({...formData, contact_phone: e.target.value})}
-                      placeholder="+61 2 1234 5678"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Status</Label>
-                    <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                        <SelectItem value="suspended">Suspended</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Subscription Tier</Label>
-                    <Select value={formData.subscription_tier} onValueChange={(value) => setFormData({...formData, subscription_tier: value})}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="starter">Starter</SelectItem>
-                        <SelectItem value="professional">Professional</SelectItem>
-                        <SelectItem value="enterprise">Enterprise</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">
-                    Save Changes
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+        {/* Tabs */}
+        <div className="flex gap-8 border-b border-slate-200">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`pb-3 px-0 font-medium text-sm transition-colors ${
+              activeTab === 'overview'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('template')}
+            className={`pb-3 px-0 font-medium text-sm transition-colors ${
+              activeTab === 'template'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Template
+          </button>
+          <button
+            onClick={() => setActiveTab('members')}
+            className={`pb-3 px-0 font-medium text-sm transition-colors flex items-center gap-2 ${
+              activeTab === 'members'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Members
+            <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">5</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`pb-3 px-0 font-medium text-sm transition-colors ${
+              activeTab === 'settings'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Settings
+          </button>
         </div>
       </div>
 
       <div className="p-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="advisers">Advisers</TabsTrigger>
-            <TabsTrigger value="clients">Clients</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (
+          <form onSubmit={handleSaveChanges} className="space-y-6 max-w-4xl">
+            {/* Group Details Section */}
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900 mb-6">Group Details</h2>
 
-          <TabsContent value="overview">
-            <div className="grid grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Contact Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="w-4 h-4 text-slate-400" />
-                    <span>{group?.contact_email || 'info@primesolve.com.au'}</span>
+              {/* Logo Upload */}
+              <div className="mb-8 pb-8 border-b border-slate-200">
+                <p className="text-sm font-semibold text-slate-900 mb-4">Group Logo</p>
+                <div className="flex items-start gap-6">
+                  <div className="w-20 h-20 rounded-lg border-2 border-slate-300 flex items-center justify-center text-4xl flex-shrink-0">
+                    🏢
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="w-4 h-4 text-slate-400" />
-                    <span>{group?.contact_phone || '+61 2 9876 5432'}</span>
+                  <div className="space-y-2">
+                    <button type="button" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+                      Upload New Logo
+                    </button>
+                    <button type="button" className="block text-sm font-semibold text-slate-700 hover:text-slate-900">
+                      Remove
+                    </button>
+                    <p className="text-xs text-slate-600 mt-2">PNG or SVG, max 2MB</p>
                   </div>
-                  <div className="pt-3 border-t">
-                    <Badge variant={group?.status === 'active' ? 'default' : 'secondary'}>
-                      {group?.status || 'Active'}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              <Card className="col-span-2">
-                <CardHeader>
-                  <CardTitle className="text-lg">Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-sm text-slate-600">Activity tracking coming soon...</div>
-                </CardContent>
-              </Card>
+              {/* Form Fields */}
+              <div className="grid grid-cols-2 gap-8 mb-8">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2">Group Name</label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2">AFSL Number</label>
+                  <input
+                    type="text"
+                    value={formData.afsl}
+                    onChange={(e) => setFormData({...formData, afsl: e.target.value})}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-8 mb-8">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2">ABN</label>
+                  <input
+                    type="text"
+                    value={formData.abn}
+                    onChange={(e) => setFormData({...formData, abn: e.target.value})}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2">Primary Contact Email</label>
+                  <input
+                    type="email"
+                    value={formData.contact_email}
+                    onChange={(e) => setFormData({...formData, contact_email: e.target.value})}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">Business Address</label>
+                <textarea
+                  value={`${formData.address?.street || ''}\n${formData.address?.city || ''} ${formData.address?.state || ''} ${formData.address?.postcode || ''}`}
+                  onChange={(e) => {
+                    const lines = e.target.value.split('\n');
+                    setFormData({
+                      ...formData,
+                      address: {
+                        street: lines[0] || '',
+                        city: lines[1]?.split(' ')[0] || '',
+                        state: lines[1]?.split(' ')[1] || '',
+                        postcode: lines[1]?.split(' ')[2] || ''
+                      }
+                    });
+                  }}
+                  rows="3"
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                />
+              </div>
             </div>
-          </TabsContent>
 
-          <TabsContent value="advisers">
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-sm text-slate-600">Advisers list coming soon...</div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+            {/* Buttons */}
+            <div className="flex justify-end gap-3 pt-6 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => loadGroup()}
+                className="px-6 py-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg text-sm font-semibold transition-colors"
+              >
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        )}
 
-          <TabsContent value="clients">
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-sm text-slate-600">Clients list coming soon...</div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+        {/* Template Tab */}
+        {activeTab === 'template' && (
+          <div className="text-slate-600">Template configuration coming soon...</div>
+        )}
 
-          <TabsContent value="settings">
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-sm text-slate-600">Settings coming soon...</div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        {/* Members Tab */}
+        {activeTab === 'members' && (
+          <div className="text-slate-600">Members list coming soon...</div>
+        )}
+
+        {/* Settings Tab */}
+        {activeTab === 'settings' && (
+          <div className="text-slate-600">Settings coming soon...</div>
+        )}
       </div>
     </AdminLayout>
   );
