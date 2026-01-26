@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import AdminLayout from '../components/admin/AdminLayout';
+import ManageGroupModal from '../components/admin/ManageGroupModal';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,8 @@ export default function AdminAdviceGroups() {
   const [searchTerm, setSearchTerm] = useState('');
   const [templateFilter, setTemplateFilter] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [manageModalOpen, setManageModalOpen] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -311,7 +314,12 @@ export default function AdminAdviceGroups() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+                        <button 
+                          onClick={() => {
+                            setSelectedGroup(group);
+                            setManageModalOpen(true);
+                          }}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
                           Manage
                         </button>
                         <div className="relative group/menu">
@@ -356,6 +364,13 @@ export default function AdminAdviceGroups() {
             </div>
           </div>
         </div>
+
+        {/* Manage Group Modal */}
+        <ManageGroupModal 
+          open={manageModalOpen} 
+          onOpenChange={setManageModalOpen}
+          group={selectedGroup}
+        />
       </div>
     </AdminLayout>
   );
