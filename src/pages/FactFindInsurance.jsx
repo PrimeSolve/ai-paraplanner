@@ -228,12 +228,18 @@ export default function FactFindInsurance() {
                         </button>
                       ))}
                     </div>
-                    {policies.length > 0 && (
-                      <Button onClick={removePolicy} size="sm" variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">
-                        <Trash2 className="w-3 h-3 mr-1" />
-                        Remove
+                    <div className="flex items-center gap-2">
+                      <Button onClick={addPolicy} size="sm" className="bg-green-600 hover:bg-green-700 text-white">
+                        <Plus className="w-3 h-3 mr-1" />
+                        Add
                       </Button>
-                    )}
+                      {policies.length > 0 && (
+                        <Button onClick={removePolicy} size="sm" variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Remove
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -630,16 +636,6 @@ export default function FactFindInsurance() {
                 </Card>
               )}
             </>
-          )}
-
-          {/* ADD POLICY BUTTON */}
-          {policies.length > 0 && (
-            <div className="flex justify-center">
-              <Button onClick={addPolicy} className="bg-green-600 hover:bg-green-700 text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Policy
-              </Button>
-            </div>
           )}
 
           {/* NAVIGATION */}
