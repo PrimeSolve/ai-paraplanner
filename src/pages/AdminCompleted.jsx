@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import AdminLayout from '../components/admin/AdminLayout';
 import { Input } from '@/components/ui/input';
-import { CheckCircle2, Award, Clock, Star, Search, Calendar, Download, MoreHorizontal, ChevronDown } from 'lucide-react';
+import { CheckCircle2, Award, Clock, Star, Search, Calendar, Download, MoreHorizontal, ChevronDown, FileText, Clipboard } from 'lucide-react';
 
 export default function AdminCompleted() {
   const [loading, setLoading] = useState(true);
@@ -296,10 +296,18 @@ export default function AdminCompleted() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors">
+                        <button className="flex items-center gap-1.5 px-3 py-1.5 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-medium transition-colors">
+                          <FileText className="w-3.5 h-3.5" />
+                          View Details
+                        </button>
+                        <button className="flex items-center gap-1.5 px-3 py-1.5 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-medium transition-colors">
+                          <Clipboard className="w-3.5 h-3.5" />
+                          View Fact Find
+                        </button>
+                        <button className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 transition-colors">
                           Download
                         </button>
-                        <button className="p-2 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
+                        <button className="p-1.5 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
                           <MoreHorizontal className="w-4 h-4" />
                         </button>
                       </div>
