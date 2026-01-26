@@ -413,23 +413,37 @@ export default function FactFindAdviceReason() {
               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 rounded-t-lg">
                 <h4 className="font-bold text-white text-lg">📋 Specify your reasons for seeking advice</h4>
               </div>
-              <CardContent className="p-6 space-y-6">
-                {REASONS_GROUPS.map((group, idx) => (
-                  <div key={idx}>
-                    <h5 className="font-bold text-slate-700 mb-2 text-sm uppercase tracking-wide">{group.title}</h5>
-                    <div className="space-y-1">
-                      {group.items.map((item) => (
-                        <label key={item.value} className="flex items-center gap-2 py-1.5 cursor-pointer">
-                          <Checkbox
-                            checked={reasons.includes(item.value)}
-                            onCheckedChange={() => toggleReason(item.value)}
-                          />
-                          <span className="text-sm text-slate-700">{item.label}</span>
-                        </label>
-                      ))}
+              <CardContent className="p-6">
+                {/* 3-COLUMN GRID OF GROUP CARDS */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {REASONS_GROUPS.map((group, idx) => (
+                    <div 
+                      key={idx} 
+                      className="border border-slate-200 rounded-lg bg-white overflow-hidden hover:border-slate-300 hover:shadow-md transition-all"
+                    >
+                      {/* Group header */}
+                      <div className="px-4 py-3 border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white">
+                        <h5 className="font-bold text-slate-800 text-sm">{group.title}</h5>
+                      </div>
+                      {/* Group items - checkboxes */}
+                      <div className="p-4 space-y-3">
+                        {group.items.map((item) => (
+                          <label 
+                            key={item.value} 
+                            className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 p-1 rounded transition-colors"
+                          >
+                            <Checkbox
+                              checked={reasons.includes(item.value)}
+                              onCheckedChange={() => toggleReason(item.value)}
+                              className="h-[18px] w-[18px]"
+                            />
+                            <span className="text-sm text-slate-700">{item.label}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </CardContent>
             </Card>
           ) : (
