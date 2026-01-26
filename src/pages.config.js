@@ -51,6 +51,7 @@ import PublicAbout from './pages/PublicAbout';
 import PublicContact from './pages/PublicContact';
 import PublicHome from './pages/PublicHome';
 import PublicPricing from './pages/PublicPricing';
+import Register from './pages/Register';
 import SOAManagement from './pages/SOAManagement';
 import SOARequestAssumptions from './pages/SOARequestAssumptions';
 import SOARequestDetails from './pages/SOARequestDetails';
@@ -63,7 +64,6 @@ import SOARequestScope from './pages/SOARequestScope';
 import SOARequestStrategy from './pages/SOARequestStrategy';
 import SOARequestTransactions from './pages/SOARequestTransactions';
 import SOARequestWelcome from './pages/SOARequestWelcome';
-import Register from './pages/Register';
 import SignIn from './pages/SignIn';
 import __Layout from './Layout.jsx';
 
@@ -122,6 +122,7 @@ export const PAGES = {
     "PublicContact": PublicContact,
     "PublicHome": PublicHome,
     "PublicPricing": PublicPricing,
+    "Register": Register,
     "SOAManagement": SOAManagement,
     "SOARequestAssumptions": SOARequestAssumptions,
     "SOARequestDetails": SOARequestDetails,
@@ -134,7 +135,6 @@ export const PAGES = {
     "SOARequestStrategy": SOARequestStrategy,
     "SOARequestTransactions": SOARequestTransactions,
     "SOARequestWelcome": SOARequestWelcome,
-    "Register": Register,
     "SignIn": SignIn,
 }
 
