@@ -29,9 +29,9 @@ export default function PublicHome() {
   };
 
   return (
-    <div className="font-['DM_Sans']">
+    <div className="font-['Poppins']">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
         
         :root {
           --navy-deep: #0a0f1a;
@@ -94,9 +94,9 @@ export default function PublicHome() {
         <img 
           src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/775a01db7_shutterstock_1125352451.jpg"
           alt="Background"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
         />
-        <div className="absolute inset-0 bg-white/30" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#f0f4f8]/85 via-[#e8eef5]/80 to-[#dce5f0]/85" />
         <div className="max-w-[1400px] mx-auto grid grid-cols-2 gap-20 items-center relative z-10">
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
             <button 
@@ -107,11 +107,13 @@ export default function PublicHome() {
               Download: The Future of Paraplanning
             </button>
 
-            <h1 className="font-['Playfair_Display'] text-[60px] leading-[1.15] font-semibold text-[#0f172a] mb-6">
-              Paraplanning that scales with your practice
+            <h1 className="font-['Playfair_Display'] text-[60px] leading-[1.15] font-semibold mb-6">
+              <span className="text-[#0f172a]">Paraplanning that </span>
+              <span className="text-[#3b82f6]">scales</span>
+              <span className="text-[#0f172a]"> with your practice</span>
             </h1>
 
-            <p className="text-[19px] text-[#334155] leading-[1.7] mb-9 max-w-[520px]">
+            <p className="text-[19px] text-[#0f172a] leading-[1.7] mb-9 max-w-[520px]">
               AI handles the preparation. Humans ensure the quality. Your clients get advice they actually understand.
             </p>
 
