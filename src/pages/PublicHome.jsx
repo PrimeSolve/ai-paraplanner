@@ -393,32 +393,47 @@ export default function PublicHome() {
           <div className="grid grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="font-['Playfair_Display'] text-[48px] font-semibold text-[#0f172a] mb-4 leading-tight">
-                Your AI avatar. <span className="text-[#f97316]">Explaining your advice.</span>
+                Your AI avatar.
               </h2>
-              <p className="text-[17px] text-[#334155] leading-relaxed mb-6">
+              <h3 className="font-['Playfair_Display'] text-[48px] font-semibold text-[#f97316] mb-6 leading-tight">
+                Explaining your advice.
+              </h3>
+              <p className="text-[17px] text-[#334155] leading-relaxed mb-8">
                 Imagine your client receiving their SOA as a beautiful, interactive HTML document. They click play, and a digital version of you walks them through every recommendation, every strategy, every fee.
               </p>
-              <div className="space-y-3 mb-8">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs font-bold">✓</div>
-                  <span className="text-[15px] text-[#334155]">Ask questions anytime — The AI knows your SOA inside out</span>
+              <div className="space-y-4 mb-8">
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-full bg-[#10b981] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">✓</div>
+                  <div>
+                    <span className="text-[16px] font-bold text-[#0f172a]">Ask questions anytime</span>
+                    <span className="text-[16px] text-[#64748b]"> — The AI knows your SOA inside out</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs font-bold">✓</div>
-                  <span className="text-[15px] text-[#334155]">Available 24/7 — Clients review advice on their schedule</span>
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-full bg-[#10b981] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">✓</div>
+                  <div>
+                    <span className="text-[16px] font-bold text-[#0f172a]">Available 24/7</span>
+                    <span className="text-[16px] text-[#64748b]"> — Clients review advice on their schedule</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs font-bold">✓</div>
-                  <span className="text-[15px] text-[#334155]">Consistent messaging — Every explanation is accurate and compliant</span>
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-full bg-[#10b981] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">✓</div>
+                  <div>
+                    <span className="text-[16px] font-bold text-[#0f172a]">Consistent messaging</span>
+                    <span className="text-[16px] text-[#64748b]"> — Every explanation is accurate and compliant</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs font-bold">✓</div>
-                  <span className="text-[15px] text-[#334155]">Beautiful presentation — Not PDF junk, but engaging HTML</span>
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-full bg-[#10b981] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">✓</div>
+                  <div>
+                    <span className="text-[16px] font-bold text-[#0f172a]">Beautiful presentation</span>
+                    <span className="text-[16px] text-[#64748b]"> — Not PDF junk, but engaging HTML</span>
+                  </div>
                 </div>
               </div>
               <button 
                 onClick={() => base44.auth.redirectToLogin()}
-                className="px-8 py-4 rounded-[12px] text-[17px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all"
+                className="px-8 py-4 rounded-[12px] text-[17px] font-bold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all"
               >
                 Create Your Avatar
               </button>
@@ -435,12 +450,14 @@ export default function PublicHome() {
                 <div className="p-6 space-y-4 bg-slate-50">
                   {/* Avatar Message 1 */}
                   <div className="flex gap-3 items-start">
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#3b82f6] to-[#1d4ed8] flex items-center justify-center text-white font-bold flex-shrink-0">
-                      AI
-                    </div>
+                    <img 
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/2b487cd9c_image.png"
+                      alt="AI Avatar"
+                      className="w-11 h-11 rounded-full object-cover flex-shrink-0"
+                    />
                     <div className="bg-[#f8fafc] rounded-2xl rounded-tl-sm p-4 max-w-[75%]">
                       <p className="text-[14px] text-slate-700 leading-relaxed">
-                        Hi Sarah, we have successfully captured your relevant financial data now. We are going to switch gears now and work together to define your lifestyle and financial goals. Ready to get started?
+                        "Hi Sarah, we have successfully captured your relevant financial data now. We are going to switch gears now and work together to define your lifestyle and financial goals. Ready to get started?"
                       </p>
                     </div>
                   </div>
@@ -449,7 +466,7 @@ export default function PublicHome() {
                   <div className="flex gap-3 items-start justify-end">
                     <div className="bg-gradient-to-r from-[#3b82f6] to-[#1d4ed8] rounded-2xl rounded-tr-sm p-4 max-w-[75%]">
                       <p className="text-[14px] text-white leading-relaxed">
-                        Sure, ask me what you need to know.
+                        "Sure, ask me what you need to know."
                       </p>
                     </div>
                     <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#f97316] to-[#ea580c] flex items-center justify-center text-white font-bold flex-shrink-0">
@@ -459,12 +476,14 @@ export default function PublicHome() {
 
                   {/* Avatar Message 2 */}
                   <div className="flex gap-3 items-start">
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#3b82f6] to-[#1d4ed8] flex items-center justify-center text-white font-bold flex-shrink-0">
-                      AI
-                    </div>
+                    <img 
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/2b487cd9c_image.png"
+                      alt="AI Avatar"
+                      className="w-11 h-11 rounded-full object-cover flex-shrink-0"
+                    />
                     <div className="bg-[#f8fafc] rounded-2xl rounded-tl-sm p-4 max-w-[75%]">
                       <p className="text-[14px] text-slate-700 leading-relaxed">
-                        Great. We can see you have children currently in grade 5 and grade 3. Have you decided on where they might go to high school?
+                        "Great. We can see you have children currently in grade 5 and grade 3. Have you decided on where they might go to high school?"
                       </p>
                     </div>
                   </div>
