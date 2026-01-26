@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
@@ -6,129 +6,288 @@ import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, MessageSquare, RefreshCw, Info, Plus, Trash2, Edit2, Target } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Target, Plus, Trash2, Edit2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const tabs = [
+const TABS = [
   { id: 'reasons', label: 'Reasons', icon: '📋' },
   { id: 'objectives', label: 'Objectives', icon: '🎯' }
 ];
 
-const adviceReasons = [
+const OBJECTIVE_SUB_TABS = [
   { id: 'retirement', label: 'Retirement', icon: '🎯' },
   { id: 'estate', label: 'Estate', icon: '🏛️' },
-  { id: 'wealth_protection', label: 'Wealth Protection', icon: '🛡️' },
-  { id: 'financial_products', label: 'Financial Products', icon: '💼' },
-  { id: 'detailed_objectives', label: 'Detailed Objectives', icon: '📊' }
+  { id: 'protection', label: 'Wealth Protection', icon: '🛡️' },
+  { id: 'products', label: 'Financial Products', icon: '💼' },
+  { id: 'detailed', label: 'Detailed Objectives', icon: '📊' }
 ];
+
+const REASONS_GROUPS = [
+  {
+    title: 'Wealth creation',
+    items: [
+      { label: 'Portfolio advice', value: '6' },
+      { label: 'Investment property', value: '4' },
+      { label: 'Wealth creation strategies', value: '3' }
+    ]
+  },
+  {
+    title: 'Wealth protection',
+    items: [
+      { label: 'Review insurance needs', value: '7' },
+      { label: 'Review insurance policies', value: '8' }
+    ]
+  },
+  {
+    title: 'Tax/Cashflow',
+    items: [
+      { label: 'How to minimise personal income tax', value: '1' },
+      { label: 'Advice on tax structures', value: '2' },
+      { label: 'Budgeting advice', value: '3' }
+    ]
+  },
+  {
+    title: 'Debt management',
+    items: [
+      { label: 'Debt restructuring', value: '12' },
+      { label: 'Review debt levels', value: '13' },
+      { label: 'Borrowing to invest', value: '14' },
+      { label: 'Borrowing to invest within superannuation', value: '15' }
+    ]
+  },
+  {
+    title: 'Retirement products',
+    items: [
+      { label: 'Review superannuation products', value: '16' },
+      { label: 'Self Managed Superannuation Funds (SMSF)', value: '17' },
+      { label: 'Defined benefit superannuation schemes', value: '18' },
+      { label: 'Retirement income stream strategies', value: '19' }
+    ]
+  },
+  {
+    title: 'Lifestyle',
+    items: [
+      { label: 'Minimise child care/nanny costs', value: '20' },
+      { label: 'Establish retirement timeframe', value: '21' },
+      { label: 'Review impact of reducing work', value: '22' },
+      { label: 'Principal residence property purchase', value: '23' }
+    ]
+  },
+  {
+    title: 'Social security / Aged care',
+    items: [
+      { label: 'Review aged care options', value: '24' },
+      { label: 'Maximise social security entitlement', value: '25' }
+    ]
+  }
+];
+
+const PROTECTION_CHECKBOXES = [
+  { label: 'Provide for your family in the event of your death', field: 'ins_death', value: '52' },
+  { label: 'Protect yourself and your family in the event of Total & Permanent Disablement', field: 'ins_tpd', value: '53' },
+  { label: 'Protect yourself and your family in the event of temporary illness', field: 'ins_income', value: '54' },
+  { label: 'Protect your family against unforseen medical costs arising from a specific illness', field: 'ins_trauma', value: '57' },
+  { label: 'Protect your assets against creditors', field: 'ins_creditors', value: '58' },
+  { label: "Guarantee that a portion of your assets can't lose money", field: 'ins_guarantee', value: '59' }
+];
+
+const SUPER_FEATURES = [
+  { label: 'Access to a low cost product', field: 'super_lowcost', value: '1' },
+  { label: 'Access to a product that offers low cost investment options', field: 'super_lowcost_inv', value: '2' },
+  { label: 'Access to top performing investment managers', field: 'super_top_mgr', value: '3' },
+  { label: 'Access to term deposits', field: 'super_term', value: '4' },
+  { label: 'Access to direct shares - Australian', field: 'super_shares_au', value: '7' },
+  { label: 'Access to direct shares - International', field: 'super_shares_int', value: '8' },
+  { label: 'Access to broad investment menu', field: 'super_broad', value: '9' },
+  { label: 'Access to socially responsible investments', field: 'super_sri', value: '10' },
+  { label: 'Access to model portfolios', field: 'super_model', value: '11' },
+  { label: 'Access to lifecycle investment strategy', field: 'super_lifecycle', value: '12' },
+  { label: 'Automatic rebalancing back to your preferred risk profile', field: 'super_rebalance', value: '13' },
+  { label: 'Able to make tax effective contributions to the product', field: 'super_taxeff', value: '14' },
+  { label: 'Ability to make regular investment switches', field: 'super_switches', value: '15' },
+  { label: 'Up to date portfolio information is available', field: 'super_uptodate', value: '16' },
+  { label: 'Ability to manage tax effectiveness of investment strategy', field: 'super_taxmgmt', value: '17' },
+  { label: 'Access to low cost insurance', field: 'super_lowins', value: '18' },
+  { label: 'Access to insurance features consistent with my requirements', field: 'super_insfeatures', value: '19' }
+];
+
+const OBJECTIVE_TYPES = [
+  { value: '1', label: 'Establish An Emergency Fund' },
+  { value: '2', label: 'Purchase A New Principal Residence' },
+  { value: '3', label: 'Upgrade Your Principal Residence' },
+  { value: '4', label: 'Renovate Your Principal Residence' },
+  { value: '5', label: 'Eliminate Your Mortgage' },
+  { value: '6', label: 'Purchase A Holiday Home' },
+  { value: '7', label: 'Purchase An Investment Property' },
+  { value: '8', label: 'Purchase A Car' },
+  { value: '9', label: 'Purchase Other Consumer Goods' },
+  { value: '10', label: 'Take A Holiday' },
+  { value: '11', label: 'Make A Lump Sum Contribution To Superannuation' },
+  { value: '12', label: 'Commence Regular Contributions To Superannuation' },
+  { value: '13', label: 'Pay School Fees' },
+  { value: '14', label: 'Pay University Fees' },
+  { value: '15', label: 'Provide A Lump Sum Gift' },
+  { value: '16', label: 'Provide Regular Gifts' },
+  { value: '17', label: 'Purchase A Business' },
+  { value: '18', label: 'Sell A Business' },
+  { value: '19', label: 'Commence A Pension' },
+  { value: '20', label: 'Purchase An Annuity' },
+  { value: '21', label: 'Cease Work' },
+  { value: '22', label: 'Change Employment' },
+  { value: '23', label: 'Reduce Work Commitments' },
+  { value: '24', label: 'Receive An Expected Inheritance Or Windfall Gain' },
+  { value: '25', label: 'Receive A Distribution From A Trust' },
+  { value: '26', label: 'Establish A Trust' },
+  { value: '27', label: 'Establish A Company' },
+  { value: '28', label: 'Establish An SMSF' },
+  { value: '29', label: 'Wind Up A Trust' },
+  { value: '30', label: 'Wind Up A Company' },
+  { value: '31', label: 'Wind Up An SMSF' },
+  { value: '32', label: 'Purchase An Aged Care Accommodation Bond' },
+  { value: '33', label: 'Review My Will' },
+  { value: '34', label: 'Review My Enduring Power Of Attorney' },
+  { value: '35', label: 'Access Social Security Benefits' },
+  { value: '36', label: 'Review My Insurance Needs' },
+  { value: '37', label: 'Purchase Life Insurance' },
+  { value: '38', label: 'Purchase TPD Insurance' },
+  { value: '39', label: 'Purchase Income Protection Insurance' },
+  { value: '40', label: 'Purchase Trauma Insurance' },
+  { value: '41', label: 'Repay Credit Card Debt' },
+  { value: '42', label: 'Repay Personal Loans' },
+  { value: '43', label: 'Repay Investment Property Debt' },
+  { value: '44', label: 'Repay Margin Lending' },
+  { value: '45', label: 'Repay Business Debt' },
+  { value: '46', label: 'Restructure Debt' },
+  { value: '47', label: 'Review Asset Allocation' },
+  { value: '48', label: 'Increase Investment Returns' },
+  { value: '49', label: 'Reduce Investment Risk' },
+  { value: '50', label: 'Diversify Investments' },
+  { value: '51', label: 'Consolidate Investments' },
+  { value: '52', label: 'Review Superannuation Investments' },
+  { value: '53', label: 'Consolidate Superannuation Accounts' },
+  { value: '54', label: 'Change Superannuation Fund' },
+  { value: '55', label: 'Minimise Income Tax' },
+  { value: '56', label: 'Minimise Capital Gains Tax' },
+  { value: '57', label: 'Create A Budget' },
+  { value: '58', label: 'Reduce Living Expenses' },
+  { value: '59', label: 'Increase Savings' },
+  { value: '60', label: 'Access Government Benefits' },
+  { value: '61', label: 'Review Estate Planning' },
+  { value: '62', label: 'Plan For Aged Care' },
+  { value: '63', label: 'Other' }
+];
+
+const FREQUENCY_OPTIONS = [
+  { value: '1', label: 'Weekly' },
+  { value: '2', label: 'Fortnightly' },
+  { value: '3', label: 'Monthly' },
+  { value: '4', label: 'Quarterly' },
+  { value: '5', label: 'Half-yearly' },
+  { value: '6', label: 'Yearly' },
+  { value: '7', label: 'Every 2 years' },
+  { value: '8', label: 'Every 3 years' },
+  { value: '9', label: 'Every 4 years' },
+  { value: '10', label: 'Every 5 years' },
+  { value: '11', label: 'Every 10 years' }
+];
+
+const EMPTY_QUICK_PERSON = {
+  c_ret_age: '',
+  c_ret_importance: '',
+  c_desired_income: '',
+  c_income_rank: '',
+  c_estate_amount: '',
+  c_estate_importance: '',
+  c_funeral_bond: '',
+  c_funeral_amount: '',
+  c_funeral_importance: '',
+  c_ins_death: '',
+  c_ins_tpd: '',
+  c_ins_income: '',
+  c_ins_trauma: '',
+  c_ins_creditors: '',
+  c_ins_guarantee: '',
+  c_protection_importance: '',
+  c_super_lowcost: '',
+  c_super_lowcost_inv: '',
+  c_super_top_mgr: '',
+  c_super_term: '',
+  c_super_shares_au: '',
+  c_super_shares_int: '',
+  c_super_broad: '',
+  c_super_sri: '',
+  c_super_model: '',
+  c_super_lifecycle: '',
+  c_super_rebalance: '',
+  c_super_taxeff: '',
+  c_super_switches: '',
+  c_super_uptodate: '',
+  c_super_taxmgmt: '',
+  c_super_lowins: '',
+  c_super_insfeatures: '',
+  c_super_importance: ''
+};
 
 export default function FactFindAdviceReason() {
   const navigate = useNavigate();
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('reasons');
-  const [selectedReasons, setSelectedReasons] = useState([]);
-  const [activeOwner, setActiveOwner] = useState('client');
-
-  const [retirementData, setRetirementData] = useState({
-    client: {
-      desired_retirement_age: '',
-      retirement_age_importance: '',
-      desired_retirement_income: '',
-      retirement_income_importance: ''
-    },
-    partner: {
-      desired_retirement_age: '',
-      retirement_age_importance: '',
-      desired_retirement_income: '',
-      retirement_income_importance: ''
-    }
+  
+  const [currentTab, setCurrentTab] = useState('reasons');
+  const [objectiveSubTab, setObjectiveSubTab] = useState('retirement');
+  const [activePerson, setActivePerson] = useState({
+    retirement: 'c1',
+    estate: 'c1',
+    protection: 'c1',
+    products: 'c1'
   });
+  const [hasPartner, setHasPartner] = useState(false);
 
-  const [estateData, setEstateData] = useState({
-    client: {
-      bequeath_amount: '',
-      bequeath_importance: '',
-      funeral_bond: 'no',
-      funeral_bond_amount: '',
-      funeral_bond_importance: ''
-    },
-    partner: {
-      bequeath_amount: '',
-      bequeath_importance: '',
-      funeral_bond: 'no',
-      funeral_bond_amount: '',
-      funeral_bond_importance: ''
-    }
+  const [reasons, setReasons] = useState([]);
+  const [quick, setQuick] = useState({
+    client: { ...EMPTY_QUICK_PERSON },
+    partner: { ...EMPTY_QUICK_PERSON }
   });
-
-  const wealthProtectionOptions = [
-    'Provide for your family in the event of your death',
-    'Protect yourself and your family in the event of Total & Permanent Disablement',
-    'Protect yourself and your family in the event of temporary illness',
-    'Protect your family against unforseen medical costs arising from a specific illness',
-    'Protect your assets against creditors',
-    "Guarantee that a portion of your assets can't lose money"
-  ];
-
-  const [wealthProtectionData, setWealthProtectionData] = useState({
-    client: {
-      protections: [],
-      importance: ''
-    },
-    partner: {
-      protections: [],
-      importance: ''
-    }
-  });
-
-  const superannuationFeatures = [
-    'Access to a low cost product',
-    'Access to a product that offers low cost investment options',
-    'Access to top performing investment managers',
-    'Access to term deposits',
-    'Access to direct shares - Australian',
-    'Access to direct shares - International',
-    'Access to broad investment menu',
-    'Access to socially responsible investments',
-    'Access to model portfolios',
-    'Access to lifecycle investment strategy',
-    'Automatic rebalancing back to your preferred risk profile',
-    'Able to make tax effective contributions to the product',
-    'Ability to make regular investment switches',
-    'Up to date portfolio information is available',
-    'Ability to manage tax effectiveness of investment strategy',
-    'Access to low cost insurance',
-    'Access to insurance features consistent with my requirements'
-  ];
-
-  const [superannuationData, setSuperannuationData] = useState({
-    client: {
-      features: [],
-      importance: ''
-    },
-    partner: {
-      features: [],
-      importance: ''
-    }
-  });
-
   const [objectives, setObjectives] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
   const [objectiveForm, setObjectiveForm] = useState({
-    objective_type: '',
-    start_year: '',
-    end_year: '',
-    amount: '',
-    importance: ''
+    o_who: [],
+    o_type: '',
+    o_property: '',
+    o_debt: '',
+    o_asset: '',
+    o_start: '',
+    o_end: '',
+    o_freq: '',
+    o_amount: '',
+    o_importance: '',
+    o_why: ''
   });
 
+  // Get principal names
+  const principalNames = useMemo(() => {
+    const clientName = factFind?.personal?.client?.first_name
+      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name || ''}`.trim()
+      : 'Client';
+    const partnerName = factFind?.personal?.partner?.first_name
+      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim()
+      : 'Partner';
+
+    return { client: clientName, partner: partnerName };
+  }, [factFind]);
+
+  // Check if partner exists
+  useEffect(() => {
+    if (factFind?.personal?.partner?.first_name) {
+      setHasPartner(true);
+    }
+  }, [factFind]);
+
+  // Load data
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -139,14 +298,12 @@ export default function FactFindAdviceReason() {
           const finds = await base44.entities.FactFind.filter({ id });
           if (finds[0]) {
             setFactFind(finds[0]);
-            if (finds[0].advice_reason) {
-              const data = finds[0].advice_reason;
-              if (data.selected_reasons) setSelectedReasons(data.selected_reasons);
-              if (data.retirement) setRetirementData(data.retirement);
-              if (data.estate) setEstateData(data.estate);
-              if (data.wealth_protection) setWealthProtectionData(data.wealth_protection);
-              if (data.superannuation) setSuperannuationData(data.superannuation);
-              if (data.objectives) setObjectives(data.objectives);
+
+            if (finds[0].reason) {
+              const r = finds[0].reason;
+              if (r.reasons) setReasons(r.reasons);
+              if (r.quick) setQuick(r.quick);
+              if (r.objectives) setObjectives(r.objectives);
             }
           }
         }
@@ -159,17 +316,24 @@ export default function FactFindAdviceReason() {
     loadData();
   }, []);
 
-  const toggleReason = (reasonId) => {
-    setSelectedReasons(prev =>
-      prev.includes(reasonId)
-        ? prev.filter(id => id !== reasonId)
-        : [...prev, reasonId]
+  const toggleReason = useCallback((value) => {
+    setReasons(prev =>
+      prev.includes(value)
+        ? prev.filter(v => v !== value)
+        : [...prev, value]
     );
-  };
+  }, []);
+
+  const updateQuick = useCallback((person, field, value) => {
+    setQuick(prev => ({
+      ...prev,
+      [person]: { ...prev[person], [field]: value }
+    }));
+  }, []);
 
   const handleAddObjective = () => {
-    if (!objectiveForm.objective_type || !objectiveForm.amount) {
-      toast.error('Please enter objective type and amount');
+    if (!objectiveForm.o_type || !objectiveForm.o_amount) {
+      toast.error('Please select objective type and enter amount');
       return;
     }
 
@@ -187,41 +351,39 @@ export default function FactFindAdviceReason() {
 
   const resetObjectiveForm = () => {
     setObjectiveForm({
-      objective_type: '',
-      start_year: '',
-      end_year: '',
-      amount: '',
-      importance: ''
+      o_who: [],
+      o_type: '',
+      o_property: '',
+      o_debt: '',
+      o_asset: '',
+      o_start: '',
+      o_end: '',
+      o_freq: '',
+      o_amount: '',
+      o_importance: '',
+      o_why: ''
     });
   };
 
-  const handleEditObjective = (index) => {
-    setObjectiveForm(objectives[index]);
-    setEditingIndex(index);
-  };
-
-  const handleDeleteObjective = (index) => {
-    setObjectives(objectives.filter((_, i) => i !== index));
-  };
-
   const handleNext = async () => {
+    if (!factFind?.id) {
+      toast.error('Unable to save data');
+      return;
+    }
+
     setSaving(true);
     try {
-      const sectionsCompleted = factFind.sections_completed || [];
+      const sectionsCompleted = [...(factFind.sections_completed || [])];
       if (!sectionsCompleted.includes('advice_reason')) {
         sectionsCompleted.push('advice_reason');
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        advice_reason: {
-          selected_reasons: selectedReasons,
-          retirement: retirementData,
-          estate: estateData,
-          wealth_protection: wealthProtectionData,
-          superannuation: superannuationData,
+        reason: {
+          reasons,
+          quick,
           objectives
         },
-        current_section: 'risk_profile',
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
@@ -248,602 +410,663 @@ export default function FactFindAdviceReason() {
     );
   }
 
+  const personKey = activePerson[objectiveSubTab] === 'c1' ? 'client' : 'partner';
+  const prefix = personKey === 'client' ? 'c_' : 'p_';
+
   return (
     <FactFindLayout currentSection="advice_reason" factFind={factFind}>
       <FactFindHeader
         title="Reason for seeking advice"
         description="Select the areas you want help with, and record your objectives."
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
+        tabs={TABS}
+        activeTab={currentTab}
+        onTabChange={setCurrentTab}
         factFind={factFind}
       />
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="w-full space-y-4">
-          {activeTab === 'reasons' ? (
+      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="w-full space-y-6">
+          {currentTab === 'reasons' ? (
+            <Card className="border-slate-200 shadow-sm">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 rounded-t-lg">
+                <h4 className="font-bold text-white text-lg">📋 Specify your reasons for seeking advice</h4>
+              </div>
+              <CardContent className="p-6 space-y-6">
+                {REASONS_GROUPS.map((group, idx) => (
+                  <div key={idx}>
+                    <h5 className="font-bold text-slate-700 mb-3 text-sm uppercase tracking-wide">{group.title}</h5>
+                    <div className="space-y-2">
+                      {group.items.map((item) => (
+                        <label key={item.value} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors">
+                          <Checkbox
+                            checked={reasons.includes(item.value)}
+                            onCheckedChange={() => toggleReason(item.value)}
+                          />
+                          <span className="text-sm text-slate-700">{item.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          ) : (
             <>
-              {/* Reason Selection */}
+              {/* Objective Sub-tabs */}
               <Card className="border-slate-200 shadow-sm">
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 rounded-t-lg">
-                  <h4 className="font-bold text-white">📋 Specify your reasons for seeking advice</h4>
-                </div>
-                <CardContent className="p-6">
-                  <div className="grid md:grid-cols-2 gap-3">
-                    {adviceReasons.map(reason => (
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {OBJECTIVE_SUB_TABS.map(tab => (
                       <button
-                        key={reason.id}
-                        onClick={() => toggleReason(reason.id)}
+                        key={tab.id}
+                        onClick={() => setObjectiveSubTab(tab.id)}
                         className={cn(
-                          "flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all text-left",
-                          selectedReasons.includes(reason.id)
-                            ? "bg-blue-50 border-blue-600 shadow-md"
-                            : "bg-white border-slate-200 hover:border-slate-300"
+                          "px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2",
+                          objectiveSubTab === tab.id
+                            ? "bg-blue-600 text-white"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                         )}
                       >
-                        <span className="text-2xl">{reason.icon}</span>
-                        <span className="font-bold text-slate-800">{reason.label}</span>
+                        <span>{tab.icon}</span>
+                        {tab.label}
                       </button>
                     ))}
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Retirement Objectives */}
-              {selectedReasons.includes('retirement') && (
-                <Card className="border-slate-200 shadow-sm">
-                  <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3 rounded-t-lg">
-                    <h4 className="font-bold text-white">🎯 Retirement objectives</h4>
-                  </div>
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex items-center gap-3 mb-4">
-                      <span className="font-bold text-slate-800 text-sm">Select person:</span>
-                      <div className="flex gap-2">
-                        {['client', 'partner'].map(owner => (
+              {/* Retirement Sub-tab */}
+              {objectiveSubTab === 'retirement' && (
+                <>
+                  <Card className="border-slate-200 shadow-sm">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setActivePerson({ ...activePerson, retirement: 'c1' })}
+                          className={cn(
+                            "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                            activePerson.retirement === 'c1'
+                              ? "bg-blue-600 text-white"
+                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          )}
+                        >
+                          {principalNames.client}
+                        </button>
+                        {hasPartner && (
                           <button
-                            key={owner}
-                            onClick={() => setActiveOwner(owner)}
+                            onClick={() => setActivePerson({ ...activePerson, retirement: 'c2' })}
                             className={cn(
-                              "px-3 py-1.5 rounded-full text-xs font-bold border transition-all capitalize",
-                              activeOwner === owner
-                                ? "bg-blue-600 text-white border-blue-600"
-                                : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
+                              "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                              activePerson.retirement === 'c2'
+                                ? "bg-blue-600 text-white"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                             )}
                           >
-                            {owner}
+                            {principalNames.partner}
                           </button>
-                        ))}
+                        )}
                       </div>
-                    </div>
+                    </CardContent>
+                  </Card>
 
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Desired retirement age</Label>
-                        <Input
-                          type="number"
-                          value={retirementData[activeOwner].desired_retirement_age}
-                          onChange={(e) => setRetirementData({
-                            ...retirementData,
-                            [activeOwner]: { ...retirementData[activeOwner], desired_retirement_age: e.target.value }
-                          })}
-                          placeholder="Age"
-                          className="border-slate-300"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">How important is achieving this goal</Label>
-                        <Select
-                          value={retirementData[activeOwner].retirement_age_importance}
-                          onValueChange={(value) => setRetirementData({
-                            ...retirementData,
-                            [activeOwner]: { ...retirementData[activeOwner], retirement_age_importance: value }
-                          })}
-                        >
-                          <SelectTrigger className="border-slate-300">
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="not_important">Not important</SelectItem>
-                            <SelectItem value="important">Important</SelectItem>
-                            <SelectItem value="very_important">Very important</SelectItem>
-                            <SelectItem value="critical">Critical</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                  <Card className="border-slate-200 shadow-sm">
+                    <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3 rounded-t-lg">
+                      <h4 className="font-bold text-white">🎯 Retirement - {activePerson.retirement === 'c1' ? principalNames.client : principalNames.partner}</h4>
                     </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Desired income in retirement ($)</Label>
-                        <Input
-                          type="number"
-                          value={retirementData[activeOwner].desired_retirement_income}
-                          onChange={(e) => setRetirementData({
-                            ...retirementData,
-                            [activeOwner]: { ...retirementData[activeOwner], desired_retirement_income: e.target.value }
-                          })}
-                          placeholder="0"
-                          className="border-slate-300"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Desired income in retirement (Rank)</Label>
-                        <Select
-                          value={retirementData[activeOwner].retirement_income_importance}
-                          onValueChange={(value) => setRetirementData({
-                            ...retirementData,
-                            [activeOwner]: { ...retirementData[activeOwner], retirement_income_importance: value }
-                          })}
-                        >
-                          <SelectTrigger className="border-slate-300">
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="not_important">Not important</SelectItem>
-                            <SelectItem value="important">Important</SelectItem>
-                            <SelectItem value="very_important">Very important</SelectItem>
-                            <SelectItem value="critical">Critical</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Estate Objectives */}
-              {selectedReasons.includes('estate') && (
-                <Card className="border-slate-200 shadow-sm">
-                  <div className="bg-gradient-to-r from-amber-600 to-orange-600 px-6 py-3 rounded-t-lg">
-                    <h4 className="font-bold text-white">🏛️ Estate objectives</h4>
-                  </div>
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex items-center gap-3 mb-4">
-                      <span className="font-bold text-slate-800 text-sm">Select person:</span>
-                      <div className="flex gap-2">
-                        {['client', 'partner'].map(owner => (
-                          <button
-                            key={owner}
-                            onClick={() => setActiveOwner(owner)}
-                            className={cn(
-                              "px-3 py-1.5 rounded-full text-xs font-bold border transition-all capitalize",
-                              activeOwner === owner
-                                ? "bg-blue-600 text-white border-blue-600"
-                                : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
-                            )}
-                          >
-                            {owner}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">
-                          How much would you like to bequeath to your estate? ($)
-                        </Label>
-                        <Input
-                          type="number"
-                          value={estateData[activeOwner].bequeath_amount}
-                          onChange={(e) => setEstateData({
-                            ...estateData,
-                            [activeOwner]: { ...estateData[activeOwner], bequeath_amount: e.target.value }
-                          })}
-                          placeholder="0"
-                          className="border-slate-300"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">
-                          How important is it to meet this objective?
-                        </Label>
-                        <Select
-                          value={estateData[activeOwner].bequeath_importance}
-                          onValueChange={(value) => setEstateData({
-                            ...estateData,
-                            [activeOwner]: { ...estateData[activeOwner], bequeath_importance: value }
-                          })}
-                        >
-                          <SelectTrigger className="border-slate-300">
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="not_important">Not important</SelectItem>
-                            <SelectItem value="important">Important</SelectItem>
-                            <SelectItem value="very_important">Very important</SelectItem>
-                            <SelectItem value="critical">Critical</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">
-                          Do you wish to purchase a funeral bond?
-                        </Label>
-                        <Select
-                          value={estateData[activeOwner].funeral_bond}
-                          onValueChange={(value) => setEstateData({
-                            ...estateData,
-                            [activeOwner]: { ...estateData[activeOwner], funeral_bond: value }
-                          })}
-                        >
-                          <SelectTrigger className="border-slate-300">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {estateData[activeOwner].funeral_bond === 'yes' && (
-                        <>
-                          <div className="space-y-2">
-                            <Label className="text-slate-700 font-semibold text-sm">Funeral bond amount ($)</Label>
-                            <Input
-                              type="number"
-                              value={estateData[activeOwner].funeral_bond_amount}
-                              onChange={(e) => setEstateData({
-                                ...estateData,
-                                [activeOwner]: { ...estateData[activeOwner], funeral_bond_amount: e.target.value }
-                              })}
-                              placeholder="0"
-                              className="border-slate-300"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-slate-700 font-semibold text-sm">
-                              How important is achieving this objective?
-                            </Label>
-                            <Select
-                              value={estateData[activeOwner].funeral_bond_importance}
-                              onValueChange={(value) => setEstateData({
-                                ...estateData,
-                                [activeOwner]: { ...estateData[activeOwner], funeral_bond_importance: value }
-                              })}
-                            >
-                              <SelectTrigger className="border-slate-300">
-                                <SelectValue placeholder="Select..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="not_important">Not important</SelectItem>
-                                <SelectItem value="important">Important</SelectItem>
-                                <SelectItem value="very_important">Very important</SelectItem>
-                                <SelectItem value="critical">Critical</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Wealth Protection Objectives */}
-              {selectedReasons.includes('wealth_protection') && (
-                <Card className="border-slate-200 shadow-sm">
-                  <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 rounded-t-lg">
-                    <h4 className="font-bold text-white">🛡️ Wealth protection objectives</h4>
-                  </div>
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex items-center gap-3 mb-4">
-                      <span className="font-bold text-slate-800 text-sm">Select person:</span>
-                      <div className="flex gap-2">
-                        {['client', 'partner'].map(owner => (
-                          <button
-                            key={owner}
-                            onClick={() => setActiveOwner(owner)}
-                            className={cn(
-                              "px-3 py-1.5 rounded-full text-xs font-bold border transition-all capitalize",
-                              activeOwner === owner
-                                ? "bg-blue-600 text-white border-blue-600"
-                                : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
-                            )}
-                          >
-                            {owner}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <Label className="text-slate-700 font-semibold text-sm">
-                        Specify what insurance you want to protect your family against:
-                      </Label>
-                      {wealthProtectionOptions.map((option, index) => (
-                        <div key={index} className="flex items-center gap-3">
-                          <Checkbox
-                            checked={wealthProtectionData[activeOwner].protections.includes(option)}
-                            onCheckedChange={(checked) => {
-                              const protections = checked
-                                ? [...wealthProtectionData[activeOwner].protections, option]
-                                : wealthProtectionData[activeOwner].protections.filter(p => p !== option);
-                              setWealthProtectionData({
-                                ...wealthProtectionData,
-                                [activeOwner]: { ...wealthProtectionData[activeOwner], protections }
-                              });
-                            }}
+                    <CardContent className="p-6 space-y-4">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Desired retirement age</label>
+                          <input
+                            type="number"
+                            value={quick[personKey][`${prefix}ret_age`]}
+                            onChange={(e) => updateQuick(personKey, `${prefix}ret_age`, e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
                           />
-                          <span className="text-sm text-slate-700">{option}</span>
                         </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">
-                        Specify how important providing protection is:
-                      </Label>
-                      <Select
-                        value={wealthProtectionData[activeOwner].importance}
-                        onValueChange={(value) => setWealthProtectionData({
-                          ...wealthProtectionData,
-                          [activeOwner]: { ...wealthProtectionData[activeOwner], importance: value }
-                        })}
-                      >
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="not_important">Not important</SelectItem>
-                          <SelectItem value="important">Important</SelectItem>
-                          <SelectItem value="very_important">Very important</SelectItem>
-                          <SelectItem value="critical">Critical</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardContent>
-                </Card>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">How important is achieving this goal</label>
+                          <select
+                            value={quick[personKey][`${prefix}ret_importance`]}
+                            onChange={(e) => updateQuick(personKey, `${prefix}ret_importance`, e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                          >
+                            <option value="">Select...</option>
+                            <option value="1">Not important</option>
+                            <option value="2">Important</option>
+                            <option value="3">Very important</option>
+                            <option value="4">Critical</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Desired income in retirement</label>
+                          <div className="flex items-center">
+                            <span className="text-slate-500 mr-2">$</span>
+                            <input
+                              type="number"
+                              value={quick[personKey][`${prefix}desired_income`]}
+                              onChange={(e) => updateQuick(personKey, `${prefix}desired_income`, e.target.value)}
+                              className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Desired income in retirement (Rank)</label>
+                          <select
+                            value={quick[personKey][`${prefix}income_rank`]}
+                            onChange={(e) => updateQuick(personKey, `${prefix}income_rank`, e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                          >
+                            <option value="">Select...</option>
+                            <option value="1">Not important</option>
+                            <option value="2">Important</option>
+                            <option value="3">Very important</option>
+                            <option value="4">Critical</option>
+                          </select>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
               )}
 
-              {/* Financial Products - Superannuation */}
-              {selectedReasons.includes('financial_products') && (
-                <Card className="border-slate-200 shadow-sm">
-                  <div className="bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-3 rounded-t-lg">
-                    <h4 className="font-bold text-white">💼 Financial products - Superannuation</h4>
-                  </div>
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex items-center gap-3 mb-4">
-                      <span className="font-bold text-slate-800 text-sm">Select person:</span>
-                      <div className="flex gap-2">
-                        {['client', 'partner'].map(owner => (
+              {/* Estate Sub-tab */}
+              {objectiveSubTab === 'estate' && (
+                <>
+                  <Card className="border-slate-200 shadow-sm">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setActivePerson({ ...activePerson, estate: 'c1' })}
+                          className={cn(
+                            "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                            activePerson.estate === 'c1'
+                              ? "bg-blue-600 text-white"
+                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          )}
+                        >
+                          {principalNames.client}
+                        </button>
+                        {hasPartner && (
                           <button
-                            key={owner}
-                            onClick={() => setActiveOwner(owner)}
+                            onClick={() => setActivePerson({ ...activePerson, estate: 'c2' })}
                             className={cn(
-                              "px-3 py-1.5 rounded-full text-xs font-bold border transition-all capitalize",
-                              activeOwner === owner
-                                ? "bg-blue-600 text-white border-blue-600"
-                                : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
+                              "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                              activePerson.estate === 'c2'
+                                ? "bg-blue-600 text-white"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                             )}
                           >
-                            {owner}
+                            {principalNames.partner}
                           </button>
-                        ))}
+                        )}
                       </div>
-                    </div>
+                    </CardContent>
+                  </Card>
 
-                    <div className="space-y-3">
-                      <Label className="text-slate-700 font-semibold text-sm">
-                        Select superannuation features that are important:
-                      </Label>
-                      <div className="grid md:grid-cols-2 gap-3">
-                        {superannuationFeatures.map((feature, index) => (
-                          <div key={index} className="flex items-center gap-3">
-                            <Checkbox
-                              checked={superannuationData[activeOwner].features.includes(feature)}
-                              onCheckedChange={(checked) => {
-                                const features = checked
-                                  ? [...superannuationData[activeOwner].features, feature]
-                                  : superannuationData[activeOwner].features.filter(f => f !== feature);
-                                setSuperannuationData({
-                                  ...superannuationData,
-                                  [activeOwner]: { ...superannuationData[activeOwner], features }
-                                });
-                              }}
+                  <Card className="border-slate-200 shadow-sm">
+                    <div className="bg-gradient-to-r from-amber-600 to-orange-600 px-6 py-3 rounded-t-lg">
+                      <h4 className="font-bold text-white">🏛️ Estate - {activePerson.estate === 'c1' ? principalNames.client : principalNames.partner}</h4>
+                    </div>
+                    <CardContent className="p-6 space-y-4">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">How much would you like to bequeath</label>
+                          <div className="flex items-center">
+                            <span className="text-slate-500 mr-2">$</span>
+                            <input
+                              type="number"
+                              value={quick[personKey][`${prefix}estate_amount`]}
+                              onChange={(e) => updateQuick(personKey, `${prefix}estate_amount`, e.target.value)}
+                              className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm"
                             />
-                            <span className="text-sm text-slate-700">{feature}</span>
                           </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">How important is it to meet this</label>
+                          <select
+                            value={quick[personKey][`${prefix}estate_importance`]}
+                            onChange={(e) => updateQuick(personKey, `${prefix}estate_importance`, e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                          >
+                            <option value="">Select...</option>
+                            <option value="1">Not important</option>
+                            <option value="2">Important</option>
+                            <option value="3">Very important</option>
+                            <option value="4">Critical</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                        <label className="text-sm font-semibold text-slate-700">Do you wish to purchase a funeral bond?</label>
+                        <Switch
+                          checked={quick[personKey][`${prefix}funeral_bond`] === '1'}
+                          onCheckedChange={(checked) => updateQuick(personKey, `${prefix}funeral_bond`, checked ? '1' : '')}
+                        />
+                      </div>
+                      {quick[personKey][`${prefix}funeral_bond`] === '1' && (
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Funeral bond amount</label>
+                            <div className="flex items-center">
+                              <span className="text-slate-500 mr-2">$</span>
+                              <input
+                                type="number"
+                                value={quick[personKey][`${prefix}funeral_amount`]}
+                                onChange={(e) => updateQuick(personKey, `${prefix}funeral_amount`, e.target.value)}
+                                className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">How important is achieving this</label>
+                            <select
+                              value={quick[personKey][`${prefix}funeral_importance`]}
+                              onChange={(e) => updateQuick(personKey, `${prefix}funeral_importance`, e.target.value)}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                            >
+                              <option value="">Select...</option>
+                              <option value="1">Not important</option>
+                              <option value="2">Important</option>
+                              <option value="3">Very important</option>
+                              <option value="4">Critical</option>
+                            </select>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {/* Wealth Protection Sub-tab */}
+              {objectiveSubTab === 'protection' && (
+                <>
+                  <Card className="border-slate-200 shadow-sm">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setActivePerson({ ...activePerson, protection: 'c1' })}
+                          className={cn(
+                            "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                            activePerson.protection === 'c1'
+                              ? "bg-blue-600 text-white"
+                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          )}
+                        >
+                          {principalNames.client}
+                        </button>
+                        {hasPartner && (
+                          <button
+                            onClick={() => setActivePerson({ ...activePerson, protection: 'c2' })}
+                            className={cn(
+                              "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                              activePerson.protection === 'c2'
+                                ? "bg-blue-600 text-white"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            )}
+                          >
+                            {principalNames.partner}
+                          </button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-slate-200 shadow-sm">
+                    <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 rounded-t-lg">
+                      <h4 className="font-bold text-white">🛡️ Wealth Protection - {activePerson.protection === 'c1' ? principalNames.client : principalNames.partner}</h4>
+                    </div>
+                    <CardContent className="p-6 space-y-4">
+                      <div className="space-y-3">
+                        <label className="block text-sm font-semibold text-slate-700">Specify what insurance you want to protect your family against:</label>
+                        {PROTECTION_CHECKBOXES.map((item) => (
+                          <label key={item.field} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer">
+                            <Checkbox
+                              checked={quick[personKey][`${prefix}${item.field.replace('ins_', 'ins_')}`] === item.value}
+                              onCheckedChange={(checked) => updateQuick(personKey, `${prefix}${item.field.replace('ins_', 'ins_')}`, checked ? item.value : '')}
+                            />
+                            <span className="text-sm text-slate-700">{item.label}</span>
+                          </label>
                         ))}
                       </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">
-                        How important is it for you to find a superannuation account that is consistent with your objectives?
-                      </Label>
-                      <Select
-                        value={superannuationData[activeOwner].importance}
-                        onValueChange={(value) => setSuperannuationData({
-                          ...superannuationData,
-                          [activeOwner]: { ...superannuationData[activeOwner], importance: value }
-                        })}
-                      >
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="not_important">Not important</SelectItem>
-                          <SelectItem value="important">Important</SelectItem>
-                          <SelectItem value="very_important">Very important</SelectItem>
-                          <SelectItem value="critical">Critical</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardContent>
-                </Card>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Specify how important providing protection is</label>
+                        <select
+                          value={quick[personKey][`${prefix}protection_importance`]}
+                          onChange={(e) => updateQuick(personKey, `${prefix}protection_importance`, e.target.value)}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                        >
+                          <option value="">Select...</option>
+                          <option value="1">Not important</option>
+                          <option value="2">Important</option>
+                          <option value="3">Very important</option>
+                          <option value="4">Critical</option>
+                        </select>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
               )}
-            </>
-          ) : (
-            <>
-              {/* Detailed Objectives Form */}
-              <Card className="border-slate-200 shadow-sm">
-                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 rounded-t-lg">
-                  <h4 className="font-bold text-white">
-                    {editingIndex !== null ? 'Edit Objective' : 'Add New Objective'}
-                  </h4>
-                </div>
-                <CardContent className="p-6 space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Objective type</Label>
-                      <Input
-                        value={objectiveForm.objective_type}
-                        onChange={(e) => setObjectiveForm({ ...objectiveForm, objective_type: e.target.value })}
-                        placeholder="e.g., Buy a house, Travel, Education"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Amount ($)</Label>
-                      <Input
-                        type="number"
-                        value={objectiveForm.amount}
-                        onChange={(e) => setObjectiveForm({ ...objectiveForm, amount: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Start year</Label>
-                      <Input
-                        type="number"
-                        value={objectiveForm.start_year}
-                        onChange={(e) => setObjectiveForm({ ...objectiveForm, start_year: e.target.value })}
-                        placeholder="e.g., 2024"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">End year</Label>
-                      <Input
-                        type="number"
-                        value={objectiveForm.end_year}
-                        onChange={(e) => setObjectiveForm({ ...objectiveForm, end_year: e.target.value })}
-                        placeholder="e.g., 2030"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Importance</Label>
-                      <Select
-                        value={objectiveForm.importance}
-                        onValueChange={(value) => setObjectiveForm({ ...objectiveForm, importance: value })}
-                      >
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="not_important">Not important</SelectItem>
-                          <SelectItem value="important">Important</SelectItem>
-                          <SelectItem value="very_important">Very important</SelectItem>
-                          <SelectItem value="critical">Critical</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+              {/* Financial Products Sub-tab */}
+              {objectiveSubTab === 'products' && (
+                <>
+                  <Card className="border-slate-200 shadow-sm">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setActivePerson({ ...activePerson, products: 'c1' })}
+                          className={cn(
+                            "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                            activePerson.products === 'c1'
+                              ? "bg-blue-600 text-white"
+                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          )}
+                        >
+                          {principalNames.client}
+                        </button>
+                        {hasPartner && (
+                          <button
+                            onClick={() => setActivePerson({ ...activePerson, products: 'c2' })}
+                            className={cn(
+                              "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                              activePerson.products === 'c2'
+                                ? "bg-blue-600 text-white"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            )}
+                          >
+                            {principalNames.partner}
+                          </button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                  <div className="flex justify-end gap-2 pt-2">
-                    {editingIndex !== null && (
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setEditingIndex(null);
-                          resetObjectiveForm();
-                        }}
-                        className="border-slate-300"
-                      >
-                        Cancel
-                      </Button>
-                    )}
-                    <Button
-                      onClick={handleAddObjective}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      {editingIndex !== null ? 'Update Objective' : 'Add Objective'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Objectives List */}
-              {objectives.length === 0 ? (
-                <Card className="border-slate-200 shadow-sm">
-                  <CardContent className="p-12 text-center">
-                    <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                      <Target className="w-8 h-8 text-blue-600" />
+                  <Card className="border-slate-200 shadow-sm">
+                    <div className="bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-3 rounded-t-lg">
+                      <h4 className="font-bold text-white">💼 Financial Products - {activePerson.products === 'c1' ? principalNames.client : principalNames.partner}</h4>
                     </div>
-                    <h4 className="font-bold text-slate-800 mb-2">No objectives added yet</h4>
-                    <p className="text-sm text-slate-600 mb-4">
-                      Start by adding your first financial objective to track your goals
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card className="border-slate-200 shadow-sm">
-                  <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-3">
-                    <h4 className="font-bold text-white">Your objectives ({objectives.length})</h4>
-                  </div>
-                  <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead className="bg-slate-50 border-b border-slate-200">
-                          <tr>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Objective type</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Start year</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">End year</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Amount</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Importance</th>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                          {objectives.map((obj, index) => (
-                            <tr key={index} className="hover:bg-slate-50">
-                              <td className="px-4 py-3 text-sm text-slate-800 font-medium">{obj.objective_type}</td>
-                              <td className="px-4 py-3 text-sm text-slate-600">{obj.start_year}</td>
-                              <td className="px-4 py-3 text-sm text-slate-600">{obj.end_year}</td>
-                              <td className="px-4 py-3 text-sm text-slate-800 font-semibold">
-                                ${parseFloat(obj.amount).toLocaleString()}
-                              </td>
-                              <td className="px-4 py-3 text-sm text-slate-600 capitalize">
-                                {obj.importance?.replace('_', ' ')}
-                              </td>
-                              <td className="px-4 py-3">
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleEditObjective(index)}
-                                    className="border-slate-300"
-                                  >
-                                    <Edit2 className="w-3 h-3" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleDeleteObjective(index)}
-                                    className="border-red-300 text-red-600 hover:bg-red-50"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
+                    <CardContent className="p-6 space-y-4">
+                      <div className="space-y-3">
+                        <label className="block text-sm font-semibold text-slate-700">Select superannuation features that are important:</label>
+                        <div className="grid md:grid-cols-2 gap-3">
+                          {SUPER_FEATURES.map((item) => (
+                            <label key={item.field} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer">
+                              <Checkbox
+                                checked={quick[personKey][`${prefix}${item.field.replace('super_', 'super_')}`] === item.value}
+                                onCheckedChange={(checked) => updateQuick(personKey, `${prefix}${item.field.replace('super_', 'super_')}`, checked ? item.value : '')}
+                              />
+                              <span className="text-sm text-slate-700">{item.label}</span>
+                            </label>
                           ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </CardContent>
-                </Card>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">How important is it for you to find a superannuation account that is consistent with your objectives?</label>
+                        <select
+                          value={quick[personKey][`${prefix}super_importance`]}
+                          onChange={(e) => updateQuick(personKey, `${prefix}super_importance`, e.target.value)}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                        >
+                          <option value="">Select...</option>
+                          <option value="1">Not important</option>
+                          <option value="2">Important</option>
+                          <option value="3">Very important</option>
+                          <option value="4">Critical</option>
+                        </select>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {/* Detailed Objectives Sub-tab */}
+              {objectiveSubTab === 'detailed' && (
+                <>
+                  {/* Add/Edit Form */}
+                  {(editingIndex !== null || objectives.length === 0) && (
+                    <Card className="border-slate-200 shadow-sm">
+                      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 rounded-t-lg">
+                        <h4 className="font-bold text-white">{editingIndex !== null ? 'Edit Objective' : 'Add New Objective'}</h4>
+                      </div>
+                      <CardContent className="p-6 space-y-4">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Who does this objective belong to?</label>
+                            <div className="space-y-2">
+                              <label className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={objectiveForm.o_who.includes('c1')}
+                                  onChange={(e) => {
+                                    const who = e.target.checked
+                                      ? [...objectiveForm.o_who, 'c1']
+                                      : objectiveForm.o_who.filter(w => w !== 'c1');
+                                    setObjectiveForm({ ...objectiveForm, o_who: who });
+                                  }}
+                                />
+                                <span className="text-sm">{principalNames.client}</span>
+                              </label>
+                              {hasPartner && (
+                                <label className="flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={objectiveForm.o_who.includes('c2')}
+                                    onChange={(e) => {
+                                      const who = e.target.checked
+                                        ? [...objectiveForm.o_who, 'c2']
+                                        : objectiveForm.o_who.filter(w => w !== 'c2');
+                                      setObjectiveForm({ ...objectiveForm, o_who: who });
+                                    }}
+                                  />
+                                  <span className="text-sm">{principalNames.partner}</span>
+                                </label>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Objective type</label>
+                            <select
+                              value={objectiveForm.o_type}
+                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_type: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                            >
+                              <option value="">Select...</option>
+                              {OBJECTIVE_TYPES.map(type => (
+                                <option key={type.value} value={type.value}>{type.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Start year</label>
+                            <input
+                              type="number"
+                              value={objectiveForm.o_start}
+                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_start: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">End year</label>
+                            <input
+                              type="number"
+                              value={objectiveForm.o_end}
+                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_end: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Frequency</label>
+                            <select
+                              value={objectiveForm.o_freq}
+                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_freq: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                            >
+                              <option value="">Select...</option>
+                              {FREQUENCY_OPTIONS.map(freq => (
+                                <option key={freq.value} value={freq.value}>{freq.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Amount</label>
+                            <div className="flex items-center">
+                              <span className="text-slate-500 mr-2">$</span>
+                              <input
+                                type="number"
+                                value={objectiveForm.o_amount}
+                                onChange={(e) => setObjectiveForm({ ...objectiveForm, o_amount: e.target.value })}
+                                className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Importance</label>
+                            <select
+                              value={objectiveForm.o_importance}
+                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_importance: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                            >
+                              <option value="">Select...</option>
+                              <option value="1">Not important</option>
+                              <option value="2">Important</option>
+                              <option value="3">Very important</option>
+                              <option value="4">Critical</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Why is this objective important to you?</label>
+                          <textarea
+                            value={objectiveForm.o_why}
+                            onChange={(e) => setObjectiveForm({ ...objectiveForm, o_why: e.target.value })}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                          />
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2">
+                          {editingIndex !== null && (
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setEditingIndex(null);
+                                resetObjectiveForm();
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                          <Button
+                            onClick={handleAddObjective}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            {editingIndex !== null ? 'Update' : 'Add'} Objective
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Objectives List */}
+                  {objectives.length === 0 ? (
+                    <Card className="border-slate-200 shadow-sm">
+                      <CardContent className="p-12 text-center">
+                        <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
+                          <Target className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <h4 className="font-bold text-slate-800 mb-2">🎯 No objectives added yet</h4>
+                        <p className="text-sm text-slate-600">
+                          Start by adding your first financial objective to track your goals
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <>
+                      {editingIndex === null && objectives.length > 0 && (
+                        <div className="flex justify-end">
+                          <Button
+                            onClick={() => {
+                              resetObjectiveForm();
+                              setEditingIndex(null);
+                            }}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Another Objective
+                          </Button>
+                        </div>
+                      )}
+                      <Card className="border-slate-200 shadow-sm">
+                        <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-3">
+                          <h4 className="font-bold text-white">Your objectives ({objectives.length})</h4>
+                        </div>
+                        <CardContent className="p-0">
+                          <div className="overflow-x-auto">
+                            <table className="w-full">
+                              <thead className="bg-slate-50 border-b border-slate-200">
+                                <tr>
+                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Type</th>
+                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Amount</th>
+                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Years</th>
+                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-200">
+                                {objectives.map((obj, index) => (
+                                  <tr key={index} className="hover:bg-slate-50">
+                                    <td className="px-4 py-3 text-sm text-slate-800 font-medium">
+                                      {OBJECTIVE_TYPES.find(t => t.value === obj.o_type)?.label || obj.o_type}
+                                    </td>
+                                    <td className="px-4 py-3 text-sm text-slate-800 font-semibold">
+                                      ${parseFloat(obj.o_amount || 0).toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-3 text-sm text-slate-600">
+                                      {obj.o_start} - {obj.o_end}
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      <div className="flex gap-2">
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => {
+                                            setObjectiveForm(obj);
+                                            setEditingIndex(index);
+                                          }}
+                                        >
+                                          <Edit2 className="w-3 h-3" />
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => setObjectives(objectives.filter((_, i) => i !== index))}
+                                          className="border-red-300 text-red-600 hover:bg-red-50"
+                                        >
+                                          <Trash2 className="w-3 h-3" />
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </>
+                  )}
+                </>
               )}
             </>
           )}
@@ -874,7 +1097,7 @@ export default function FactFindAdviceReason() {
                     </>
                   ) : (
                     <>
-                      Continue
+                      Save & continue
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </>
                   )}
