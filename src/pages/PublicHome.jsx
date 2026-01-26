@@ -162,7 +162,13 @@ export default function PublicHome() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-24 bg-[#0f172a] relative overflow-hidden">
+      <section id="how-it-works" className="py-24 relative overflow-hidden">
+        <img 
+          src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/06d841c8f_techwaves.png"
+          alt="Background"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-[#0f172a]/85" />
         <div className="max-w-[1200px] mx-auto px-12 relative z-10">
           <div className="text-center mb-20">
             <h2 className="font-['Playfair_Display'] text-[52px] font-semibold text-white mb-4">
