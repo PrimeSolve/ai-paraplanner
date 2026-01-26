@@ -197,14 +197,14 @@ export default function PublicHome() {
                 </div>
               </div>
               <div className="relative h-full flex items-start justify-start pt-8">
-                <div className="absolute left-0 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">1</div>
+                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">1</div>
               </div>
             </div>
 
             {/* Step 2 */}
             <div className="grid grid-cols-2 gap-16 items-start relative">
               <div className="relative h-full flex items-start justify-end pt-8">
-                <div className="absolute right-0 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">2</div>
+                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">2</div>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
                 <h3 className="text-[24px] font-bold text-white mb-3">Client Completes with AI Help</h3>
@@ -233,14 +233,14 @@ export default function PublicHome() {
                 </div>
               </div>
               <div className="relative h-full flex items-start justify-start pt-8">
-                <div className="absolute left-0 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">3</div>
+                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">3</div>
               </div>
             </div>
 
             {/* Step 4 */}
             <div className="grid grid-cols-2 gap-16 items-start relative">
               <div className="relative h-full flex items-start justify-end pt-8">
-                <div className="absolute right-0 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">4</div>
+                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">4</div>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
                 <h3 className="text-[24px] font-bold text-white mb-3">AI Prepares Your Plan</h3>
@@ -269,14 +269,14 @@ export default function PublicHome() {
                 </div>
               </div>
               <div className="relative h-full flex items-start justify-start pt-8">
-                <div className="absolute left-0 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">5</div>
+                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">5</div>
               </div>
             </div>
 
             {/* Step 6 */}
             <div className="grid grid-cols-2 gap-16 items-start relative">
               <div className="relative h-full flex items-start justify-end pt-8">
-                <div className="absolute right-0 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">6</div>
+                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">6</div>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
                 <h3 className="text-[24px] font-bold text-white mb-3">Avatar Explains the Advice</h3>
@@ -305,7 +305,7 @@ export default function PublicHome() {
                 </div>
               </div>
               <div className="relative h-full flex items-start justify-start pt-8">
-                <div className="absolute left-0 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">7</div>
+                <div className="absolute left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">7</div>
               </div>
             </div>
           </div>
