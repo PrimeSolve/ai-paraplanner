@@ -383,6 +383,39 @@ export default function PublicHome() {
                 Use AI Paraplanner's professionally designed templates or bring your own. Fully customisable to match your brand, your tone, your way of delivering advice.
               </p>
             </div>
+
+            {/* Feature 7 */}
+            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] flex items-center justify-center mb-6">
+                <span className="text-2xl">📊</span>
+              </div>
+              <h3 className="text-[20px] font-bold text-white mb-3">PrimeSolve Integration</h3>
+              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
+                Built on Australia's most powerful modelling engine. Run projections, compare scenarios, and stress test strategies with unmatched depth and accuracy.
+              </p>
+            </div>
+
+            {/* Feature 8 */}
+            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#14b8a6] to-[#0d9488] flex items-center justify-center mb-6">
+                <span className="text-2xl">🔒</span>
+              </div>
+              <h3 className="text-[20px] font-bold text-white mb-3">Bank-Grade Security</h3>
+              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
+                Your client data is protected with enterprise-level encryption, SOC 2 compliance, and regular security audits. Peace of mind guaranteed.
+              </p>
+            </div>
+
+            {/* Feature 9 */}
+            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#06b6d4] to-[#0891b2] flex items-center justify-center mb-6">
+                <span className="text-2xl">⚡</span>
+              </div>
+              <h3 className="text-[20px] font-bold text-white mb-3">Lightning Fast Turnaround</h3>
+              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
+                24-hour SOA delivery as standard. Rush service available for urgent cases. Never miss a deadline again.
+              </p>
+            </div>
           </div>
         </div>
       </section>
