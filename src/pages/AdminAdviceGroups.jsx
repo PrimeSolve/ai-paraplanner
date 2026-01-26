@@ -250,8 +250,8 @@ export default function AdminAdviceGroups() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-2xl border border-slate-200">
-          <div className="overflow-x-auto overflow-y-visible">
+        <div className="bg-white rounded-2xl border border-slate-200 relative">
+          <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
@@ -272,9 +272,9 @@ export default function AdminAdviceGroups() {
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="relative">
                 {filteredGroups.map((group, idx) => (
-                  <tr key={group.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors relative">
+                  <tr key={group.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl ${getColorClass(idx)} flex items-center justify-center text-white font-bold text-sm`}>
@@ -314,11 +314,11 @@ export default function AdminAdviceGroups() {
                         <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
                           Manage
                         </button>
-                        <div className="relative group">
+                        <div className="relative">
                           <button className="p-1.5 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
                             <MoreHorizontal className="w-4 h-4" />
                           </button>
-                          <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none group-hover:pointer-events-auto">
+                          <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-xl opacity-0 invisible hover:opacity-100 hover:visible transition-all z-50 pointer-events-none hover:pointer-events-auto" onMouseEnter={(e) => e.currentTarget.parentElement.classList.add('visible')} onMouseLeave={(e) => e.currentTarget.parentElement.classList.remove('visible')}>
                             <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-slate-700 border-b border-slate-100">
                               <FileText className="w-4 h-4" />
                               Edit Template
