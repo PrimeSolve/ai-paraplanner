@@ -39,13 +39,18 @@ export default function AdminTemplate() {
       ]
     },
     {
-      group: 'financial-analysis',
-      groupLabel: 'Financial Analysis',
-      icon: '💰',
+      group: 'relevant-circumstances',
+      groupLabel: 'Relevant Circumstances & Current Situation',
+      icon: '👤',
       sections: [
-        { id: 'financial-position', label: 'Financial Position', description: 'Assets, liabilities and net worth analysis', status: 'configured' },
-        { id: 'cash-flow', label: 'Cash Flow Analysis', description: 'Income and expenses overview', status: 'configured' },
-        { id: 'insurance-needs', label: 'Insurance Needs Analysis', description: 'Protection gap analysis', status: 'configured' }
+        { id: 'relevant-circumstances', label: 'Relevant Circumstances', description: 'Key factors considered', status: 'needs-comment', badge: null },
+        { id: 'personal-information', label: 'Personal Information', description: 'Demographics and life situation', status: 'needs-comment', badge: 'Fact Find' },
+        { id: 'dependants', label: 'Dependants', description: "Client's dependants", status: 'needs-comment', badge: 'Fact Find' },
+        { id: 'insurance-in-force', label: 'Insurance in Force', description: 'Existing coverage', status: 'needs-comment', badge: 'Insurance' },
+        { id: 'estate-planning', label: 'Estate Planning', description: 'Current arrangements', status: 'needs-comment', badge: null },
+        { id: 'financial-position', label: 'Financial Position', description: 'Assets and liabilities', status: 'needs-comment', badge: 'Fact Find' },
+        { id: 'cash-flow-statement', label: 'Cash Flow Statement', description: 'Income and expenses', status: 'needs-comment', badge: 'Cashflow' },
+        { id: 'tax-position', label: 'Tax Position', description: 'Current tax situation', status: 'needs-comment', badge: null }
       ]
     },
     {
@@ -259,6 +264,11 @@ export default function AdminTemplate() {
                                             <div className="text-sm text-slate-500 mt-1">{section.description}</div>
                                           </div>
                                           <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+                                            {section.badge && (
+                                              <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1 rounded-full whitespace-nowrap">
+                                                {section.badge}
+                                              </span>
+                                            )}
                                             {section.status === 'configured' && (
                                               <span className="text-xs font-semibold text-green-700 bg-green-100 px-3 py-1.5 rounded-full whitespace-nowrap">
                                                 ✓ Configured
