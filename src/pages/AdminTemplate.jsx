@@ -9,12 +9,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { GripVertical, ChevronDown, Plus, Edit, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 export default function AdminTemplate() {
   const [template, setTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState(['getting-started', 'client-info', 'financial-position']);
+  const [expandedGroups, setExpandedGroups] = useState(['welcome-intro', 'executive-summary', 'financial-analysis']);
+  const [sections, setSections] = useState([]);
 
   const defaultSections = [
     {
@@ -77,6 +79,7 @@ export default function AdminTemplate() {
   ];
 
   useEffect(() => {
+    setSections(defaultSections);
     loadTemplate();
   }, []);
 
@@ -118,6 +121,32 @@ export default function AdminTemplate() {
     setExpandedGroups(prev =>
       prev.includes(groupId) ? prev.filter(g => g !== groupId) : [...prev, groupId]
     );
+  };
+
+  const handleDragEnd = (result) => {
+    const { source, destination, type, draggableId } = result;
+    
+    if (!destination) return;
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+
+    const newSections = Array.from(sections);
+
+    if (type === 'GROUP') {
+      // Reorder groups
+      const [movedGroup] = newSections.splice(source.index, 1);
+      newSections.splice(destination.index, 0, movedGroup);
+      setSections(newSections);
+    } else if (type === 'SECTION') {
+      // Reorder sections within a group
+      const sourceGroupIdx = newSections.findIndex(g => g.group === source.droppableId);
+      const destGroupIdx = newSections.findIndex(g => g.group === destination.droppableId);
+      
+      const [movedSection] = newSections[sourceGroupIdx].sections.splice(source.index, 1);
+      newSections[destGroupIdx].sections.splice(destination.index, 0, movedSection);
+      setSections(newSections);
+    }
+
+    toast.success('Order updated');
   };
 
   return (
@@ -165,66 +194,105 @@ export default function AdminTemplate() {
           </div>
         </div>
 
-        {/* Section Groups */}
-        <div className="space-y-3">
-          {defaultSections.map((group) => {
-            const isExpanded = expandedGroups.includes(group.group);
-            const configuredCount = group.sections.filter(s => s.status === 'configured').length;
-            return (
-              <div key={group.group} className="bg-white border border-slate-200 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => toggleGroup(group.group)}
-                  className="w-full flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
-                >
-                  <GripVertical className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-base flex-shrink-0">
-                    {group.icon}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-slate-800">{group.groupLabel}</div>
-                  </div>
-                  <span className="text-xs font-medium text-slate-600 bg-white px-2.5 py-1 rounded-full">
-                    {group.sections.length} sections
-                  </span>
-                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                </button>
+        {/* Section Groups with Drag & Drop */}
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="groups" type="GROUP">
+            {(provided, snapshot) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="space-y-3"
+              >
+                {sections.map((group, groupIdx) => {
+                  const isExpanded = expandedGroups.includes(group.group);
+                  return (
+                    <Draggable key={group.group} draggableId={group.group} index={groupIdx}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          className={`bg-white border border-slate-200 rounded-lg overflow-hidden ${snapshot.isDragging ? 'shadow-lg border-blue-400' : ''}`}
+                        >
+                          <button
+                            onClick={() => toggleGroup(group.group)}
+                            {...provided.dragHandleProps}
+                            className="w-full flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left cursor-grab active:cursor-grabbing"
+                          >
+                            <GripVertical className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-base flex-shrink-0">
+                              {group.icon}
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-semibold text-slate-800">{group.groupLabel}</div>
+                            </div>
+                            <span className="text-xs font-medium text-slate-600 bg-white px-2.5 py-1 rounded-full">
+                              {group.sections.length} sections
+                            </span>
+                            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
 
-                {isExpanded && (
-                  <div className="border-t border-slate-200 p-4 space-y-3">
-                    {group.sections.map((section) => (
-                      <div key={section.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                        <div className="flex-1">
-                          <div className="font-medium text-slate-800">{section.label}</div>
-                          <div className="text-xs text-slate-600 mt-0.5">{section.description}</div>
-                        </div>
-                        <div className="flex items-center gap-2 ml-4">
-                          {section.status === 'configured' && (
-                            <span className="text-xs font-semibold text-green-700 bg-green-100 px-2.5 py-1 rounded">
-                              ✓ Configured
-                            </span>
+                          {isExpanded && (
+                            <Droppable droppableId={group.group} type="SECTION">
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.droppableProps}
+                                  className={`border-t border-slate-200 p-4 space-y-3 ${snapshot.isDraggingOver ? 'bg-blue-50' : ''}`}
+                                >
+                                  {group.sections.map((section, sectionIdx) => (
+                                    <Draggable key={section.id} draggableId={`${group.group}-${section.id}`} index={sectionIdx}>
+                                      {(provided, snapshot) => (
+                                        <div
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          className={`flex items-center justify-between p-3 bg-slate-50 rounded-lg transition-all ${snapshot.isDragging ? 'shadow-md bg-blue-100' : ''}`}
+                                        >
+                                          <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing mr-2">
+                                            <GripVertical className="w-4 h-4 text-slate-400" />
+                                          </div>
+                                          <div className="flex-1">
+                                            <div className="font-medium text-slate-800">{section.label}</div>
+                                            <div className="text-xs text-slate-600 mt-0.5">{section.description}</div>
+                                          </div>
+                                          <div className="flex items-center gap-2 ml-4">
+                                            {section.status === 'configured' && (
+                                              <span className="text-xs font-semibold text-green-700 bg-green-100 px-2.5 py-1 rounded">
+                                                ✓ Configured
+                                              </span>
+                                            )}
+                                            {section.status === 'needs-comment' && (
+                                              <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2.5 py-1 rounded">
+                                                ⚠ Needs comment
+                                              </span>
+                                            )}
+                                            <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                                              <Edit className="w-3.5 h-3.5 mr-1" />
+                                              Edit
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </Draggable>
+                                  ))}
+                                  {provided.placeholder}
+                                  <button className="w-full py-2 text-sm font-medium text-blue-600 hover:text-blue-700 mt-2">
+                                    <Plus className="w-4 h-4 inline mr-1" />
+                                    Add Custom Section
+                                  </button>
+                                </div>
+                              )}
+                            </Droppable>
                           )}
-                          {section.status === 'needs-comment' && (
-                            <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2.5 py-1 rounded">
-                              ⚠ Needs comment
-                            </span>
-                          )}
-                          <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                            <Edit className="w-3.5 h-3.5 mr-1" />
-                            Edit
-                          </Button>
                         </div>
-                      </div>
-                    ))}
-                    <button className="w-full py-2 text-sm font-medium text-blue-600 hover:text-blue-700 mt-2">
-                      <Plus className="w-4 h-4 inline mr-1" />
-                      Add Custom Section
-                    </button>
-                  </div>
-                )}
+                      )}
+                    </Draggable>
+                  );
+                })}
+                {provided.placeholder}
               </div>
-            );
-          })}
-        </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       </div>
     </AdminLayout>
   );
