@@ -64,6 +64,7 @@ import SOARequestStrategy from './pages/SOARequestStrategy';
 import SOARequestTransactions from './pages/SOARequestTransactions';
 import SOARequestWelcome from './pages/SOARequestWelcome';
 import Register from './pages/Register';
+import SignIn from './pages/SignIn';
 import __Layout from './Layout.jsx';
 
 
@@ -134,6 +135,7 @@ export const PAGES = {
     "SOARequestTransactions": SOARequestTransactions,
     "SOARequestWelcome": SOARequestWelcome,
     "Register": Register,
+    "SignIn": SignIn,
 }
 
 export const pagesConfig = {

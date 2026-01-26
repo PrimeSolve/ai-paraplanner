@@ -73,18 +73,18 @@ export default function PublicHome() {
           </div>
 
           <div className="flex items-center gap-4">
-            <button 
-              onClick={() => base44.auth.redirectToLogin()}
-              className="px-6 py-3 rounded-[10px] text-[15px] font-semibold text-[#0f172a] bg-transparent border-2 border-[#e2e8f0] hover:border-[#0f172a] hover:bg-[#0f172a] hover:text-white transition-all"
+            <a 
+              href={createPageUrl('SignIn')}
+              className="px-6 py-3 rounded-[10px] text-[15px] font-semibold text-[#0f172a] bg-transparent border-2 border-[#e2e8f0] hover:border-[#0f172a] hover:bg-[#0f172a] hover:text-white transition-all no-underline inline-block"
             >
               Log In
-            </button>
-            <button 
-              onClick={() => base44.auth.redirectToLogin()}
-              className="px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all"
+            </a>
+            <a 
+              href={createPageUrl('Register')}
+              className="px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all no-underline inline-block"
             >
               Register
-            </button>
+            </a>
           </div>
         </div>
       </nav>
@@ -118,12 +118,12 @@ export default function PublicHome() {
             </p>
 
             <div className="flex gap-4 mb-12">
-              <button 
-                onClick={() => base44.auth.redirectToLogin()}
-                className="px-8 py-4 rounded-[12px] text-[17px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all"
+              <a 
+                href={createPageUrl('Register')}
+                className="px-8 py-4 rounded-[12px] text-[17px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all no-underline inline-block"
               >
                 Get Started
-              </button>
+              </a>
               <a 
                 href="#how-it-works"
                 className="px-8 py-4 rounded-[12px] text-[17px] font-semibold text-[#0f172a] bg-white border-2 border-[#e2e8f0] hover:border-[#0f172a] inline-flex items-center gap-2 no-underline transition-all"
@@ -613,12 +613,12 @@ export default function PublicHome() {
                   <span className="text-[15px] text-white">Stress test report</span>
                 </div>
               </div>
-              <button 
-                onClick={() => base44.auth.redirectToLogin()}
-                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all"
+              <a 
+                href={createPageUrl('Register')}
+                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all no-underline inline-block text-center"
               >
                 Get Started
-              </button>
+              </a>
             </div>
 
             {/* Tier 3 - Enterprise */}
@@ -650,12 +650,12 @@ export default function PublicHome() {
                   <span className="text-[15px] text-[#e2e8f0]">Custom integrations</span>
                 </div>
               </div>
-              <button 
-                onClick={() => base44.auth.redirectToLogin()}
-                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-transparent border-2 border-white/20 hover:border-white hover:bg-white hover:text-[#0f172a] transition-all"
+              <a 
+                href={createPageUrl('PublicContact')}
+                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-transparent border-2 border-white/20 hover:border-white hover:bg-white hover:text-[#0f172a] transition-all no-underline inline-block text-center"
               >
                 Contact Us
-              </button>
+              </a>
             </div>
           </div>
         </div>

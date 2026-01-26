@@ -68,7 +68,7 @@ export default function Register() {
           </Link>
 
           <Link 
-            to={createPageUrl('Login')}
+            to={createPageUrl('SignIn')}
             className="text-[15px] font-medium text-[#334155] hover:text-[#0f172a] no-underline"
           >
             Already have an account? <span className="text-[#3b82f6]">Log in</span>
@@ -238,7 +238,7 @@ export default function Register() {
             <div className="mt-6 text-center">
               <p className="text-[14px] text-[#64748b]">
                 Already have an account?{' '}
-                <Link to={createPageUrl('Login')} className="text-[#3b82f6] font-semibold hover:underline">
+                <Link to={createPageUrl('SignIn')} className="text-[#3b82f6] font-semibold hover:underline">
                   Log in
                 </Link>
               </p>
