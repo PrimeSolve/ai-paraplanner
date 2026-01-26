@@ -1,179 +1,193 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, MessageSquare, RefreshCw, Info, Plus, Trash2, Edit2, DollarSign, TrendingUp } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-const tabs = [
-  { id: 'income', label: 'Income', icon: '💰' },
-  { id: 'expenses', label: 'Expenses', icon: '📋' }
-];
+import { ArrowRight, ArrowLeft, Edit2, Trash2, Plus } from 'lucide-react';
 
 export default function FactFindIncomeExpenses() {
   const navigate = useNavigate();
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('income');
-  const [activeOwner, setActiveOwner] = useState('client');
-  
-  // Income state
-  const [incomeData, setIncomeData] = useState({
-    client: {
-      gross_salary: '',
-      super_included: 'exclude',
-      fringe_benefits_value: '',
-      expected_bonus: '',
-      has_fringe_benefits: 'no',
-      annual_salary_increase: '',
-      has_non_taxable: 'no',
-      adjustments: []
-    },
-    partner: {
-      gross_salary: '',
-      super_included: 'exclude',
-      fringe_benefits_value: '',
-      expected_bonus: '',
-      has_fringe_benefits: 'no',
-      annual_salary_increase: '',
-      has_non_taxable: 'no',
-      adjustments: []
+  const [currentTab, setCurrentTab] = useState('inc');
+  const [activePerson, setActivePerson] = useState('c1');
+  const [hasPartner, setHasPartner] = useState(false);
+
+  const [clientFields, setClientFields] = useState({});
+  const [partnerFields, setPartnerFields] = useState({});
+  const [expenseFields, setExpenseFields] = useState({});
+
+  const [clientAdjustments, setClientAdjustments] = useState([]);
+  const [partnerAdjustments, setPartnerAdjustments] = useState([]);
+  const [expenseAdjustments, setExpenseAdjustments] = useState([]);
+
+  const [editingIncomeAdj, setEditingIncomeAdj] = useState(null);
+  const [editingExpenseAdj, setEditingExpenseAdj] = useState(null);
+
+  const getClientName = useCallback(() => {
+    if (factFind?.personal?.client?.first_name) {
+      return `${factFind.personal.client.first_name} ${factFind.personal.client.last_name || ''}`.trim();
     }
-  });
+    return 'Client';
+  }, [factFind]);
 
-  // Expenses state
-  const [expensesData, setExpensesData] = useState({
-    annual_savings: '',
-    discretionary_spending: '',
-    spending_frequency: '',
-    adjustments: []
-  });
+  const getPartnerName = useCallback(() => {
+    if (factFind?.personal?.partner?.first_name) {
+      return `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim();
+    }
+    return 'Partner';
+  }, [factFind]);
 
-  const [adjustmentForm, setAdjustmentForm] = useState({
-    type: '',
-    adjustment_type: '',
-    start_year: '',
-    end_year: '',
-    amount: '',
-    description: ''
-  });
-  const [editingAdjustmentIndex, setEditingAdjustmentIndex] = useState(null);
+  const loadData = useCallback(async () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
+      if (id) {
+        const finds = await base44.entities.FactFind.filter({ id });
+        if (finds[0]) {
+          setFactFind(finds[0]);
+          const incomeData = finds[0].income || {};
 
-        if (id) {
-          const finds = await base44.entities.FactFind.filter({ id });
-          if (finds[0]) {
-            setFactFind(finds[0]);
-            if (finds[0].income_expenses?.income_sources) {
-              setIncomeData(finds[0].income_expenses.income_sources);
-            }
-            if (finds[0].income_expenses?.expenses) {
-              setExpensesData(finds[0].income_expenses.expenses);
-            }
-          }
+          setCurrentTab(incomeData.currentTab || 'inc');
+          setActivePerson(incomeData.activePerson || 'c1');
+          setHasPartner(incomeData.hasPartner || false);
+
+          setClientFields(incomeData.client?.fields || {});
+          setPartnerFields(incomeData.partner?.fields || {});
+          setExpenseFields(incomeData.expenses?.fields || {});
+
+          setClientAdjustments(incomeData.client?.adjustments || []);
+          setPartnerAdjustments(incomeData.partner?.adjustments || []);
+          setExpenseAdjustments(incomeData.expenses?.adjustments || []);
         }
-      } catch (error) {
-        console.error('Error loading fact find:', error);
-      } finally {
-        setLoading(false);
       }
-    };
-    loadData();
+    } catch (error) {
+      console.error('Error loading fact find:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const handleAddAdjustment = () => {
-    if (activeTab === 'income') {
-      if (!adjustmentForm.adjustment_type || !adjustmentForm.start_year) {
-        toast.error('Please fill in required fields');
-        return;
-      }
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
-      const updated = { ...incomeData };
-      if (editingAdjustmentIndex !== null) {
-        updated[activeOwner].adjustments[editingAdjustmentIndex] = adjustmentForm;
+  const handleAddPartner = () => {
+    setHasPartner(true);
+    setActivePerson('c2');
+  };
+
+  const updateClientField = useCallback((field, value) => {
+    setClientFields(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const updatePartnerField = useCallback((field, value) => {
+    setPartnerFields(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const updateExpenseField = useCallback((field, value) => {
+    setExpenseFields(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  // Income adjustments
+  const addIncomeAdjustment = () => {
+    setEditingIncomeAdj({ adj_type: '', adj_amount: '', adj_start: '', adj_end: '', adj_notes: '' });
+  };
+
+  const saveIncomeAdjustment = () => {
+    if (!editingIncomeAdj) return;
+
+    if (activePerson === 'c1') {
+      if (editingIncomeAdj.index !== undefined) {
+        setClientAdjustments(prev => prev.map((adj, i) => i === editingIncomeAdj.index ? { ...editingIncomeAdj } : adj));
       } else {
-        updated[activeOwner].adjustments.push(adjustmentForm);
+        setClientAdjustments(prev => [...prev, editingIncomeAdj]);
       }
-      setIncomeData(updated);
     } else {
-      if (!adjustmentForm.amount || !adjustmentForm.start_year) {
-        toast.error('Please fill in required fields');
-        return;
-      }
-
-      const updated = { ...expensesData };
-      if (editingAdjustmentIndex !== null) {
-        updated.adjustments[editingAdjustmentIndex] = adjustmentForm;
+      if (editingIncomeAdj.index !== undefined) {
+        setPartnerAdjustments(prev => prev.map((adj, i) => i === editingIncomeAdj.index ? { ...editingIncomeAdj } : adj));
       } else {
-        updated.adjustments.push(adjustmentForm);
+        setPartnerAdjustments(prev => [...prev, editingIncomeAdj]);
       }
-      setExpensesData(updated);
     }
-
-    resetAdjustmentForm();
+    setEditingIncomeAdj(null);
   };
 
-  const resetAdjustmentForm = () => {
-    setAdjustmentForm({
-      type: '',
-      adjustment_type: '',
-      start_year: '',
-      end_year: '',
-      amount: '',
-      description: ''
-    });
-    setEditingAdjustmentIndex(null);
+  const editIncomeAdjustmentAt = (index) => {
+    const adj = activePerson === 'c1' ? clientAdjustments[index] : partnerAdjustments[index];
+    setEditingIncomeAdj({ ...adj, index });
   };
 
-  const handleEditAdjustment = (index) => {
-    if (activeTab === 'income') {
-      setAdjustmentForm(incomeData[activeOwner].adjustments[index]);
+  const deleteIncomeAdjustmentAt = (index) => {
+    if (activePerson === 'c1') {
+      setClientAdjustments(prev => prev.filter((_, i) => i !== index));
     } else {
-      setAdjustmentForm(expensesData.adjustments[index]);
+      setPartnerAdjustments(prev => prev.filter((_, i) => i !== index));
     }
-    setEditingAdjustmentIndex(index);
   };
 
-  const handleDeleteAdjustment = (index) => {
-    if (activeTab === 'income') {
-      const updated = { ...incomeData };
-      updated[activeOwner].adjustments = updated[activeOwner].adjustments.filter((_, i) => i !== index);
-      setIncomeData(updated);
+  // Expense adjustments
+  const addExpenseAdjustment = () => {
+    setEditingExpenseAdj({ e_adj_type: '', e_adj_amount: '', e_adj_start: '', e_adj_end: '', e_adj_notes: '' });
+  };
+
+  const saveExpenseAdjustment = () => {
+    if (!editingExpenseAdj) return;
+
+    if (editingExpenseAdj.index !== undefined) {
+      setExpenseAdjustments(prev => prev.map((adj, i) => i === editingExpenseAdj.index ? { ...editingExpenseAdj } : adj));
     } else {
-      const updated = { ...expensesData };
-      updated.adjustments = updated.adjustments.filter((_, i) => i !== index);
-      setExpensesData(updated);
+      setExpenseAdjustments(prev => [...prev, editingExpenseAdj]);
     }
+    setEditingExpenseAdj(null);
+  };
+
+  const editExpenseAdjustmentAt = (index) => {
+    setEditingExpenseAdj({ ...expenseAdjustments[index], index });
+  };
+
+  const deleteExpenseAdjustmentAt = (index) => {
+    setExpenseAdjustments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const getAdjustmentTypeLabel = (value) => {
+    const types = { '1': 'Salary', '2': 'Fringe benefits', '3': 'Non taxable income', '4': 'Bonus income', '1000': 'Business turnover' };
+    return types[value] || '-';
+  };
+
+  const getExpenseAdjTypeLabel = (value) => {
+    const types = { '1': 'Home & Contents', '2': 'Personal & Medical', '3': 'Transport & Auto', '4': 'Entertainment', '5': 'Insurance', '6': 'Debt servicing' };
+    return types[value] || '-';
   };
 
   const handleNext = async () => {
+    if (!factFind?.id) {
+      toast.error('Unable to save data');
+      return;
+    }
+
     setSaving(true);
     try {
-      const sectionsCompleted = factFind.sections_completed || [];
+      const sectionsCompleted = [...(factFind.sections_completed || [])];
       if (!sectionsCompleted.includes('income_expenses')) {
         sectionsCompleted.push('income_expenses');
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        income_expenses: {
-          income_sources: incomeData,
-          expenses: expensesData
+        income: {
+          currentTab,
+          activePerson,
+          hasPartner,
+          client: { fields: clientFields, adjustments: clientAdjustments },
+          partner: { fields: partnerFields, adjustments: partnerAdjustments },
+          expenses: { fields: expenseFields, adjustments: expenseAdjustments }
         },
-        current_section: 'insurance',
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
@@ -200,506 +214,595 @@ export default function FactFindIncomeExpenses() {
     );
   }
 
-  const currentAdjustments = activeTab === 'income' 
-    ? incomeData[activeOwner].adjustments 
-    : expensesData.adjustments;
-
-  const handleTabChange = (newTab) => {
-    setActiveTab(newTab);
-    setEditingAdjustmentIndex(null);
-    resetAdjustmentForm();
-  };
+  const currentAdjustments = activePerson === 'c1' ? clientAdjustments : partnerAdjustments;
+  const currentPersonFields = activePerson === 'c1' ? clientFields : partnerFields;
+  const updatePersonField = activePerson === 'c1' ? updateClientField : updatePartnerField;
 
   return (
     <FactFindLayout currentSection="income_expenses" factFind={factFind}>
       <FactFindHeader
         title="Income & Expenses"
         description="Record current details and add any future adjustments."
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
+        tabs={[
+          { id: 'inc', label: 'Income' },
+          { id: 'exp', label: 'Expenses' }
+        ]}
+        activeTab={currentTab}
+        onTabChange={setCurrentTab}
         factFind={factFind}
       />
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="w-full space-y-4">
-          {activeTab === 'income' ? (
-            <>
-              {/* Owner Selection */}
-              <div className="flex items-center justify-between bg-slate-100 border border-slate-200 rounded-lg px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-slate-800 text-sm">Owner:</span>
-                  <div className="flex gap-2">
-                    {['client', 'partner'].map(owner => (
+      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="w-full space-y-6">
+          {/* CLIENT/PARTNER BAR (INCOME ONLY) */}
+          {currentTab === 'inc' && (
+            <Card className="border-slate-200 shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="font-bold text-slate-800">Income information</div>
+                    <div className="flex gap-2">
                       <button
-                        key={owner}
-                        onClick={() => setActiveOwner(owner)}
-                        className={cn(
-                          "px-3 py-1.5 rounded-full text-xs font-bold border transition-all capitalize",
-                          activeOwner === owner
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
-                        )}
+                        onClick={() => setActivePerson('c1')}
+                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                          activePerson === 'c1'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
                       >
-                        {owner}
+                        {getClientName()}
                       </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Income Form */}
-              <Card className="border-slate-200 shadow-sm">
-                <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 rounded-t-lg">
-                  <h4 className="font-bold text-white capitalize">
-                    {activeOwner} Income Information
-                  </h4>
-                </div>
-                <CardContent className="p-6 space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">What is your gross salary?</Label>
-                      <Input
-                        type="number"
-                        value={incomeData[activeOwner].gross_salary}
-                        onChange={(e) => setIncomeData({
-                          ...incomeData,
-                          [activeOwner]: { ...incomeData[activeOwner], gross_salary: e.target.value }
-                        })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Superannuation included?</Label>
-                      <Select 
-                        value={incomeData[activeOwner].super_included}
-                        onValueChange={(value) => setIncomeData({
-                          ...incomeData,
-                          [activeOwner]: { ...incomeData[activeOwner], super_included: value }
-                        })}
+                      <button
+                        onClick={() => setActivePerson('c2')}
+                        disabled={!hasPartner}
+                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                          activePerson === 'c2'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="include">Include super</SelectItem>
-                          <SelectItem value="exclude">Exclude super</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        {getPartnerName()}
+                      </button>
                     </div>
                   </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Value of fringe benefits ($)</Label>
-                      <Input
-                        type="number"
-                        value={incomeData[activeOwner].fringe_benefits_value}
-                        onChange={(e) => setIncomeData({
-                          ...incomeData,
-                          [activeOwner]: { ...incomeData[activeOwner], fringe_benefits_value: e.target.value }
-                        })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Expected bonus income ($)</Label>
-                      <Input
-                        type="number"
-                        value={incomeData[activeOwner].expected_bonus}
-                        onChange={(e) => setIncomeData({
-                          ...incomeData,
-                          [activeOwner]: { ...incomeData[activeOwner], expected_bonus: e.target.value }
-                        })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Do you receive any fringe benefits?</Label>
-                      <Select 
-                        value={incomeData[activeOwner].has_fringe_benefits}
-                        onValueChange={(value) => setIncomeData({
-                          ...incomeData,
-                          [activeOwner]: { ...incomeData[activeOwner], has_fringe_benefits: value }
-                        })}
-                      >
-                        <SelectTrigger className="border-slate-300">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="yes">Yes</SelectItem>
-                          <SelectItem value="no">No</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Expected salary increase each year (%)</Label>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        value={incomeData[activeOwner].annual_salary_increase}
-                        onChange={(e) => setIncomeData({
-                          ...incomeData,
-                          [activeOwner]: { ...incomeData[activeOwner], annual_salary_increase: e.target.value }
-                        })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold text-sm">Is any of your salary non-taxable?</Label>
-                    <Select 
-                      value={incomeData[activeOwner].has_non_taxable}
-                      onValueChange={(value) => setIncomeData({
-                        ...incomeData,
-                        [activeOwner]: { ...incomeData[activeOwner], has_non_taxable: value }
-                      })}
-                    >
-                      <SelectTrigger className="border-slate-300">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="yes">Yes</SelectItem>
-                        <SelectItem value="no">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Future Income Adjustments */}
-              <Card className="border-slate-200 shadow-sm">
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 rounded-t-lg">
-                  <h4 className="font-bold text-white">Future Income Adjustments</h4>
+                  {!hasPartner && (
+                    <Button onClick={handleAddPartner} variant="outline" size="sm" className="border-slate-300">
+                      <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                      Add Partner
+                    </Button>
+                  )}
                 </div>
-                <CardContent className="p-6 space-y-4">
-                  {editingAdjustmentIndex === null && (
-                    <div className="space-y-3">
-                      <div className="grid md:grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label className="text-slate-700 font-semibold text-xs">Adjustment type</Label>
-                          <Select 
-                            value={adjustmentForm.adjustment_type}
-                            onValueChange={(value) => setAdjustmentForm({ ...adjustmentForm, adjustment_type: value })}
-                          >
-                            <SelectTrigger className="border-slate-300 h-9 text-sm">
-                              <SelectValue placeholder="Select..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="salary_increase">Salary increase</SelectItem>
-                              <SelectItem value="bonus">Bonus</SelectItem>
-                              <SelectItem value="career_break">Career break</SelectItem>
-                              <SelectItem value="parental_leave">Parental leave</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-slate-700 font-semibold text-xs">Amount ($)</Label>
-                          <Input
-                            type="number"
-                            value={adjustmentForm.amount}
-                            onChange={(e) => setAdjustmentForm({ ...adjustmentForm, amount: e.target.value })}
-                            placeholder="0"
-                            className="border-slate-300 h-9 text-sm"
-                          />
-                        </div>
-                      </div>
-                      <div className="grid md:grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label className="text-slate-700 font-semibold text-xs">Start year</Label>
-                          <Input
-                            type="number"
-                            value={adjustmentForm.start_year}
-                            onChange={(e) => setAdjustmentForm({ ...adjustmentForm, start_year: e.target.value })}
-                            placeholder="2026"
-                            className="border-slate-300 h-9 text-sm"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-slate-700 font-semibold text-xs">End year (optional)</Label>
-                          <Input
-                            type="number"
-                            value={adjustmentForm.end_year}
-                            onChange={(e) => setAdjustmentForm({ ...adjustmentForm, end_year: e.target.value })}
-                            placeholder="2030"
-                            className="border-slate-300 h-9 text-sm"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex justify-end">
-                        <Button
-                          onClick={handleAddAdjustment}
-                          size="sm"
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          <Plus className="w-3 h-3 mr-2" />
-                          Add Adjustment
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+              </CardContent>
+            </Card>
+          )}
 
-                  {currentAdjustments.length === 0 && editingAdjustmentIndex === null ? (
-                    <div className="text-center py-8">
-                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
-                        <TrendingUp className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <h5 className="font-bold text-slate-800 text-sm mb-1">No income adjustments yet</h5>
-                      <p className="text-xs text-slate-600">
-                        Add future changes to income like salary increases, bonuses, career breaks, or parental leave.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead className="bg-slate-50 border-b border-slate-200">
-                          <tr>
-                            <th className="px-3 py-2 text-left text-xs font-bold text-slate-700">Adjustment type</th>
-                            <th className="px-3 py-2 text-left text-xs font-bold text-slate-700">Start year</th>
-                            <th className="px-3 py-2 text-left text-xs font-bold text-slate-700">End year</th>
-                            <th className="px-3 py-2 text-left text-xs font-bold text-slate-700">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                          {currentAdjustments.map((adj, index) => (
-                            <tr key={index} className="hover:bg-slate-50">
-                              <td className="px-3 py-2 text-xs text-slate-800 capitalize">{adj.adjustment_type?.replace('_', ' ')}</td>
-                              <td className="px-3 py-2 text-xs text-slate-600">{adj.start_year}</td>
-                              <td className="px-3 py-2 text-xs text-slate-600">{adj.end_year || '-'}</td>
-                              <td className="px-3 py-2">
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleEditAdjustment(index)}
-                                    className="border-slate-300 h-7 px-2"
-                                  >
-                                    <Edit2 className="w-3 h-3" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleDeleteAdjustment(index)}
-                                    className="border-red-300 text-red-600 hover:bg-red-50 h-7 px-2"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </>
-          ) : (
+          {/* INCOME TAB */}
+          {currentTab === 'inc' && (
             <>
-              {/* Expenses Form */}
+              {/* INCOME FIELDS */}
               <Card className="border-slate-200 shadow-sm">
-                <div className="bg-gradient-to-r from-amber-600 to-orange-600 px-6 py-3 rounded-t-lg">
-                  <h4 className="font-bold text-white">Expense Information</h4>
-                </div>
                 <CardContent className="p-6 space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">What is your gross salary?</label>
+                    <input
+                      type="text"
+                      value={currentPersonFields.i_gross || ''}
+                      onChange={(e) => updatePersonField('i_gross', e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
                   <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">How much do you currently save per annum? ($)</Label>
-                      <Input
-                        type="number"
-                        value={expensesData.annual_savings}
-                        onChange={(e) => setExpensesData({ ...expensesData, annual_savings: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-3">Superannuation included?</label>
+                      <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name={`i_super_inc_${activePerson}`}
+                            value="1"
+                            checked={currentPersonFields.i_super_inc === '1'}
+                            onChange={(e) => updatePersonField('i_super_inc', e.target.value)}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm text-slate-700">Include super</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name={`i_super_inc_${activePerson}`}
+                            value="2"
+                            checked={currentPersonFields.i_super_inc === '2'}
+                            onChange={(e) => updatePersonField('i_super_inc', e.target.value)}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm text-slate-700">Exclude super</span>
+                        </label>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold text-sm">Estimated discretionary spending ($)</Label>
-                      <Input
-                        type="number"
-                        value={expensesData.discretionary_spending}
-                        onChange={(e) => setExpensesData({ ...expensesData, discretionary_spending: e.target.value })}
-                        placeholder="0"
-                        className="border-slate-300"
-                      />
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Value of fringe benefits</label>
+                      <div className="flex items-center">
+                        <span className="text-slate-500 mr-2">$</span>
+                        <input
+                          type="number"
+                          value={currentPersonFields.i_fbt_value || ''}
+                          onChange={(e) => updatePersonField('i_fbt_value', e.target.value)}
+                          step="0.01"
+                          min="0"
+                          className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold text-sm">Spending frequency</Label>
-                    <Select 
-                      value={expensesData.spending_frequency}
-                      onValueChange={(value) => setExpensesData({ ...expensesData, spending_frequency: value })}
-                    >
-                      <SelectTrigger className="border-slate-300">
-                        <SelectValue placeholder="Select..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="weekly">Weekly</SelectItem>
-                        <SelectItem value="fortnightly">Fortnightly</SelectItem>
-                        <SelectItem value="monthly">Monthly</SelectItem>
-                        <SelectItem value="quarterly">Quarterly</SelectItem>
-                        <SelectItem value="annual">Annual</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Expected bonus income</label>
+                      <div className="flex items-center">
+                        <span className="text-slate-500 mr-2">$</span>
+                        <input
+                          type="number"
+                          value={currentPersonFields.i_bonus || ''}
+                          onChange={(e) => updatePersonField('i_bonus', e.target.value)}
+                          step="0.01"
+                          min="0"
+                          className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-3">Do you receive any fringe benefits</label>
+                      <div className="flex gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name={`i_fbt_${activePerson}`}
+                            value="1"
+                            checked={currentPersonFields.i_fbt === '1'}
+                            onChange={(e) => updatePersonField('i_fbt', e.target.value)}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm text-slate-700">Yes</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name={`i_fbt_${activePerson}`}
+                            value="2"
+                            checked={currentPersonFields.i_fbt === '2'}
+                            onChange={(e) => updatePersonField('i_fbt', e.target.value)}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm text-slate-700">No</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">How much do you expect your salary to increase each year</label>
+                    <input
+                      type="text"
+                      value={currentPersonFields.i_increase || ''}
+                      onChange={(e) => updatePersonField('i_increase', e.target.value)}
+                      placeholder="e.g. 3%"
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-3">Is any of your salary non-taxable?</label>
+                      <div className="flex gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name={`i_nontax_${activePerson}`}
+                            value="1"
+                            checked={currentPersonFields.i_nontax === '1'}
+                            onChange={(e) => updatePersonField('i_nontax', e.target.value)}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm text-slate-700">Yes</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name={`i_nontax_${activePerson}`}
+                            value="2"
+                            checked={currentPersonFields.i_nontax === '2'}
+                            onChange={(e) => updatePersonField('i_nontax', e.target.value)}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm text-slate-700">No</span>
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Future Expense Adjustments */}
-              <Card className="border-slate-200 shadow-sm">
-                <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3 rounded-t-lg">
-                  <h4 className="font-bold text-white">Future Expense Adjustments</h4>
-                </div>
-                <CardContent className="p-6 space-y-4">
-                  {editingAdjustmentIndex === null && (
-                    <div className="space-y-3">
-                      <div className="grid md:grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label className="text-slate-700 font-semibold text-xs">Adjustment description</Label>
-                          <Input
-                            value={adjustmentForm.description}
-                            onChange={(e) => setAdjustmentForm({ ...adjustmentForm, description: e.target.value })}
-                            placeholder="e.g., Major purchase, lifestyle change"
-                            className="border-slate-300 h-9 text-sm"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-slate-700 font-semibold text-xs">Adjustment amount ($)</Label>
-                          <Input
-                            type="number"
-                            value={adjustmentForm.amount}
-                            onChange={(e) => setAdjustmentForm({ ...adjustmentForm, amount: e.target.value })}
-                            placeholder="0"
-                            className="border-slate-300 h-9 text-sm"
-                          />
-                        </div>
+              {/* INCOME ADJUSTMENTS */}
+              {currentAdjustments.length === 0 && !editingIncomeAdj ? (
+                <Card className="border-slate-200 shadow-sm">
+                  <CardContent className="p-12 text-center">
+                    <div className="text-6xl mb-6">📊</div>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-2">No income adjustments yet</h3>
+                    <p className="text-slate-600 mb-8">Add future changes to income like salary increases, bonuses, career breaks, or parental leave.</p>
+                    <Button onClick={addIncomeAdjustment} className="bg-blue-600 hover:bg-blue-700 text-white">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add First Adjustment
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <>
+                  {currentAdjustments.length > 0 && (
+                    <Card className="border-slate-200 shadow-sm">
+                      <div className="bg-slate-100 border-b border-slate-200 px-6 py-3">
+                        <h4 className="font-bold text-slate-800">📊 Income Adjustments ({currentAdjustments.length})</h4>
                       </div>
-                      <div className="grid md:grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label className="text-slate-700 font-semibold text-xs">Start year</Label>
-                          <Input
-                            type="number"
-                            value={adjustmentForm.start_year}
-                            onChange={(e) => setAdjustmentForm({ ...adjustmentForm, start_year: e.target.value })}
-                            placeholder="2026"
-                            className="border-slate-300 h-9 text-sm"
-                          />
+                      <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead className="bg-slate-50 border-b border-slate-200">
+                              <tr>
+                                <th className="px-4 py-3 text-left font-semibold text-slate-700">Adjustment type</th>
+                                <th className="px-4 py-3 text-left font-semibold text-slate-700">Start year</th>
+                                <th className="px-4 py-3 text-left font-semibold text-slate-700">End year</th>
+                                <th className="px-4 py-3 text-left font-semibold text-slate-700">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200">
+                              {currentAdjustments.map((adj, idx) => (
+                                <tr key={idx} className="hover:bg-slate-50">
+                                  <td className="px-4 py-3 font-medium text-slate-800">{getAdjustmentTypeLabel(adj.adj_type)}</td>
+                                  <td className="px-4 py-3 text-slate-600">{adj.adj_start || '-'}</td>
+                                  <td className="px-4 py-3 text-slate-600">{adj.adj_end || '-'}</td>
+                                  <td className="px-4 py-3">
+                                    <div className="flex gap-2">
+                                      <Button variant="outline" size="sm" onClick={() => editIncomeAdjustmentAt(idx)} className="border-slate-300"><Edit2 className="w-3 h-3" /></Button>
+                                      <Button variant="outline" size="sm" onClick={() => deleteIncomeAdjustmentAt(idx)} className="border-red-300 text-red-600 hover:bg-red-50"><Trash2 className="w-3 h-3" /></Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-slate-700 font-semibold text-xs">End year (optional)</Label>
-                          <Input
-                            type="number"
-                            value={adjustmentForm.end_year}
-                            onChange={(e) => setAdjustmentForm({ ...adjustmentForm, end_year: e.target.value })}
-                            placeholder="2030"
-                            className="border-slate-300 h-9 text-sm"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex justify-end">
-                        <Button
-                          onClick={handleAddAdjustment}
-                          size="sm"
-                          className="bg-purple-600 hover:bg-purple-700 text-white"
-                        >
-                          <Plus className="w-3 h-3 mr-2" />
-                          Add Adjustment
-                        </Button>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   )}
 
-                  {currentAdjustments.length === 0 && editingAdjustmentIndex === null ? (
-                    <div className="text-center py-8">
-                      <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-3">
-                        <DollarSign className="w-6 h-6 text-purple-600" />
+                  {editingIncomeAdj && (
+                    <Card className="border-slate-200 shadow-sm border-blue-300 bg-blue-50/50">
+                      <div className="bg-blue-600 px-6 py-3 rounded-t-lg">
+                        <h4 className="font-bold text-white">✏️ Income adjustment details</h4>
                       </div>
-                      <h5 className="font-bold text-slate-800 text-sm mb-1">No expense adjustments yet</h5>
-                      <p className="text-xs text-slate-600">
-                        Add future changes to expenses like major purchases, lifestyle changes, or planned reductions.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead className="bg-slate-50 border-b border-slate-200">
-                          <tr>
-                            <th className="px-3 py-2 text-left text-xs font-bold text-slate-700">Adjustment amount</th>
-                            <th className="px-3 py-2 text-left text-xs font-bold text-slate-700">Start year</th>
-                            <th className="px-3 py-2 text-left text-xs font-bold text-slate-700">End year</th>
-                            <th className="px-3 py-2 text-left text-xs font-bold text-slate-700">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                          {currentAdjustments.map((adj, index) => (
-                            <tr key={index} className="hover:bg-slate-50">
-                              <td className="px-3 py-2 text-xs text-slate-800 font-semibold">
-                                ${parseFloat(adj.amount || 0).toLocaleString()}
-                              </td>
-                              <td className="px-3 py-2 text-xs text-slate-600">{adj.start_year}</td>
-                              <td className="px-3 py-2 text-xs text-slate-600">{adj.end_year || '-'}</td>
-                              <td className="px-3 py-2">
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleEditAdjustment(index)}
-                                    className="border-slate-300 h-7 px-2"
-                                  >
-                                    <Edit2 className="w-3 h-3" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleDeleteAdjustment(index)}
-                                    className="border-red-300 text-red-600 hover:bg-red-50 h-7 px-2"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                      <CardContent className="p-6 space-y-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Adjustment type</label>
+                          <select
+                            value={editingIncomeAdj.adj_type}
+                            onChange={(e) => setEditingIncomeAdj({ ...editingIncomeAdj, adj_type: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select adjustment type…</option>
+                            <option value="1">Salary</option>
+                            <option value="2">Fringe benefits</option>
+                            <option value="3">Non taxable income</option>
+                            <option value="4">Bonus income</option>
+                            <option value="1000">Business turnover</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Amount (if applicable)</label>
+                          <div className="flex items-center">
+                            <span className="text-slate-500 mr-2">$</span>
+                            <input
+                              type="number"
+                              value={editingIncomeAdj.adj_amount}
+                              onChange={(e) => setEditingIncomeAdj({ ...editingIncomeAdj, adj_amount: e.target.value })}
+                              step="0.01"
+                              min="0"
+                              className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Start year</label>
+                            <input
+                              type="number"
+                              value={editingIncomeAdj.adj_start}
+                              onChange={(e) => setEditingIncomeAdj({ ...editingIncomeAdj, adj_start: e.target.value })}
+                              min="2024"
+                              max="2100"
+                              placeholder="YYYY"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">End year</label>
+                            <input
+                              type="number"
+                              value={editingIncomeAdj.adj_end}
+                              onChange={(e) => setEditingIncomeAdj({ ...editingIncomeAdj, adj_end: e.target.value })}
+                              min="2024"
+                              max="2100"
+                              placeholder="YYYY"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Notes</label>
+                          <input
+                            type="text"
+                            value={editingIncomeAdj.adj_notes}
+                            onChange={(e) => setEditingIncomeAdj({ ...editingIncomeAdj, adj_notes: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+
+                        <div className="flex justify-end gap-3">
+                          <Button onClick={() => setEditingIncomeAdj(null)} variant="outline" className="border-slate-300">
+                            Cancel
+                          </Button>
+                          <Button onClick={saveIncomeAdjustment} className="bg-blue-600 hover:bg-blue-700 text-white">
+                            Save Adjustment
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
                   )}
-                </CardContent>
-              </Card>
+
+                  {!editingIncomeAdj && (
+                    <Button onClick={addIncomeAdjustment} className="bg-blue-600 hover:bg-blue-700 text-white w-full">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Another Adjustment
+                    </Button>
+                  )}
+                </>
+              )}
             </>
           )}
 
-          {/* Navigation */}
+          {/* EXPENSES TAB */}
+          {currentTab === 'exp' && (
+            <>
+              {/* EXPENSE FIELDS */}
+              <Card className="border-slate-200 shadow-sm">
+                <CardContent className="p-6 space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">How much do you currently save per annum?</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input
+                        type="number"
+                        value={expenseFields.e_save || ''}
+                        onChange={(e) => updateExpenseField('e_save', e.target.value)}
+                        step="0.01"
+                        min="0"
+                        className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Estimated discretionary spending</label>
+                    <div className="flex items-center">
+                      <span className="text-slate-500 mr-2">$</span>
+                      <input
+                        type="number"
+                        value={expenseFields.e_disc || ''}
+                        onChange={(e) => updateExpenseField('e_disc', e.target.value)}
+                        step="0.01"
+                        min="0"
+                        className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Spending frequency</label>
+                    <select
+                      value={expenseFields.e_freq || ''}
+                      onChange={(e) => updateExpenseField('e_freq', e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select…</option>
+                      <option value="1">Weekly</option>
+                      <option value="2">Fortnightly</option>
+                      <option value="3">Monthly</option>
+                      <option value="4">Quarterly</option>
+                      <option value="5">Annual</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Upload budget</label>
+                    <input
+                      type="file"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          updateExpenseField('e_budget', e.target.files[0].name);
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* EXPENSE ADJUSTMENTS */}
+              {expenseAdjustments.length === 0 && !editingExpenseAdj ? (
+                <Card className="border-slate-200 shadow-sm">
+                  <CardContent className="p-12 text-center">
+                    <div className="text-6xl mb-6">💰</div>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-2">No expense adjustments yet</h3>
+                    <p className="text-slate-600 mb-8">Add future changes to expenses like major purchases, lifestyle changes, or planned reductions.</p>
+                    <Button onClick={addExpenseAdjustment} className="bg-blue-600 hover:bg-blue-700 text-white">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add First Adjustment
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <>
+                  {expenseAdjustments.length > 0 && (
+                    <Card className="border-slate-200 shadow-sm">
+                      <div className="bg-slate-100 border-b border-slate-200 px-6 py-3">
+                        <h4 className="font-bold text-slate-800">💰 Expense Adjustments ({expenseAdjustments.length})</h4>
+                      </div>
+                      <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead className="bg-slate-50 border-b border-slate-200">
+                              <tr>
+                                <th className="px-4 py-3 text-left font-semibold text-slate-700">Adjustment amount</th>
+                                <th className="px-4 py-3 text-left font-semibold text-slate-700">Start year</th>
+                                <th className="px-4 py-3 text-left font-semibold text-slate-700">End year</th>
+                                <th className="px-4 py-3 text-left font-semibold text-slate-700">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200">
+                              {expenseAdjustments.map((adj, idx) => (
+                                <tr key={idx} className="hover:bg-slate-50">
+                                  <td className="px-4 py-3 font-semibold text-slate-800">
+                                    {adj.e_adj_amount ? `$${parseFloat(adj.e_adj_amount).toLocaleString()}` : '-'}
+                                  </td>
+                                  <td className="px-4 py-3 text-slate-600">{adj.e_adj_start || '-'}</td>
+                                  <td className="px-4 py-3 text-slate-600">{adj.e_adj_end || '-'}</td>
+                                  <td className="px-4 py-3">
+                                    <div className="flex gap-2">
+                                      <Button variant="outline" size="sm" onClick={() => editExpenseAdjustmentAt(idx)} className="border-slate-300"><Edit2 className="w-3 h-3" /></Button>
+                                      <Button variant="outline" size="sm" onClick={() => deleteExpenseAdjustmentAt(idx)} className="border-red-300 text-red-600 hover:bg-red-50"><Trash2 className="w-3 h-3" /></Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {editingExpenseAdj && (
+                    <Card className="border-slate-200 shadow-sm border-blue-300 bg-blue-50/50">
+                      <div className="bg-blue-600 px-6 py-3 rounded-t-lg">
+                        <h4 className="font-bold text-white">✏️ Expense adjustment details</h4>
+                      </div>
+                      <CardContent className="p-6 space-y-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Adjustment type</label>
+                          <select
+                            value={editingExpenseAdj.e_adj_type}
+                            onChange={(e) => setEditingExpenseAdj({ ...editingExpenseAdj, e_adj_type: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select adjustment type…</option>
+                            <option value="1">Home & Contents</option>
+                            <option value="2">Personal & Medical</option>
+                            <option value="3">Transport & Auto</option>
+                            <option value="4">Entertainment</option>
+                            <option value="5">Insurance</option>
+                            <option value="6">Debt servicing</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Adjustment amount</label>
+                          <div className="flex items-center">
+                            <span className="text-slate-500 mr-2">$</span>
+                            <input
+                              type="number"
+                              value={editingExpenseAdj.e_adj_amount}
+                              onChange={(e) => setEditingExpenseAdj({ ...editingExpenseAdj, e_adj_amount: e.target.value })}
+                              step="0.01"
+                              min="0"
+                              className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Start year</label>
+                            <input
+                              type="number"
+                              value={editingExpenseAdj.e_adj_start}
+                              onChange={(e) => setEditingExpenseAdj({ ...editingExpenseAdj, e_adj_start: e.target.value })}
+                              min="2024"
+                              max="2100"
+                              placeholder="YYYY"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">End year</label>
+                            <input
+                              type="number"
+                              value={editingExpenseAdj.e_adj_end}
+                              onChange={(e) => setEditingExpenseAdj({ ...editingExpenseAdj, e_adj_end: e.target.value })}
+                              min="2024"
+                              max="2100"
+                              placeholder="YYYY"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Notes</label>
+                          <input
+                            type="text"
+                            value={editingExpenseAdj.e_adj_notes}
+                            onChange={(e) => setEditingExpenseAdj({ ...editingExpenseAdj, e_adj_notes: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+
+                        <div className="flex justify-end gap-3">
+                          <Button onClick={() => setEditingExpenseAdj(null)} variant="outline" className="border-slate-300">
+                            Cancel
+                          </Button>
+                          <Button onClick={saveExpenseAdjustment} className="bg-blue-600 hover:bg-blue-700 text-white">
+                            Save Adjustment
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {!editingExpenseAdj && (
+                    <Button onClick={addExpenseAdjustment} className="bg-blue-600 hover:bg-blue-700 text-white w-full">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Another Adjustment
+                    </Button>
+                  )}
+                </>
+              )}
+            </>
+          )}
+
+          {/* NAVIGATION */}
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
-                <Button
-                  onClick={handleBack}
-                  variant="outline"
-                  disabled={saving}
-                  className="border-slate-300 text-slate-700 hover:bg-slate-50"
-                >
+                <Button onClick={handleBack} variant="outline" disabled={saving} className="border-slate-300 text-slate-700 hover:bg-slate-50">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back
                 </Button>
 
-                <Button
-                  onClick={handleNext}
-                  disabled={saving}
-                  className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
-                >
+                <Button onClick={handleNext} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30">
                   {saving ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
@@ -707,7 +810,7 @@ export default function FactFindIncomeExpenses() {
                     </>
                   ) : (
                     <>
-                      Continue
+                      Save & continue
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </>
                   )}
