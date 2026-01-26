@@ -245,27 +245,31 @@ export default function AdminTemplate() {
                                         <div
                                           ref={provided.innerRef}
                                           {...provided.draggableProps}
-                                          className={`flex items-center justify-between p-3 bg-slate-50 rounded-lg transition-all ${snapshot.isDragging ? 'shadow-md bg-blue-100' : ''}`}
+                                          className={`flex items-start gap-4 p-4 bg-white border border-slate-200 rounded-lg transition-all ${
+                                            snapshot.isDragging ? 'shadow-md border-blue-400 bg-blue-50' : ''
+                                          } ${
+                                            section.status === 'configured' ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-orange-500'
+                                          }`}
                                         >
-                                          <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing mr-2">
+                                          <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing flex-shrink-0 pt-1">
                                             <GripVertical className="w-4 h-4 text-slate-400" />
                                           </div>
-                                          <div className="flex-1">
-                                            <div className="font-medium text-slate-800">{section.label}</div>
-                                            <div className="text-xs text-slate-600 mt-0.5">{section.description}</div>
+                                          <div className="flex-1 min-w-0">
+                                            <div className="font-semibold text-slate-800">{section.label}</div>
+                                            <div className="text-sm text-slate-500 mt-1">{section.description}</div>
                                           </div>
-                                          <div className="flex items-center gap-2 ml-4">
+                                          <div className="flex items-center gap-2 ml-4 flex-shrink-0">
                                             {section.status === 'configured' && (
-                                              <span className="text-xs font-semibold text-green-700 bg-green-100 px-2.5 py-1 rounded">
+                                              <span className="text-xs font-semibold text-green-700 bg-green-100 px-3 py-1.5 rounded-full whitespace-nowrap">
                                                 ✓ Configured
                                               </span>
                                             )}
                                             {section.status === 'needs-comment' && (
-                                              <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2.5 py-1 rounded">
-                                                ⚠ Needs comment
+                                              <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-3 py-1.5 rounded-full whitespace-nowrap">
+                                                ⚠ Needs content
                                               </span>
                                             )}
-                                            <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                                            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">
                                               <Edit className="w-3.5 h-3.5 mr-1" />
                                               Edit
                                             </Button>
