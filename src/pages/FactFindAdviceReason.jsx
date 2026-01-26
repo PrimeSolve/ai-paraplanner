@@ -249,20 +249,7 @@ export default function FactFindAdviceReason() {
     partner: { ...EMPTY_QUICK_PERSON }
   });
   const [objectives, setObjectives] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [objectiveForm, setObjectiveForm] = useState({
-    o_who: [],
-    o_type: '',
-    o_property: '',
-    o_debt: '',
-    o_asset: '',
-    o_start: '',
-    o_end: '',
-    o_freq: '',
-    o_amount: '',
-    o_importance: '',
-    o_why: ''
-  });
+  const [activeObjectiveIndex, setActiveObjectiveIndex] = useState(null);
 
   // Get principal names
   const principalNames = useMemo(() => {
@@ -327,27 +314,8 @@ export default function FactFindAdviceReason() {
     }));
   }, []);
 
-  const handleAddObjective = () => {
-    if (!objectiveForm.o_type || !objectiveForm.o_amount) {
-      toast.error('Please select objective type and enter amount');
-      return;
-    }
-
-    if (editingIndex !== null && editingIndex >= 0) {
-      const updated = [...objectives];
-      updated[editingIndex] = objectiveForm;
-      setObjectives(updated);
-      setEditingIndex(null);
-    } else {
-      setObjectives([...objectives, objectiveForm]);
-      setEditingIndex(null);
-    }
-
-    resetObjectiveForm();
-  };
-
-  const resetObjectiveForm = () => {
-    setObjectiveForm({
+  const addObjective = () => {
+    const newObjective = {
       o_who: [],
       o_type: '',
       o_property: '',
@@ -359,7 +327,24 @@ export default function FactFindAdviceReason() {
       o_amount: '',
       o_importance: '',
       o_why: ''
+    };
+    setObjectives(prev => [...prev, newObjective]);
+    setActiveObjectiveIndex(objectives.length);
+  };
+
+  const updateObjective = (index, field, value) => {
+    setObjectives(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
     });
+  };
+
+  const deleteObjective = (index) => {
+    setObjectives(prev => prev.filter((_, i) => i !== index));
+    if (activeObjectiveIndex >= index && activeObjectiveIndex > 0) {
+      setActiveObjectiveIndex(prev => prev - 1);
+    }
   };
 
   const handleNext = async () => {
@@ -824,7 +809,7 @@ export default function FactFindAdviceReason() {
               {objectiveSubTab === 'detailed' && (
                 <>
                   {/* Empty State */}
-                  {objectives.length === 0 && editingIndex === null && (
+                  {objectives.length === 0 ? (
                     <Card className="border-slate-200 shadow-sm">
                       <CardContent className="p-12 text-center">
                         <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
@@ -835,7 +820,7 @@ export default function FactFindAdviceReason() {
                           Start by adding your first financial objective to track your goals
                         </p>
                         <Button
-                          onClick={() => setEditingIndex(-1)}
+                          onClick={addObjective}
                           className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           <Plus className="w-4 h-4 mr-2" />
@@ -843,274 +828,38 @@ export default function FactFindAdviceReason() {
                         </Button>
                       </CardContent>
                     </Card>
-                  )}
-
-                  {/* Add/Edit Form */}
-                  {editingIndex !== null && (
-                    <Card className="border-slate-200 shadow-sm">
-                      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 rounded-t-lg">
-                        <h4 className="font-bold text-white">{editingIndex >= 0 ? 'Edit Objective' : 'Add New Objective'}</h4>
-                      </div>
-                      <CardContent className="p-6 space-y-4">
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Who does this objective belong to?</label>
-                            <div className="space-y-2">
-                              <label className="flex items-center gap-2">
-                                <input
-                                  type="checkbox"
-                                  checked={objectiveForm.o_who.includes('c1')}
-                                  onChange={(e) => {
-                                    const who = e.target.checked
-                                      ? [...objectiveForm.o_who, 'c1']
-                                      : objectiveForm.o_who.filter(w => w !== 'c1');
-                                    setObjectiveForm({ ...objectiveForm, o_who: who });
-                                  }}
-                                />
-                                <span className="text-sm">{principalNames.client}</span>
-                              </label>
-                              {hasPartner && (
-                                <label className="flex items-center gap-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={objectiveForm.o_who.includes('c2')}
-                                    onChange={(e) => {
-                                      const who = e.target.checked
-                                        ? [...objectiveForm.o_who, 'c2']
-                                        : objectiveForm.o_who.filter(w => w !== 'c2');
-                                      setObjectiveForm({ ...objectiveForm, o_who: who });
-                                    }}
-                                  />
-                                  <span className="text-sm">{principalNames.partner}</span>
-                                </label>
-                              )}
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Objective type</label>
-                            <select
-                              value={objectiveForm.o_type}
-                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_type: e.target.value })}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                            >
-                              <option value="">Select...</option>
-                              {OBJECTIVE_TYPES.map(type => (
-                                <option key={type.value} value={type.value}>{type.label}</option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="grid md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Start year</label>
-                            <select
-                              value={objectiveForm.o_start}
-                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_start: e.target.value })}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                            >
-                              <option value="">Select year...</option>
-                              {Array.from({ length: 51 }, (_, i) => {
-                                const year = new Date().getFullYear() + i;
-                                return <option key={year} value={String(year)}>{year}</option>;
-                              })}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">End year</label>
-                            <select
-                              value={objectiveForm.o_end}
-                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_end: e.target.value })}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                            >
-                              <option value="">Select year...</option>
-                              {Array.from({ length: 51 }, (_, i) => {
-                                const year = new Date().getFullYear() + i;
-                                return <option key={year} value={String(year)}>{year}</option>;
-                              })}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Frequency</label>
-                            <select
-                              value={objectiveForm.o_freq}
-                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_freq: e.target.value })}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                            >
-                              <option value="">Select...</option>
-                              {FREQUENCY_OPTIONS.map(freq => (
-                                <option key={freq.value} value={freq.value}>{freq.label}</option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-
-                        {/* Conditional Fields */}
-                        {PROPERTY_OBJECTIVES.includes(objectiveForm.o_type) && (
-                          <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Which property is this objective for?</label>
-                            <select
-                              value={objectiveForm.o_property}
-                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_property: e.target.value })}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                            >
-                              <option value="">Select...</option>
-                              {(factFind?.assets_liabilities?.assets || [])
-                                .filter(a => a.type === 'property' || a.type === 'real_estate')
-                                .map((asset, idx) => (
-                                  <option key={idx} value={asset.id || idx}>
-                                    {asset.description || asset.name || `Property ${idx + 1}`}
-                                  </option>
-                                ))}
-                            </select>
-                          </div>
-                        )}
-
-                        {DEBT_OBJECTIVES.includes(objectiveForm.o_type) && (
-                          <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Which debt is this objective for?</label>
-                            <select
-                              value={objectiveForm.o_debt}
-                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_debt: e.target.value })}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                            >
-                              <option value="">Select...</option>
-                              {(factFind?.assets_liabilities?.liabilities || []).map((liability, idx) => (
-                                <option key={idx} value={liability.id || idx}>
-                                  {liability.description || liability.type || `Debt ${idx + 1}`}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        )}
-
-                        {ASSET_OBJECTIVES.includes(objectiveForm.o_type) && (
-                          <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Which asset is this objective for?</label>
-                            <select
-                              value={objectiveForm.o_asset}
-                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_asset: e.target.value })}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                            >
-                              <option value="">Select...</option>
-                              {(factFind?.assets_liabilities?.assets || []).map((asset, idx) => (
-                                <option key={idx} value={asset.id || idx}>
-                                  {asset.description || asset.name || `Asset ${idx + 1}`}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        )}
-
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Amount</label>
-                            <div className="flex items-center">
-                              <span className="text-slate-500 mr-2">$</span>
-                              <input
-                                type="number"
-                                value={objectiveForm.o_amount}
-                                onChange={(e) => setObjectiveForm({ ...objectiveForm, o_amount: e.target.value })}
-                                className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm"
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Importance</label>
-                            <select
-                              value={objectiveForm.o_importance}
-                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_importance: e.target.value })}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                            >
-                              <option value="">Select...</option>
-                              <option value="1">Not important</option>
-                              <option value="2">Important</option>
-                              <option value="3">Very important</option>
-                              <option value="4">Critical</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-semibold text-slate-700 mb-2">Why is this objective important to you?</label>
-                          <textarea
-                            value={objectiveForm.o_why}
-                            onChange={(e) => setObjectiveForm({ ...objectiveForm, o_why: e.target.value })}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                          />
-                        </div>
-
-                        <div className="flex justify-end gap-2 pt-2">
-                          {editingIndex !== null && (
-                            <Button
-                              variant="outline"
-                              onClick={() => {
-                                setEditingIndex(null);
-                                resetObjectiveForm();
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                          )}
-                          <Button
-                            onClick={handleAddObjective}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            {editingIndex !== null ? 'Update' : 'Add'} Objective
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Objectives List */}
-                  {objectives.length > 0 && (
+                  ) : (
                     <>
-                      {editingIndex === null && (
-                        <div className="flex justify-end">
-                          <Button
-                            onClick={() => {
-                              resetObjectiveForm();
-                              setEditingIndex(-1);
-                            }}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Another Objective
-                          </Button>
-                        </div>
-                      )}
+                      {/* Summary Table */}
                       <Card className="border-slate-200 shadow-sm">
-                        <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-3">
-                          <h4 className="font-bold text-white">Your objectives ({objectives.length})</h4>
+                        <div className="bg-slate-100 border-b border-slate-200 px-6 py-3">
+                          <h4 className="font-bold text-slate-800">📊 Objectives Summary ({objectives.length})</h4>
                         </div>
                         <CardContent className="p-0">
                           <div className="overflow-x-auto">
-                            <table className="w-full">
+                            <table className="w-full text-sm">
                               <thead className="bg-slate-50 border-b border-slate-200">
                                 <tr>
-                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Objective type</th>
-                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Start year</th>
-                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">End year</th>
-                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Amount</th>
-                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Importance</th>
-                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Actions</th>
+                                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Objective type</th>
+                                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Start year</th>
+                                  <th className="px-4 py-3 text-left font-semibold text-slate-700">End year</th>
+                                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Amount</th>
+                                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Importance</th>
+                                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Actions</th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-200">
-                                {objectives.map((obj, index) => (
-                                  <tr key={index} className="hover:bg-slate-50">
-                                    <td className="px-4 py-3 text-sm text-slate-800 font-medium">
-                                      {OBJECTIVE_TYPES.find(t => t.value === obj.o_type)?.label || obj.o_type}
+                                {objectives.map((obj, idx) => (
+                                  <tr key={idx} className={activeObjectiveIndex === idx ? 'bg-blue-50' : 'hover:bg-slate-50'}>
+                                    <td className="px-4 py-3 font-medium text-slate-800 cursor-pointer" onClick={() => setActiveObjectiveIndex(idx)}>
+                                      {OBJECTIVE_TYPES.find(t => t.value === obj.o_type)?.label || '-'}
                                     </td>
-                                    <td className="px-4 py-3 text-sm text-slate-600">{obj.o_start}</td>
-                                    <td className="px-4 py-3 text-sm text-slate-600">{obj.o_end}</td>
-                                    <td className="px-4 py-3 text-sm text-slate-800 font-semibold">
-                                      ${parseFloat(obj.o_amount || 0).toLocaleString()}
+                                    <td className="px-4 py-3 text-slate-600 cursor-pointer" onClick={() => setActiveObjectiveIndex(idx)}>{obj.o_start || '-'}</td>
+                                    <td className="px-4 py-3 text-slate-600 cursor-pointer" onClick={() => setActiveObjectiveIndex(idx)}>{obj.o_end || '-'}</td>
+                                    <td className="px-4 py-3 font-semibold text-slate-800 cursor-pointer" onClick={() => setActiveObjectiveIndex(idx)}>
+                                      {obj.o_amount ? `$${parseFloat(obj.o_amount).toLocaleString()}` : '-'}
                                     </td>
-                                    <td className="px-4 py-3 text-sm text-slate-600">
+                                    <td className="px-4 py-3 text-slate-600 cursor-pointer" onClick={() => setActiveObjectiveIndex(idx)}>
                                       {obj.o_importance === '1' ? 'Not important' : 
                                        obj.o_importance === '2' ? 'Important' :
                                        obj.o_importance === '3' ? 'Very important' :
@@ -1118,24 +867,8 @@ export default function FactFindAdviceReason() {
                                     </td>
                                     <td className="px-4 py-3">
                                       <div className="flex gap-2">
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => {
-                                            setObjectiveForm(obj);
-                                            setEditingIndex(index);
-                                          }}
-                                        >
-                                          <Edit2 className="w-3 h-3" />
-                                        </Button>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => setObjectives(objectives.filter((_, i) => i !== index))}
-                                          className="border-red-300 text-red-600 hover:bg-red-50"
-                                        >
-                                          <Trash2 className="w-3 h-3" />
-                                        </Button>
+                                        <Button variant="outline" size="sm" onClick={() => setActiveObjectiveIndex(idx)} className="border-slate-300"><Edit2 className="w-3 h-3" /></Button>
+                                        <Button variant="outline" size="sm" onClick={() => deleteObjective(idx)} className="border-red-300 text-red-600 hover:bg-red-50"><Trash2 className="w-3 h-3" /></Button>
                                       </div>
                                     </td>
                                   </tr>
@@ -1145,6 +878,204 @@ export default function FactFindAdviceReason() {
                           </div>
                         </CardContent>
                       </Card>
+
+                      {/* Editor */}
+                      {activeObjectiveIndex !== null && objectives[activeObjectiveIndex] && (
+                        <Card className="border-slate-200 shadow-sm border-blue-300 bg-blue-50/50">
+                          <div className="bg-blue-600 px-6 py-3 rounded-t-lg">
+                            <h4 className="font-bold text-white">✏️ Edit Objective</h4>
+                          </div>
+                          <CardContent className="p-6 space-y-4">
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Who does this objective belong to?</label>
+                                <div className="space-y-2">
+                                  <label className="flex items-center gap-2">
+                                    <input
+                                      type="checkbox"
+                                      checked={(objectives[activeObjectiveIndex].o_who || []).includes('c1')}
+                                      onChange={(e) => {
+                                        const who = e.target.checked
+                                          ? [...(objectives[activeObjectiveIndex].o_who || []), 'c1']
+                                          : (objectives[activeObjectiveIndex].o_who || []).filter(w => w !== 'c1');
+                                        updateObjective(activeObjectiveIndex, 'o_who', who);
+                                      }}
+                                    />
+                                    <span className="text-sm">{principalNames.client}</span>
+                                  </label>
+                                  {hasPartner && (
+                                    <label className="flex items-center gap-2">
+                                      <input
+                                        type="checkbox"
+                                        checked={(objectives[activeObjectiveIndex].o_who || []).includes('c2')}
+                                        onChange={(e) => {
+                                          const who = e.target.checked
+                                            ? [...(objectives[activeObjectiveIndex].o_who || []), 'c2']
+                                            : (objectives[activeObjectiveIndex].o_who || []).filter(w => w !== 'c2');
+                                          updateObjective(activeObjectiveIndex, 'o_who', who);
+                                        }}
+                                      />
+                                      <span className="text-sm">{principalNames.partner}</span>
+                                    </label>
+                                  )}
+                                </div>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Objective type</label>
+                                <select
+                                  value={objectives[activeObjectiveIndex].o_type}
+                                  onChange={(e) => updateObjective(activeObjectiveIndex, 'o_type', e.target.value)}
+                                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="">Select...</option>
+                                  {OBJECTIVE_TYPES.map(type => (
+                                    <option key={type.value} value={type.value}>{type.label}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+
+                            <div className="grid md:grid-cols-3 gap-4">
+                              <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Start year</label>
+                                <select
+                                  value={objectives[activeObjectiveIndex].o_start}
+                                  onChange={(e) => updateObjective(activeObjectiveIndex, 'o_start', e.target.value)}
+                                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="">Select year...</option>
+                                  {Array.from({ length: 51 }, (_, i) => {
+                                    const year = new Date().getFullYear() + i;
+                                    return <option key={year} value={String(year)}>{year}</option>;
+                                  })}
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">End year</label>
+                                <select
+                                  value={objectives[activeObjectiveIndex].o_end}
+                                  onChange={(e) => updateObjective(activeObjectiveIndex, 'o_end', e.target.value)}
+                                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="">Select year...</option>
+                                  {Array.from({ length: 51 }, (_, i) => {
+                                    const year = new Date().getFullYear() + i;
+                                    return <option key={year} value={String(year)}>{year}</option>;
+                                  })}
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Frequency</label>
+                                <select
+                                  value={objectives[activeObjectiveIndex].o_freq}
+                                  onChange={(e) => updateObjective(activeObjectiveIndex, 'o_freq', e.target.value)}
+                                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="">Select...</option>
+                                  {FREQUENCY_OPTIONS.map(freq => (
+                                    <option key={freq.value} value={freq.value}>{freq.label}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+
+                            {PROPERTY_OBJECTIVES.includes(objectives[activeObjectiveIndex].o_type) && (
+                              <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Which property is this objective for?</label>
+                                <select
+                                  value={objectives[activeObjectiveIndex].o_property}
+                                  onChange={(e) => updateObjective(activeObjectiveIndex, 'o_property', e.target.value)}
+                                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="">Select...</option>
+                                  {(factFind?.assets?.assetsList || [])
+                                    .filter(a => a.a_type === '1' || a.a_type === '18')
+                                    .map((asset, idx) => (
+                                      <option key={idx} value={idx}>{asset.a_name || `Property ${idx + 1}`}</option>
+                                    ))}
+                                </select>
+                              </div>
+                            )}
+
+                            {DEBT_OBJECTIVES.includes(objectives[activeObjectiveIndex].o_type) && (
+                              <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Which debt is this objective for?</label>
+                                <select
+                                  value={objectives[activeObjectiveIndex].o_debt}
+                                  onChange={(e) => updateObjective(activeObjectiveIndex, 'o_debt', e.target.value)}
+                                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="">Select...</option>
+                                  {(factFind?.assets?.debtsList || []).map((debt, idx) => (
+                                    <option key={idx} value={idx}>{debt.d_name || `Debt ${idx + 1}`}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
+
+                            {ASSET_OBJECTIVES.includes(objectives[activeObjectiveIndex].o_type) && (
+                              <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Which asset is this objective for?</label>
+                                <select
+                                  value={objectives[activeObjectiveIndex].o_asset}
+                                  onChange={(e) => updateObjective(activeObjectiveIndex, 'o_asset', e.target.value)}
+                                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="">Select...</option>
+                                  {(factFind?.assets?.assetsList || []).map((asset, idx) => (
+                                    <option key={idx} value={idx}>{asset.a_name || `Asset ${idx + 1}`}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Amount</label>
+                                <div className="flex items-center">
+                                  <span className="text-slate-500 mr-2">$</span>
+                                  <input
+                                    type="number"
+                                    value={objectives[activeObjectiveIndex].o_amount}
+                                    onChange={(e) => updateObjective(activeObjectiveIndex, 'o_amount', e.target.value)}
+                                    className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Importance</label>
+                                <select
+                                  value={objectives[activeObjectiveIndex].o_importance}
+                                  onChange={(e) => updateObjective(activeObjectiveIndex, 'o_importance', e.target.value)}
+                                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="">Select...</option>
+                                  <option value="1">Not important</option>
+                                  <option value="2">Important</option>
+                                  <option value="3">Very important</option>
+                                  <option value="4">Critical</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-semibold text-slate-700 mb-2">Why is this objective important to you?</label>
+                              <textarea
+                                value={objectives[activeObjectiveIndex].o_why}
+                                onChange={(e) => updateObjective(activeObjectiveIndex, 'o_why', e.target.value)}
+                                rows={3}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Add Button */}
+                      <Button onClick={addObjective} className="bg-blue-600 hover:bg-blue-700 text-white w-full">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Another Objective
+                      </Button>
                     </>
                   )}
                 </>
