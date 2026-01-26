@@ -30,7 +30,8 @@ export default function AdminQueue() {
       status: 'submitted',
       assignedTo: null,
       submitted: '23 Jan 2026',
-      daysAgo: 5
+      daysAgo: 5,
+      version: null
     },
     {
       id: 'SOA-2026-013',
@@ -40,7 +41,8 @@ export default function AdminQueue() {
       status: 'submitted',
       assignedTo: null,
       submitted: '24 Jan 2026',
-      daysAgo: 4
+      daysAgo: 4,
+      version: null
     },
     {
       id: 'SOA-2026-010',
@@ -50,7 +52,8 @@ export default function AdminQueue() {
       status: 'in_progress',
       assignedTo: { name: 'Sarah Chen', avatar: 'SC', color: 'bg-cyan-500' },
       submitted: '20 Jan 2026',
-      daysAgo: 8
+      daysAgo: 8,
+      version: null
     },
     {
       id: 'SOA-2026-009',
@@ -60,17 +63,20 @@ export default function AdminQueue() {
       status: 'in_progress',
       assignedTo: { name: 'Alex Johnson', avatar: 'AJ', color: 'bg-orange-600' },
       submitted: '18 Jan 2026',
-      daysAgo: 10
+      daysAgo: 10,
+      version: null
     },
     {
       id: 'SOA-2026-008',
       type: 'Investment',
       adviser: { name: 'Kevin White', company: 'Smart Wealth', avatar: 'KW', color: 'bg-purple-600' },
       client: 'Robert Taylor',
-      status: 'in_progress',
+      status: 'revision_requested',
       assignedTo: { name: 'Mike Peters', avatar: 'MP', color: 'bg-pink-600' },
       submitted: '16 Jan 2026',
-      daysAgo: 12
+      daysAgo: 12,
+      version: 2,
+      urgent: true
     },
     {
       id: 'SOA-2026-007',
@@ -80,7 +86,8 @@ export default function AdminQueue() {
       status: 'completed',
       assignedTo: { name: 'Sarah Chen', avatar: 'SC', color: 'bg-cyan-500' },
       submitted: '10 Jan 2026',
-      daysAgo: 18
+      daysAgo: 18,
+      version: null
     },
     {
       id: 'SOA-2026-006',
@@ -90,7 +97,8 @@ export default function AdminQueue() {
       status: 'completed',
       assignedTo: { name: 'Alex Johnson', avatar: 'AJ', color: 'bg-orange-600' },
       submitted: '5 Jan 2026',
-      daysAgo: 23
+      daysAgo: 23,
+      version: null
     }
   ];
 
@@ -102,12 +110,18 @@ export default function AdminQueue() {
     const styles = {
       submitted: 'bg-orange-100 text-orange-700 border-orange-200',
       in_progress: 'bg-blue-100 text-blue-700 border-blue-200',
-      completed: 'bg-green-100 text-green-700 border-green-200'
+      in_review: 'bg-purple-100 text-purple-700 border-purple-200',
+      completed: 'bg-green-100 text-green-700 border-green-200',
+      on_hold: 'bg-amber-100 text-amber-700 border-amber-200',
+      revision_requested: 'bg-red-100 text-red-700 border-red-200'
     };
     const labels = {
       submitted: 'Submitted',
       in_progress: 'In Progress',
-      completed: 'Completed'
+      in_review: 'In Review',
+      completed: 'Completed',
+      on_hold: 'On Hold',
+      revision_requested: 'Revision Requested'
     };
     return (
       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border ${styles[status]}`}>
@@ -117,6 +131,22 @@ export default function AdminQueue() {
           </svg>
         )}
         {status === 'completed' && <CheckCircle2 className="w-3.5 h-3.5" />}
+        {status === 'in_review' && (
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+        )}
+        {status === 'on_hold' && (
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        )}
+        {status === 'revision_requested' && (
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        )}
         {status === 'submitted' && (
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -286,13 +316,20 @@ export default function AdminQueue() {
               </thead>
               <tbody>
                 {queueData.map((item) => (
-                  <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                  <tr key={item.id} className={`border-b border-slate-100 hover:bg-slate-50 transition-colors ${item.urgent ? 'border-l-4 border-l-red-500' : ''}`}>
                     <td className="px-6 py-4">
                       <Checkbox />
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
-                        <span className="font-semibold text-sm text-slate-800">{item.id}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm text-slate-800">{item.id}</span>
+                          {item.version && item.version > 1 && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-purple-100 text-purple-700">
+                              v{item.version}
+                            </span>
+                          )}
+                        </div>
                         {getTypeBadge(item.type)}
                       </div>
                     </td>
@@ -341,9 +378,19 @@ export default function AdminQueue() {
                             Upload
                           </button>
                         )}
+                        {item.status === 'revision_requested' && (
+                          <button className="px-4 py-2 bg-[#ef4444] text-white rounded-lg text-sm font-semibold hover:bg-[#dc2626] transition-colors">
+                            Resubmit
+                          </button>
+                        )}
                         {item.status === 'completed' && (
                           <button className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
                             Download
+                          </button>
+                        )}
+                        {item.version && item.version > 1 && (
+                          <button className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
+                            View v{item.version - 1}
                           </button>
                         )}
                         <button className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
