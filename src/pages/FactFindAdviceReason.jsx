@@ -116,81 +116,77 @@ const SUPER_FEATURES = [
 
 const OBJECTIVE_TYPES = [
   { value: '1', label: 'Establish An Emergency Fund' },
-  { value: '2', label: 'Purchase A New Principal Residence' },
-  { value: '3', label: 'Upgrade Your Principal Residence' },
-  { value: '4', label: 'Renovate Your Principal Residence' },
-  { value: '5', label: 'Eliminate Your Mortgage' },
-  { value: '6', label: 'Purchase A Holiday Home' },
-  { value: '7', label: 'Purchase An Investment Property' },
-  { value: '8', label: 'Purchase A Car' },
-  { value: '9', label: 'Purchase Other Consumer Goods' },
-  { value: '10', label: 'Take A Holiday' },
-  { value: '11', label: 'Make A Lump Sum Contribution To Superannuation' },
-  { value: '12', label: 'Commence Regular Contributions To Superannuation' },
-  { value: '13', label: 'Pay School Fees' },
-  { value: '14', label: 'Pay University Fees' },
-  { value: '15', label: 'Provide A Lump Sum Gift' },
-  { value: '16', label: 'Provide Regular Gifts' },
-  { value: '17', label: 'Purchase A Business' },
-  { value: '18', label: 'Sell A Business' },
-  { value: '19', label: 'Commence A Pension' },
-  { value: '20', label: 'Purchase An Annuity' },
-  { value: '21', label: 'Cease Work' },
-  { value: '22', label: 'Change Employment' },
-  { value: '23', label: 'Reduce Work Commitments' },
-  { value: '24', label: 'Receive An Expected Inheritance Or Windfall Gain' },
-  { value: '25', label: 'Receive A Distribution From A Trust' },
-  { value: '26', label: 'Establish A Trust' },
-  { value: '27', label: 'Establish A Company' },
-  { value: '28', label: 'Establish An SMSF' },
-  { value: '29', label: 'Wind Up A Trust' },
-  { value: '30', label: 'Wind Up A Company' },
-  { value: '31', label: 'Wind Up An SMSF' },
-  { value: '32', label: 'Purchase An Aged Care Accommodation Bond' },
-  { value: '33', label: 'Review My Will' },
-  { value: '34', label: 'Review My Enduring Power Of Attorney' },
-  { value: '35', label: 'Access Social Security Benefits' },
-  { value: '36', label: 'Review My Insurance Needs' },
-  { value: '37', label: 'Purchase Life Insurance' },
-  { value: '38', label: 'Purchase TPD Insurance' },
-  { value: '39', label: 'Purchase Income Protection Insurance' },
-  { value: '40', label: 'Purchase Trauma Insurance' },
-  { value: '41', label: 'Repay Credit Card Debt' },
-  { value: '42', label: 'Repay Personal Loans' },
-  { value: '43', label: 'Repay Investment Property Debt' },
-  { value: '44', label: 'Repay Margin Lending' },
-  { value: '45', label: 'Repay Business Debt' },
-  { value: '46', label: 'Restructure Debt' },
-  { value: '47', label: 'Review Asset Allocation' },
-  { value: '48', label: 'Increase Investment Returns' },
-  { value: '49', label: 'Reduce Investment Risk' },
-  { value: '50', label: 'Diversify Investments' },
-  { value: '51', label: 'Consolidate Investments' },
-  { value: '52', label: 'Review Superannuation Investments' },
-  { value: '53', label: 'Consolidate Superannuation Accounts' },
-  { value: '54', label: 'Change Superannuation Fund' },
-  { value: '55', label: 'Minimise Income Tax' },
-  { value: '56', label: 'Minimise Capital Gains Tax' },
-  { value: '57', label: 'Create A Budget' },
-  { value: '58', label: 'Reduce Living Expenses' },
-  { value: '59', label: 'Increase Savings' },
-  { value: '60', label: 'Access Government Benefits' },
-  { value: '61', label: 'Review Estate Planning' },
-  { value: '62', label: 'Plan For Aged Care' },
-  { value: '63', label: 'Other' }
+  { value: '2', label: 'Reduce Annual Expenses' },
+  { value: '3', label: 'Increase Cashflow' },
+  { value: '4', label: 'Reduce Your Working Hours' },
+  { value: '5', label: 'Take A Career Break' },
+  { value: '6', label: 'Send Your Children To Private School' },
+  { value: '7', label: 'Pay For Childrens University Expenses' },
+  { value: '8', label: 'Provide For Dependants' },
+  { value: '9', label: 'Go On A Holiday' },
+  { value: '10', label: 'Buy A Car' },
+  { value: '11', label: 'Gift Money To Children/Dependants' },
+  { value: '12', label: 'Pay For Other School Costs' },
+  { value: '13', label: 'Allocate Funds For Tutor' },
+  { value: '14', label: 'Allocate Funds For Other Extracurricular Activities' },
+  { value: '15', label: 'Help A Child Pay For A House' },
+  { value: '16', label: 'Return To Work After Children' },
+  { value: '17', label: 'Reduce Work Hours To Look After Children' },
+  { value: '18', label: 'Take Parental Leave' },
+  { value: '19', label: 'Set a wealth target in the future' },
+  { value: '20', label: 'Reduce Exposure To Volatile Growth Investments' },
+  { value: '21', label: 'Allocate Funds To Low Risk Interest Bearing Assets' },
+  { value: '22', label: 'Retain Investment' },
+  { value: '23', label: 'Put Aside Funds To Help Children Invest' },
+  { value: '24', label: 'Build A Share Portfolio' },
+  { value: '25', label: 'Rent Out An Existing Property' },
+  { value: '26', label: 'Purchase A New Principal Residence' },
+  { value: '27', label: 'Downsize A Principal Residence' },
+  { value: '28', label: 'Move Into A New Rental Property' },
+  { value: '29', label: 'Purchase A Holiday Home' },
+  { value: '30', label: 'Rent Out Your Holiday Home' },
+  { value: '31', label: 'Upgrade Your Home' },
+  { value: '32', label: 'Renovate Home' },
+  { value: '33', label: 'Purchase An Investment Property' },
+  { value: '34', label: 'Eliminate Your Credit Card Debts' },
+  { value: '35', label: 'Eliminate Your Mortgage' },
+  { value: '36', label: 'Eliminate All Debts' },
+  { value: '37', label: 'Reduce Investment Debt' },
+  { value: '38', label: 'Reduce Non Deductible Debt' },
+  { value: '39', label: 'Establish A Reverse Mortgage' },
+  { value: '40', label: 'Increase Investment Debt' },
+  { value: '41', label: 'Consolidate Debt' },
+  { value: '42', label: 'Increase Contributions To Super' },
+  { value: '43', label: 'Build Wealth For Your Retirement' },
+  { value: '46', label: 'Move Into Aged Care' },
+  { value: '47', label: 'Be Assessed For A Home Care Package' },
+  { value: '48', label: 'Establish A Granny Flat Interest Property Transfer' },
+  { value: '49', label: 'Establish A Granny Flat Interest Dollar Value' },
+  { value: '50', label: 'Bequeath An Amount To Your Estate' },
+  { value: '55', label: 'Sell An Existing Investment' },
+  { value: '56', label: 'Sell A Portion Of An Existing Investment' },
+  { value: '59', label: 'Capital Not At Risk Due To Market Fluctations' },
+  { value: '60', label: 'Find A Superannuation Product That Is Suitable For Your Requirements' },
+  { value: '61', label: 'Maximise Centrelink Entitlements' },
+  { value: '62', label: 'Consolidate Superannuation Funds' },
+  { value: '63', label: 'Update Your Will' }
 ];
+
+const PROPERTY_OBJECTIVES = ['25', '29', '30', '33'];
+const DEBT_OBJECTIVES = ['34', '35', '36', '37', '38', '39', '40', '41'];
+const ASSET_OBJECTIVES = ['22', '55', '56'];
 
 const FREQUENCY_OPTIONS = [
   { value: '1', label: 'Weekly' },
   { value: '2', label: 'Fortnightly' },
   { value: '3', label: 'Monthly' },
   { value: '4', label: 'Quarterly' },
-  { value: '5', label: 'Half-yearly' },
-  { value: '6', label: 'Yearly' },
-  { value: '7', label: 'Every 2 years' },
-  { value: '8', label: 'Every 3 years' },
-  { value: '9', label: 'Every 4 years' },
-  { value: '10', label: 'Every 5 years' },
+  { value: '5', label: 'Annual' },
+  { value: '6', label: 'Every 2 years' },
+  { value: '7', label: 'Every 3 years' },
+  { value: '8', label: 'Every 4 years' },
+  { value: '9', label: 'Every 5 years' },
+  { value: '10', label: 'Every 7 years' },
   { value: '11', label: 'Every 10 years' }
 ];
 
@@ -434,10 +430,10 @@ export default function FactFindAdviceReason() {
               <CardContent className="p-6 space-y-6">
                 {REASONS_GROUPS.map((group, idx) => (
                   <div key={idx}>
-                    <h5 className="font-bold text-slate-700 mb-3 text-sm uppercase tracking-wide">{group.title}</h5>
-                    <div className="space-y-2">
+                    <h5 className="font-bold text-slate-700 mb-2 text-sm uppercase tracking-wide">{group.title}</h5>
+                    <div className="space-y-1">
                       {group.items.map((item) => (
-                        <label key={item.value} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors">
+                        <label key={item.value} className="flex items-center gap-2 py-1.5 cursor-pointer">
                           <Checkbox
                             checked={reasons.includes(item.value)}
                             onCheckedChange={() => toggleReason(item.value)}
@@ -885,21 +881,31 @@ export default function FactFindAdviceReason() {
                         <div className="grid md:grid-cols-3 gap-4">
                           <div>
                             <label className="block text-sm font-semibold text-slate-700 mb-2">Start year</label>
-                            <input
-                              type="number"
+                            <select
                               value={objectiveForm.o_start}
                               onChange={(e) => setObjectiveForm({ ...objectiveForm, o_start: e.target.value })}
                               className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                            />
+                            >
+                              <option value="">Select year...</option>
+                              {Array.from({ length: 51 }, (_, i) => {
+                                const year = new Date().getFullYear() + i;
+                                return <option key={year} value={String(year)}>{year}</option>;
+                              })}
+                            </select>
                           </div>
                           <div>
                             <label className="block text-sm font-semibold text-slate-700 mb-2">End year</label>
-                            <input
-                              type="number"
+                            <select
                               value={objectiveForm.o_end}
                               onChange={(e) => setObjectiveForm({ ...objectiveForm, o_end: e.target.value })}
                               className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                            />
+                            >
+                              <option value="">Select year...</option>
+                              {Array.from({ length: 51 }, (_, i) => {
+                                const year = new Date().getFullYear() + i;
+                                return <option key={year} value={String(year)}>{year}</option>;
+                              })}
+                            </select>
                           </div>
                           <div>
                             <label className="block text-sm font-semibold text-slate-700 mb-2">Frequency</label>
@@ -915,6 +921,63 @@ export default function FactFindAdviceReason() {
                             </select>
                           </div>
                         </div>
+
+                        {/* Conditional Fields */}
+                        {PROPERTY_OBJECTIVES.includes(objectiveForm.o_type) && (
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Which property is this objective for?</label>
+                            <select
+                              value={objectiveForm.o_property}
+                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_property: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                            >
+                              <option value="">Select...</option>
+                              {(factFind?.assets_liabilities?.assets || [])
+                                .filter(a => a.type === 'property' || a.type === 'real_estate')
+                                .map((asset, idx) => (
+                                  <option key={idx} value={asset.id || idx}>
+                                    {asset.description || asset.name || `Property ${idx + 1}`}
+                                  </option>
+                                ))}
+                            </select>
+                          </div>
+                        )}
+
+                        {DEBT_OBJECTIVES.includes(objectiveForm.o_type) && (
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Which debt is this objective for?</label>
+                            <select
+                              value={objectiveForm.o_debt}
+                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_debt: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                            >
+                              <option value="">Select...</option>
+                              {(factFind?.assets_liabilities?.liabilities || []).map((liability, idx) => (
+                                <option key={idx} value={liability.id || idx}>
+                                  {liability.description || liability.type || `Debt ${idx + 1}`}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+
+                        {ASSET_OBJECTIVES.includes(objectiveForm.o_type) && (
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Which asset is this objective for?</label>
+                            <select
+                              value={objectiveForm.o_asset}
+                              onChange={(e) => setObjectiveForm({ ...objectiveForm, o_asset: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
+                            >
+                              <option value="">Select...</option>
+                              {(factFind?.assets_liabilities?.assets || []).map((asset, idx) => (
+                                <option key={idx} value={asset.id || idx}>
+                                  {asset.description || asset.name || `Asset ${idx + 1}`}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
 
                         <div className="grid md:grid-cols-2 gap-4">
                           <div>
@@ -1017,9 +1080,11 @@ export default function FactFindAdviceReason() {
                             <table className="w-full">
                               <thead className="bg-slate-50 border-b border-slate-200">
                                 <tr>
-                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Type</th>
+                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Objective type</th>
+                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Start year</th>
+                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">End year</th>
                                   <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Amount</th>
-                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Years</th>
+                                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Importance</th>
                                   <th className="px-4 py-3 text-left text-xs font-bold text-slate-700">Actions</th>
                                 </tr>
                               </thead>
@@ -1029,11 +1094,16 @@ export default function FactFindAdviceReason() {
                                     <td className="px-4 py-3 text-sm text-slate-800 font-medium">
                                       {OBJECTIVE_TYPES.find(t => t.value === obj.o_type)?.label || obj.o_type}
                                     </td>
+                                    <td className="px-4 py-3 text-sm text-slate-600">{obj.o_start}</td>
+                                    <td className="px-4 py-3 text-sm text-slate-600">{obj.o_end}</td>
                                     <td className="px-4 py-3 text-sm text-slate-800 font-semibold">
                                       ${parseFloat(obj.o_amount || 0).toLocaleString()}
                                     </td>
                                     <td className="px-4 py-3 text-sm text-slate-600">
-                                      {obj.o_start} - {obj.o_end}
+                                      {obj.o_importance === '1' ? 'Not important' : 
+                                       obj.o_importance === '2' ? 'Important' :
+                                       obj.o_importance === '3' ? 'Very important' :
+                                       obj.o_importance === '4' ? 'Critical' : '-'}
                                     </td>
                                     <td className="px-4 py-3">
                                       <div className="flex gap-2">
