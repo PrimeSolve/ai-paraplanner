@@ -889,49 +889,99 @@ export default function FactFindRiskProfile() {
                 </CardContent>
               </Card>
 
+              {/* Asset Classes Historical Returns */}
               <Card className="border-slate-200 shadow-sm">
-                <div className="bg-gradient-to-r from-slate-600 to-slate-700 px-6 py-3 rounded-t-lg">
-                  <h4 className="font-bold text-white">Other Information</h4>
+                <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3 rounded-t-lg">
+                  <h4 className="font-bold text-white">Asset Classes Historical Returns</h4>
                 </div>
-                <CardContent className="p-6 space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold text-sm">ESG preferences</Label>
-                    <Textarea
-                      value={otherInfo.esg}
-                      onChange={(e) => setOtherInfo({ ...otherInfo, esg: e.target.value })}
-                      placeholder="Environmental, Social, Governance considerations"
-                      className="border-slate-300"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold text-sm">Investment restrictions</Label>
-                    <Textarea
-                      value={otherInfo.restrictions}
-                      onChange={(e) => setOtherInfo({ ...otherInfo, restrictions: e.target.value })}
-                      placeholder="Any restrictions on investments"
-                      className="border-slate-300"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold text-sm">Prior investment experience</Label>
-                    <Textarea
-                      value={otherInfo.experience}
-                      onChange={(e) => setOtherInfo({ ...otherInfo, experience: e.target.value })}
-                      placeholder="Details of past investment experience"
-                      className="border-slate-300"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-slate-700 font-semibold text-sm">Additional notes</Label>
-                    <Textarea
-                      value={otherInfo.notes}
-                      onChange={(e) => setOtherInfo({ ...otherInfo, notes: e.target.value })}
-                      placeholder="Any other relevant information"
-                      className="border-slate-300"
-                    />
+                <CardContent className="p-6">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b-2 border-slate-300">
+                          <th className="text-left py-3 px-2 font-bold text-slate-800">Asset Class</th>
+                          <th className="text-right py-3 px-2 font-bold text-slate-800">20 Year Avg</th>
+                          <th className="text-right py-3 px-2 font-bold text-slate-800">10 Year Avg</th>
+                          <th className="text-right py-3 px-2 font-bold text-slate-800">5 Year Avg</th>
+                          <th className="text-right py-3 px-2 font-bold text-slate-800">Worst Year</th>
+                          <th className="text-right py-3 px-2 font-bold text-slate-800">Best Year</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b border-slate-200">
+                          <td className="py-3 px-2 font-semibold text-slate-700">Australian Shares</td>
+                          <td className="text-right py-3 px-2 text-slate-700">9.2%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">8.5%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">7.8%</td>
+                          <td className="text-right py-3 px-2 text-red-600">-22.1%</td>
+                          <td className="text-right py-3 px-2 text-green-600">44.5%</td>
+                        </tr>
+                        <tr className="border-b border-slate-200">
+                          <td className="py-3 px-2 font-semibold text-slate-700">Global Shares</td>
+                          <td className="text-right py-3 px-2 text-slate-700">10.1%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">11.2%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">9.8%</td>
+                          <td className="text-right py-3 px-2 text-red-600">-18.3%</td>
+                          <td className="text-right py-3 px-2 text-green-600">38.2%</td>
+                        </tr>
+                        <tr className="border-b border-slate-200">
+                          <td className="py-3 px-2 font-semibold text-slate-700">Direct Property</td>
+                          <td className="text-right py-3 px-2 text-slate-700">8.4%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">7.2%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">6.5%</td>
+                          <td className="text-right py-3 px-2 text-red-600">-5.2%</td>
+                          <td className="text-right py-3 px-2 text-green-600">24.8%</td>
+                        </tr>
+                        <tr className="border-b border-slate-200">
+                          <td className="py-3 px-2 font-semibold text-slate-700">Global REITs</td>
+                          <td className="text-right py-3 px-2 text-slate-700">7.8%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">6.9%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">5.2%</td>
+                          <td className="text-right py-3 px-2 text-red-600">-37.8%</td>
+                          <td className="text-right py-3 px-2 text-green-600">35.6%</td>
+                        </tr>
+                        <tr className="border-b border-slate-200">
+                          <td className="py-3 px-2 font-semibold text-slate-700">Listed Infrastructure</td>
+                          <td className="text-right py-3 px-2 text-slate-700">9.5%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">8.8%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">7.1%</td>
+                          <td className="text-right py-3 px-2 text-red-600">-25.4%</td>
+                          <td className="text-right py-3 px-2 text-green-600">42.3%</td>
+                        </tr>
+                        <tr className="border-b border-slate-200">
+                          <td className="py-3 px-2 font-semibold text-slate-700">Growth Alternatives</td>
+                          <td className="text-right py-3 px-2 text-slate-700">6.8%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">6.2%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">5.5%</td>
+                          <td className="text-right py-3 px-2 text-red-600">-8.5%</td>
+                          <td className="text-right py-3 px-2 text-green-600">18.9%</td>
+                        </tr>
+                        <tr className="border-b border-slate-200">
+                          <td className="py-3 px-2 font-semibold text-slate-700">Fixed Interest</td>
+                          <td className="text-right py-3 px-2 text-slate-700">4.5%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">3.8%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">2.9%</td>
+                          <td className="text-right py-3 px-2 text-red-600">-2.8%</td>
+                          <td className="text-right py-3 px-2 text-green-600">12.4%</td>
+                        </tr>
+                        <tr className="border-b border-slate-200">
+                          <td className="py-3 px-2 font-semibold text-slate-700">Cash</td>
+                          <td className="text-right py-3 px-2 text-slate-700">3.3%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">2.1%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">1.8%</td>
+                          <td className="text-right py-3 px-2 text-red-600">0.0%</td>
+                          <td className="text-right py-3 px-2 text-green-600">7.8%</td>
+                        </tr>
+                        <tr className="border-b border-slate-200">
+                          <td className="py-3 px-2 font-semibold text-slate-700">CPI</td>
+                          <td className="text-right py-3 px-2 text-slate-700">2.4%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">2.2%</td>
+                          <td className="text-right py-3 px-2 text-slate-700">2.8%</td>
+                          <td className="text-right py-3 px-2 text-red-600">-0.3%</td>
+                          <td className="text-right py-3 px-2 text-green-600">6.1%</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </CardContent>
               </Card>
