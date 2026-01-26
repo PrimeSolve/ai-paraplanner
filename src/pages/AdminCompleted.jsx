@@ -186,47 +186,51 @@ export default function AdminCompleted() {
 
         {/* Filters */}
         <div className="bg-white rounded-2xl border border-slate-200 mb-6">
-          <div className="p-6 flex items-center gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <Input
-                placeholder="Search SOA ID, adviser, client..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-11 border-slate-200"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-600">From</span>
-              <Input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="h-11 w-40 border-slate-200"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-600">To</span>
-              <Input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="h-11 w-40 border-slate-200"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Advice Group</span>
-              <button className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
-                PrimeSolve Group
-                <ChevronDown className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Completed By</span>
-              <button className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
-                Sarah Chen
-                <ChevronDown className="w-4 h-4" />
-              </button>
+          <div className="p-6 space-y-4">
+            <div className="flex items-end gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Input
+                  placeholder="Search SOA ID, adviser, client..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-11 border-slate-200"
+                />
+              </div>
+              <div className="flex items-end gap-2">
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">From</span>
+                  <Input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="h-11 w-40 border-slate-200"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">To</span>
+                  <Input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="h-11 w-40 border-slate-200"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Advice Group</span>
+                  <button className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
+                    PrimeSolve Group
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Completed By</span>
+                  <button className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
+                    Sarah Chen
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -302,20 +306,24 @@ export default function AdminCompleted() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <button className="flex items-center gap-1.5 px-3 py-1.5 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-medium transition-colors">
-                          <FileText className="w-3.5 h-3.5" />
-                          View Details
-                        </button>
-                        <button className="flex items-center gap-1.5 px-3 py-1.5 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-medium transition-colors">
-                          <Clipboard className="w-3.5 h-3.5" />
-                          View Fact Find
-                        </button>
                         <button className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 transition-colors">
                           Download
                         </button>
-                        <button className="p-1.5 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </button>
+                        <div className="relative group">
+                          <button className="p-1.5 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </button>
+                          <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                            <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-slate-700 border-b border-slate-100">
+                              <FileText className="w-4 h-4" />
+                              View SOA Request
+                            </button>
+                            <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-slate-700">
+                              <Clipboard className="w-4 h-4" />
+                              View Fact Find
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </td>
                   </tr>
