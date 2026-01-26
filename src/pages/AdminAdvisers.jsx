@@ -22,13 +22,24 @@ export default function AdminAdvisers() {
   const loadAdvisers = async () => {
     try {
       const data = await base44.entities.User.filter({ user_type: 'adviser' }, '-created_date');
-      setAdvisers(data);
+      setAdvisers(data.length > 0 ? data : mockAdvisers);
     } catch (error) {
       console.error('Failed to load advisers:', error);
+      setAdvisers(mockAdvisers);
     } finally {
       setLoading(false);
     }
   };
+
+  const mockAdvisers = [
+    { id: '1', full_name: 'Tim Smith', email: 'tim@primesolve.com.au', company: 'PrimeSolve Financial', plan: 'unlimited', clients: 12, soas: 8, joined: '15 Nov 2025' },
+    { id: '2', full_name: 'Jane Brown', email: 'jane@wealthpartners.com.au', company: 'Wealth Partners', plan: 'unlimited', clients: 28, soas: 15, joined: '8 Oct 2025' },
+    { id: '3', full_name: 'Rachel Lee', email: 'rachel@futurefinance.com.au', company: 'Future Finance', plan: 'pay_per_soa', clients: 6, soas: 3, joined: '20 Dec 2025' },
+    { id: '4', full_name: 'Kevin White', email: 'kevin@smartwealth.com.au', company: 'Smart Wealth', plan: 'unlimited', clients: 19, soas: 11, joined: '6 Sep 2025' },
+    { id: '5', full_name: 'Nick Parker', email: 'nick@parkeradvisory.com.au', company: 'Parker Advisory', plan: 'trial', clients: 3, soas: 1, joined: '18 Jan 2026' },
+    { id: '6', full_name: 'Sarah Mitchell', email: 'sarah@mitchellfinancial.com.au', company: 'Mitchell Financial', plan: 'trial', clients: 1, soas: 0, joined: '22 Jan 2026' },
+    { id: '7', full_name: 'David Thompson', email: 'david@securefinance.com.au', company: 'Secure Finance', plan: 'cancelled', clients: 8, soas: 5, joined: '1 Aug 2020' }
+  ];
 
   const filteredAdvisers = advisers.filter(adviser =>
     adviser.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -199,29 +210,29 @@ export default function AdminAdvisers() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-slate-800 font-medium">Company Name</div>
+                      <div className="text-sm text-slate-800 font-medium">{adviser.company || 'Company Name'}</div>
                       <div className="text-xs text-slate-600">AFSL 123456</div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${getPlanBadge('unlimited').color}`}>
-                        {getPlanBadge('unlimited').label}
+                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${getPlanBadge(adviser.plan || 'unlimited').color}`}>
+                        {getPlanBadge(adviser.plan || 'unlimited').label}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium text-slate-800">12</span>
+                          <span className="text-sm font-medium text-slate-800">{adviser.clients || 0}</span>
                           <span className="text-xs text-slate-600">Clients</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium text-slate-800">8</span>
+                          <span className="text-sm font-medium text-slate-800">{adviser.soas || 0}</span>
                           <span className="text-xs text-slate-600">SOAs</span>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-slate-800">15 Nov 2025</span>
+                        <span className="text-sm font-medium text-slate-800">{adviser.joined || '15 Nov 2025'}</span>
                         <span className="text-xs text-slate-600">3 months ago</span>
                       </div>
                     </td>
