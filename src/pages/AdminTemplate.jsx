@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { GripVertical, ChevronDown, ChevronUp } from 'lucide-react';
+import { GripVertical, ChevronDown, Plus, Edit, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdminTemplate() {
@@ -18,34 +18,60 @@ export default function AdminTemplate() {
 
   const defaultSections = [
     {
-      group: 'getting-started',
-      groupLabel: 'Getting Started',
-      groupIcon: '🚀',
+      group: 'welcome-intro',
+      groupLabel: 'Welcome & Introduction',
+      icon: '👋',
       sections: [
-        { id: 'executive-summary', label: 'Executive Summary', enabled: true, required: true, tips: '' },
-        { id: 'scope-of-advice', label: 'Scope of Advice', enabled: true, required: true, tips: '' },
-        { id: 'basis-of-advice', label: 'Basis of Advice', enabled: true, required: true, tips: '' }
+        { id: 'cover-letter', label: 'Cover Letter', description: 'Personalised introduction letter to the client', status: 'configured' },
+        { id: 'cover-page', label: 'Cover Page', description: 'Title page with client and adviser details', status: 'configured' },
+        { id: 'how-to-read', label: 'How to Read This Document', description: 'Guide for navigating the SOA', status: 'needs-comment' }
       ]
     },
     {
-      group: 'client-info',
-      groupLabel: 'Client Information',
-      groupIcon: '👤',
+      group: 'executive-summary',
+      groupLabel: 'Executive Summary & Scope',
+      icon: '📋',
       sections: [
-        { id: 'personal-details', label: 'Personal Details', enabled: true, required: true, tips: '' },
-        { id: 'family-situation', label: 'Family Situation', enabled: true, required: false, tips: '' },
-        { id: 'employment', label: 'Employment & Income', enabled: true, required: true, tips: '' }
+        { id: 'executive-summary', label: 'Executive Summary', description: 'High-level overview of recommendations', status: 'configured' },
+        { id: 'subject-matter', label: 'Subject Matter - Financial Needs & Objectives', description: "Client's stated goals and objectives", status: 'needs-comment' }
       ]
     },
     {
-      group: 'financial-position',
-      groupLabel: 'Financial Position',
-      groupIcon: '💰',
+      group: 'financial-analysis',
+      groupLabel: 'Financial Analysis',
+      icon: '💰',
       sections: [
-        { id: 'assets-liabilities', label: 'Assets & Liabilities', enabled: true, required: true, tips: '' },
-        { id: 'income-expenses', label: 'Income & Expenses', enabled: true, required: true, tips: '' },
-        { id: 'superannuation', label: 'Superannuation', enabled: true, required: true, tips: '' },
-        { id: 'insurance', label: 'Insurance', enabled: true, required: true, tips: '' }
+        { id: 'financial-position', label: 'Financial Position', description: 'Assets, liabilities and net worth analysis', status: 'configured' },
+        { id: 'cash-flow', label: 'Cash Flow Analysis', description: 'Income and expenses overview', status: 'configured' },
+        { id: 'insurance-needs', label: 'Insurance Needs Analysis', description: 'Protection gap analysis', status: 'configured' }
+      ]
+    },
+    {
+      group: 'recommendations',
+      groupLabel: 'Recommendations & Strategy',
+      icon: '🎯',
+      sections: [
+        { id: 'investment-strategy', label: 'Investment Strategy', description: 'Asset allocation and portfolio approach', status: 'configured' },
+        { id: 'product-recommendations', label: 'Product Recommendations', description: 'Specific products and platforms', status: 'needs-comment' },
+        { id: 'insurance-recommendations', label: 'Insurance Recommendations', description: 'Insurance products and coverage', status: 'configured' }
+      ]
+    },
+    {
+      group: 'implementation',
+      groupLabel: 'Implementation',
+      icon: '✅',
+      sections: [
+        { id: 'action-plan', label: 'Action Plan', description: 'Steps to implement advice', status: 'configured' },
+        { id: 'timeline', label: 'Implementation Timeline', description: 'Proposed timeframe for actions', status: 'configured' }
+      ]
+    },
+    {
+      group: 'assumptions',
+      groupLabel: 'Assumptions & Basis',
+      icon: '📊',
+      sections: [
+        { id: 'financial-assumptions', label: 'Financial Assumptions', description: 'Market returns and economic assumptions', status: 'configured' },
+        { id: 'basis-of-advice', label: 'Basis of Advice', description: 'How the advice was developed', status: 'needs-comment' }
       ]
     }
   ];
@@ -113,85 +139,89 @@ export default function AdminTemplate() {
 
       <div className="p-8">
         {/* Info Banner */}
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6 flex items-start gap-3">
-          <span className="text-xl">ℹ️</span>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <div>
-            <h4 className="font-semibold text-indigo-900 mb-1">Template Inheritance</h4>
-            <p className="text-sm text-indigo-700">
-              This is the master template. Advice groups inherit these sections and can customize them. Changes here affect all groups unless they've overridden specific sections.
+            <h4 className="font-semibold text-blue-900 mb-0.5">System Default Template</h4>
+            <p className="text-sm text-blue-700">
+              This template is the baseline for all SOAs. Advice Groups can customize from here, and advisers can override if permitted.
             </p>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="flex gap-6 bg-white rounded-xl border border-slate-200 p-4 mb-6">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-['Fraunces'] font-semibold text-indigo-600">
-              {defaultSections.reduce((acc, g) => acc + g.sections.length, 0)}
-            </span>
-            <span className="text-sm text-slate-600">Total Sections</span>
+        <div className="flex gap-4 mb-6">
+          <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
+            <span className="text-2xl font-bold text-slate-800">{defaultSections.reduce((acc, g) => acc + g.sections.length, 0)}</span>
+            <span className="text-sm text-slate-600">Total sections</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-['Fraunces'] font-semibold text-green-600">
-              {defaultSections.reduce((acc, g) => acc + g.sections.filter(s => s.enabled).length, 0)}
-            </span>
-            <span className="text-sm text-slate-600">Enabled</span>
+          <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
+            <span className="text-2xl font-bold text-green-600">{defaultSections.reduce((acc, g) => acc + g.sections.filter(s => s.status === 'configured').length, 0)}</span>
+            <span className="text-sm text-slate-600">Configured</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-['Fraunces'] font-semibold text-amber-600">
-              {defaultSections.reduce((acc, g) => acc + g.sections.filter(s => s.required).length, 0)}
-            </span>
-            <span className="text-sm text-slate-600">Required</span>
+          <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
+            <span className="text-2xl font-bold text-orange-600">{defaultSections.reduce((acc, g) => acc + g.sections.filter(s => s.status === 'needs-comment').length, 0)}</span>
+            <span className="text-sm text-slate-600">Pending</span>
           </div>
         </div>
 
         {/* Section Groups */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {defaultSections.map((group) => {
             const isExpanded = expandedGroups.includes(group.group);
+            const configuredCount = group.sections.filter(s => s.status === 'configured').length;
             return (
-              <Card key={group.group}>
-                <div
+              <div key={group.group} className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+                <button
                   onClick={() => toggleGroup(group.group)}
-                  className="flex items-center gap-3 p-5 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
+                  className="w-full flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
                 >
-                  <GripVertical className="w-5 h-5 text-slate-400" />
-                  <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center text-lg">
-                    {group.groupIcon}
+                  <GripVertical className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-base flex-shrink-0">
+                    {group.icon}
                   </div>
                   <div className="flex-1">
-                    <div className="font-semibold">{group.groupLabel}</div>
+                    <div className="font-semibold text-slate-800">{group.groupLabel}</div>
                   </div>
-                  <Badge variant="secondary">{group.sections.length} sections</Badge>
-                  {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                </div>
+                  <span className="text-xs font-medium text-slate-600 bg-white px-2.5 py-1 rounded-full">
+                    {group.sections.length} sections
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                </button>
 
                 {isExpanded && (
-                  <div className="p-4 space-y-3">
+                  <div className="border-t border-slate-200 p-4 space-y-3">
                     {group.sections.map((section) => (
-                      <div key={section.id} className="border border-slate-200 rounded-lg p-4">
-                        <div className="flex items-start gap-3 mb-3">
-                          <Checkbox checked={section.enabled} className="mt-1" />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-semibold">{section.label}</span>
-                              {section.required && (
-                                <Badge variant="destructive" className="text-xs">Required</Badge>
-                              )}
-                            </div>
-                            <Textarea
-                              placeholder="Add guidance or tips for this section..."
-                              value={section.tips}
-                              className="mt-2 text-sm"
-                              rows={2}
-                            />
-                          </div>
+                      <div key={section.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                        <div className="flex-1">
+                          <div className="font-medium text-slate-800">{section.label}</div>
+                          <div className="text-xs text-slate-600 mt-0.5">{section.description}</div>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4">
+                          {section.status === 'configured' && (
+                            <span className="text-xs font-semibold text-green-700 bg-green-100 px-2.5 py-1 rounded">
+                              ✓ Configured
+                            </span>
+                          )}
+                          {section.status === 'needs-comment' && (
+                            <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2.5 py-1 rounded">
+                              ⚠ Needs comment
+                            </span>
+                          )}
+                          <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                            <Edit className="w-3.5 h-3.5 mr-1" />
+                            Edit
+                          </Button>
                         </div>
                       </div>
                     ))}
+                    <button className="w-full py-2 text-sm font-medium text-blue-600 hover:text-blue-700 mt-2">
+                      <Plus className="w-4 h-4 inline mr-1" />
+                      Add Custom Section
+                    </button>
                   </div>
                 )}
-              </Card>
+              </div>
             );
           })}
         </div>
