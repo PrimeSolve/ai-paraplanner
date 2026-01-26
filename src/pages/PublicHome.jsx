@@ -90,7 +90,15 @@ export default function PublicHome() {
       </nav>
 
       {/* Hero Section */}
-      <section className="min-h-screen pt-[140px] pb-20 px-12 relative overflow-hidden bg-gradient-to-br from-[#f0f4f8] via-[#e8eef5] to-[#dce5f0]">
+      <section className="min-h-screen pt-[140px] pb-20 px-12 relative overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/775a01db7_shutterstock_1125352451.jpg"
+            alt="Background"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#f0f4f8]/92 via-[#e8eef5]/88 to-[#dce5f0]/85" />
+        </div>
         <div className="max-w-[1400px] mx-auto grid grid-cols-2 gap-20 items-center relative z-10">
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
             <button 
