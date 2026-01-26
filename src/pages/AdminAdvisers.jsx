@@ -5,12 +5,15 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, Mail, Phone } from 'lucide-react';
+import { Search, Download, ChevronDown, Users, CheckCircle, Briefcase, Star, MoreHorizontal } from 'lucide-react';
 
 export default function AdminAdvisers() {
   const [advisers, setAdvisers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [planFilter, setPlanFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 7;
 
   useEffect(() => {
     loadAdvisers();
@@ -32,119 +35,250 @@ export default function AdminAdvisers() {
     adviser.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const getColorClass = (index) => {
+    const colors = [
+      'bg-blue-600',
+      'bg-orange-600',
+      'bg-pink-600',
+      'bg-purple-600',
+      'bg-green-600',
+      'bg-cyan-600',
+      'bg-teal-600',
+      'bg-indigo-600'
+    ];
+    return colors[index % colors.length];
+  };
+
+  const getPlanBadge = (plan) => {
+    const plans = {
+      'unlimited': { label: 'Unlimited', color: 'bg-green-100 text-green-700' },
+      'pay_per_soa': { label: 'Pay-per-SOA', color: 'bg-orange-100 text-orange-700' },
+      'trial': { label: 'Trial', color: 'bg-yellow-100 text-yellow-700' },
+      'cancelled': { label: 'Cancelled', color: 'bg-red-100 text-red-700' }
+    };
+    const config = plans[plan] || { label: 'Unlimited', color: 'bg-green-100 text-green-700' };
+    return config;
+  };
+
+  const paginatedAdvisers = filteredAdvisers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(filteredAdvisers.length / itemsPerPage);
+
   return (
     <AdminLayout currentPage="AdminAdvisers">
-      <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
+      <div className="bg-white border-b border-slate-200 px-8 py-5 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">All Advisers</h1>
-            <p className="text-sm text-slate-600 mt-1">System-wide adviser management</p>
+            <h1 className="font-['Playfair_Display'] text-2xl font-semibold text-[#0f172a]">
+              Advisers
+            </h1>
+            <p className="text-sm text-[#64748b] mt-1">Manage all advisers across advice groups</p>
           </div>
-          <Button className="bg-indigo-600 hover:bg-indigo-700">
-            Export Data
-          </Button>
+          <div className="flex items-center gap-3">
+            <button className="flex items-center gap-2 px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+              <Download className="w-4 h-4" />
+              Export
+            </button>
+            <button className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
+              PrimeSolve Group
+              <ChevronDown className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="p-8">
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          <Card className="p-4">
-            <div className="text-3xl font-['Fraunces'] font-semibold text-indigo-600 mb-1">
-              {advisers.length}
+        <div className="grid grid-cols-4 gap-6 mb-8">
+          <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+            <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4">
+              <Users className="w-6 h-6" />
             </div>
-            <div className="text-sm text-slate-600">Total Advisers</div>
-          </Card>
-          <Card className="p-4">
-            <div className="text-3xl font-['Fraunces'] font-semibold text-green-600 mb-1">
-              {advisers.filter(a => a.role === 'admin').length}
+            <div className="text-4xl font-bold mb-1">{advisers.length}</div>
+            <div className="text-sm opacity-90">Total Advisers</div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
+              <CheckCircle className="w-6 h-6 text-green-600" />
             </div>
-            <div className="text-sm text-slate-600">Active</div>
-          </Card>
-          <Card className="p-4">
-            <div className="text-3xl font-['Fraunces'] font-semibold text-blue-600 mb-1">87</div>
-            <div className="text-sm text-slate-600">With Clients</div>
-          </Card>
-          <Card className="p-4">
-            <div className="text-3xl font-['Fraunces'] font-semibold text-amber-600 mb-1">23</div>
-            <div className="text-sm text-slate-600">New This Month</div>
-          </Card>
+            <div className="text-4xl font-bold text-slate-800 mb-1">18</div>
+            <div className="text-sm text-slate-600">Unlimited Plans</div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center mb-4">
+              <Briefcase className="w-6 h-6 text-orange-600" />
+            </div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">4</div>
+            <div className="text-sm text-slate-600">Pay-per-SOA</div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center mb-4">
+              <Star className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">2</div>
+            <div className="text-sm text-slate-600">On Trial</div>
+          </div>
         </div>
 
-        {/* Search & Filters */}
-        <div className="flex gap-4 mb-6">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              placeholder="Search advisers..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+        {/* Filters */}
+        <div className="bg-white rounded-2xl border border-slate-200 mb-6">
+          <div className="p-6 flex items-end gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <Input
+                placeholder="Search advisers or companies..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-11 border-slate-200"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Plan</span>
+              <select value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                <option value="all">All Plans</option>
+                <option value="unlimited">Unlimited</option>
+                <option value="pay_per_soa">Pay-per-SOA</option>
+                <option value="trial">Trial</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sort by</span>
+              <select className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                <option>Activity</option>
+                <option>Name</option>
+                <option>Joined</option>
+              </select>
+            </div>
           </div>
-          <Button variant="outline">
-            <Filter className="w-4 h-4 mr-2" />
-            Filters
-          </Button>
         </div>
 
         {/* Table */}
-        <Card>
+        <div className="bg-white rounded-2xl border border-slate-200">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     Adviser
                   </th>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
-                    Advice Group
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Company
                   </th>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
-                    Clients
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Plan
                   </th>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
-                    SOAs
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Activity
                   </th>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
-                    Status
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Joined
                   </th>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {filteredAdvisers.map((adviser) => (
-                  <tr key={adviser.id} className="border-b border-slate-100 hover:bg-slate-50">
+                {paginatedAdvisers.length > 0 ? paginatedAdvisers.map((adviser, idx) => (
+                  <tr key={adviser.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center font-semibold text-indigo-600">
+                        <div className={`w-10 h-10 rounded-lg ${getColorClass(idx)} flex items-center justify-center text-white font-bold text-sm`}>
                           {adviser.full_name?.charAt(0) || adviser.email?.charAt(0)}
                         </div>
                         <div>
-                          <div className="font-medium">{adviser.full_name || adviser.email}</div>
-                          <div className="text-xs text-slate-500">{adviser.email}</div>
+                          <div className="font-semibold text-sm text-slate-800">{adviser.full_name || adviser.email}</div>
+                          <div className="text-xs text-slate-600">{adviser.email}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
-                      {adviser.company || 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 text-sm">18</td>
-                    <td className="px-6 py-4 text-sm">42</td>
                     <td className="px-6 py-4">
-                      <Badge>Active</Badge>
+                      <div className="text-sm text-slate-800 font-medium">Company Name</div>
+                      <div className="text-xs text-slate-600">AFSL 123456</div>
                     </td>
                     <td className="px-6 py-4">
-                      <Button size="sm" variant="outline">View</Button>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${getPlanBadge('unlimited').color}`}>
+                        {getPlanBadge('unlimited').label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-slate-800">12</span>
+                          <span className="text-xs text-slate-600">Clients</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-slate-800">8</span>
+                          <span className="text-xs text-slate-600">SOAs</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-slate-800">15 Nov 2025</span>
+                        <span className="text-xs text-slate-600">3 months ago</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+                          View
+                        </button>
+                        <button className="p-1.5 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-8 text-center text-slate-600">
+                      No advisers found
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
-        </Card>
+
+          {/* Pagination */}
+          <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+            <span className="text-sm text-slate-600">Showing {filteredAdvisers.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}-{Math.min(currentPage * itemsPerPage, filteredAdvisers.length)} of {filteredAdvisers.length} advisers</span>
+            <div className="flex items-center gap-2">
+              <button 
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-50">
+                ← Prev
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    currentPage === page
+                      ? 'bg-blue-600 text-white'
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-50">
+                Next →
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );
