@@ -167,11 +167,11 @@ export default function PublicHome() {
 
           <div className="space-y-16 relative">
             {/* Center line */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-[#3b82f6] via-[#22d3ee] to-[#3b82f6]" />
+            <div className="absolute left-1/2 top-0 bottom-0 w-[3px] bg-gradient-to-b from-[#22d3ee] via-[#3b82f6] to-[#1d4ed8]" />
 
             {/* Step 1 */}
-            <div className="grid grid-cols-2 gap-12 items-center relative">
-              <div className="text-right">
+            <div className="grid grid-cols-2 gap-12 items-start relative">
+              <div className="text-right bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
                 <h3 className="text-[24px] font-bold text-white mb-3">Send AI Fact Find</h3>
                 <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
                   Send your client a branded, mobile-friendly fact find powered by AI. Professional first impressions, every time.
