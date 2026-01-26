@@ -179,12 +179,12 @@ export default function PublicHome() {
             </p>
           </div>
 
-          <div className="space-y-16 relative">
+          <div className="space-y-12 relative">
             {/* Center line */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-[3px] bg-gradient-to-b from-[#22d3ee] via-[#3b82f6] to-[#1d4ed8]" />
+            <div className="absolute left-1/2 top-[60px] bottom-[60px] w-[2px] bg-[#22d3ee] -translate-x-1/2" />
 
             {/* Step 1 */}
-            <div className="grid grid-cols-2 gap-12 items-start relative">
+            <div className="grid grid-cols-2 gap-16 items-start relative">
               <div className="text-right bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
                 <h3 className="text-[24px] font-bold text-white mb-3">Send AI Fact Find</h3>
                 <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
@@ -196,17 +196,17 @@ export default function PublicHome() {
                   <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">AI-Powered</span>
                 </div>
               </div>
-              <div className="relative">
-                <div className="absolute -left-[13px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#3b82f6] border-4 border-[#0f172a] flex items-center justify-center text-white text-xs font-bold z-10">1</div>
+              <div className="relative h-full flex items-start justify-start pt-8">
+                <div className="absolute left-0 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">1</div>
               </div>
             </div>
 
             {/* Step 2 */}
-            <div className="grid grid-cols-2 gap-12 items-center relative">
-              <div className="relative">
-                <div className="absolute -right-[13px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#22d3ee] border-4 border-[#0f172a] flex items-center justify-center text-white text-xs font-bold z-10">2</div>
+            <div className="grid grid-cols-2 gap-16 items-start relative">
+              <div className="relative h-full flex items-start justify-end pt-8">
+                <div className="absolute right-0 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">2</div>
               </div>
-              <div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
                 <h3 className="text-[24px] font-bold text-white mb-3">Client Completes with AI Help</h3>
                 <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
                   Clients don't struggle with forms. AI pre-fills data, guides them through objectives, and captures everything accurately.
@@ -220,8 +220,8 @@ export default function PublicHome() {
             </div>
 
             {/* Step 3 */}
-            <div className="grid grid-cols-2 gap-12 items-center relative">
-              <div className="text-right">
+            <div className="grid grid-cols-2 gap-16 items-start relative">
+              <div className="text-right bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
                 <h3 className="text-[24px] font-bold text-white mb-3">Build SOA Request with AI</h3>
                 <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
                   Your AI paraplanner guides you through recommendations in real time. It prompts for missing details, validates your strategy, and ensures nothing slips through.
@@ -232,17 +232,17 @@ export default function PublicHome() {
                   <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Nothing Missed</span>
                 </div>
               </div>
-              <div className="relative">
-                <div className="absolute -left-[13px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#3b82f6] border-4 border-[#0f172a] flex items-center justify-center text-white text-xs font-bold z-10">3</div>
+              <div className="relative h-full flex items-start justify-start pt-8">
+                <div className="absolute left-0 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">3</div>
               </div>
             </div>
 
             {/* Step 4 */}
-            <div className="grid grid-cols-2 gap-12 items-center relative">
-              <div className="relative">
-                <div className="absolute -right-[13px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#22d3ee] border-4 border-[#0f172a] flex items-center justify-center text-white text-xs font-bold z-10">4</div>
+            <div className="grid grid-cols-2 gap-16 items-start relative">
+              <div className="relative h-full flex items-start justify-end pt-8">
+                <div className="absolute right-0 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">4</div>
               </div>
-              <div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
                 <h3 className="text-[24px] font-bold text-white mb-3">AI Prepares Your Plan</h3>
                 <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
                   Powered by PrimeSolve's optimised modelling engine, AI generates a compliant, comprehensive Statement of Advice. Every document is reviewed by qualified paraplanners.
@@ -256,8 +256,8 @@ export default function PublicHome() {
             </div>
 
             {/* Step 5 */}
-            <div className="grid grid-cols-2 gap-12 items-center relative">
-              <div className="text-right">
+            <div className="grid grid-cols-2 gap-16 items-start relative">
+              <div className="text-right bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
                 <h3 className="text-[24px] font-bold text-white mb-3">Receive Your SOA</h3>
                 <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
                   Get your completed SOA in 24 hours. Choose PDF or Word for compliance records, plus interactive HTML for client engagement — you get all three.
@@ -268,17 +268,17 @@ export default function PublicHome() {
                   <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Interactive HTML</span>
                 </div>
               </div>
-              <div className="relative">
-                <div className="absolute -left-[13px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#3b82f6] border-4 border-[#0f172a] flex items-center justify-center text-white text-xs font-bold z-10">5</div>
+              <div className="relative h-full flex items-start justify-start pt-8">
+                <div className="absolute left-0 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">5</div>
               </div>
             </div>
 
             {/* Step 6 */}
-            <div className="grid grid-cols-2 gap-12 items-center relative">
-              <div className="relative">
-                <div className="absolute -right-[13px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#22d3ee] border-4 border-[#0f172a] flex items-center justify-center text-white text-xs font-bold z-10">6</div>
+            <div className="grid grid-cols-2 gap-16 items-start relative">
+              <div className="relative h-full flex items-start justify-end pt-8">
+                <div className="absolute right-0 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">6</div>
               </div>
-              <div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
                 <h3 className="text-[24px] font-bold text-white mb-3">Avatar Explains the Advice</h3>
                 <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
                   Your digital twin walks clients through every recommendation. A fully trained AI model answers their questions, explains key concepts, clarifies trade-offs, and helps them understand why each recommendation makes sense for their situation.
@@ -292,8 +292,8 @@ export default function PublicHome() {
             </div>
 
             {/* Step 7 */}
-            <div className="grid grid-cols-2 gap-12 items-center relative">
-              <div className="text-right">
+            <div className="grid grid-cols-2 gap-16 items-start relative">
+              <div className="text-right bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
                 <h3 className="text-[24px] font-bold text-white mb-3">Stress Test Report</h3>
                 <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
                   Leveraging PrimeSolve's modelling engine, analyse 50+ alternative strategy models. Give clients unparalleled insight into different financial and lifestyle impacts.
@@ -304,8 +304,8 @@ export default function PublicHome() {
                   <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Deep Analysis</span>
                 </div>
               </div>
-              <div className="relative">
-                <div className="absolute -left-[13px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#3b82f6] border-4 border-[#0f172a] flex items-center justify-center text-white text-xs font-bold z-10">7</div>
+              <div className="relative h-full flex items-start justify-start pt-8">
+                <div className="absolute left-0 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">7</div>
               </div>
             </div>
           </div>
