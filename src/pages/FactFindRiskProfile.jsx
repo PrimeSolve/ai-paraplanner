@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 const tabs = [
   { id: 'questionnaire', label: 'Risk profile questionnaire', icon: '📋' },
@@ -691,25 +692,33 @@ export default function FactFindRiskProfile() {
                           />
                         </div>
 
-                        {/* Asset Allocation Details */}
+                        {/* Asset Allocation Pie Chart */}
                         <div className="bg-white rounded-lg p-4 border border-slate-200">
                           <h6 className="font-bold text-slate-800 mb-3">Asset Allocation</h6>
-                          <div className="space-y-2">
-                            {Object.entries(selectedProfileAllocation.details).map(([asset, percentage]) => (
-                              <div key={asset} className="flex justify-between items-center">
-                                <span className="text-sm text-slate-700">{asset}</span>
-                                <div className="flex items-center gap-3 flex-1 ml-4">
-                                  <div className="flex-1 bg-slate-200 rounded-full h-2">
-                                    <div
-                                      className="bg-blue-600 h-2 rounded-full"
-                                      style={{ width: `${percentage}%` }}
-                                    />
-                                  </div>
-                                  <span className="text-sm font-bold text-slate-800 w-12 text-right">{percentage}%</span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                          <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                              <Pie
+                                data={Object.entries(selectedProfileAllocation.details)
+                                  .filter(([_, value]) => value > 0)
+                                  .map(([name, value]) => ({ name, value }))}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                label={({ name, value }) => `${name}: ${value}%`}
+                                outerRadius={80}
+                                fill="#8884d8"
+                                dataKey="value"
+                              >
+                                {Object.entries(selectedProfileAllocation.details)
+                                  .filter(([_, value]) => value > 0)
+                                  .map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#6366f1'][index % 7]} />
+                                  ))}
+                              </Pie>
+                              <Tooltip formatter={(value) => `${value}%`} />
+                              <Legend />
+                            </PieChart>
+                          </ResponsiveContainer>
                         </div>
                       </div>
                     )}
