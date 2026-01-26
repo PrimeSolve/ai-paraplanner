@@ -47,26 +47,28 @@ export default function AdminLayout({ children, currentPage }) {
   ];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen font-['DM_Sans']">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+      `}</style>
+
       {/* Sidebar */}
-      <div className="w-64 bg-gradient-to-b from-[#1e1b4b] to-[#312e81] fixed top-0 left-0 bottom-0 flex flex-col z-50">
-        <div className="p-6 border-b border-white/10">
+      <div className="w-[260px] bg-[#0f172a] fixed top-0 left-0 bottom-0 flex flex-col z-50">
+        <div className="p-6 border-b border-white/[0.08]">
           <Link to={createPageUrl('AdminDashboard')} className="flex items-center gap-3 text-white no-underline">
-            <div className="w-10 h-10 bg-white/15 rounded-lg flex items-center justify-center font-bold">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] rounded-xl flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-900/30">
               AI
             </div>
-            <div>
-              <div className="font-['Fraunces'] text-xl font-semibold">
-                AI <span className="text-indigo-400">Paraplanner</span>
-              </div>
+            <div className="font-['Playfair_Display'] text-xl font-semibold">
+              AI <span className="text-[#22d3ee]">Paraplanner</span>
             </div>
           </Link>
         </div>
 
-        <nav className="flex-1 py-4 overflow-y-auto">
+        <nav className="flex-1 py-6 px-4 overflow-y-auto">
           {navItems.map((section, idx) => (
-            <div key={idx} className="mb-6">
-              <div className="px-6 py-2 text-xs font-semibold uppercase tracking-wider text-white/40">
+            <div key={idx} className="mb-7">
+              <div className="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
                 {section.section}
               </div>
               {section.items.map((item) => {
@@ -76,16 +78,19 @@ export default function AdminLayout({ children, currentPage }) {
                   <Link
                     key={item.path}
                     to={createPageUrl(item.path)}
-                    className={`flex items-center gap-3 px-6 py-3 text-white/70 no-underline transition-all border-l-3 ${
+                    className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium no-underline transition-all mb-1 relative ${
                       isActive 
-                        ? 'bg-white/10 !text-white border-l-indigo-400' 
-                        : 'border-l-transparent hover:bg-white/5 hover:text-white'
+                        ? 'bg-[#3b82f6]/15 text-white' 
+                        : 'text-[#94a3b8] hover:bg-white/[0.05] hover:text-white'
                     }`}
                   >
+                    {isActive && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#3b82f6] rounded-r-md" />
+                    )}
                     <Icon className="w-5 h-5" />
-                    <span className="font-medium">{item.label}</span>
+                    <span>{item.label}</span>
                     {item.badge && (
-                      <span className="ml-auto bg-indigo-400 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                      <span className="ml-auto bg-[#f97316] text-white text-[11px] font-bold px-2 py-0.5 rounded-xl">
                         {item.badge}
                       </span>
                     )}
@@ -96,23 +101,23 @@ export default function AdminLayout({ children, currentPage }) {
           ))}
         </nav>
 
-        <div className="p-6 border-t border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-400 rounded-full flex items-center justify-center text-white font-semibold">
+        <div className="p-4 border-t border-white/[0.08]">
+          <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.05] cursor-pointer transition-all">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] rounded-xl flex items-center justify-center text-white font-bold text-sm">
               {user?.full_name?.charAt(0) || 'A'}
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-white font-semibold text-sm truncate">
                 {user?.full_name || user?.email}
               </div>
-              <div className="text-white/50 text-xs">Admin</div>
+              <div className="text-[#64748b] text-xs">Admin</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 ml-64">
+      <div className="flex-1 ml-[260px] bg-[#f8fafc]">
         {children}
       </div>
     </div>
