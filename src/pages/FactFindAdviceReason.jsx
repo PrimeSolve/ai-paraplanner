@@ -333,13 +333,14 @@ export default function FactFindAdviceReason() {
       return;
     }
 
-    if (editingIndex !== null) {
+    if (editingIndex !== null && editingIndex >= 0) {
       const updated = [...objectives];
       updated[editingIndex] = objectiveForm;
       setObjectives(updated);
       setEditingIndex(null);
     } else {
       setObjectives([...objectives, objectiveForm]);
+      setEditingIndex(null);
     }
 
     resetObjectiveForm();
@@ -822,11 +823,33 @@ export default function FactFindAdviceReason() {
               {/* Detailed Objectives Sub-tab */}
               {objectiveSubTab === 'detailed' && (
                 <>
+                  {/* Empty State */}
+                  {objectives.length === 0 && editingIndex === null && (
+                    <Card className="border-slate-200 shadow-sm">
+                      <CardContent className="p-12 text-center">
+                        <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
+                          <Target className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <h4 className="font-bold text-slate-800 mb-2 text-lg">🎯 No objectives added yet</h4>
+                        <p className="text-sm text-slate-600 mb-6">
+                          Start by adding your first financial objective to track your goals
+                        </p>
+                        <Button
+                          onClick={() => setEditingIndex(-1)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add First Objective
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
+
                   {/* Add/Edit Form */}
-                  {(editingIndex !== null || objectives.length === 0) && (
+                  {editingIndex !== null && (
                     <Card className="border-slate-200 shadow-sm">
                       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 rounded-t-lg">
-                        <h4 className="font-bold text-white">{editingIndex !== null ? 'Edit Objective' : 'Add New Objective'}</h4>
+                        <h4 className="font-bold text-white">{editingIndex >= 0 ? 'Edit Objective' : 'Add New Objective'}</h4>
                       </div>
                       <CardContent className="p-6 space-y-4">
                         <div className="grid md:grid-cols-2 gap-4">
@@ -1043,26 +1066,14 @@ export default function FactFindAdviceReason() {
                   )}
 
                   {/* Objectives List */}
-                  {objectives.length === 0 ? (
-                    <Card className="border-slate-200 shadow-sm">
-                      <CardContent className="p-12 text-center">
-                        <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                          <Target className="w-8 h-8 text-blue-600" />
-                        </div>
-                        <h4 className="font-bold text-slate-800 mb-2">🎯 No objectives added yet</h4>
-                        <p className="text-sm text-slate-600">
-                          Start by adding your first financial objective to track your goals
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ) : (
+                  {objectives.length > 0 && (
                     <>
-                      {editingIndex === null && objectives.length > 0 && (
+                      {editingIndex === null && (
                         <div className="flex justify-end">
                           <Button
                             onClick={() => {
                               resetObjectiveForm();
-                              setEditingIndex(null);
+                              setEditingIndex(-1);
                             }}
                             className="bg-green-600 hover:bg-green-700 text-white"
                           >
