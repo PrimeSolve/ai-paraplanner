@@ -128,20 +128,14 @@ export default function AdminSettings() {
   return (
     <AdminLayout currentPage="AdminSettings">
       <div className="min-h-screen bg-[#f8fafc]">
-        {/* Header */}
-        <div className="bg-white border-b border-[#e2e8f0] px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-['Playfair_Display'] font-semibold text-[#0f172a] mb-1">
-                Settings
-              </h1>
-              <p className="text-sm text-[#64748b]">Configure your AI Paraplanner workspace</p>
-            </div>
-          </div>
-        </div>
-
         {/* Content */}
         <div className="flex gap-6 p-8">
+          <div className="mb-6">
+            <h1 className="text-2xl font-['Playfair_Display'] font-semibold text-[#0f172a] mb-1">
+              Settings
+            </h1>
+            <p className="text-sm text-[#64748b]">Configure your AI Paraplanner workspace</p>
+          </div>
           {/* Sidebar */}
           <div className="w-[220px] flex-shrink-0">
             <div className="bg-white rounded-2xl border border-[#e2e8f0] p-2">
@@ -762,8 +756,9 @@ export default function AdminSettings() {
               </div>
             )}
           </div>
-        </div>
-      </div>
-    </AdminLayout>
+          </div>
+          </div>
+          </div>
+          </AdminLayout>
   );
 }
