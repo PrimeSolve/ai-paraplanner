@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, User, HelpCircle, LogOut } from 'lucide-react';
+import { Plus, Search, User, HelpCircle, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
 
@@ -16,6 +16,10 @@ export default function AdviceGroupAdvisers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [showInvite, setShowInvite] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('All Statuses');
+  const [sortBy, setSortBy] = useState('Most Active');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   useEffect(() => {
     loadData();
@@ -56,6 +60,16 @@ export default function AdviceGroupAdvisers() {
     a.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     a.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const stats = [
+    { label: 'Total Advisers', value: advisers.length },
+    { label: 'Active', value: advisers.filter(a => a.status === 'active' || !a.status).length },
+    { label: 'Pending Invite', value: advisers.filter(a => a.status === 'pending').length },
+    { label: 'SOAs This Month', value: 47 }
+  ];
+
+  const totalPages = Math.ceil(filteredAdvisers.length / itemsPerPage);
+  const paginatedAdvisers = filteredAdvisers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const colors = {
     core: {
@@ -174,33 +188,105 @@ export default function AdviceGroupAdvisers() {
           flex: 1,
           padding: '32px',
         }}>
-
-      <div style={{
-        background: colors.core.white,
-        borderRadius: '16px',
-        border: `1px solid ${colors.core.greyLight}`,
-        overflow: 'hidden',
-      }}>
+        
+        {/* Stats Cards */}
         <div style={{
-          padding: '20px 32px',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '16px',
+          marginBottom: '32px',
+        }}>
+          {stats.map((stat, idx) => (
+            <div key={idx} style={{
+              background: colors.core.white,
+              border: `1px solid ${colors.core.greyLight}`,
+              borderRadius: '12px',
+              padding: '16px',
+            }}>
+              <div style={{
+                fontSize: '12px',
+                color: colors.core.slateLight,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                marginBottom: '8px',
+              }}>
+                {stat.label}
+              </div>
+              <div style={{
+                fontSize: '28px',
+                fontWeight: 700,
+                color: colors.core.navy,
+              }}>
+                {stat.value}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Advisers Table Card */}
+        <div style={{
+          background: colors.core.white,
+          borderRadius: '12px',
+          border: `1px solid ${colors.core.greyLight}`,
+          overflow: 'hidden',
+        }}>
+        
+        {/* Search and Filters */}
+        <div style={{
+          padding: '20px 24px',
           borderBottom: `1px solid ${colors.core.greyLight}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          gap: '16px',
         }}>
-          <h3 style={{
-            fontSize: '18px',
-            fontWeight: 600,
-            color: colors.core.navy,
-            margin: 0,
-          }}>
-            Advisers
-          </h3>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flex: 1 }}>
+            <div style={{ position: 'relative', width: '200px' }}>
+              <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: colors.core.slateLight }} />
+              <Input
+                placeholder="Search advisers..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ paddingLeft: '36px', height: '36px' }}
+              />
+            </div>
+            
+            <select style={{
+              height: '36px',
+              padding: '8px 12px',
+              border: `1px solid ${colors.core.greyLight}`,
+              borderRadius: '6px',
+              fontSize: '14px',
+              color: colors.core.navy,
+              background: colors.core.white,
+              cursor: 'pointer',
+            }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option>All Statuses</option>
+              <option>Active</option>
+              <option>Pending</option>
+            </select>
+
+            <select style={{
+              height: '36px',
+              padding: '8px 12px',
+              border: `1px solid ${colors.core.greyLight}`,
+              borderRadius: '6px',
+              fontSize: '14px',
+              color: colors.core.navy,
+              background: colors.core.white,
+              cursor: 'pointer',
+            }} value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+              <option>Most Active</option>
+              <option>Least Active</option>
+              <option>Name A-Z</option>
+            </select>
+          </div>
+
           <Button onClick={() => setShowInvite(!showInvite)} style={{
             background: colors.accent.blue,
             color: colors.core.white,
             padding: '8px 16px',
-            borderRadius: '8px',
+            borderRadius: '6px',
             border: 'none',
             cursor: 'pointer',
             fontSize: '14px',
@@ -208,6 +294,7 @@ export default function AdviceGroupAdvisers() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
+            whiteSpace: 'nowrap',
           }}>
             <Plus size={16} />
             Invite Adviser
@@ -216,7 +303,7 @@ export default function AdviceGroupAdvisers() {
 
         {showInvite && (
           <div style={{
-            padding: '20px 32px',
+            padding: '16px 24px',
             borderBottom: `1px solid ${colors.core.greyLight}`,
             background: colors.core.offWhite,
           }}>
@@ -226,13 +313,13 @@ export default function AdviceGroupAdvisers() {
                 placeholder="adviser@example.com"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
-                style={{ flex: 1 }}
+                style={{ flex: 1, height: '36px' }}
               />
               <Button onClick={handleInvite} style={{
                 background: colors.accent.blue,
                 color: colors.core.white,
                 padding: '8px 16px',
-                borderRadius: '8px',
+                borderRadius: '6px',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '14px',
@@ -244,18 +331,6 @@ export default function AdviceGroupAdvisers() {
           </div>
         )}
 
-        <div style={{ padding: '20px 32px', borderBottom: `1px solid ${colors.core.greyLight}` }}>
-          <div style={{ position: 'relative', maxWidth: '300px' }}>
-            <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: colors.core.slateLight }} />
-            <Input
-              placeholder="Search advisers..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ paddingLeft: '36px' }}
-            />
-          </div>
-        </div>
-
         <div style={{ overflowX: 'auto' }}>
           <table style={{
             width: '100%',
@@ -266,11 +341,11 @@ export default function AdviceGroupAdvisers() {
                 borderBottom: `1px solid ${colors.core.greyLight}`,
                 background: colors.core.offWhite,
               }}>
-                {['ADVISER', 'CLIENTS', 'ACTIVE SOAs', 'STATUS', 'ACTIONS'].map(header => (
+                {['ADVISER', 'AB NUMBER', 'STATUS', 'ACTIVE SOAs', 'THIS MONTH', 'TOTAL SOAs', 'ACTIONS'].map(header => (
                   <th key={header} style={{
-                    padding: '16px 32px',
+                    padding: '12px 16px',
                     textAlign: 'left',
-                    fontSize: '12px',
+                    fontSize: '11px',
                     fontWeight: 700,
                     color: colors.core.slateLight,
                     textTransform: 'uppercase',
@@ -282,7 +357,7 @@ export default function AdviceGroupAdvisers() {
               </tr>
             </thead>
             <tbody>
-              {filteredAdvisers.map((adviser) => (
+              {paginatedAdvisers.map((adviser) => (
                 <tr key={adviser.id} style={{
                   borderBottom: `1px solid ${colors.core.greyLight}`,
                   transition: 'background-color 0.2s ease',
@@ -291,7 +366,7 @@ export default function AdviceGroupAdvisers() {
                 onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
                   <td style={{
-                    padding: '16px 32px',
+                    padding: '16px',
                     fontSize: '14px',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -299,7 +374,7 @@ export default function AdviceGroupAdvisers() {
                         width: '40px',
                         height: '40px',
                         borderRadius: '8px',
-                        background: `linear-gradient(135deg, ${colors.accent.blue}, ${colors.accent.blueDeep})`,
+                        background: `linear-gradient(135deg, ${colors.accent.blue}, ${colors.accent.purple})`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -307,7 +382,7 @@ export default function AdviceGroupAdvisers() {
                         fontWeight: 600,
                         fontSize: '14px',
                       }}>
-                        {adviser.full_name?.charAt(0) || adviser.email?.charAt(0)}
+                        {adviser.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || adviser.email?.charAt(0)}
                       </div>
                       <div>
                         <div style={{ fontWeight: 600, color: colors.core.navy }}>{adviser.full_name || adviser.email}</div>
@@ -316,45 +391,144 @@ export default function AdviceGroupAdvisers() {
                     </div>
                   </td>
                   <td style={{
-                    padding: '16px 32px',
+                    padding: '16px',
                     fontSize: '14px',
                     color: colors.core.navy,
                   }}>
-                    12
+                    08128756
                   </td>
                   <td style={{
-                    padding: '16px 32px',
-                    fontSize: '14px',
-                    color: colors.core.navy,
-                  }}>
-                    3
-                  </td>
-                  <td style={{
-                    padding: '16px 32px',
+                    padding: '16px',
                     fontSize: '14px',
                   }}>
                     <span style={{
-                      display: 'inline-block',
-                      padding: '4px 12px',
-                      borderRadius: '6px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '4px 10px',
+                      borderRadius: '4px',
                       background: 'rgba(16, 185, 129, 0.1)',
                       color: colors.accent.success,
                       fontSize: '12px',
                       fontWeight: 600,
                     }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: colors.accent.success }}></span>
                       Active
                     </span>
                   </td>
                   <td style={{
-                    padding: '16px 32px',
+                    padding: '16px',
                     fontSize: '14px',
+                    color: colors.core.navy,
+                    fontWeight: 500,
                   }}>
-                    <Button size="sm" variant="outline">View</Button>
+                    5
+                  </td>
+                  <td style={{
+                    padding: '16px',
+                    fontSize: '14px',
+                    color: colors.core.navy,
+                    fontWeight: 500,
+                  }}>
+                    12
+                  </td>
+                  <td style={{
+                    padding: '16px',
+                    fontSize: '14px',
+                    color: colors.core.navy,
+                    fontWeight: 500,
+                  }}>
+                    89
+                  </td>
+                  <td style={{
+                    padding: '16px',
+                    fontSize: '14px',
+                    display: 'flex',
+                    gap: '8px',
+                  }}>
+                    <Button size="sm" variant="outline" style={{
+                      height: '32px',
+                      padding: '4px 12px',
+                      fontSize: '13px',
+                    }}>View</Button>
+                    <Button size="sm" style={{
+                      background: colors.accent.blue,
+                      color: colors.core.white,
+                      height: '32px',
+                      padding: '4px 12px',
+                      fontSize: '13px',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                    }}>SOAs</Button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination */}
+        <div style={{
+          padding: '16px 24px',
+          borderTop: `1px solid ${colors.core.greyLight}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: '13px',
+          color: colors.core.slateLight,
+        }}>
+          <div>
+            Showing {filteredAdvisers.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredAdvisers.length)} of {filteredAdvisers.length} advisers
+          </div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button 
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              style={{
+                padding: '6px 10px',
+                border: `1px solid ${colors.core.greyLight}`,
+                borderRadius: '4px',
+                background: colors.core.white,
+                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                opacity: currentPage === 1 ? 0.5 : 1,
+              }}
+            >
+              ← Prev
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                style={{
+                  padding: '6px 10px',
+                  minWidth: '32px',
+                  border: page === currentPage ? 'none' : `1px solid ${colors.core.greyLight}`,
+                  borderRadius: '4px',
+                  background: page === currentPage ? colors.accent.blue : colors.core.white,
+                  color: page === currentPage ? colors.core.white : colors.core.navy,
+                  fontWeight: page === currentPage ? 600 : 500,
+                  cursor: 'pointer',
+                }}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              style={{
+                padding: '6px 10px',
+                border: `1px solid ${colors.core.greyLight}`,
+                borderRadius: '4px',
+                background: colors.core.white,
+                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                opacity: currentPage === totalPages ? 0.5 : 1,
+              }}
+            >
+              Next →
+            </button>
+          </div>
         </div>
       </div>
       </div>
