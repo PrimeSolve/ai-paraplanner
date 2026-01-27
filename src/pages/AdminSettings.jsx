@@ -756,9 +756,8 @@ export default function AdminSettings() {
               </div>
             )}
           </div>
-          </div>
-          </div>
-          </div>
-          </AdminLayout>
+        </div>
+      </div>
+    </AdminLayout>
   );
 }
