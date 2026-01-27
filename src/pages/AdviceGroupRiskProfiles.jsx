@@ -198,8 +198,8 @@ export default function AdviceGroupRiskProfiles() {
                 return (
                   <div
                     key={profile.id}
-                    className={`bg-white border-2 rounded-2xl overflow-hidden transition-all ${
-                      isExpanded ? 'border-blue-500 shadow-lg' : 'border-blue-200'
+                    className={`bg-white border rounded-lg overflow-hidden transition-all ${
+                      isExpanded ? 'border-blue-300 shadow-md' : 'border-slate-200'
                     }`}
                   >
                     {/* Header */}
