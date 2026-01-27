@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { UserX, Clock, CheckCircle2, Zap, Search } from 'lucide-react';
 import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
 import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 
