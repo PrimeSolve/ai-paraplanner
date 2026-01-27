@@ -607,5 +607,4 @@ export default function AdviceGroupAdvisers() {
       </div>
     </div>
     );
-  }
 }
