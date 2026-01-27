@@ -208,23 +208,23 @@ export default function AdviceGroupRiskProfiles() {
                       className="w-full p-4 flex items-center gap-3 hover:bg-slate-50 text-left"
                     >
                       <div
-                        className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 text-xl"
+                        className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 text-lg"
                         style={{ background: profileColors[profile.risk_level] || '#DBEAFE' }}
                       >
                         {profileIcons[profile.risk_level] || '💼'}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-lg text-slate-900">{profile.name}</h3>
-                        <p className="text-sm text-slate-600">{profile.description}</p>
+                        <h3 className="font-semibold text-slate-900">{profile.name}</h3>
+                        <p className="text-xs text-slate-600">{profile.description}</p>
                       </div>
-                      <div className="flex items-center gap-8 flex-shrink-0 mr-3">
+                      <div className="flex items-center gap-6 flex-shrink-0">
                         <div className="text-right">
-                          <div className="text-lg font-bold text-slate-800">{defensiveAlloc}%</div>
-                          <div className="text-xs font-semibold text-blue-600 uppercase">Defensive</div>
+                          <div className="text-sm font-bold text-slate-800">{defensiveAlloc}%</div>
+                          <div className="text-xs font-semibold text-slate-500 uppercase">Defensive</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-lg font-bold text-slate-800">{growthAlloc}%</div>
-                          <div className="text-xs font-semibold text-orange-600 uppercase">Growth</div>
+                          <div className="text-sm font-bold text-slate-800">{growthAlloc}%</div>
+                          <div className="text-xs font-semibold text-slate-500 uppercase">Growth</div>
                         </div>
                       </div>
                       <ChevronDown
