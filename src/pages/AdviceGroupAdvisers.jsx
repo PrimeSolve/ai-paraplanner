@@ -117,117 +117,12 @@ export default function AdviceGroupAdvisers() {
       <AdviceGroupSidebar currentPage="advisers" />
 
       <div style={{
-        marginLeft: '260px',
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
+       marginLeft: '260px',
+       flex: 1,
+       display: 'flex',
+       flexDirection: 'column',
       }}>
-        {/* Header */}
-        <div style={{
-          background: colors.core.white,
-          padding: '20px 32px',
-          borderBottom: `1px solid ${colors.core.greyLight}`,
-          position: 'sticky',
-          top: 0,
-          zIndex: 50,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', marginBottom: '4px' }}>
-              <Link to={createPageUrl('AdviceGroupDashboard')} style={{ color: colors.accent.blue, textDecoration: 'none' }}>Dashboard</Link>
-              <ChevronRight size={16} color={colors.core.grey} />
-              <span style={{ color: colors.core.slateLight }}>Advisers</span>
-            </div>
-            <h1 style={{ fontSize: '24px', fontWeight: 700, color: colors.core.navy, margin: 0 }}>Advisers</h1>
-            <p style={{ fontSize: '14px', color: colors.core.slateLight, marginTop: '4px', margin: 0 }}>Manage advisers in the {user?.advice_group_name || 'advice group'} network</p>
-          </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <Button variant="outline" style={{ padding: '8px 16px', borderRadius: '6px', border: `1px solid ${colors.core.greyLight}`, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Download size={16} />
-              Export
-            </Button>
-            <Button onClick={() => setShowInvite(true)} style={{
-              background: colors.accent.blue,
-              color: colors.core.white,
-              padding: '8px 16px',
-              borderRadius: '6px',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: 500,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}>
-              <Plus size={16} />
-              Invite Adviser
-            </Button>
-          </div>
-          {user && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '8px 12px',
-                  background: colors.core.white,
-                  border: `1px solid ${colors.core.greyLight}`,
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                }}>
-                  {user.profile_image_url ? (
-                    <img src={user.profile_image_url} alt="Profile" style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '8px',
-                      objectFit: 'cover',
-                    }} />
-                  ) : (
-                    <div style={{
-                      width: '32px',
-                      height: '32px',
-                      background: `linear-gradient(135deg, ${colors.accent.purple}, ${colors.accent.blueDeep})`,
-                      borderRadius: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: colors.core.white,
-                      fontSize: '12px',
-                      fontWeight: 700,
-                    }}>
-                      {(user.display_name || user.full_name)?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                  <span style={{ color: colors.core.navy }}>{user.display_name || user.full_name || user.email}</span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" style={{ width: '224px' }}>
-                <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('AdviceGroupMyProfile')} style={{ cursor: 'pointer' }}>
-                    <User size={16} style={{ marginRight: '12px' }} />
-                    My Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <HelpCircle size={16} style={{ marginRight: '12px' }} />
-                  Help & Support
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => base44.auth.logout()}>
-                  <LogOut size={16} style={{ marginRight: '12px' }} />
-                  Log Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-
-        {/* Main Content */}
+       {/* Main Content */}
         <div style={{
           flex: 1,
           padding: '32px',
