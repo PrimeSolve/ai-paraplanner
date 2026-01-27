@@ -21,13 +21,13 @@ export default function AdviceGroupRiskProfiles() {
   const [expandedId, setExpandedId] = useState(null);
 
   const defaultAllocation = {
-    cash: 0,
-    au_fixed_interest: 0,
-    int_fixed_interest: 0,
-    property: 0,
-    alternatives: 0,
-    au_equities: 0,
-    int_equities: 0
+    cash: { target: 0, min: 20, max: 50 },
+    au_fixed_interest: { target: 0, min: 25, max: 45 },
+    int_fixed_interest: { target: 0, min: 10, max: 30 },
+    property: { target: 0, min: 0, max: 10 },
+    alternatives: { target: 0, min: 0, max: 5 },
+    au_equities: { target: 0, min: 0, max: 20 },
+    int_equities: { target: 0, min: 0, max: 15 }
   };
 
   const [formData, setFormData] = useState({
