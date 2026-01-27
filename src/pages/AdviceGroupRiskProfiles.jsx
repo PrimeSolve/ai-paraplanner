@@ -401,9 +401,9 @@ export default function AdviceGroupRiskProfiles() {
                      </tr>
                      <tr className="border-b border-slate-200">
                        <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#8B5CF6'}}></span>Property</span></td>
-                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.property?.target || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, property: {...formData.allocation.property, target: Number(e.target.value)}}})} className="h-8 text-center" /></td>
-                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.property?.min || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, property: {...formData.allocation.property, min: Number(e.target.value)}}})} className="h-8 text-center" /></td>
-                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.property?.max || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, property: {...formData.allocation.property, max: Number(e.target.value)}}})} className="h-8 text-center" /></td>
+                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.property?.target || 0} onChange={(e) => updateAllocation('property', 'target', e.target.value)} className="h-8 text-center" /></td>
+                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.property?.min || 0} onChange={(e) => updateAllocation('property', 'min', e.target.value)} className="h-8 text-center" /></td>
+                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.property?.max || 0} onChange={(e) => updateAllocation('property', 'max', e.target.value)} className="h-8 text-center" /></td>
                      </tr>
                      <tr className="border-b border-slate-200">
                        <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#EC4899'}}></span>Alternatives</span></td>
