@@ -10,12 +10,14 @@ import AdviserHeader from '../components/adviser/AdviserHeader';
 export default function AdviserDashboard() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [clients, setClients] = useState([]);
   const [stats, setStats] = useState({
     totalClients: 0,
+    pendingFactFinds: 0,
     activeSOAs: 0,
-    completedSOAs: 0,
-    pendingFactFinds: 0
+    readyForDownload: 0
   });
+  const [recentActivity, setRecentActivity] = useState([]);
 
   useEffect(() => {
     loadData();
