@@ -53,32 +53,25 @@ export default function AdviserLayout({ children, currentPage }) {
           </Link>
         </div>
 
-        <nav className="flex-1 py-4 overflow-y-auto">
-          {navItems.map((section, idx) => (
-            <div key={idx} className="mb-6">
-              <div className="px-6 py-2 text-xs font-semibold uppercase tracking-wider text-white/40">
-                {section.section}
-              </div>
-              {section.items.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentPage === item.path;
-                return (
-                  <Link
-                    key={item.path}
-                    to={createPageUrl(item.path)}
-                    className={`flex items-center gap-3 px-6 py-3 text-white/70 no-underline transition-all border-l-3 ${
-                      isActive 
-                        ? 'bg-white/10 !text-white border-l-teal-300' 
-                        : 'border-l-transparent hover:bg-white/5 hover:text-white'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
+        <nav className="flex-1 py-6 overflow-y-auto">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentPage === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={createPageUrl(item.path)}
+                className={`flex items-center gap-3 px-6 py-3 text-white/70 no-underline transition-all border-l-3 ${
+                  isActive 
+                    ? 'bg-white/10 !text-white border-l-teal-300' 
+                    : 'border-l-transparent hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="p-6 border-t border-white/10">
