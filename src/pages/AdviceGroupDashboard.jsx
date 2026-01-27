@@ -287,12 +287,19 @@ export default function AdviceGroupDashboard() {
       <AdviceGroupSidebar currentPage="dashboard" />
 
       <div style={{
+        marginLeft: '260px',
         flex: 1,
         display: 'flex',
-        padding: '24px 32px',
-        gap: '24px',
-        marginLeft: '260px',
+        flexDirection: 'column',
       }}>
+        <AdviceGroupHeader user={user} />
+
+        <div style={{
+          flex: 1,
+          padding: '24px 32px',
+          display: 'flex',
+          gap: '24px',
+        }}>
           {/* Main Column */}
           <div style={{ flex: 1 }}>
             {/* Stats Grid */}
