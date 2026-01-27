@@ -827,6 +827,53 @@ export default function AdviceGroupDashboard() {
               </div>
             </div>
 
+            {/* Top Clients */}
+            <div style={{
+              background: colors.core.white,
+              borderRadius: '16px',
+              border: `1px solid ${colors.core.greyLight}`,
+              padding: '24px',
+            }}>
+              <h4 style={{
+                fontSize: '16px',
+                fontWeight: 600,
+                color: colors.core.navy,
+                marginBottom: '16px',
+              }}>
+                Top Clients
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {[
+                  { name: 'James & Emma Wilson', adviser: 'Michael Ross', status: 'Active' },
+                  { name: 'Sarah Chen', adviser: 'Jessica Taylor', status: 'Active' },
+                  { name: 'David & Lisa Park', adviser: 'Andrew Walsh', status: 'Prospect' },
+                ].map((client, idx) => (
+                  <div key={idx} style={{
+                    paddingBottom: '16px',
+                    borderBottom: idx !== 2 ? `1px solid ${colors.core.greyLight}` : 'none',
+                  }}>
+                    <div style={{ fontWeight: 600, color: colors.core.navy, fontSize: '13px', marginBottom: '4px' }}>
+                      {client.name}
+                    </div>
+                    <div style={{ fontSize: '12px', color: colors.core.slateLight, marginBottom: '6px' }}>
+                      Adviser: {client.adviser}
+                    </div>
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      background: client.status === 'Active' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                      color: client.status === 'Active' ? colors.accent.success : colors.accent.blue,
+                      fontSize: '11px',
+                      fontWeight: 600,
+                    }}>
+                      {client.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Quick Actions */}
             <div style={{
               background: colors.core.white,
