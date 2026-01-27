@@ -160,46 +160,67 @@ export default function AdviceGroupAdvisers() {
           alignItems: 'center',
           gap: '12px',
           marginBottom: '16px',
+          justifyContent: 'space-between',
         }}>
-          <div style={{ position: 'relative', width: '200px' }}>
-            <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: colors.core.slateLight }} />
-            <Input
-              placeholder="Search advisers..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ paddingLeft: '36px', height: '36px' }}
-            />
-          </div>
-          
-          <select style={{
-            height: '36px',
-            padding: '8px 12px',
-            border: `1px solid ${colors.core.greyLight}`,
-            borderRadius: '6px',
-            fontSize: '14px',
-            color: colors.core.navy,
-            background: colors.core.white,
-            cursor: 'pointer',
-          }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-            <option>All Statuses</option>
-            <option>Active</option>
-            <option>Pending</option>
-          </select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ position: 'relative', width: '200px' }}>
+              <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: colors.core.slateLight }} />
+              <Input
+                placeholder="Search advisers..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ paddingLeft: '36px', height: '36px' }}
+              />
+            </div>
+            
+            <select style={{
+              height: '36px',
+              padding: '8px 12px',
+              border: `1px solid ${colors.core.greyLight}`,
+              borderRadius: '6px',
+              fontSize: '14px',
+              color: colors.core.navy,
+              background: colors.core.white,
+              cursor: 'pointer',
+            }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option>All Statuses</option>
+              <option>Active</option>
+              <option>Pending</option>
+            </select>
 
-          <select style={{
-            height: '36px',
-            padding: '8px 12px',
-            border: `1px solid ${colors.core.greyLight}`,
+            <select style={{
+              height: '36px',
+              padding: '8px 12px',
+              border: `1px solid ${colors.core.greyLight}`,
+              borderRadius: '6px',
+              fontSize: '14px',
+              color: colors.core.navy,
+              background: colors.core.white,
+              cursor: 'pointer',
+            }} value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+              <option>Most Active</option>
+              <option>Least Active</option>
+              <option>Name A-Z</option>
+            </select>
+          </div>
+
+          <Button onClick={() => setShowInvite(true)} style={{
+            background: colors.accent.blue,
+            color: colors.core.white,
+            padding: '8px 16px',
             borderRadius: '6px',
-            fontSize: '14px',
-            color: colors.core.navy,
-            background: colors.core.white,
+            border: 'none',
             cursor: 'pointer',
-          }} value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option>Most Active</option>
-            <option>Least Active</option>
-            <option>Name A-Z</option>
-          </select>
+            fontSize: '14px',
+            fontWeight: 500,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            whiteSpace: 'nowrap',
+          }}>
+            <Plus size={16} />
+            Invite Adviser
+          </Button>
         </div>
 
         {/* Advisers Table Card */}
