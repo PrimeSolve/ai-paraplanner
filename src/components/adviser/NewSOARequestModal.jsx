@@ -91,7 +91,6 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
           }
         `}</style>
 
-        {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
           <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b' }}>New SOA Request</h2>
           <button
@@ -102,7 +101,6 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
           </button>
         </div>
 
-        {/* Content */}
         <div style={{ marginBottom: '32px' }}>
           <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1e293b', marginBottom: '12px' }}>
             Select Client
@@ -121,7 +119,6 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
           </Select>
         </div>
 
-        {/* Footer */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
           <button
             onClick={onClose}
