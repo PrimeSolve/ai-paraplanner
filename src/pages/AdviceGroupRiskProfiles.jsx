@@ -353,7 +353,6 @@ export default function AdviceGroupRiskProfiles() {
           </div>
         </DialogContent>
       </Dialog>
-        </div>
       </div>
     </div>
   );
