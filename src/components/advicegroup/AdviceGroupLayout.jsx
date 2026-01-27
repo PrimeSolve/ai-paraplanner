@@ -46,7 +46,8 @@ export default function AdviceGroupLayout({ children, currentPage }) {
 
   const navItems = [
     { section: 'OVERVIEW', items: [
-      { label: 'Dashboard', path: 'AdviceGroupDashboard', icon: LayoutDashboard }
+      { label: 'Dashboard', path: 'AdviceGroupDashboard', icon: LayoutDashboard },
+      { label: 'Completed SOAs', path: 'AdviceGroupCompleted', icon: FileText }
     ]},
     { section: 'TEAM', items: [
       { label: 'Advisers', path: 'AdviceGroupAdvisers', icon: Users },
@@ -89,7 +90,7 @@ export default function AdviceGroupLayout({ children, currentPage }) {
               </div>
               {section.items.map((item) => {
                 const Icon = item.icon;
-                const isActive = currentPage === item.path;
+                const isActive = currentPage === item.label.toLowerCase().replace(/\s+/g, '-') || currentPage === item.path;
                 return (
                   <Link
                     key={item.path}
