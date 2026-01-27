@@ -128,16 +128,19 @@ export default function AdminSettings() {
   return (
     <AdminLayout currentPage="AdminSettings">
       <div className="min-h-screen bg-[#f8fafc]">
-        {/* Content */}
-        <div className="flex gap-6 p-8">
+        <div className="p-8">
+          {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-['Playfair_Display'] font-semibold text-[#0f172a] mb-1">
               Settings
             </h1>
             <p className="text-sm text-[#64748b]">Configure your AI Paraplanner workspace</p>
           </div>
-          {/* Sidebar */}
-          <div className="w-[220px] flex-shrink-0">
+
+          {/* Content */}
+          <div className="flex gap-6">
+            {/* Sidebar */}
+            <div className="w-[220px] flex-shrink-0">
             <div className="bg-white rounded-2xl border border-[#e2e8f0] p-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
@@ -157,10 +160,10 @@ export default function AdminSettings() {
                 );
               })}
             </div>
-          </div>
+            </div>
 
-          {/* Main Content */}
-          <div className="flex-1">
+            {/* Main Content */}
+            <div className="flex-1">
             {/* Business Details */}
             {activeTab === 'business' && (
               <div className="bg-white rounded-2xl border border-[#e2e8f0] p-8">
@@ -755,6 +758,7 @@ export default function AdminSettings() {
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>
