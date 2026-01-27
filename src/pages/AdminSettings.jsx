@@ -61,6 +61,24 @@ export default function AdminSettings() {
     slackWebhook: 'https://hooks.slack.com/services/...'
   });
 
+  const [adviserOnboarding, setAdviserOnboarding] = useState({
+    requireApproval: true,
+    sendWelcomeEmail: true,
+    requireAFSL: true,
+    defaultPricingPlan: 'starter',
+    trialPeriod: 14
+  });
+
+  const [integrations, setIntegrations] = useState({
+    sendgrid: { connected: true },
+    stripe: { connected: true },
+    googleDrive: { connected: false },
+    slack: { connected: false }
+  });
+
+  const [apiKey, setApiKey] = useState('sk_live_51234567890abcdefghijklmnopqrstuvwxyz');
+  const [showApiKey, setShowApiKey] = useState(false);
+
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -497,10 +515,80 @@ export default function AdminSettings() {
               <div className="bg-white rounded-2xl border border-[#e2e8f0] p-8">
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold text-[#0f172a] mb-1">Adviser Onboarding</h2>
-                  <p className="text-sm text-[#64748b]">Configure the onboarding experience for new advisers</p>
+                  <p className="text-sm text-[#64748b]">Configure how new advisers are onboarded to the platform</p>
                 </div>
-                <div className="text-center py-12 text-[#64748b]">
-                  Coming soon...
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-[#f8fafc] rounded-xl">
+                    <div>
+                      <div className="font-medium text-[#0f172a] mb-1">Require admin approval for new advisers</div>
+                      <div className="text-sm text-[#64748b]">New adviser accounts must be approved before they can submit SOA requests</div>
+                    </div>
+                    <Switch
+                      checked={adviserOnboarding.requireApproval}
+                      onCheckedChange={(checked) => setAdviserOnboarding({...adviserOnboarding, requireApproval: checked})}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-[#f8fafc] rounded-xl">
+                    <div>
+                      <div className="font-medium text-[#0f172a] mb-1">Send welcome email</div>
+                      <div className="text-sm text-[#64748b]">Automatically send a welcome email when an adviser account is approved</div>
+                    </div>
+                    <Switch
+                      checked={adviserOnboarding.sendWelcomeEmail}
+                      onCheckedChange={(checked) => setAdviserOnboarding({...adviserOnboarding, sendWelcomeEmail: checked})}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-[#f8fafc] rounded-xl">
+                    <div>
+                      <div className="font-medium text-[#0f172a] mb-1">Require AFSL verification</div>
+                      <div className="text-sm text-[#64748b]">Advisers must provide valid AFSL details during registration</div>
+                    </div>
+                    <Switch
+                      checked={adviserOnboarding.requireAFSL}
+                      onCheckedChange={(checked) => setAdviserOnboarding({...adviserOnboarding, requireAFSL: checked})}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6 pt-4">
+                    <div>
+                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Default Pricing Plan</Label>
+                      <Select
+                        value={adviserOnboarding.defaultPricingPlan}
+                        onValueChange={(value) => setAdviserOnboarding({...adviserOnboarding, defaultPricingPlan: value})}
+                      >
+                        <SelectTrigger className="border-[#e2e8f0]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="starter">Starter (5 SOAs/month)</SelectItem>
+                          <SelectItem value="professional">Professional (15 SOAs/month)</SelectItem>
+                          <SelectItem value="enterprise">Enterprise (Unlimited)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Trial Period</Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          value={adviserOnboarding.trialPeriod}
+                          onChange={(e) => setAdviserOnboarding({...adviserOnboarding, trialPeriod: parseInt(e.target.value)})}
+                          className="border-[#e2e8f0] w-24"
+                        />
+                        <span className="text-sm text-[#64748b]">days</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-[#e2e8f0]">
+                    <Button className="bg-[#0f172a] hover:bg-[#1e293b] text-white">
+                      Save Changes
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
@@ -510,10 +598,115 @@ export default function AdminSettings() {
               <div className="bg-white rounded-2xl border border-[#e2e8f0] p-8">
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold text-[#0f172a] mb-1">Integrations</h2>
-                  <p className="text-sm text-[#64748b]">Connect external services and tools</p>
+                  <p className="text-sm text-[#64748b]">Connect external services and manage API access</p>
                 </div>
-                <div className="text-center py-12 text-[#64748b]">
-                  Coming soon...
+
+                <div className="space-y-8">
+                  {/* Connected Services */}
+                  <div>
+                    <div className="text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-4">Connected Services</div>
+                    <div className="space-y-3">
+                      {/* SendGrid */}
+                      <div className="flex items-center justify-between p-4 border border-[#e2e8f0] rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#eff6ff] rounded-lg flex items-center justify-center">
+                            <div className="w-6 h-6 bg-[#3b82f6] rounded-md"></div>
+                          </div>
+                          <div>
+                            <div className="font-medium text-[#0f172a]">SendGrid</div>
+                            <div className="text-sm text-[#10b981]">✓ Connected</div>
+                          </div>
+                        </div>
+                        <Button variant="outline" className="border-[#e2e8f0]">
+                          Configure
+                        </Button>
+                      </div>
+
+                      {/* Stripe */}
+                      <div className="flex items-center justify-between p-4 border border-[#e2e8f0] rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#eff6ff] rounded-lg flex items-center justify-center">
+                            <div className="w-6 h-6 bg-[#635bff] rounded-md"></div>
+                          </div>
+                          <div>
+                            <div className="font-medium text-[#0f172a]">Stripe</div>
+                            <div className="text-sm text-[#10b981]">✓ Connected</div>
+                          </div>
+                        </div>
+                        <Button variant="outline" className="border-[#e2e8f0]">
+                          Configure
+                        </Button>
+                      </div>
+
+                      {/* Google Drive */}
+                      <div className="flex items-center justify-between p-4 border border-[#e2e8f0] rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#fef3c7] rounded-lg flex items-center justify-center">
+                            <div className="w-6 h-6 bg-[#f59e0b] rounded-md"></div>
+                          </div>
+                          <div>
+                            <div className="font-medium text-[#0f172a]">Google Drive</div>
+                            <div className="text-sm text-[#64748b]">Not connected</div>
+                          </div>
+                        </div>
+                        <Button className="bg-[#3b82f6] hover:bg-[#2563eb] text-white">
+                          Connect
+                        </Button>
+                      </div>
+
+                      {/* Slack */}
+                      <div className="flex items-center justify-between p-4 border border-[#e2e8f0] rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#fce7f3] rounded-lg flex items-center justify-center">
+                            <div className="w-6 h-6 bg-[#ec4899] rounded-md"></div>
+                          </div>
+                          <div>
+                            <div className="font-medium text-[#0f172a]">Slack</div>
+                            <div className="text-sm text-[#64748b]">Not connected</div>
+                          </div>
+                        </div>
+                        <Button className="bg-[#3b82f6] hover:bg-[#2563eb] text-white">
+                          Connect
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* API Access */}
+                  <div className="pt-6 border-t border-[#e2e8f0]">
+                    <div className="text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-4">API Access</div>
+                    <div>
+                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">API Key</Label>
+                      <div className="flex items-center gap-3 mb-2">
+                        <Input
+                          type={showApiKey ? "text" : "password"}
+                          value={apiKey}
+                          readOnly
+                          className="border-[#e2e8f0] font-mono text-sm flex-1"
+                        />
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setShowApiKey(!showApiKey)}
+                          className="border-[#e2e8f0]"
+                        >
+                          {showApiKey ? 'Hide' : 'Show'}
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          onClick={() => {
+                            navigator.clipboard.writeText(apiKey);
+                          }}
+                          className="border-[#e2e8f0]"
+                        >
+                          Copy
+                        </Button>
+                      </div>
+                      <p className="text-xs text-[#64748b] mb-4">Use this key to access the AI Paraplanner API</p>
+                      <Button variant="destructive" className="bg-[#ef4444] hover:bg-[#dc2626]">
+                        Regenerate API Key
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
