@@ -499,23 +499,57 @@ export default function AdviceGroupDashboard() {
         display: 'flex',
         flexDirection: 'column',
       }}>
-        {/* Header */}
+        {/* Header with User Profile */}
         <div style={{
           background: colors.core.white,
-          padding: '24px 32px',
+          padding: '12px 32px',
           borderBottom: `1px solid ${colors.core.greyLight}`,
           position: 'sticky',
           top: 0,
           zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
         }}>
-          <h1 style={{
-            fontSize: '28px',
-            fontWeight: 700,
-            color: colors.core.navy,
-            margin: 0,
-          }}>
-            PrimeSolve Dashboard
-          </h1>
+          {user && (
+            <button style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '8px 12px',
+              background: colors.core.white,
+              border: `1px solid ${colors.core.greyLight}`,
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 500,
+            }}>
+              {user.profile_image_url ? (
+                <img src={user.profile_image_url} alt="Profile" style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  objectFit: 'cover',
+                }} />
+              ) : (
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  background: `linear-gradient(135deg, ${colors.accent.purple}, ${colors.accent.blueDeep})`,
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: colors.core.white,
+                  fontSize: '12px',
+                  fontWeight: 700,
+                }}>
+                  {(user.display_name || user.full_name)?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                </div>
+              )}
+              <span style={{ color: colors.core.navy }}>{user.display_name || user.full_name || user.email}</span>
+            </button>
+          )}
         </div>
 
         {/* Main Content */}
