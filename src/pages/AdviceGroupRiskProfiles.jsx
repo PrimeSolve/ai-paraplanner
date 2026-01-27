@@ -316,7 +316,7 @@ export default function AdviceGroupRiskProfiles() {
                             🗑️ Delete Profile
                           </Button>
                           <Button size="sm" onClick={() => handleEdit(profile)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs">
-                            💾 Save Changes
+                            ✏️ Edit Profile
                           </Button>
                         </div>
                       </div>
