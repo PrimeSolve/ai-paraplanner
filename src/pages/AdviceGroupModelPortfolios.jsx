@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Briefcase, Edit, User, HelpCircle, LogOut } from 'lucide-react';
+import { Plus, Briefcase, Edit } from 'lucide-react';
 import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
+import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 
 export default function AdviceGroupModelPortfolios() {
   const [portfolios, setPortfolios] = useState([]);
