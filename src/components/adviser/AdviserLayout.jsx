@@ -28,25 +28,11 @@ export default function AdviserLayout({ children, currentPage }) {
   }, []);
 
   const navItems = [
-    { section: 'OVERVIEW', items: [
-      { label: 'Dashboard', path: 'AdviserDashboard', icon: LayoutDashboard }
-    ]},
-    { section: 'CLIENTS', items: [
-      { label: 'My Clients', path: 'AdviserClients', icon: Users },
-      { label: 'Fact Finds', path: 'AdviserFactFinds', icon: FileText }
-    ]},
-    { section: 'SOA', items: [
-      { label: 'SOA Requests', path: 'AdviserSOARequests', icon: FileText },
-      { label: 'SOA Template', path: 'AdviserSOATemplate', icon: FileText }
-    ]},
-    { section: 'TOOLS', items: [
-      { label: 'Documents', path: 'AdviserDocuments', icon: FolderOpen },
-      { label: 'Calendar', path: 'AdviserCalendar', icon: Calendar },
-      { label: 'Analytics', path: 'AdviserAnalytics', icon: BarChart3 }
-    ]},
-    { section: 'ACCOUNT', items: [
-      { label: 'Settings', path: 'AdviserSettings', icon: Settings }
-    ]}
+    { label: 'Dashboard', path: 'AdviserDashboard', icon: LayoutDashboard },
+    { label: 'Clients', path: 'AdviserClients', icon: Users },
+    { label: 'SOA Requests', path: 'AdviserSOARequests', icon: FileText },
+    { label: 'Documents', path: 'AdviserDocuments', icon: FolderOpen },
+    { label: 'Settings', path: 'AdviserSettings', icon: Settings }
   ];
 
   return (
