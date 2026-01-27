@@ -6,8 +6,8 @@ import { LayoutDashboard, Users, FileText, CheckCircle, Settings } from 'lucide-
 export default function AdviserSidebar({ currentPage }) {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: 'AdviserDashboard', id: 'dashboard' },
-    { label: 'Clients', icon: Users, path: 'AdviserClients', id: 'clients', badge: '8' },
-    { label: 'SOA Requests', icon: FileText, path: 'AdviserSOARequests', id: 'soa-requests', badge: '⚠️' },
+    { label: 'Clients', icon: Users, path: 'AdviserClients', id: 'clients' },
+    { label: 'SOA Requests', icon: FileText, path: 'AdviserSOARequests', id: 'soa-requests' },
     { label: 'Completed SOAs', icon: CheckCircle, path: 'AdviserAnalytics', id: 'completed' }
   ];
 
