@@ -450,11 +450,127 @@ export default function AdviceGroupSettings() {
               )}
 
               {activeTab === 'branding' && (
-                <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '20px' }}>
-                    Branding Settings
-                  </h3>
-                  <p style={{ color: '#64748b' }}>Branding settings coming soon...</p>
+                <div>
+                  {/* Document Colours Card */}
+                  <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden', marginBottom: '24px' }}>
+                    <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+                        Document Colours
+                      </h3>
+                      <p style={{ fontSize: '14px', color: '#64748b' }}>
+                        Customise colours used in SOA documents
+                      </p>
+                    </div>
+                    <div style={{ padding: '24px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                        <div>
+                          <Label className="text-sm font-bold mb-3 block">Primary Colour</Label>
+                          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                            <input
+                              type="color"
+                              value={formData.branding.primary_colour}
+                              onChange={(e) => setFormData({
+                                ...formData,
+                                branding: { ...formData.branding, primary_colour: e.target.value }
+                              })}
+                              style={{ width: '60px', height: '60px', borderRadius: '8px', cursor: 'pointer', border: 'none' }}
+                            />
+                            <div>
+                              <p style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b' }}>
+                                {formData.branding.primary_colour.toUpperCase()}
+                              </p>
+                              <p style={{ fontSize: '12px', color: '#64748b' }}>
+                                Used for headings and accents
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-bold mb-3 block">Secondary Colour</Label>
+                          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                            <input
+                              type="color"
+                              value={formData.branding.secondary_colour}
+                              onChange={(e) => setFormData({
+                                ...formData,
+                                branding: { ...formData.branding, secondary_colour: e.target.value }
+                              })}
+                              style={{ width: '60px', height: '60px', borderRadius: '8px', cursor: 'pointer', border: 'none' }}
+                            />
+                            <div>
+                              <p style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b' }}>
+                                {formData.branding.secondary_colour.toUpperCase()}
+                              </p>
+                              <p style={{ fontSize: '12px', color: '#64748b' }}>
+                                Used for secondary elements
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Document Footer Card */}
+                  <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden', marginBottom: '24px' }}>
+                    <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+                        Document Footer
+                      </h3>
+                      <p style={{ fontSize: '14px', color: '#64748b' }}>
+                        Customise the footer text on SOA documents
+                      </p>
+                    </div>
+                    <div style={{ padding: '24px' }}>
+                      <div style={{ marginBottom: '24px' }}>
+                        <Label className="text-sm font-bold mb-2 block">Footer Text</Label>
+                        <textarea
+                          value={formData.branding.footer_text}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            branding: { ...formData.branding, footer_text: e.target.value }
+                          })}
+                          placeholder="Enter footer text for SOA documents"
+                          style={{
+                            width: '100%',
+                            padding: '12px 14px',
+                            border: '2px solid #e2e8f0',
+                            borderRadius: '10px',
+                            fontFamily: 'inherit',
+                            fontSize: '14px',
+                            minHeight: '100px',
+                            resize: 'vertical'
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-sm font-bold mb-2 block">Disclaimer</Label>
+                        <textarea
+                          value={formData.branding.disclaimer}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            branding: { ...formData.branding, disclaimer: e.target.value }
+                          })}
+                          placeholder="Enter disclaimer text"
+                          style={{
+                            width: '100%',
+                            padding: '12px 14px',
+                            border: '2px solid #e2e8f0',
+                            borderRadius: '10px',
+                            fontFamily: 'inherit',
+                            fontSize: '14px',
+                            minHeight: '100px',
+                            resize: 'vertical'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
+                    {saving ? 'Saving...' : '💾 Save Changes'}
+                  </Button>
                 </div>
               )}
 
