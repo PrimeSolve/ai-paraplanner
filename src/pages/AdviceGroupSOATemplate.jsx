@@ -217,55 +217,88 @@ export default function AdviceGroupSOATemplate() {
 
         {/* Main Content */}
         <div style={{
-          flex: 1,
-          padding: '32px',
+        flex: 1,
+        padding: '32px',
+      }}>
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          border: `1px solid ${colors.core.greyLight}`,
+          padding: '24px',
+          marginBottom: '24px',
         }}>
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px'}}>
+            <div>
+              <h1 style={{fontSize: '24px', fontWeight: 600, color: colors.core.navy, margin: 0}}>SOA Template</h1>
+              <p style={{fontSize: '14px', color: colors.core.slateLight, marginTop: '8px', margin: 0}}>Customize sections for your advice group</p>
+            </div>
+            <Button onClick={handleSave} disabled={saving} style={{background: '#06b6d4', color: 'white', padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 500}}>
+              {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+
+          <div style={{
+          background: '#dbeafe',
+          border: '1px solid #93c5fd',
+          borderRadius: '12px',
+          padding: '16px',
+          marginBottom: '24px',
+          display: 'flex',
+          gap: '12px',
+        }}>
+          <AlertCircle style={{width: '20px', height: '20px', color: '#2563eb', flexShrink: 0, marginTop: '4px'}} />
           <div>
-            <h4 className="font-semibold text-blue-900 mb-1">Template Inheritance</h4>
-            <p className="text-sm text-blue-700">
+            <h4 style={{fontWeight: 600, color: '#1e3a8a', marginBottom: '8px'}}>Template Inheritance</h4>
+            <p style={{fontSize: '14px', color: '#1e40af'}}>
               This template inherits from the admin default. Your advisers can further customize their own versions. Changes here apply to all advisers who haven't customized their templates.
             </p>
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
           {sectionGroups.map((group) => {
             const isExpanded = expandedGroups.includes(group.id);
             return (
-              <Card key={group.id}>
+              <Card key={group.id} style={{borderRadius: '12px', background: colors.core.white, border: `1px solid ${colors.core.greyLight}`}}>
                 <div
                   onClick={() => toggleGroup(group.id)}
-                  className="flex items-center gap-3 p-5 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '20px',
+                    background: colors.core.offWhite,
+                    cursor: 'pointer',
+                    borderBottom: `1px solid ${colors.core.greyLight}`,
+                  }}
                 >
-                  <GripVertical className="w-5 h-5 text-slate-400" />
-                  <div className="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center text-lg">
+                  <GripVertical style={{width: '20px', height: '20px', color: colors.core.slateLight}} />
+                  <div style={{width: '32px', height: '32px', background: '#cffafe', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'}}>
                     {group.icon}
                   </div>
-                  <div className="flex-1">
-                    <div className="font-semibold">{group.label}</div>
+                  <div style={{flex: 1}}>
+                    <div style={{fontWeight: 600}}>{group.label}</div>
                   </div>
                   <Badge variant="secondary">{group.sections.length} sections</Badge>
-                  {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                  {isExpanded ? <ChevronUp style={{width: '20px', height: '20px'}} /> : <ChevronDown style={{width: '20px', height: '20px'}} />}
                 </div>
 
                 {isExpanded && (
-                  <div className="p-4 space-y-3">
+                  <div style={{padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
                     {group.sections.map((section) => (
-                      <div key={section.id} className="border border-slate-200 rounded-lg p-4">
-                        <div className="flex items-start gap-3 mb-3">
-                          <Checkbox checked={section.enabled} className="mt-1" />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-semibold">{section.label}</span>
+                      <div key={section.id} style={{border: `1px solid ${colors.core.greyLight}`, borderRadius: '8px', padding: '16px'}}>
+                        <div style={{display: 'flex', gap: '12px', marginBottom: '12px'}}>
+                          <Checkbox checked={section.enabled} />
+                          <div style={{flex: 1}}>
+                            <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
+                              <span style={{fontWeight: 600}}>{section.label}</span>
                               {section.required && (
-                                <Badge variant="destructive" className="text-xs">Required</Badge>
+                                <Badge variant="destructive" style={{fontSize: '12px'}}>Required</Badge>
                               )}
                             </div>
                             <Textarea
                               placeholder="Add guidance or tips for this section..."
-                              className="mt-2 text-sm"
+                              style={{marginTop: '8px', fontSize: '14px'}}
                               rows={2}
                             />
                           </div>
