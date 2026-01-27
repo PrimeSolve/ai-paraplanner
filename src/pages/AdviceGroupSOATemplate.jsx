@@ -174,12 +174,7 @@ export default function AdviceGroupSOATemplate() {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      minHeight: '100vh',
-      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-      background: colors.core.offWhite,
-    }}>
+    <div className="flex">
       <AdviceGroupSidebar currentPage="template" />
 
       <div style={{
@@ -190,103 +185,143 @@ export default function AdviceGroupSOATemplate() {
       }}>
         <AdviceGroupHeader user={user} />
 
-        {/* Main Content */}
-        <div style={{
-          flex: 1,
-          padding: '32px',
-        }}>
-          <div style={{
-            background: 'white',
-            borderRadius: '12px',
-            border: `1px solid ${colors.core.greyLight}`,
-            padding: '24px',
-            marginBottom: '24px',
-          }}>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px'}}>
+        <div className="p-8 flex-1">
+          {/* Info Banner */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div>
-              <h1 style={{fontSize: '24px', fontWeight: 600, color: colors.core.navy, margin: 0}}>SOA Template</h1>
-              <p style={{fontSize: '14px', color: colors.core.slateLight, marginTop: '8px', margin: 0}}>Customize sections for your advice group</p>
+              <h4 className="font-semibold text-blue-900 mb-0.5">Advice Group Template</h4>
+              <p className="text-sm text-blue-700">
+                Customize this template for your advice group. Your advisers can further customize their own versions if needed.
+              </p>
             </div>
-            <Button onClick={handleSave} disabled={saving} style={{background: '#06b6d4', color: 'white', padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 500}}>
-              {saving ? 'Saving...' : 'Save Changes'}
+          </div>
+
+          {/* Stats */}
+          <div className="flex gap-4 mb-6 items-center justify-between">
+            <div className="flex gap-4">
+              <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
+                <span className="text-2xl font-bold text-slate-800">{sections.reduce((acc, g) => acc + g.sections.length, 0)}</span>
+                <span className="text-sm text-slate-600">Total sections</span>
+              </div>
+              <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
+                <span className="text-2xl font-bold text-green-600">{sections.reduce((acc, g) => acc + g.sections.filter(s => s.status === 'configured').length, 0)}</span>
+                <span className="text-sm text-slate-600">Configured</span>
+              </div>
+              <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
+                <span className="text-2xl font-bold text-orange-600">{sections.reduce((acc, g) => acc + g.sections.filter(s => s.status === 'needs-comment').length, 0)}</span>
+                <span className="text-sm text-slate-600">Pending</span>
+              </div>
+            </div>
+            <Button onClick={handleSave} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
+              {saving ? 'Saving...' : 'Save Template'}
             </Button>
           </div>
 
-          <div style={{
-          background: '#dbeafe',
-          border: '1px solid #93c5fd',
-          borderRadius: '12px',
-          padding: '16px',
-          marginBottom: '24px',
-          display: 'flex',
-          gap: '12px',
-        }}>
-          <AlertCircle style={{width: '20px', height: '20px', color: '#2563eb', flexShrink: 0, marginTop: '4px'}} />
-          <div>
-            <h4 style={{fontWeight: 600, color: '#1e3a8a', marginBottom: '8px'}}>Template Inheritance</h4>
-            <p style={{fontSize: '14px', color: '#1e40af'}}>
-              This template inherits from the admin default. Your advisers can further customize their own versions. Changes here apply to all advisers who haven't customized their templates.
-            </p>
-          </div>
-        </div>
-
-        <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
-          {sectionGroups.map((group) => {
-            const isExpanded = expandedGroups.includes(group.id);
-            return (
-              <Card key={group.id} style={{borderRadius: '12px', background: colors.core.white, border: `1px solid ${colors.core.greyLight}`}}>
+          {/* Section Groups with Drag & Drop */}
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="groups" type="GROUP">
+              {(provided, snapshot) => (
                 <div
-                  onClick={() => toggleGroup(group.id)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '20px',
-                    background: colors.core.offWhite,
-                    cursor: 'pointer',
-                    borderBottom: `1px solid ${colors.core.greyLight}`,
-                  }}
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="space-y-3"
                 >
-                  <GripVertical style={{width: '20px', height: '20px', color: colors.core.slateLight}} />
-                  <div style={{width: '32px', height: '32px', background: '#cffafe', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'}}>
-                    {group.icon}
-                  </div>
-                  <div style={{flex: 1}}>
-                    <div style={{fontWeight: 600}}>{group.label}</div>
-                  </div>
-                  <Badge variant="secondary">{group.sections.length} sections</Badge>
-                  {isExpanded ? <ChevronUp style={{width: '20px', height: '20px'}} /> : <ChevronDown style={{width: '20px', height: '20px'}} />}
-                </div>
+                  {sections.map((group, groupIdx) => {
+                    const isExpanded = expandedGroups.includes(group.group);
+                    return (
+                      <Draggable key={group.group} draggableId={group.group} index={groupIdx}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            className={`bg-white border border-slate-200 rounded-lg overflow-hidden ${snapshot.isDragging ? 'shadow-lg border-blue-400' : ''}`}
+                          >
+                            <button
+                              onClick={() => toggleGroup(group.group)}
+                              {...provided.dragHandleProps}
+                              className="w-full flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left cursor-grab active:cursor-grabbing"
+                            >
+                              <GripVertical className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-base flex-shrink-0">
+                                {group.icon}
+                              </div>
+                              <div className="flex-1">
+                                <div className="font-semibold text-slate-800">{group.groupLabel}</div>
+                              </div>
+                              <span className="text-xs font-medium text-slate-600 bg-white px-2.5 py-1 rounded-full">
+                                {group.sections.length} sections
+                              </span>
+                              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            </button>
 
-                {isExpanded && (
-                  <div style={{padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
-                    {group.sections.map((section) => (
-                      <div key={section.id} style={{border: `1px solid ${colors.core.greyLight}`, borderRadius: '8px', padding: '16px'}}>
-                        <div style={{display: 'flex', gap: '12px', marginBottom: '12px'}}>
-                          <Checkbox checked={section.enabled} />
-                          <div style={{flex: 1}}>
-                            <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
-                              <span style={{fontWeight: 600}}>{section.label}</span>
-                              {section.required && (
-                                <Badge variant="destructive" style={{fontSize: '12px'}}>Required</Badge>
-                              )}
-                            </div>
-                            <Textarea
-                              placeholder="Add guidance or tips for this section..."
-                              style={{marginTop: '8px', fontSize: '14px'}}
-                              rows={2}
-                            />
+                            {isExpanded && (
+                              <Droppable droppableId={group.group} type="SECTION">
+                                {(provided, snapshot) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.droppableProps}
+                                    className={`border-t border-slate-200 p-4 space-y-3 ${snapshot.isDraggingOver ? 'bg-blue-50' : ''}`}
+                                  >
+                                    {group.sections.map((section, sectionIdx) => (
+                                      <Draggable key={section.id} draggableId={`${group.group}-${section.id}`} index={sectionIdx}>
+                                        {(provided, snapshot) => (
+                                          <div
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            className={`flex items-start gap-4 p-4 bg-white border border-slate-200 rounded-lg transition-all ${
+                                              snapshot.isDragging ? 'shadow-md border-blue-400 bg-blue-50' : ''
+                                            } ${
+                                              section.status === 'configured' ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-orange-500'
+                                            }`}
+                                          >
+                                            <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing flex-shrink-0 pt-1">
+                                              <GripVertical className="w-4 h-4 text-slate-400" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                              <div className="font-semibold text-slate-800">{section.label}</div>
+                                              <div className="text-sm text-slate-500 mt-1">{section.description}</div>
+                                            </div>
+                                            <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+                                              {section.badge && (
+                                                <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1 rounded-full whitespace-nowrap">
+                                                  {section.badge}
+                                                </span>
+                                              )}
+                                              {section.status === 'configured' && (
+                                                <span className="text-xs font-semibold text-green-700 bg-green-100 px-3 py-1.5 rounded-full whitespace-nowrap">
+                                                  ✓ Configured
+                                                </span>
+                                              )}
+                                              {section.status === 'needs-comment' && (
+                                                <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-3 py-1.5 rounded-full whitespace-nowrap">
+                                                  ⚠ Needs content
+                                                </span>
+                                              )}
+                                              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                                                <Edit className="w-3.5 h-3.5 mr-1" />
+                                                Edit
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                  </div>
+                                )}
+                              </Droppable>
+                            )}
                           </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Card>
-            );
-          })}
-          </div>
-          </div>
+                        )}
+                      </Draggable>
+                    );
+                  })}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         </div>
       </div>
     </div>
