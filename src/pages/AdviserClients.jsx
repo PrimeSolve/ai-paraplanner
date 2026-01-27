@@ -186,7 +186,7 @@ export default function AdviserClients() {
                       <tr key={client.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                         <td style={{ padding: '16px 24px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: getColorClass(idx), display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '13px', flexShrink: 0 }}>
+                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: getColorValue(idx), display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '13px', flexShrink: 0 }}>
                               {client.first_name?.charAt(0)}{client.last_name?.charAt(0)}
                             </div>
                             <div>
