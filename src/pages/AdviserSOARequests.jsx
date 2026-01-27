@@ -241,9 +241,9 @@ export default function AdviserSOARequests() {
                         </td>
                         <td style={{ padding: '16px 24px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <button style={{ padding: '4px 8px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '13px', color: '#3b82f6', fontWeight: '500' }}>
+                            <Link to={createPageUrl(`SOARequestWelcome?id=${req.id}`)} style={{ padding: '4px 8px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '13px', color: '#3b82f6', fontWeight: '500', textDecoration: 'none' }}>
                               View
-                            </button>
+                            </Link>
                             {req.status === 'completed' && (
                               <button style={{ padding: '4px 8px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '13px', color: '#10b981', fontWeight: '500' }}>
                                 Download
