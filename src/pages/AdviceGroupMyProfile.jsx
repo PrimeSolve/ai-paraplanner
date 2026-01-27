@@ -67,17 +67,24 @@ export default function AdviceGroupMyProfile() {
 
   if (loading) {
     return (
-      <AdviceGroupLayout currentPage="AdviceGroupMyProfile">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b5cf6]"></div>
+      <div className="flex">
+        <AdviceGroupSidebar currentPage="settings" />
+        <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <AdviceGroupHeader user={user} />
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b5cf6]"></div>
+          </div>
         </div>
-      </AdviceGroupLayout>
+      </div>
     );
   }
 
   return (
-    <AdviceGroupLayout currentPage="AdviceGroupMyProfile">
-      <div className="min-h-screen bg-[#f8fafc] p-8">
+    <div className="flex">
+      <AdviceGroupSidebar currentPage="settings" />
+      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <AdviceGroupHeader user={user} />
+        <div className="min-h-screen bg-[#f8fafc] p-8" style={{ flex: 1 }}>
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Profile Header Card */}
           <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
