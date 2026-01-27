@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import { Shield, Mail, Calendar } from 'lucide-react';
+import { Shield, Mail, Calendar, Upload, X } from 'lucide-react';
 
 export default function MyProfile() {
   const [user, setUser] = useState(null);
@@ -15,8 +15,10 @@ export default function MyProfile() {
     full_name: '',
     email: '',
     phone: '',
-    role: ''
+    role: '',
+    profile_image_url: ''
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [notifications, setNotifications] = useState({
     newSOA: true,
     soaComments: true,
@@ -37,7 +39,8 @@ export default function MyProfile() {
         full_name: currentUser.display_name || currentUser.full_name || '',
         email: currentUser.email || '',
         phone: currentUser.phone || '',
-        role: currentUser.role || 'user'
+        role: currentUser.role || 'user',
+        profile_image_url: currentUser.profile_image_url || ''
       });
     } catch (error) {
       console.error('Failed to load user:', error);
@@ -133,9 +136,25 @@ export default function MyProfile() {
           {/* Profile Header Card */}
           <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] rounded-2xl flex items-center justify-center text-white font-bold text-2xl">
-                {getInitials()}
-              </div>
+              {formData.profile_image_url ? (
+                <div className="relative group">
+                  <img 
+                    src={formData.profile_image_url} 
+                    alt="Profile" 
+                    className="w-16 h-16 rounded-2xl object-cover"
+                  />
+                  <button
+                    onClick={() => setFormData({...formData, profile_image_url: ''})}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-16 h-16 bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] rounded-2xl flex items-center justify-center text-white font-bold text-2xl">
+                  {getInitials()}
+                </div>
+              )}
               <div className="flex-1">
                 <h2 className="text-2xl font-semibold text-[#0f172a] mb-2">
                   {formData.full_name || 'User'}
@@ -163,6 +182,74 @@ export default function MyProfile() {
           {/* Personal Details */}
           <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
             <h3 className="text-lg font-semibold text-[#0f172a] mb-6">Personal Details</h3>
+
+            {/* Profile Image Upload */}
+            <div className="mb-6">
+              <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Profile Image</Label>
+              <div className="flex items-center gap-4">
+                {formData.profile_image_url ? (
+                  <img 
+                    src={formData.profile_image_url} 
+                    alt="Profile preview" 
+                    className="w-20 h-20 rounded-lg object-cover border border-[#e2e8f0]"
+                  />
+                ) : (
+                  <div className="w-20 h-20 bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                    {getInitials()}
+                  </div>
+                )}
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    id="profile-image"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setUploadingImage(true);
+                        try {
+                          const result = await base44.integrations.Core.UploadFile({ file });
+                          setFormData({...formData, profile_image_url: result.file_url});
+                          toast.success('Image uploaded');
+                        } catch (error) {
+                          toast.error('Failed to upload image');
+                        } finally {
+                          setUploadingImage(false);
+                        }
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={uploadingImage}
+                    onClick={() => document.getElementById('profile-image').click()}
+                    className="border-[#e2e8f0]"
+                  >
+                    {uploadingImage ? (
+                      <>Uploading...</>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Upload Image
+                      </>
+                    )}
+                  </Button>
+                  {formData.profile_image_url && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setFormData({...formData, profile_image_url: ''})}
+                      className="ml-2 text-red-600"
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Full Name</Label>
@@ -285,9 +372,10 @@ export default function MyProfile() {
                 try {
                   await base44.auth.updateMe({
                     display_name: formData.full_name,
-                    phone: formData.phone
+                    phone: formData.phone,
+                    profile_image_url: formData.profile_image_url
                   });
-                  setUser(prev => ({ ...prev, display_name: formData.full_name, phone: formData.phone }));
+                  setUser(prev => ({ ...prev, display_name: formData.full_name, phone: formData.phone, profile_image_url: formData.profile_image_url }));
                   toast.success('Profile updated successfully');
                   window.dispatchEvent(new Event('userProfileUpdated'));
                 } catch (error) {

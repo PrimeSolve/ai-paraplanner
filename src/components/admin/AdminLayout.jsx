@@ -127,9 +127,13 @@ export default function AdminLayout({ children, currentPage }) {
         <div className="p-4 border-t border-white/[0.08]">
           <Link to={createPageUrl('AdminSettings')} className="no-underline">
             <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.05] cursor-pointer transition-all">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] rounded-xl flex items-center justify-center text-white font-bold text-sm">
-                {businessDetails?.companyName?.charAt(0) || 'AI'}
-              </div>
+              {businessDetails?.logoUrl ? (
+                <img src={businessDetails.logoUrl} alt="Logo" className="w-10 h-10 rounded-xl object-cover" />
+              ) : (
+                <div className="w-10 h-10 bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] rounded-xl flex items-center justify-center text-white font-bold text-sm">
+                  {businessDetails?.companyName?.charAt(0) || 'AI'}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <div className="text-white font-semibold text-sm truncate">
                   {businessDetails?.companyName || 'AI Paraplanner'}
@@ -151,11 +155,15 @@ export default function AdminLayout({ children, currentPage }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 px-3 py-2 bg-white border border-[#e2e8f0] rounded-lg hover:bg-[#f8fafc] transition-colors">
-                  <div className="w-8 h-8 bg-[#8b5cf6] rounded-lg flex items-center justify-center text-white text-sm font-semibold">
-                    {(user.display_name || user.full_name) ? 
-                      (user.display_name || user.full_name).split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 
-                      user.email?.slice(0, 2).toUpperCase()}
-                  </div>
+                  {user.profile_image_url ? (
+                    <img src={user.profile_image_url} alt="Profile" className="w-8 h-8 rounded-lg object-cover" />
+                  ) : (
+                    <div className="w-8 h-8 bg-[#8b5cf6] rounded-lg flex items-center justify-center text-white text-sm font-semibold">
+                      {(user.display_name || user.full_name) ? 
+                        (user.display_name || user.full_name).split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 
+                        user.email?.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
                   <span className="font-medium text-[#0f172a]">{user.display_name || user.full_name || user.email}</span>
                   <ChevronDown className="w-4 h-4 text-[#64748b]" />
                 </button>
