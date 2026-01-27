@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import AdminLayout from '../components/admin/AdminLayout';
+import AdviceGroupLayout from '../components/advicegroup/AdviceGroupLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -89,16 +89,16 @@ export default function AdminAdviceGroupDetail() {
 
   if (loading) {
     return (
-      <AdminLayout currentPage="AdminAdviceGroups">
+      <AdviceGroupLayout currentPage="settings">
         <div className="flex items-center justify-center h-screen">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
         </div>
-      </AdminLayout>
+      </AdviceGroupLayout>
     );
   }
 
   return (
-    <AdminLayout currentPage="AdminAdviceGroups">
+    <AdviceGroupLayout currentPage="settings">
       {/* Header */}
       <div className="bg-white px-8 py-4 border-b border-slate-200 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-6">
@@ -290,6 +290,6 @@ export default function AdminAdviceGroupDetail() {
           <div className="text-slate-600">Settings coming soon...</div>
         )}
       </div>
-    </AdminLayout>
+    </AdviceGroupLayout>
   );
 }
