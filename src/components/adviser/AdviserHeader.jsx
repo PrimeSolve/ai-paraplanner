@@ -28,11 +28,30 @@ export default function AdviserHeader({ user }) {
       borderBottom: '1px solid #e2e8f0',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'flex-end',
+      justifyContent: 'space-between',
       position: 'sticky',
       top: 0,
       zIndex: 50
     }}>
+      {originalUser && (
+        <button
+          onClick={handleGoHome}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 12px',
+            background: 'transparent',
+            border: '1px solid #e2e8f0',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            color: '#3b82f6'
+          }}
+          title="Return to Admin"
+        >
+          <Home size={18} />
+        </button>
+      )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button style={{
