@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Building2, Mail, Phone, User, HelpCircle, LogOut } from 'lucide-react';
+import { Building2, Mail, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
+import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 
 export default function AdviceGroupSettings() {
   const [loading, setLoading] = useState(true);
