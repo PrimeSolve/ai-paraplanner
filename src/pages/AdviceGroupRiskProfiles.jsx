@@ -407,9 +407,9 @@ export default function AdviceGroupRiskProfiles() {
                      </tr>
                      <tr className="border-b border-slate-200">
                        <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#EC4899'}}></span>Alternatives</span></td>
-                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.alternatives?.target || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, alternatives: {...formData.allocation.alternatives, target: Number(e.target.value)}}})} className="h-8 text-center" /></td>
-                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.alternatives?.min || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, alternatives: {...formData.allocation.alternatives, min: Number(e.target.value)}}})} className="h-8 text-center" /></td>
-                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.alternatives?.max || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, alternatives: {...formData.allocation.alternatives, max: Number(e.target.value)}}})} className="h-8 text-center" /></td>
+                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.alternatives?.target || 0} onChange={(e) => updateAllocation('alternatives', 'target', e.target.value)} className="h-8 text-center" /></td>
+                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.alternatives?.min || 0} onChange={(e) => updateAllocation('alternatives', 'min', e.target.value)} className="h-8 text-center" /></td>
+                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.alternatives?.max || 0} onChange={(e) => updateAllocation('alternatives', 'max', e.target.value)} className="h-8 text-center" /></td>
                      </tr>
                      <tr className="border-b border-slate-200">
                        <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#F59E0B'}}></span>Australian Equity</span></td>
