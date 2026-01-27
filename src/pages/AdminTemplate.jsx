@@ -101,6 +101,18 @@ export default function AdminTemplate() {
         { id: 'disclaimer', label: 'Disclaimer', description: 'Legal disclaimers', status: 'needs-comment', badge: null },
         { id: 'how-to-proceed', label: 'How to Proceed', description: 'Next steps', status: 'needs-comment', badge: null }
       ]
+    },
+    {
+      group: 'appendices',
+      groupLabel: 'Appendices',
+      icon: '📎',
+      sections: [
+        { id: 'product-disclosure-statements', label: 'Product Disclosure Statements', description: 'PDS links', status: 'needs-comment', badge: null },
+        { id: 'projections-assumptions', label: 'Projections & Assumptions', description: 'Methodology', status: 'needs-comment', badge: 'Assumptions' },
+        { id: 'insurance-definitions', label: 'Insurance Definitions', description: 'Glossary', status: 'needs-comment', badge: null },
+        { id: 'super-tax-benefits', label: 'Super Tax Benefits', description: 'Tax rules', status: 'needs-comment', badge: null },
+        { id: 'research-reports', label: 'Research Reports', description: 'Documentation', status: 'needs-comment', badge: null }
+      ]
     }
   ];
 
