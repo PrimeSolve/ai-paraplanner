@@ -151,11 +151,11 @@ export default function AdviceGroupRiskProfiles() {
 
         <div className="p-8 flex-1">
           {/* Info Banner */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.05))', border: '1px solid rgba(245, 158, 11, 0.2)' }} className="rounded-lg p-4 mb-6 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="font-semibold text-blue-900 mb-0.5">Asset Allocation Guidelines</h4>
-              <p className="text-sm text-blue-700">
+              <h4 className="font-semibold text-amber-900 mb-0.5">Asset Allocation Guidelines</h4>
+              <p className="text-sm text-amber-800">
                 Define target, minimum, and maximum allocations for each asset class. Target allocations must total 100%. Min/max ranges enable flexibility while maintaining investment policy compliance.
               </p>
             </div>
