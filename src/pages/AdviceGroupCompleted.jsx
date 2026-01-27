@@ -156,7 +156,7 @@ export default function AdviceGroupCompleted() {
   }
 
   return (
-    <AdviceGroupLayout currentPage="completed">
+    <AdviceGroupLayout currentPage="AdviceGroupCompleted">
       <div className="p-8">
 
         {/* Stats Grid */}
