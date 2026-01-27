@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { base44 } from '@/api/base44Client';
 import { 
-  LayoutDashboard, 
-  Users, 
-  FileText, 
-  FolderOpen,
-  Calendar,
-  BarChart3,
-  Settings
-} from 'lucide-react';
+        LayoutDashboard, 
+        Users, 
+        FileText, 
+        CheckCircle,
+        Calendar,
+        BarChart3,
+        Settings
+      } from 'lucide-react';
 
 export default function AdviserLayout({ children, currentPage }) {
   const [user, setUser] = useState(null);
