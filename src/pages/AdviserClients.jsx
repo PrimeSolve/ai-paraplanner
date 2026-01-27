@@ -9,6 +9,7 @@ import { Search, Users, CheckCircle, Clock, MoreHorizontal, Eye, Edit2, Trash2 }
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import AddClientModal from '../components/adviser/AddClientModal.jsx';
 
 export default function AdviserClients() {
   const [clients, setClients] = useState([]);
@@ -17,6 +18,7 @@ export default function AdviserClients() {
   const [searchTerm, setSearchTerm] = useState('');
   const [factFindFilter, setFactFindFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [showAddModal, setShowAddModal] = useState(false);
   const itemsPerPage = 8;
 
   useEffect(() => {
