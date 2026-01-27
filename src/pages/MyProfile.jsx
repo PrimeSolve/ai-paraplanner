@@ -53,6 +53,8 @@ export default function MyProfile() {
       });
       toast.success('Profile updated successfully');
       loadUser();
+      // Trigger event to update user in AdminLayout
+      window.dispatchEvent(new Event('userProfileUpdated'));
     } catch (error) {
       toast.error('Failed to update profile');
     }

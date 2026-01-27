@@ -42,10 +42,14 @@ export default function AdminLayout({ children, currentPage }) {
       }
     };
     loadBusinessDetails();
-    
+
     window.addEventListener('businessDetailsUpdated', loadBusinessDetails);
-    return () => window.removeEventListener('businessDetailsUpdated', loadBusinessDetails);
-  }, []);
+    window.addEventListener('userProfileUpdated', loadUser);
+    return () => {
+      window.removeEventListener('businessDetailsUpdated', loadBusinessDetails);
+      window.removeEventListener('userProfileUpdated', loadUser);
+    };
+    }, []);
 
   const navItems = [
     { section: 'OVERVIEW', items: [
