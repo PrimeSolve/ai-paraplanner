@@ -170,8 +170,19 @@ export default function AdminAdviceGroups() {
             </form>
           </DialogContent>
         </Dialog>
-        {/* Stats Grid */}
-        <div className="grid grid-cols-4 gap-6 mb-8">
+        {/* Header */}
+         <div className="mb-8 flex justify-end">
+           <Button 
+             onClick={() => setDialogOpen(true)}
+             className="bg-blue-600 hover:bg-blue-700"
+           >
+             <Plus className="w-4 h-4 mr-2" />
+             Add Advice Group
+           </Button>
+         </div>
+
+         {/* Stats Grid */}
+         <div className="grid grid-cols-4 gap-6 mb-8">
           <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl p-6 text-white">
             <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4">
               <Building2 className="w-6 h-6" />
@@ -206,34 +217,27 @@ export default function AdminAdviceGroups() {
         </div>
 
         {/* Filters */}
-         <div className="bg-white rounded-2xl border border-slate-200 mb-6">
-           <div className="p-6 flex items-end gap-4">
-             <div className="flex-1 relative">
-               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-               <Input
-                 placeholder="Search groups or AFSL..."
-                 value={searchTerm}
-                 onChange={(e) => setSearchTerm(e.target.value)}
-                 className="pl-10 h-11 border-slate-200"
-               />
-             </div>
-             <div className="flex flex-col gap-1.5">
-               <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Template Status</span>
-               <select value={templateFilter} onChange={(e) => setTemplateFilter(e.target.value)} className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2">
-                 <option value="all">All Templates</option>
-                 <option value="custom">Custom</option>
-                 <option value="default">Default</option>
-               </select>
-             </div>
-             <Button 
-               onClick={() => setDialogOpen(true)}
-               className="bg-blue-600 hover:bg-blue-700"
-             >
-               <Plus className="w-4 h-4 mr-2" />
-               Add Advice Group
-             </Button>
-           </div>
-         </div>
+          <div className="bg-white rounded-2xl border border-slate-200 mb-6">
+            <div className="p-6 flex items-end gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Input
+                  placeholder="Search groups or AFSL..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-11 border-slate-200"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Template Status</span>
+                <select value={templateFilter} onChange={(e) => setTemplateFilter(e.target.value)} className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2">
+                  <option value="all">All Templates</option>
+                  <option value="custom">Custom</option>
+                  <option value="default">Default</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
         {/* Table */}
         <div className="bg-white rounded-2xl border border-slate-200 relative">
