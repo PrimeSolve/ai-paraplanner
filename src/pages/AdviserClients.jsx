@@ -41,8 +41,8 @@ export default function AdviserClients() {
     }
   };
 
-  const getColorClass = (index) => {
-    const colors = ['bg-blue-600', 'bg-green-600', 'bg-orange-600', 'bg-purple-600', 'bg-pink-600', 'bg-cyan-600', 'bg-red-600', 'bg-amber-600'];
+  const getColorValue = (index) => {
+    const colors = ['#2563eb', '#16a34a', '#ea580c', '#a855f7', '#ec4899', '#06b6d4', '#dc2626', '#b45309'];
     return colors[index % colors.length];
   };
 
