@@ -310,9 +310,9 @@ export default function AdviceGroupSOATemplate() {
               </Card>
             );
           })}
-          </div>
         </div>
-      </div>
+        </div>
+        </div>
     </div>
   );
 }
