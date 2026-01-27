@@ -162,11 +162,22 @@ const Sidebar = ({ currentPage }) => {
     { id: 'settings', label: 'Settings', icon: Settings, badge: null },
   ];
 
+  const pageMap = {
+    'dashboard': 'AdviceGroupDashboard',
+    'soa-requests': 'AdviceGroupSOARequests',
+    'completed': 'AdviceGroupCompleted',
+    'advisers': 'AdviceGroupAdvisers',
+    'template': 'AdviceGroupSOATemplate',
+    'risk-profiles': 'AdviceGroupRiskProfiles',
+    'portfolios': 'AdviceGroupModelPortfolios',
+    'settings': 'AdviceGroupSettings',
+  };
+
   const NavItem = ({ item, isActive }) => {
     const Icon = item.icon;
     return (
-      <a
-        href="#"
+      <Link
+        to={createPageUrl(pageMap[item.id])}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -208,7 +219,7 @@ const Sidebar = ({ currentPage }) => {
             {item.badge}
           </span>
         )}
-      </a>
+      </Link>
     );
   };
 
