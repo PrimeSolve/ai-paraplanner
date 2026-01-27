@@ -405,18 +405,20 @@ export default function AdviceGroupRiskProfiles() {
               </div>
             </div>
 
-            <div className="flex gap-3 justify-between pt-2 border-t">
-              <Button variant="outline" onClick={() => handleDelete(editingProfile?.id)} className="text-red-600 hover:bg-red-50 border border-red-200">
-                🗑️ Delete Profile
-              </Button>
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setShowDialog(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 text-white">
-                  💾 Save Changes
-                </Button>
-              </div>
+            <div className="flex gap-3 justify-between pt-6 border-t">
+             {editingProfile && (
+               <Button variant="outline" onClick={() => handleDelete(editingProfile?.id)} className="text-red-600 hover:bg-red-50 border border-red-200">
+                 🗑️ Delete
+               </Button>
+             )}
+             <div className="flex gap-3 ml-auto">
+               <Button variant="outline" onClick={() => setShowDialog(false)}>
+                 Cancel
+               </Button>
+               <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 text-white">
+                 Save Profile
+               </Button>
+             </div>
             </div>
           </div>
         </DialogContent>
