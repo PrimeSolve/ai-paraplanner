@@ -54,6 +54,15 @@ export default function AdminTemplate() {
       ]
     },
     {
+      group: 'risk-profile',
+      groupLabel: 'Risk Profile',
+      icon: '⚖️',
+      sections: [
+        { id: 'risk-profile', label: 'Risk Profile', description: 'Risk tolerance assessment', status: 'needs-comment', badge: 'Fact Find' },
+        { id: 'variance-to-profile', label: 'Variance to Risk Profile', description: 'Explanation if different', status: 'needs-comment', badge: null }
+      ]
+    },
+    {
       group: 'recommendations',
       groupLabel: 'Recommendations & Strategy',
       icon: '🎯',
