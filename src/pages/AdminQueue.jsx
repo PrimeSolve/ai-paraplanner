@@ -169,14 +169,8 @@ export default function AdminQueue() {
 
   return (
     <AdminLayout currentPage="AdminQueue">
-      <div className="p-8">
-        <div className="mb-6">
-          <h1 className="font-['Playfair_Display'] text-2xl font-semibold text-[#0f172a] mb-1">
-            SOA Queue
-          </h1>
-          <p className="text-sm text-[#64748b]">Manage and track all Statement of Advice requests</p>
-        </div>
-        {/* Stats Grid */}
+      <div className="p-8 font-['Inter']">
+         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           <div className="bg-gradient-to-br from-[#f97316] to-[#ea580c] rounded-2xl p-6 text-white">
             <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4">
