@@ -169,30 +169,13 @@ export default function AdminQueue() {
 
   return (
     <AdminLayout currentPage="AdminQueue">
-      {/* Header */}
-      <div className="bg-white px-8 py-5 border-b border-slate-200 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-['Playfair_Display'] text-2xl font-semibold text-[#0f172a] mb-1">
-              SOA Queue
-            </h1>
-            <p className="text-sm text-[#64748b]">Manage and track all Statement of Advice requests</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-all">
-              <div className="w-9 h-9 bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] rounded-xl flex items-center justify-center text-white font-bold text-sm">
-                P
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-[#0f172a]">PrimeSolve Group</div>
-              </div>
-              <ChevronDown className="w-4 h-4 text-[#64748b]" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="p-8">
+        <div className="mb-6">
+          <h1 className="font-['Playfair_Display'] text-2xl font-semibold text-[#0f172a] mb-1">
+            SOA Queue
+          </h1>
+          <p className="text-sm text-[#64748b]">Manage and track all Statement of Advice requests</p>
+        </div>
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           <div className="bg-gradient-to-br from-[#f97316] to-[#ea580c] rounded-2xl p-6 text-white">
