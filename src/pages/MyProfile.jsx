@@ -31,6 +31,7 @@ export default function MyProfile() {
   const loadUser = async () => {
     try {
       const currentUser = await base44.auth.me();
+      console.log('Loaded user from API:', currentUser);
       setUser(currentUser);
       setFormData({
         full_name: currentUser.full_name || '',
@@ -47,15 +48,18 @@ export default function MyProfile() {
 
   const handleSave = async () => {
     try {
-      await base44.auth.updateMe({
+      console.log('Saving user with data:', { full_name: formData.full_name, phone: formData.phone });
+      const result = await base44.auth.updateMe({
         full_name: formData.full_name,
         phone: formData.phone
       });
+      console.log('Update result:', result);
       toast.success('Profile updated successfully');
-      loadUser();
+      await loadUser();
       // Trigger event to update user in AdminLayout
       window.dispatchEvent(new Event('userProfileUpdated'));
     } catch (error) {
+      console.error('Save error:', error);
       toast.error('Failed to update profile');
     }
   };
