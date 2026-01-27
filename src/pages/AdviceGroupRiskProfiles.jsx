@@ -77,15 +77,10 @@ export default function AdviceGroupRiskProfiles() {
       setShowDialog(false);
       setEditingProfile(null);
       setFormData({
-        name: '',
-        description: '',
-        risk_level: 1,
-        min_score: 0,
-        max_score: 10,
-        allocation: defaultAllocation,
-        expected_return: 0,
-        timeframe: '',
-        volatility_tolerance: ''
+       name: '',
+       description: '',
+       risk_level: 1,
+       allocation: defaultAllocation
       });
       loadData();
     } catch (error) {
