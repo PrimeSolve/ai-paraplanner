@@ -18,6 +18,7 @@ export default function AdviceGroupRiskProfiles() {
   const [user, setUser] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
   const [editingProfile, setEditingProfile] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
 
   const defaultAllocation = {
     cash: 0,
