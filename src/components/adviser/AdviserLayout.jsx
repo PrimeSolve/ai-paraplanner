@@ -31,7 +31,7 @@ export default function AdviserLayout({ children, currentPage }) {
     { label: 'Dashboard', path: 'AdviserDashboard', icon: LayoutDashboard },
     { label: 'Clients', path: 'AdviserClients', icon: Users },
     { label: 'SOA Requests', path: 'AdviserSOARequests', icon: FileText },
-    { label: 'Documents', path: 'AdviserDocuments', icon: FolderOpen },
+    { label: 'Completed SOAs', path: 'AdviserCompletions', icon: CheckCircle },
     { label: 'Settings', path: 'AdviserSettings', icon: Settings }
   ];
 
