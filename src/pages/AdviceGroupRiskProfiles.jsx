@@ -245,45 +245,45 @@ export default function AdviceGroupRiskProfiles() {
                             <tbody>
                               <tr className="border-b border-slate-200">
                                 <td className="py-3 px-4"><span className="inline-flex items-center gap-3"><span className="w-3 h-3 rounded-full" style={{background: '#3B82F6'}}></span> <span className="text-slate-900 font-medium">Cash</span></span></td>
-                                <td className="text-center py-3 px-4 text-slate-800 font-semibold">{profile.allocation?.cash || 0}</td>
-                                <td className="text-center py-3 px-4 text-slate-600">20</td>
-                                <td className="text-center py-3 px-4 text-slate-600">50</td>
+                                <td className="text-center py-3 px-4 text-slate-800 font-semibold">{profile.allocation?.cash?.target || 0}</td>
+                                <td className="text-center py-3 px-4 text-slate-600">{profile.allocation?.cash?.min || 0}</td>
+                                <td className="text-center py-3 px-4 text-slate-600">{profile.allocation?.cash?.max || 0}</td>
                               </tr>
                               <tr className="border-b border-slate-200">
                                 <td className="py-3 px-4"><span className="inline-flex items-center gap-3"><span className="w-3 h-3 rounded-full" style={{background: '#10B981'}}></span> <span className="text-slate-900 font-medium">Australian Fixed Interest</span></span></td>
-                                <td className="text-center py-3 px-4 text-slate-800 font-semibold">{profile.allocation?.au_fixed_interest || 0}</td>
-                                <td className="text-center py-3 px-4 text-slate-600">25</td>
-                                <td className="text-center py-3 px-4 text-slate-600">45</td>
+                                <td className="text-center py-3 px-4 text-slate-800 font-semibold">{profile.allocation?.au_fixed_interest?.target || 0}</td>
+                                <td className="text-center py-3 px-4 text-slate-600">{profile.allocation?.au_fixed_interest?.min || 0}</td>
+                                <td className="text-center py-3 px-4 text-slate-600">{profile.allocation?.au_fixed_interest?.max || 0}</td>
                               </tr>
                               <tr className="border-b border-slate-200">
                                 <td className="py-3 px-4"><span className="inline-flex items-center gap-3"><span className="w-3 h-3 rounded-full" style={{background: '#06B6D4'}}></span> <span className="text-slate-900 font-medium">International Fixed Interest</span></span></td>
-                                <td className="text-center py-3 px-4 text-slate-800 font-semibold">{profile.allocation?.int_fixed_interest || 0}</td>
-                                <td className="text-center py-3 px-4 text-slate-600">10</td>
-                                <td className="text-center py-3 px-4 text-slate-600">30</td>
+                                <td className="text-center py-3 px-4 text-slate-800 font-semibold">{profile.allocation?.int_fixed_interest?.target || 0}</td>
+                                <td className="text-center py-3 px-4 text-slate-600">{profile.allocation?.int_fixed_interest?.min || 0}</td>
+                                <td className="text-center py-3 px-4 text-slate-600">{profile.allocation?.int_fixed_interest?.max || 0}</td>
                               </tr>
                               <tr className="border-b border-slate-200">
                                 <td className="py-3 px-4"><span className="inline-flex items-center gap-3"><span className="w-3 h-3 rounded-full" style={{background: '#8B5CF6'}}></span> <span className="text-slate-900 font-medium">Property</span></span></td>
-                                <td className="text-center py-3 px-4 text-slate-800 font-semibold">{profile.allocation?.property || 0}</td>
-                                <td className="text-center py-3 px-4 text-slate-600">0</td>
-                                <td className="text-center py-3 px-4 text-slate-600">10</td>
+                                <td className="text-center py-3 px-4 text-slate-800 font-semibold">{profile.allocation?.property?.target || 0}</td>
+                                <td className="text-center py-3 px-4 text-slate-600">{profile.allocation?.property?.min || 0}</td>
+                                <td className="text-center py-3 px-4 text-slate-600">{profile.allocation?.property?.max || 0}</td>
                               </tr>
                               <tr className="border-b border-slate-200">
                                 <td className="py-3 px-4"><span className="inline-flex items-center gap-3"><span className="w-3 h-3 rounded-full" style={{background: '#EC4899'}}></span> <span className="text-slate-900 font-medium">Alternatives</span></span></td>
-                                <td className="text-center py-3 px-4 text-slate-800 font-semibold">{profile.allocation?.alternatives || 0}</td>
-                                <td className="text-center py-3 px-4 text-slate-600">0</td>
-                                <td className="text-center py-3 px-4 text-slate-600">5</td>
+                                <td className="text-center py-3 px-4 text-slate-800 font-semibold">{profile.allocation?.alternatives?.target || 0}</td>
+                                <td className="text-center py-3 px-4 text-slate-600">{profile.allocation?.alternatives?.min || 0}</td>
+                                <td className="text-center py-3 px-4 text-slate-600">{profile.allocation?.alternatives?.max || 0}</td>
                               </tr>
                               <tr className="border-b border-slate-200">
                                 <td className="py-3 px-4"><span className="inline-flex items-center gap-3"><span className="w-3 h-3 rounded-full" style={{background: '#F59E0B'}}></span> <span className="text-slate-900 font-medium">Australian Equity</span></span></td>
-                                <td className="text-center py-3 px-4 text-slate-800 font-semibold">{profile.allocation?.au_equities || 0}</td>
-                                <td className="text-center py-3 px-4 text-slate-600">0</td>
-                                <td className="text-center py-3 px-4 text-slate-600">20</td>
+                                <td className="text-center py-3 px-4 text-slate-800 font-semibold">{profile.allocation?.au_equities?.target || 0}</td>
+                                <td className="text-center py-3 px-4 text-slate-600">{profile.allocation?.au_equities?.min || 0}</td>
+                                <td className="text-center py-3 px-4 text-slate-600">{profile.allocation?.au_equities?.max || 0}</td>
                               </tr>
                               <tr>
                                 <td className="py-3 px-4"><span className="inline-flex items-center gap-3"><span className="w-3 h-3 rounded-full" style={{background: '#EF4444'}}></span> <span className="text-slate-900 font-medium">International Equity</span></span></td>
-                                <td className="text-center py-3 px-4 text-slate-800 font-semibold">{profile.allocation?.int_equities || 0}</td>
-                                <td className="text-center py-3 px-4 text-slate-600">0</td>
-                                <td className="text-center py-3 px-4 text-slate-600">15</td>
+                                <td className="text-center py-3 px-4 text-slate-800 font-semibold">{profile.allocation?.int_equities?.target || 0}</td>
+                                <td className="text-center py-3 px-4 text-slate-600">{profile.allocation?.int_equities?.min || 0}</td>
+                                <td className="text-center py-3 px-4 text-slate-600">{profile.allocation?.int_equities?.max || 0}</td>
                               </tr>
                             </tbody>
                           </table>
