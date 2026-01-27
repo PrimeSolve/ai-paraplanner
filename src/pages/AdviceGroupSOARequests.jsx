@@ -8,67 +8,84 @@ import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
 import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 
 export default function AdviceGroupSOARequests() {
-  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('all');
+  const [requests, setRequests] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const stats = {
+    awaiting: 0,
+    inProgress: 0,
+    completedToday: 0,
+    avgTurnaround: 0
+  };
 
   useEffect(() => {
-    loadRequests();
-    loadUser();
+    loadData();
   }, []);
 
-  const loadUser = async () => {
+  const loadData = async () => {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
-    } catch (error) {
-      console.error('Failed to load user:', error);
-    }
-  };
 
-  const loadRequests = async () => {
-    try {
-      const data = await base44.entities.SOARequest.list('-created_date');
-      setRequests(data);
+      // Load requests filtered by advice group
+      if (currentUser.advice_group_id) {
+        const data = await base44.entities.SOARequest.filter(
+          { 
+            advice_group_id: currentUser.advice_group_id 
+          },
+          '-created_date'
+        );
+        setRequests(data);
+        
+        // Calculate stats
+        stats.awaiting = data.filter(r => r.status === 'submitted').length;
+        stats.inProgress = data.filter(r => r.status === 'in_progress').length;
+        stats.completedToday = data.filter(r => r.status === 'completed').length;
+      }
     } catch (error) {
-      console.error('Failed to load requests:', error);
+      console.error('Failed to load data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const colors = {
-    core: {
-      navy: '#1e293b',
-      slate: '#475569',
-      slateLight: '#64748b',
-      grey: '#94a3b8',
-      greyLight: '#e2e8f0',
-      offWhite: '#f8fafc',
-      white: '#ffffff',
-    },
-    accent: {
-      blue: '#3b82f6',
-      blueDeep: '#1d4ed8',
-      success: '#10b981',
-      warning: '#f59e0b',
-      error: '#ef4444',
-      coral: '#f97316',
-      purple: '#8b5cf6',
-      pink: '#ec4899',
-      cyan: '#06b6d4',
-    }
-  };
-
   const getStatusBadge = (status) => {
-    const variants = {
-      draft: 'secondary',
-      in_progress: 'default',
-      submitted: 'default',
-      completed: 'default'
+    const styles = {
+      submitted: 'bg-orange-100 text-orange-700 border-orange-200',
+      in_progress: 'bg-blue-100 text-blue-700 border-blue-200',
+      in_review: 'bg-purple-100 text-purple-700 border-purple-200',
+      completed: 'bg-green-100 text-green-700 border-green-200',
+      on_hold: 'bg-amber-100 text-amber-700 border-amber-200',
+      revision_requested: 'bg-red-100 text-red-700 border-red-200'
     };
-    return <Badge variant={variants[status] || 'secondary'}>{status}</Badge>;
+    const labels = {
+      submitted: 'Submitted',
+      in_progress: 'In Progress',
+      in_review: 'In Review',
+      completed: 'Completed',
+      on_hold: 'On Hold',
+      revision_requested: 'Revision Requested'
+    };
+    return (
+      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border ${styles[status]}`}>
+        {status === 'in_progress' && (
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        )}
+        {status === 'completed' && <CheckCircle2 className="w-3.5 h-3.5" />}
+        {status === 'submitted' && (
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        )}
+        {labels[status]}
+      </span>
+    );
   };
 
   return (
