@@ -30,12 +30,14 @@ export default function AdviceGroupRiskProfiles() {
     int_equities: { target: 0, min: 0, max: 15 }
   };
 
-  const [formData, setFormData] = useState({
+  const getEmptyFormData = () => ({
     name: '',
     description: '',
     risk_level: 1,
-    allocation: defaultAllocation
+    allocation: JSON.parse(JSON.stringify(defaultAllocation))
   });
+
+  const [formData, setFormData] = useState(getEmptyFormData());
 
   useEffect(() => {
     loadData();
