@@ -48,28 +48,54 @@ export default function MyProfile() {
 
   const handleSave = async () => {
     try {
-      console.log('Saving user with data:', { full_name: formData.full_name, phone: formData.phone });
+      console.log('========== SAVE DEBUG ==========');
+      console.log('1. Form data being saved:', {
+        full_name: formData.full_name,
+        phone: formData.phone
+      });
+      console.log('2. base44.auth methods available:', Object.keys(base44.auth));
+      console.log('3. updateMe exists:', typeof base44.auth.updateMe);
+      
       const result = await base44.auth.updateMe({
         full_name: formData.full_name,
         phone: formData.phone
       });
-      console.log('Update result:', result);
+      
+      console.log('4. API updateMe() returned:', result);
+      console.log('   Result type:', typeof result);
+      console.log('   Result keys:', result ? Object.keys(result) : 'null/undefined');
+      
+      // Check if result indicates success or failure
+      if (result?.error) {
+        console.error('5. API returned an error:', result.error);
+        toast.error('Failed to save: ' + (result.error.message || 'Unknown error'));
+        return;
+      }
       
       // Update local state directly instead of reloading from API
       // This prevents stale data from overwriting the form
-      setUser(prev => ({
-        ...prev,
-        full_name: formData.full_name,
-        phone: formData.phone
-      }));
+      setUser(prev => {
+        const updated = {
+          ...prev,
+          full_name: formData.full_name,
+          phone: formData.phone
+        };
+        console.log('6. Updated local user state:', updated);
+        return updated;
+      });
       
+      console.log('7. Save completed successfully');
       toast.success('Profile updated successfully');
       
       // Trigger event to update user in AdminLayout
       window.dispatchEvent(new Event('userProfileUpdated'));
+      
     } catch (error) {
-      console.error('Save error:', error);
-      toast.error('Failed to update profile');
+      console.error('========== SAVE ERROR ==========');
+      console.error('Error object:', error);
+      console.error('Error message:', error?.message);
+      console.error('Error response:', error?.response);
+      toast.error('Failed to update profile: ' + (error?.message || 'Unknown error'));
     }
   };
 
