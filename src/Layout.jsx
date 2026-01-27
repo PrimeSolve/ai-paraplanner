@@ -30,22 +30,24 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <style>{`
-        :root {
-          --primary: #1e293b;
-          --primary-light: #334155;
-          --accent: #f59e0b;
-          --accent-dark: #d97706;
-        }
-      `}</style>
-      
+    <RoleProvider>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <style>{`
+          :root {
+            --primary: #1e293b;
+            --primary-light: #334155;
+            --accent: #f59e0b;
+            --accent-dark: #d97706;
+          }
+        `}</style>
+        
 
 
-      {/* Main Content */}
-      <main className="min-h-[calc(100vh-4rem)]">
-        {children}
-      </main>
-    </div>
+        {/* Main Content */}
+        <main className="min-h-[calc(100vh-4rem)]">
+          {children}
+        </main>
+      </div>
+    </RoleProvider>
   );
 }
