@@ -47,6 +47,7 @@ export default function MyProfile() {
   };
 
   const handleSave = async () => {
+    console.log('🔴 SAVE BUTTON CLICKED!');
     try {
       console.log('========== SAVE DEBUG ==========');
       console.log('1. Form data being saved:', {
