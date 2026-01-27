@@ -115,7 +115,7 @@ export default function AdminSettings() {
         {/* Content */}
         <div className="flex gap-6 p-8">
           {/* Sidebar */}
-          <div className="w-[200px] flex-shrink-0">
+          <div className="w-[220px] flex-shrink-0">
             <div className="bg-white rounded-2xl border border-[#e2e8f0] p-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
@@ -129,8 +129,8 @@ export default function AdminSettings() {
                         : 'text-[#64748b] hover:bg-[#f8fafc]'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
-                    <span>{tab.label}</span>
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="whitespace-nowrap">{tab.label}</span>
                   </button>
                 );
               })}
