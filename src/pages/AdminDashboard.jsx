@@ -110,7 +110,7 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout currentPage="AdminDashboard">
-      <div className="p-8 font-['Inter']">
+      <div className="p-8">
          {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           {/* Total Advice Groups */}
