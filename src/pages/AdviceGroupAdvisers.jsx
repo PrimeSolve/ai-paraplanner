@@ -493,8 +493,6 @@ export default function AdviceGroupAdvisers() {
             </div>
             </div>
             </div>
-            </div>
-            </div>
 
             {/* Invite Modal */}
             <Dialog open={showInvite} onOpenChange={setShowInvite}>
@@ -528,7 +526,6 @@ export default function AdviceGroupAdvisers() {
             </div>
             </DialogContent>
             </Dialog>
-            </div>
             </div>
             );
             }
