@@ -43,8 +43,11 @@ export default function AdviceGroupClients() {
   );
 
   return (
-    <AdviceGroupLayout currentPage="AdviceGroupClients">
-      <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
+    <div className="flex">
+      <AdviceGroupSidebar currentPage="clients" />
+      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <AdviceGroupHeader user={user} />
+        <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">Clients</h1>
