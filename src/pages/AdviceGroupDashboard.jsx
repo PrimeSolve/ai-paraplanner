@@ -508,7 +508,7 @@ export default function AdviceGroupDashboard() {
         {/* Header with User Profile */}
         <div style={{
           background: colors.core.white,
-          padding: '12px 32px',
+          padding: '4px 32px',
           borderBottom: `1px solid ${colors.core.greyLight}`,
           position: 'sticky',
           top: 0,
