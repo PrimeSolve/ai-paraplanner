@@ -236,7 +236,7 @@ export default function AdviceGroupRiskProfiles() {
 
                     {/* Expanded Content */}
                     {isExpanded && (
-                      <div className="border-t border-blue-200 p-6 bg-white">
+                      <div className="border-t border-slate-200 p-4 bg-slate-50">
                         {/* Asset Allocation Section */}
                         <div className="mb-6">
                           <div className="flex items-center justify-between mb-4">
