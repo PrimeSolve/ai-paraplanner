@@ -306,19 +306,17 @@ export default function AdviceGroupRiskProfiles() {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex gap-3 pt-4 border-t border-slate-200 justify-between">
+                        <div className="flex gap-2 pt-3 border-t border-slate-200 justify-between">
                           <Button
                             size="sm"
                             onClick={() => handleDelete(profile.id)}
-                            className="text-red-600 hover:bg-red-50 border border-red-200"
+                            className="text-red-600 hover:bg-red-50 border border-red-200 text-xs"
                             variant="outline"
                           >
-                            <Trash className="w-4 h-4 mr-2" />
-                            Delete Profile
+                            🗑️ Delete Profile
                           </Button>
-                          <Button size="sm" onClick={() => handleEdit(profile)} className="bg-blue-600 hover:bg-blue-700 text-white">
-                            <Edit className="w-4 h-4 mr-2" />
-                            Save Changes
+                          <Button size="sm" onClick={() => handleEdit(profile)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs">
+                            💾 Save Changes
                           </Button>
                         </div>
                       </div>
