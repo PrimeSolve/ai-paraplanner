@@ -183,8 +183,8 @@ export default function AdviceGroupSOARequests() {
             </Card>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
-    </div>
     </div>
   );
 }
