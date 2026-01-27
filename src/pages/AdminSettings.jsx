@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { base44 } from '@/api/base44Client';
 import { 
   Building2, 
   Target, 
@@ -19,12 +21,30 @@ import {
   Briefcase,
   Shield,
   TrendingUp,
-  BarChart3
+  BarChart3,
+  User,
+  CreditCard,
+  HelpCircle,
+  LogOut,
+  ChevronDown
 } from 'lucide-react';
 
 export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState('business');
   const [logoPreview, setLogoPreview] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Failed to load user:', error);
+      }
+    };
+    loadUser();
+  }, []);
   
   const [businessDetails, setBusinessDetails] = useState(() => {
     const saved = localStorage.getItem('businessDetails');
@@ -117,17 +137,47 @@ export default function AdminSettings() {
               </h1>
               <p className="text-sm text-[#64748b]">Configure your AI Paraplanner workspace</p>
             </div>
-            <Link to={createPageUrl('AdminSettings')} className="no-underline">
-              <button className="flex items-center gap-2 px-4 py-2 bg-[#8b5cf6] text-white rounded-lg hover:bg-[#7c3aed] transition-colors">
-                <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center text-xs font-bold">
-                  {businessDetails.companyName.charAt(0)}
-                </div>
-                <span className="font-medium">{businessDetails.companyName}</span>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-            </Link>
+
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 px-4 py-2 bg-[#8b5cf6] text-white rounded-lg hover:bg-[#7c3aed] transition-colors">
+                    <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center text-xs font-bold">
+                      {user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="font-medium">{user.full_name || user.email}</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem>
+                    <User className="w-4 h-4 mr-3 text-[#64748b]" />
+                    My Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Settings2 className="w-4 h-4 mr-3 text-[#64748b]" />
+                    Account Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <CreditCard className="w-4 h-4 mr-3 text-[#64748b]" />
+                    Billing
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Users className="w-4 h-4 mr-3 text-[#64748b]" />
+                    Team Management
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <HelpCircle className="w-4 h-4 mr-3 text-[#64748b]" />
+                    Help & Support
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => base44.auth.logout()}>
+                    <LogOut className="w-4 h-4 mr-3 text-[#64748b]" />
+                    Log Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
 
