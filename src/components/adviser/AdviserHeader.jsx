@@ -1,9 +1,10 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { User, HelpCircle, LogOut, ChevronDown } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { User, HelpCircle, LogOut, ChevronDown, Home } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
+import { useRole } from '@/components/RoleContext';
 
 export default function AdviserHeader({ user }) {
   if (!user) return null;
