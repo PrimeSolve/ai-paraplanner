@@ -57,22 +57,32 @@ export default function AdviceGroupRiskProfiles() {
   }, []);
 
   const loadData = async () => {
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
+        try {
+          const currentUser = await base44.auth.me();
+          setUser(currentUser);
 
-      if (currentUser.advice_group_id) {
-        const data = await base44.entities.RiskProfile.filter({
-          advice_group_id: currentUser.advice_group_id
-        }, 'risk_level');
-        setProfiles(data);
-      }
-    } catch (error) {
-      console.error('Failed to load risk profiles:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+          let groupId = currentUser.advice_group_id;
+
+          // If no advice_group_id, get the first available one
+          if (!groupId) {
+            const groups = await base44.entities.AdviceGroup.list('created_date', 1);
+            if (groups.length > 0) {
+              groupId = groups[0].id;
+            }
+          }
+
+          if (groupId) {
+            const data = await base44.entities.RiskProfile.filter({
+              advice_group_id: groupId
+            }, 'risk_level');
+            setProfiles(data);
+          }
+        } catch (error) {
+          console.error('Failed to load risk profiles:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
 
   const handleSave = async () => {
         try {
