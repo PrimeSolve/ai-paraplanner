@@ -93,7 +93,12 @@ export default function AdviceGroupRiskProfiles() {
 
   const handleEdit = (profile) => {
     setEditingProfile(profile);
-    setFormData(profile);
+    setFormData({
+      name: profile.name || '',
+      description: profile.description || '',
+      risk_level: profile.risk_level || 1,
+      allocation: JSON.parse(JSON.stringify(profile.allocation || defaultAllocation))
+    });
     setShowDialog(true);
   };
 
