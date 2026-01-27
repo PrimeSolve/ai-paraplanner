@@ -158,7 +158,7 @@ export default function AdviceGroupRiskProfiles() {
                 <h1 className="text-2xl font-bold text-slate-800">Risk Profiles</h1>
                 <p className="text-sm text-slate-600 mt-1">{profiles.length} profiles configured</p>
               </div>
-              <Button onClick={() => { setEditingProfile(null); setFormData({ name: '', description: '', risk_level: 1, min_score: 0, max_score: 10, allocation: defaultAllocation, expected_return: 0, timeframe: '', volatility_tolerance: '' }); setShowDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={() => { setEditingProfile(null); setFormData({ name: '', description: '', risk_level: 1, allocation: defaultAllocation }); setShowDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Profile
               </Button>
