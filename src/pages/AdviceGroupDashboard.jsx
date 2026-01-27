@@ -1,17 +1,471 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import AdviceGroupLayout from '../components/advicegroup/AdviceGroupLayout';
-import { FileText, Clock, Users, TrendingUp, CheckCircle, ChevronRight, Edit } from 'lucide-react';
+import { 
+  FileText, 
+  Clock, 
+  Users, 
+  CheckCircle, 
+  ChevronRight, 
+  Edit,
+  LayoutGrid,
+  Tag,
+  PlusCircle,
+  Settings,
+  Download
+} from 'lucide-react';
 
-const mockSoaRequests = [
-  { id: 1, client: 'James & Emma Wilson', adviser: 'Michael Ross', status: 'In Progress', priority: 'HIGH', submitted: '2 hours ago', initials: 'JW', color: 'bg-blue-100 text-blue-600', advInitials: 'MR', advColor: 'bg-red-100 text-red-600' },
-  { id: 2, client: 'Sarah Chen', adviser: 'Jessica Taylor', status: 'Review', priority: 'NORMAL', submitted: '5 hours ago', initials: 'SC', color: 'bg-green-100 text-green-600', advInitials: 'JT', advColor: 'bg-purple-100 text-purple-600' },
-  { id: 3, client: 'David & Lisa Park', adviser: 'Andrew Walsh', status: 'Pending', priority: 'NORMAL', submitted: 'Yesterday', initials: 'DP', color: 'bg-orange-100 text-orange-600', advInitials: 'AW', advColor: 'bg-cyan-100 text-cyan-600' },
-  { id: 4, client: 'Robert Brown', adviser: 'Michael Ross', status: 'In Progress', priority: 'HIGH', submitted: 'Yesterday', initials: 'RB', color: 'bg-red-100 text-red-600', advInitials: 'MR', advColor: 'bg-red-100 text-red-600' },
-  { id: 5, client: 'Karen Nguyen', adviser: 'Nicole Harris', status: 'Pending', priority: 'NORMAL', submitted: '2 days ago', initials: 'KN', color: 'bg-pink-100 text-pink-600', advInitials: 'NH', advColor: 'bg-green-100 text-green-600' },
-  { id: 6, client: 'Michael Johnson', adviser: 'Sarah Mitchell', status: 'Review', priority: 'HIGH', submitted: '3 days ago', initials: 'MJ', color: 'bg-indigo-100 text-indigo-600', advInitials: 'SM', advColor: 'bg-yellow-100 text-yellow-600' }
+// ============================================
+// DESIGN TOKENS
+// ============================================
+const colors = {
+  sidebar: {
+    bg: '#0f172a',
+    hover: '#1e293b',
+    active: 'rgba(59, 130, 246, 0.15)',
+    text: '#94a3b8',
+    textActive: '#ffffff',
+    accent: '#3b82f6',
+  },
+  core: {
+    navy: '#1e293b',
+    slate: '#475569',
+    slateLight: '#64748b',
+    grey: '#94a3b8',
+    greyLight: '#e2e8f0',
+    offWhite: '#f8fafc',
+    white: '#ffffff',
+  },
+  accent: {
+    blue: '#3b82f6',
+    blueDeep: '#1d4ed8',
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    coral: '#f97316',
+    purple: '#8b5cf6',
+    pink: '#ec4899',
+    cyan: '#06b6d4',
+  }
+};
+
+const avatarGradients = [
+  'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+  'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+  'linear-gradient(135deg, #10b981, #059669)',
+  'linear-gradient(135deg, #f97316, #ec4899)',
+  'linear-gradient(135deg, #06b6d4, #0891b2)',
+  'linear-gradient(135deg, #f59e0b, #d97706)',
+  'linear-gradient(135deg, #ef4444, #dc2626)',
 ];
 
+// ============================================
+// MOCK DATA
+// ============================================
+const mockSoaRequests = [
+  { 
+    id: 1, 
+    client: 'James & Emma Wilson', 
+    clientType: 'Comprehensive Advice',
+    adviser: 'Michael Ross', 
+    status: 'In Progress', 
+    priority: 'HIGH', 
+    submitted: '2 hours ago', 
+    initials: 'JW', 
+    advInitials: 'MR',
+    avatarGradient: 0,
+    advAvatarGradient: 3
+  },
+  { 
+    id: 2, 
+    client: 'Sarah Chen', 
+    clientType: 'Insurance Review',
+    adviser: 'Jessica Taylor', 
+    status: 'Review', 
+    priority: 'NORMAL', 
+    submitted: '5 hours ago', 
+    initials: 'SC', 
+    advInitials: 'JT',
+    avatarGradient: 2,
+    advAvatarGradient: 1
+  },
+  { 
+    id: 3, 
+    client: 'David & Lisa Park', 
+    clientType: 'Retirement Planning',
+    adviser: 'Andrew Walsh', 
+    status: 'Pending', 
+    priority: 'NORMAL', 
+    submitted: 'Yesterday', 
+    initials: 'DP', 
+    advInitials: 'AW',
+    avatarGradient: 5,
+    advAvatarGradient: 4
+  },
+  { 
+    id: 4, 
+    client: 'Robert Brown', 
+    clientType: 'Wealth Accumulation',
+    adviser: 'Michael Ross', 
+    status: 'In Progress', 
+    priority: 'HIGH', 
+    submitted: 'Yesterday', 
+    initials: 'RB', 
+    advInitials: 'MR',
+    avatarGradient: 6,
+    advAvatarGradient: 3
+  },
+  { 
+    id: 5, 
+    client: 'Karen Nguyen', 
+    clientType: 'Super Consolidation',
+    adviser: 'Nicole Harris', 
+    status: 'Pending', 
+    priority: 'NORMAL', 
+    submitted: '2 days ago', 
+    initials: 'KN', 
+    advInitials: 'NH',
+    avatarGradient: 3,
+    advAvatarGradient: 2
+  },
+];
+
+const adviserActivity = [
+  { name: 'Michael Ross', initials: 'MR', active: 3, completed: 12, total: 15, gradient: 3 },
+  { name: 'Jessica Taylor', initials: 'JT', active: 2, completed: 10, total: 12, gradient: 1 },
+  { name: 'Andrew Walsh', initials: 'AW', active: 4, completed: 7, total: 11, gradient: 4 },
+];
+
+// ============================================
+// SIDEBAR COMPONENT
+// ============================================
+const Sidebar = ({ currentPage }) => {
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid, badge: null },
+    { id: 'soa-requests', label: 'SOA Requests', icon: FileText, badge: '12' },
+    { id: 'completed', label: 'Completed SOAs', icon: CheckCircle, badge: null },
+  ];
+
+  const teamItems = [
+    { id: 'advisers', label: 'Advisers', icon: Users, badge: '8' },
+  ];
+
+  const configItems = [
+    { id: 'template', label: 'SOA Template', icon: FileText, badge: null },
+    { id: 'risk-profiles', label: 'Risk Profiles', icon: Tag, badge: null },
+    { id: 'portfolios', label: 'Model Portfolios', icon: PlusCircle, badge: null },
+    { id: 'settings', label: 'Settings', icon: Settings, badge: null },
+  ];
+
+  const NavItem = ({ item, isActive }) => {
+    const Icon = item.icon;
+    return (
+      <a
+        href="#"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '12px 14px',
+          borderRadius: '10px',
+          color: isActive ? colors.sidebar.accent : colors.sidebar.text,
+          backgroundColor: isActive ? colors.sidebar.active : 'transparent',
+          textDecoration: 'none',
+          fontSize: '14px',
+          fontWeight: 500,
+          transition: 'all 0.2s ease',
+          marginBottom: '4px',
+        }}
+        onMouseEnter={(e) => {
+          if (!isActive) {
+            e.currentTarget.style.backgroundColor = colors.sidebar.hover;
+            e.currentTarget.style.color = colors.sidebar.textActive;
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isActive) {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.color = colors.sidebar.text;
+          }
+        }}
+      >
+        <Icon size={20} />
+        <span style={{ flex: 1 }}>{item.label}</span>
+        {item.badge && (
+          <span style={{
+            padding: '2px 8px',
+            backgroundColor: colors.sidebar.accent,
+            color: 'white',
+            fontSize: '11px',
+            fontWeight: 700,
+            borderRadius: '10px',
+          }}>
+            {item.badge}
+          </span>
+        )}
+      </a>
+    );
+  };
+
+  const NavSection = ({ title, items }) => (
+    <div style={{ marginBottom: '24px' }}>
+      {title && (
+        <div style={{
+          fontSize: '11px',
+          fontWeight: 700,
+          color: colors.sidebar.text,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          padding: '0 12px',
+          marginBottom: '8px',
+        }}>
+          {title}
+        </div>
+      )}
+      {items.map(item => (
+        <NavItem key={item.id} item={item} isActive={currentPage === item.id} />
+      ))}
+    </div>
+  );
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '260px',
+      height: '100vh',
+      background: colors.sidebar.bg,
+      display: 'flex',
+      flexDirection: 'column',
+      zIndex: 100,
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+    }}>
+      <div style={{
+        padding: '24px 20px',
+        borderBottom: `1px solid rgba(255, 255, 255, 0.1)`,
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+        }}>
+          <div style={{
+            width: '44px',
+            height: '44px',
+            background: `linear-gradient(135deg, ${colors.accent.blue}, ${colors.accent.blueDeep})`,
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 700,
+            color: 'white',
+            fontSize: '16px',
+          }}>
+            AI
+          </div>
+          <div>
+            <div style={{
+              fontWeight: 700,
+              fontSize: '16px',
+              color: 'white',
+            }}>
+              AI Paraplanner
+            </div>
+            <div style={{
+              fontSize: '12px',
+              color: colors.sidebar.text,
+            }}>
+              Advice Group Portal
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <nav style={{
+        flex: 1,
+        padding: '20px 12px',
+        overflowY: 'auto',
+      }}>
+        <NavSection title="OVERVIEW" items={navItems} />
+        <NavSection title="TEAM" items={teamItems} />
+        <NavSection title="CONFIGURATION" items={configItems} />
+      </nav>
+
+      <div style={{
+        padding: '16px',
+        borderTop: `1px solid rgba(255, 255, 255, 0.1)`,
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '12px',
+          borderRadius: '12px',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            background: `linear-gradient(135deg, ${colors.accent.coral}, ${colors.accent.pink})`,
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 700,
+            color: 'white',
+            fontSize: '14px',
+          }}>
+            PS
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{
+              fontSize: '14px',
+              fontWeight: 600,
+              color: 'white',
+            }}>
+              PrimeSolve Group
+            </div>
+            <div style={{
+              fontSize: '12px',
+              color: colors.sidebar.text,
+            }}>
+              Group Admin
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================
+// STAT CARD COMPONENT
+// ============================================
+const StatCard = ({ icon: Icon, value, label, trend, iconColor }) => (
+  <div style={{
+    background: colors.core.white,
+    borderRadius: '16px',
+    padding: '20px',
+    border: `1px solid ${colors.core.greyLight}`,
+  }}>
+    <div style={{
+      width: '48px',
+      height: '48px',
+      borderRadius: '12px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: '16px',
+      background: iconColor,
+    }}>
+      <Icon size={24} color={colors.core.white} />
+    </div>
+    <div style={{
+      fontSize: '32px',
+      fontWeight: 700,
+      color: colors.core.navy,
+      marginBottom: '8px',
+    }}>
+      {value}
+    </div>
+    {trend && (
+      <div style={{
+        fontSize: '12px',
+        color: colors.accent.success,
+        marginBottom: '8px',
+        fontWeight: 600,
+      }}>
+        {trend}
+      </div>
+    )}
+    <div style={{
+      fontSize: '14px',
+      color: colors.core.slateLight,
+    }}>
+      {label}
+    </div>
+  </div>
+);
+
+// ============================================
+// AVATAR COMPONENT
+// ============================================
+const Avatar = ({ initials, gradientIndex, size = 40 }) => (
+  <div style={{
+    width: `${size}px`,
+    height: `${size}px`,
+    borderRadius: size > 40 ? '16px' : '12px',
+    background: avatarGradients[gradientIndex],
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: colors.core.white,
+    fontWeight: 700,
+    fontSize: size > 40 ? '18px' : '14px',
+  }}>
+    {initials}
+  </div>
+);
+
+// ============================================
+// STATUS BADGE COMPONENT
+// ============================================
+const StatusBadge = ({ status }) => {
+  const styles = {
+    'In Progress': { bg: 'rgba(59, 130, 246, 0.1)', color: colors.accent.blue },
+    'Review': { bg: 'rgba(139, 92, 246, 0.1)', color: colors.accent.purple },
+    'Pending': { bg: 'rgba(245, 158, 11, 0.1)', color: colors.accent.warning },
+    'Completed': { bg: 'rgba(16, 185, 129, 0.1)', color: colors.accent.success },
+  };
+  const style = styles[status] || styles['Pending'];
+
+  return (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '6px',
+      padding: '6px 12px',
+      borderRadius: '8px',
+      background: style.bg,
+      color: style.color,
+      fontSize: '13px',
+      fontWeight: 500,
+    }}>
+      • {status}
+    </span>
+  );
+};
+
+// ============================================
+// PRIORITY BADGE COMPONENT
+// ============================================
+const PriorityBadge = ({ priority }) => {
+  const styles = {
+    'HIGH': { bg: 'rgba(239, 68, 68, 0.1)', color: colors.accent.error },
+    'NORMAL': { bg: 'rgba(100, 116, 139, 0.1)', color: colors.core.slateLight },
+    'LOW': { bg: 'rgba(59, 130, 246, 0.1)', color: colors.accent.blue },
+  };
+  const style = styles[priority] || styles['NORMAL'];
+
+  return (
+    <span style={{
+      display: 'inline-block',
+      padding: '6px 12px',
+      borderRadius: '8px',
+      background: style.bg,
+      color: style.color,
+      fontSize: '12px',
+      fontWeight: 700,
+    }}>
+      {priority}
+    </span>
+  );
+};
+
+// ============================================
+// MAIN DASHBOARD COMPONENT
+// ============================================
 export default function AdviceGroupDashboard() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -30,193 +484,364 @@ export default function AdviceGroupDashboard() {
     loadUser();
   }, []);
 
-  const getStatusBadgeClass = (status) => {
-    const styles = {
-      'In Progress': 'text-blue-700 bg-blue-50',
-      'Review': 'text-purple-700 bg-purple-50',
-      'Pending': 'text-orange-700 bg-orange-50',
-      'Completed': 'text-green-700 bg-green-50'
-    };
-    return styles[status] || 'text-slate-700 bg-slate-50';
-  };
-
-  const getPriorityClass = (priority) => {
-    const styles = {
-      'HIGH': 'text-red-600 bg-red-50',
-      'NORMAL': 'text-slate-600 bg-slate-50',
-      'LOW': 'text-blue-600 bg-blue-50'
-    };
-    return styles[priority] || 'text-slate-600 bg-slate-50';
-  };
-
   return (
-    <AdviceGroupLayout currentPage="AdviceGroupDashboard">
-      <div className="bg-[#f8fafc] min-h-screen">
+    <div style={{
+      display: 'flex',
+      minHeight: '100vh',
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+      background: colors.core.offWhite,
+    }}>
+      <Sidebar currentPage="dashboard" />
+
+      <div style={{
+        marginLeft: '260px',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
         {/* Header */}
-        <div className="bg-white border-b border-[#e2e8f0] px-8 py-6">
-          <h1 className="text-3xl font-semibold text-[#0f172a]">PrimeSolve Dashboard</h1>
+        <div style={{
+          background: colors.core.white,
+          padding: '24px 32px',
+          borderBottom: `1px solid ${colors.core.greyLight}`,
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+        }}>
+          <h1 style={{
+            fontSize: '28px',
+            fontWeight: 700,
+            color: colors.core.navy,
+            margin: 0,
+          }}>
+            PrimeSolve Dashboard
+          </h1>
         </div>
 
-        {/* Content */}
-        <div className="p-8">
-          <div className="flex gap-6">
-            {/* Main Content */}
-            <div className="flex-1">
-              {/* Stats Grid */}
-              <div className="grid grid-cols-4 gap-5 mb-8">
-                {[
-                  { label: 'Active SOA Requests', value: '12', change: '↑ 15%', icon: FileText, color: 'bg-blue-50 text-blue-600' },
-                  { label: 'Completed This Month', value: '47', change: '↑ 8%', icon: CheckCircle, color: 'bg-green-50 text-green-600' },
-                  { label: 'Avg. Turnaround Time', value: '2.3d', change: '', icon: Clock, color: 'bg-cyan-50 text-cyan-600' },
-                  { label: 'Active Advisers', value: '8', change: '', icon: Users, color: 'bg-purple-50 text-purple-600' }
-                ].map((stat, idx) => {
-                  const Icon = stat.icon;
-                  return (
-                    <div key={idx} className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
-                      <div className={`w-12 h-12 rounded-xl ${stat.color} flex items-center justify-center mb-4`}>
-                        <Icon className="w-6 h-6" />
-                      </div>
-                      <div className="text-4xl font-bold text-[#0f172a] mb-2">{stat.value}</div>
-                      <div className="text-sm text-[#64748b] mb-2">{stat.label}</div>
-                      {stat.change && <div className="text-xs text-green-600 font-medium">{stat.change}</div>}
-                    </div>
-                  );
-                })}
+        {/* Main Content */}
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          padding: '24px 32px',
+          gap: '24px',
+        }}>
+          {/* Main Column */}
+          <div style={{ flex: 1 }}>
+            {/* Stats Grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '20px',
+              marginBottom: '24px',
+            }}>
+              <StatCard 
+                icon={FileText} 
+                value="12" 
+                label="Active SOA Requests" 
+                trend="↑ 15%"
+                iconColor={`linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.2))`}
+              />
+              <StatCard 
+                icon={CheckCircle} 
+                value="47" 
+                label="Completed This Month" 
+                trend="↑ 8%"
+                iconColor={`linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2))`}
+              />
+              <StatCard 
+                icon={Clock} 
+                value="2.3d" 
+                label="Avg. Turnaround Time"
+                iconColor={`linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(8, 145, 178, 0.2))`}
+              />
+              <StatCard 
+                icon={Users} 
+                value="8" 
+                label="Active Advisers"
+                iconColor={`linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(124, 58, 237, 0.2))`}
+              />
+            </div>
+
+            {/* Recent SOA Requests Table */}
+            <div style={{
+              background: colors.core.white,
+              borderRadius: '16px',
+              border: `1px solid ${colors.core.greyLight}`,
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                padding: '20px 32px',
+                borderBottom: `1px solid ${colors.core.greyLight}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: 600,
+                  color: colors.core.navy,
+                  margin: 0,
+                }}>
+                  Recent SOA Requests
+                </h3>
+                <a href="#" style={{
+                  fontSize: '14px',
+                  color: colors.accent.blue,
+                  textDecoration: 'none',
+                  fontWeight: 600,
+                }}>
+                  View All →
+                </a>
               </div>
 
-              {/* Recent SOA Requests */}
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden">
-                <div className="px-8 py-5 border-b border-[#e2e8f0] flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-[#0f172a]">Recent SOA Requests</h3>
-                  <a href="#" className="text-sm text-blue-600 hover:text-blue-700 font-medium">View All →</a>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-[#e2e8f0] bg-[#f8fafc]">
-                        <th className="px-8 py-4 text-left text-xs font-bold text-[#64748b] uppercase tracking-wide">CLIENT</th>
-                        <th className="px-8 py-4 text-left text-xs font-bold text-[#64748b] uppercase tracking-wide">ADVISER</th>
-                        <th className="px-8 py-4 text-left text-xs font-bold text-[#64748b] uppercase tracking-wide">STATUS</th>
-                        <th className="px-8 py-4 text-left text-xs font-bold text-[#64748b] uppercase tracking-wide">PRIORITY</th>
-                        <th className="px-8 py-4 text-left text-xs font-bold text-[#64748b] uppercase tracking-wide">SUBMITTED</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {mockSoaRequests.map((req, idx) => (
-                        <tr key={idx} className="border-b border-[#e2e8f0] hover:bg-[#f8fafc] transition-colors">
-                          <td className="px-8 py-5">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-10 h-10 rounded-lg ${req.color} flex items-center justify-center font-semibold text-sm`}>
-                                {req.initials}
-                              </div>
-                              <div className="font-medium text-[#0f172a]">{req.client}</div>
-                            </div>
-                          </td>
-                          <td className="px-8 py-5">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-10 h-10 rounded-lg ${req.advColor} flex items-center justify-center font-semibold text-sm`}>
-                                {req.advInitials}
-                              </div>
-                              <div className="font-medium text-[#0f172a]">{req.adviser}</div>
-                            </div>
-                          </td>
-                          <td className="px-8 py-5">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-md text-sm font-medium ${getStatusBadgeClass(req.status)}`}>
-                              • {req.status}
-                            </span>
-                          </td>
-                          <td className="px-8 py-5">
-                            <span className={`inline-flex px-3 py-1 rounded-md text-xs font-bold ${getPriorityClass(req.priority)}`}>
-                              {req.priority}
-                            </span>
-                          </td>
-                          <td className="px-8 py-5 text-[#64748b] text-sm">{req.submitted}</td>
-                        </tr>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                }}>
+                  <thead>
+                    <tr style={{
+                      borderBottom: `1px solid ${colors.core.greyLight}`,
+                      background: colors.core.offWhite,
+                    }}>
+                      {['CLIENT', 'ADVISER', 'STATUS', 'PRIORITY', 'SUBMITTED'].map(header => (
+                        <th key={header} style={{
+                          padding: '16px 32px',
+                          textAlign: 'left',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          color: colors.core.slateLight,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                        }}>
+                          {header}
+                        </th>
                       ))}
-                    </tbody>
-                  </table>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {mockSoaRequests.map((req) => (
+                      <tr key={req.id} style={{
+                        borderBottom: `1px solid ${colors.core.greyLight}`,
+                        transition: 'background-color 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = colors.core.offWhite}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <td style={{
+                          padding: '16px 32px',
+                          fontSize: '14px',
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <Avatar initials={req.initials} gradientIndex={req.avatarGradient} size={40} />
+                            <div>
+                              <div style={{ fontWeight: 600, color: colors.core.navy }}>{req.client}</div>
+                              <div style={{ fontSize: '12px', color: colors.core.slateLight }}>{req.clientType}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{
+                          padding: '16px 32px',
+                          fontSize: '14px',
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <Avatar initials={req.advInitials} gradientIndex={req.advAvatarGradient} size={40} />
+                            <div style={{ fontWeight: 600, color: colors.core.navy }}>{req.adviser}</div>
+                          </div>
+                        </td>
+                        <td style={{
+                          padding: '16px 32px',
+                          fontSize: '14px',
+                        }}>
+                          <StatusBadge status={req.status} />
+                        </td>
+                        <td style={{
+                          padding: '16px 32px',
+                          fontSize: '14px',
+                        }}>
+                          <PriorityBadge priority={req.priority} />
+                        </td>
+                        <td style={{
+                          padding: '16px 32px',
+                          fontSize: '14px',
+                          color: colors.core.slateLight,
+                        }}>
+                          {req.submitted}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Sidebar */}
+          <div style={{
+            width: '320px',
+            flexShrink: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
+          }}>
+            {/* Template Status */}
+            <div style={{
+              background: colors.core.white,
+              borderRadius: '16px',
+              border: `1px solid ${colors.core.greyLight}`,
+              padding: '24px',
+            }}>
+              <h4 style={{
+                fontSize: '16px',
+                fontWeight: 600,
+                color: colors.core.navy,
+                marginBottom: '16px',
+              }}>
+                Template Status
+              </h4>
+              <div style={{
+                background: `linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05))`,
+                border: `1px solid rgba(16, 185, 129, 0.2)`,
+                borderRadius: '12px',
+                padding: '16px',
+                marginBottom: '16px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <CheckCircle size={18} color={colors.accent.success} />
+                  <span style={{ fontWeight: 600, color: colors.core.navy }}>Custom Template</span>
+                  <span style={{
+                    marginLeft: 'auto',
+                    display: 'inline-block',
+                    background: colors.accent.blue,
+                    color: colors.core.white,
+                    padding: '4px 12px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                  }}>
+                    Edit
+                  </span>
+                </div>
+                <div style={{
+                  fontSize: '13px',
+                  color: colors.core.slateLight,
+                  marginBottom: '8px',
+                }}>
+                  26 of 35 sections configured
+                </div>
+                <div style={{
+                  fontSize: '12px',
+                  color: colors.core.slateLight,
+                }}>
+                  Last updated 3 days ago by Sarah Mitchell
                 </div>
               </div>
             </div>
 
-            {/* Right Sidebar */}
-            <div className="w-96 flex-shrink-0 space-y-6">
-              {/* Template Status */}
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
-                <h4 className="font-semibold text-[#0f172a] mb-4">Template Status</h4>
-                <div className="bg-green-50 rounded-xl p-4 mb-4 border border-green-200">
-                  <div className="flex items-center gap-3 mb-3">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <div>
-                      <div className="font-semibold text-[#0f172a]">Custom Template</div>
-                      <div className="text-xs text-green-700">Active</div>
+            {/* Adviser Activity */}
+            <div style={{
+              background: colors.core.white,
+              borderRadius: '16px',
+              border: `1px solid ${colors.core.greyLight}`,
+              padding: '24px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <h4 style={{
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  color: colors.core.navy,
+                  margin: 0,
+                }}>
+                  Adviser Activity
+                </h4>
+                <a href="#" style={{
+                  fontSize: '13px',
+                  color: colors.accent.blue,
+                  textDecoration: 'none',
+                }}>
+                  View All →
+                </a>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {adviserActivity.map((adviser, idx) => (
+                  <div key={idx} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    paddingBottom: idx !== adviserActivity.length - 1 ? '16px' : 0,
+                    borderBottom: idx !== adviserActivity.length - 1 ? `1px solid ${colors.core.greyLight}` : 'none',
+                  }}>
+                    <Avatar initials={adviser.initials} gradientIndex={adviser.gradient} size={40} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, color: colors.core.navy, fontSize: '14px' }}>
+                        {adviser.name}
+                      </div>
+                      <div style={{ fontSize: '12px', color: colors.core.slateLight }}>
+                        {adviser.active} active, {adviser.completed} completed
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontWeight: 700, color: colors.core.navy, fontSize: '16px' }}>
+                        {adviser.total}
+                      </div>
+                      <div style={{ fontSize: '11px', color: colors.core.slateLight }}>
+                        This month
+                      </div>
                     </div>
                   </div>
-                  <div className="text-sm text-[#64748b]">26 of 35 sections configured</div>
-                  <div className="text-xs text-[#64748b] mt-2">Last updated 3 days ago by Sarah Mitchell</div>
-                </div>
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2">
-                  <Edit className="w-4 h-4" />
-                  Edit
-                </button>
+                ))}
               </div>
+            </div>
 
-              {/* Adviser Activity */}
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-semibold text-[#0f172a]">Adviser Activity</h4>
-                  <a href="#" className="text-sm text-blue-600 hover:text-blue-700">View All →</a>
-                </div>
-                <div className="space-y-4">
-                  {[
-                    { name: 'Michael Ross', count: 15, detail: '12 completed', color: 'bg-red-100 text-red-600' },
-                    { name: 'Jessica Taylor', count: 12, detail: '10 completed', color: 'bg-purple-100 text-purple-600' },
-                    { name: 'Andrew Walsh', count: 11, detail: '7 completed', color: 'bg-cyan-100 text-cyan-600' }
-                  ].map((adv, idx) => (
-                    <div key={idx} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-lg ${adv.color} flex items-center justify-center font-semibold text-sm`}>
-                          {adv.name.split(' ').map(n => n[0]).join('')}
-                        </div>
-                        <div>
-                          <div className="font-medium text-[#0f172a]">{adv.name}</div>
-                          <div className="text-xs text-[#64748b]">{adv.detail}</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-[#0f172a]">{adv.count}</div>
-                        <div className="text-xs text-[#64748b]">This month</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
-                <h4 className="font-semibold text-[#0f172a] mb-4">Quick Actions</h4>
-                <div className="space-y-2">
-                  {[
-                    { label: 'Edit SOA Template', icon: FileText },
-                    { label: 'Invite New Adviser', icon: Users },
-                    { label: 'Generate Report', icon: TrendingUp }
-                  ].map((action, idx) => {
-                    const Icon = action.icon;
-                    return (
-                      <button key={idx} className="w-full flex items-center gap-3 p-3 hover:bg-[#f8fafc] rounded-lg transition-colors text-left group">
-                        <Icon className="w-4 h-4 text-[#64748b] group-hover:text-[#0f172a]" />
-                        <span className="text-sm font-medium text-[#0f172a]">{action.label}</span>
-                        <ChevronRight className="w-4 h-4 ml-auto text-[#64748b] group-hover:text-[#0f172a]" />
-                      </button>
-                    );
-                  })}
-                </div>
+            {/* Quick Actions */}
+            <div style={{
+              background: colors.core.white,
+              borderRadius: '16px',
+              border: `1px solid ${colors.core.greyLight}`,
+              padding: '24px',
+            }}>
+              <h4 style={{
+                fontSize: '16px',
+                fontWeight: 600,
+                color: colors.core.navy,
+                marginBottom: '16px',
+              }}>
+                Quick Actions
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {[
+                  { label: 'Edit SOA Template', icon: FileText },
+                  { label: 'Invite New Adviser', icon: Users },
+                  { label: 'Generate Report', icon: Download },
+                ].map((action, idx) => {
+                  const Icon = action.icon;
+                  return (
+                    <a key={idx} href="#" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      textDecoration: 'none',
+                      color: colors.core.navy,
+                      transition: 'background-color 0.2s ease',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = colors.core.offWhite}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <Icon size={16} color={colors.core.slateLight} />
+                      <span style={{ flex: 1 }}>{action.label}</span>
+                      <ChevronRight size={16} color={colors.core.slateLight} />
+                    </a>
+                  );
+                })}
               </div>
             </div>
           </div>
         </div>
       </div>
-    </AdviceGroupLayout>
+    </div>
   );
 }
