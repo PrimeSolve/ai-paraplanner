@@ -23,11 +23,13 @@ export default function AdminAdvisers() {
   const itemsPerPage = 7;
 
   useEffect(() => {
-    loadAdvisers();
+    loadData();
   }, []);
 
-  const loadAdvisers = async () => {
+  const loadData = async () => {
     try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
       const data = await base44.entities.User.filter({ user_type: 'adviser' }, '-created_date');
       setAdvisers(data.length > 0 ? data : mockAdvisers);
     } catch (error) {
@@ -36,6 +38,11 @@ export default function AdminAdvisers() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewAsAdviser = (adviser) => {
+    switchRole('adviser', adviser.email, user);
+    navigate(createPageUrl('AdviserDashboard'));
   };
 
   const mockAdvisers = [
