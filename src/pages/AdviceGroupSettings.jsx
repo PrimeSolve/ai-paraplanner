@@ -26,7 +26,29 @@ export default function AdviceGroupSettings() {
       postcode: '',
       country: ''
     },
-    logo_url: ''
+    logo_url: '',
+    notifications: {
+      new_soa_submitted: true,
+      soa_status_changes: true,
+      soa_completed: true,
+      comments_feedback: false,
+      daily_summary: true,
+      weekly_report: false
+    },
+    branding: {
+      primary_colour: '#1d4ed8',
+      secondary_colour: '#64748b',
+      footer_text: '',
+      disclaimer: ''
+    },
+    permissions: {
+      submit_soa: true,
+      view_all_completed: false,
+      download_soa: true,
+      edit_risk_profiles: false,
+      edit_model_portfolios: false,
+      invite_advisers: false
+    }
   });
 
   const [logoFile, setLogoFile] = useState(null);
