@@ -569,6 +569,7 @@ export default function AdviceGroupAdvisers() {
             </button>
           </div>
         </div>
+        </div>
       </div>
 
       {/* Invite Modal */}
