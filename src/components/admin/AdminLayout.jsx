@@ -150,7 +150,7 @@ export default function AdminLayout({ children, currentPage }) {
       {/* Main Content */}
       <div className="flex-1 ml-[260px] bg-[#f8fafc]">
         {/* Top User Bar */}
-        <div className="bg-white border-b border-[#e2e8f0] px-8 py-2 flex justify-end">
+        <div className="bg-white border-b border-[#e2e8f0] px-8 py-1 flex justify-end">
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
