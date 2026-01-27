@@ -102,17 +102,19 @@ export default function AdminLayout({ children, currentPage }) {
         </nav>
 
         <div className="p-4 border-t border-white/[0.08]">
-          <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.05] cursor-pointer transition-all">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] rounded-xl flex items-center justify-center text-white font-bold text-sm">
-              {user?.full_name?.charAt(0) || 'A'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-white font-semibold text-sm truncate">
-                {user?.full_name || user?.email}
+          <Link to={createPageUrl('AdminSettings')} className="no-underline">
+            <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.05] cursor-pointer transition-all">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] rounded-xl flex items-center justify-center text-white font-bold text-sm">
+                AI
               </div>
-              <div className="text-[#64748b] text-xs">Admin</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-white font-semibold text-sm truncate">
+                  AI Paraplanner
+                </div>
+                <div className="text-[#64748b] text-xs">Admin</div>
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
 
