@@ -75,41 +75,59 @@ export default function AdviceGroupRiskProfiles() {
   };
 
   const handleSave = async () => {
-    console.log('handleSave called with formData:', formData);
-    try {
-      if (!formData.name.trim()) {
-        toast.error('Profile name is required');
-        return;
-      }
+        try {
+          console.log('1. handleSave called');
+          console.log('2. formData:', formData);
+          console.log('3. user:', user);
+          console.log('4. user.advice_group_id:', user?.advice_group_id);
 
-      if (!user?.advice_group_id) {
-        toast.error('Error: advice_group_id not found. Please reload the page.');
-        console.error('User object:', user);
-        return;
-      }
-      
-      if (editingProfile) {
-        await base44.entities.RiskProfile.update(editingProfile.id, {
-          ...formData,
-          advice_group_id: user.advice_group_id
-        });
-        toast.success('Risk profile updated');
-      } else {
-        await base44.entities.RiskProfile.create({
-          ...formData,
-          advice_group_id: user.advice_group_id
-        });
-        toast.success('Risk profile created');
-      }
-      setShowDialog(false);
-      setEditingProfile(null);
-      setFormData(getEmptyFormData());
-      loadData();
-    } catch (error) {
-      console.error('Save error:', error);
-      toast.error('Failed to save risk profile');
-    }
-  };
+          if (!formData.name.trim()) {
+            console.log('5. Name is empty, stopping');
+            toast.error('Profile name is required');
+            return;
+          }
+
+          if (!user?.advice_group_id) {
+            console.log('6. advice_group_id missing, stopping');
+            toast.error('Error: advice_group_id not found. Please reload the page.');
+            return;
+          }
+
+          console.log('7. About to save...');
+          const dataToSave = {
+            name: formData.name,
+            description: formData.description,
+            risk_level: formData.risk_level,
+            allocation: formData.allocation,
+            advice_group_id: user.advice_group_id
+          };
+          console.log('8. dataToSave:', dataToSave);
+
+          if (editingProfile) {
+            console.log('9. Updating profile...');
+            await base44.entities.RiskProfile.update(editingProfile.id, dataToSave);
+            console.log('10. Update successful');
+            toast.success('Risk profile updated');
+          } else {
+            console.log('9. Creating new profile...');
+            const result = await base44.entities.RiskProfile.create(dataToSave);
+            console.log('10. Create successful:', result);
+            toast.success('Risk profile created');
+          }
+
+          console.log('11. Closing dialog and reloading...');
+          setShowDialog(false);
+          setEditingProfile(null);
+          setFormData(getEmptyFormData());
+          await loadData();
+          console.log('12. Done!');
+        } catch (error) {
+          console.error('ERROR at some point:', error);
+          console.error('Error message:', error.message);
+          console.error('Full error:', error);
+          toast.error('Failed to save risk profile');
+        }
+      };
 
   const handleEdit = (profile) => {
     setEditingProfile(profile);
