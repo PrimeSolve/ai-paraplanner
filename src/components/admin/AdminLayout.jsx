@@ -155,9 +155,11 @@ export default function AdminLayout({ children, currentPage }) {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem>
-                  <User className="w-4 h-4 mr-3 text-[#64748b]" />
-                  My Profile
+                <DropdownMenuItem asChild>
+                  <Link to={createPageUrl('MyProfile')} className="flex items-center cursor-pointer">
+                    <User className="w-4 h-4 mr-3 text-[#64748b]" />
+                    My Profile
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Settings2 className="w-4 h-4 mr-3 text-[#64748b]" />
