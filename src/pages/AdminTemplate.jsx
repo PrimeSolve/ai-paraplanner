@@ -79,12 +79,15 @@ export default function AdminTemplate() {
       ]
     },
     {
-      group: 'implementation',
-      groupLabel: 'Implementation',
-      icon: '✅',
+      group: 'product-recommendations',
+      groupLabel: 'Product Recommendations',
+      icon: '🎯',
       sections: [
-        { id: 'action-plan', label: 'Action Plan', description: 'Steps to implement advice', status: 'configured' },
-        { id: 'timeline', label: 'Implementation Timeline', description: 'Proposed timeframe for actions', status: 'configured' }
+        { id: 'recommended-insurance-product', label: 'Recommended Insurance Product', description: 'Insurance recommendations', status: 'needs-comment', badge: 'Products' },
+        { id: 'insurance-super-comparison', label: 'Insurance Super Comparison', description: 'Inside vs outside super', status: 'needs-comment', badge: null },
+        { id: 'recommended-wealth-product', label: 'Recommended Wealth Product', description: 'Investment products', status: 'needs-comment', badge: 'Products' },
+        { id: 'recommended-portfolio', label: 'Recommended Portfolio', description: 'Portfolio recommendation', status: 'needs-comment', badge: 'Portfolio' },
+        { id: 'asset-allocation', label: 'Asset Allocation', description: 'Allocation breakdown', status: 'needs-comment', badge: 'Portfolio' }
       ]
     },
     {
