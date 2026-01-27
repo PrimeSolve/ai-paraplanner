@@ -8,8 +8,13 @@ import {
   FileText, 
   Target,
   Briefcase,
-  Settings
+  Settings,
+  ChevronDown,
+  User,
+  HelpCircle,
+  LogOut
 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function AdviceGroupLayout({ children, currentPage }) {
   const [user, setUser] = useState(null);
