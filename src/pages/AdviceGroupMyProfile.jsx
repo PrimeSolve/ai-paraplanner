@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import AdviceGroupLayout from '../components/advicegroup/AdviceGroupLayout';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
+import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
