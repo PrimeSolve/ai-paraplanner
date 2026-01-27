@@ -177,8 +177,8 @@ export default function AdviceGroupRiskProfiles() {
           <div className="space-y-3">
             {profiles.map((profile) => {
               const isExpanded = expandedId === profile.id;
-              const defensiveAlloc = (profile.allocation?.cash || 0) + (profile.allocation?.au_fixed_interest || 0) + (profile.allocation?.int_fixed_interest || 0);
-              const growthAlloc = (profile.allocation?.au_equities || 0) + (profile.allocation?.int_equities || 0) + (profile.allocation?.alternatives || 0);
+              const defensiveAlloc = (profile.allocation?.cash?.target || 0) + (profile.allocation?.au_fixed_interest?.target || 0) + (profile.allocation?.int_fixed_interest?.target || 0);
+               const growthAlloc = (profile.allocation?.au_equities?.target || 0) + (profile.allocation?.int_equities?.target || 0) + (profile.allocation?.alternatives?.target || 0);
               
               return (
                 <div
