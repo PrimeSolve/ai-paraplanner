@@ -339,7 +339,8 @@ export default function AdviceGroupMyProfile() {
             </Button>
           </div>
         </div>
-      </div>
-    </AdviceGroupLayout>
-  );
-}
+        </div>
+        </div>
+        </div>
+        );
+        }
