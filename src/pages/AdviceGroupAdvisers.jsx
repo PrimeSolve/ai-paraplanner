@@ -5,9 +5,10 @@ import { base44 } from '@/api/base44Client';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, User, HelpCircle, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Search, User, HelpCircle, LogOut, ChevronRight, Download, X } from 'lucide-react';
 import { toast } from 'sonner';
 import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function AdviceGroupAdvisers() {
   const [advisers, setAdvisers] = useState([]);
@@ -61,6 +62,18 @@ export default function AdviceGroupAdvisers() {
     a.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const avatarGradients = [
+    'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+    'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+    'linear-gradient(135deg, #10b981, #059669)',
+    'linear-gradient(135deg, #f97316, #ec4899)',
+    'linear-gradient(135deg, #06b6d4, #0891b2)',
+    'linear-gradient(135deg, #f59e0b, #d97706)',
+    'linear-gradient(135deg, #ef4444, #dc2626)',
+  ];
+
+  const getAvatarGradient = (index) => avatarGradients[index % avatarGradients.length];
+
   const stats = [
     { label: 'Total Advisers', value: advisers.length },
     { label: 'Active', value: advisers.filter(a => a.status === 'active' || !a.status).length },
@@ -109,18 +122,49 @@ export default function AdviceGroupAdvisers() {
         display: 'flex',
         flexDirection: 'column',
       }}>
-        {/* Header with User Profile */}
+        {/* Header */}
         <div style={{
           background: colors.core.white,
-          padding: '4px 32px',
+          padding: '20px 32px',
           borderBottom: `1px solid ${colors.core.greyLight}`,
           position: 'sticky',
           top: 0,
           zIndex: 50,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'flex-end',
+          justifyContent: 'space-between',
         }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', marginBottom: '4px' }}>
+              <Link to={createPageUrl('AdviceGroupDashboard')} style={{ color: colors.accent.blue, textDecoration: 'none' }}>Dashboard</Link>
+              <ChevronRight size={16} color={colors.core.grey} />
+              <span style={{ color: colors.core.slateLight }}>Advisers</span>
+            </div>
+            <h1 style={{ fontSize: '24px', fontWeight: 700, color: colors.core.navy, margin: 0 }}>Advisers</h1>
+            <p style={{ fontSize: '14px', color: colors.core.slateLight, marginTop: '4px', margin: 0 }}>Manage advisers in the {user?.advice_group_name || 'advice group'} network</p>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <Button variant="outline" style={{ padding: '8px 16px', borderRadius: '6px', border: `1px solid ${colors.core.greyLight}`, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Download size={16} />
+              Export
+            </Button>
+            <Button onClick={() => setShowInvite(true)} style={{
+              background: colors.accent.blue,
+              color: colors.core.white,
+              padding: '8px 16px',
+              borderRadius: '6px',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}>
+              <Plus size={16} />
+              Invite Adviser
+            </Button>
+          </div>
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -189,147 +233,87 @@ export default function AdviceGroupAdvisers() {
           padding: '32px',
         }}>
         
-        {/* Stats Cards */}
+        {/* Stats Pills */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '16px',
-          marginBottom: '32px',
+          display: 'flex',
+          gap: '12px',
+          marginBottom: '24px',
+          flexWrap: 'wrap',
         }}>
           {stats.map((stat, idx) => (
             <div key={idx} style={{
               background: colors.core.white,
               border: `1px solid ${colors.core.greyLight}`,
-              borderRadius: '12px',
-              padding: '16px',
+              borderRadius: '20px',
+              padding: '8px 16px',
+              fontSize: '13px',
+              color: colors.core.navy,
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
             }}>
-              <div style={{
-                fontSize: '12px',
-                color: colors.core.slateLight,
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                marginBottom: '8px',
-              }}>
-                {stat.label}
-              </div>
-              <div style={{
-                fontSize: '28px',
-                fontWeight: 700,
-                color: colors.core.navy,
-              }}>
-                {stat.value}
-              </div>
+              <span style={{ fontSize: '16px', fontWeight: 700 }}>{stat.value}</span>
+              {stat.label}
             </div>
           ))}
+        </div>
+
+        {/* Search and Filters - Above Table */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          marginBottom: '16px',
+        }}>
+          <div style={{ position: 'relative', width: '200px' }}>
+            <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: colors.core.slateLight }} />
+            <Input
+              placeholder="Search advisers..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ paddingLeft: '36px', height: '36px' }}
+            />
+          </div>
+          
+          <select style={{
+            height: '36px',
+            padding: '8px 12px',
+            border: `1px solid ${colors.core.greyLight}`,
+            borderRadius: '6px',
+            fontSize: '14px',
+            color: colors.core.navy,
+            background: colors.core.white,
+            cursor: 'pointer',
+          }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option>All Statuses</option>
+            <option>Active</option>
+            <option>Pending</option>
+          </select>
+
+          <select style={{
+            height: '36px',
+            padding: '8px 12px',
+            border: `1px solid ${colors.core.greyLight}`,
+            borderRadius: '6px',
+            fontSize: '14px',
+            color: colors.core.navy,
+            background: colors.core.white,
+            cursor: 'pointer',
+          }} value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option>Most Active</option>
+            <option>Least Active</option>
+            <option>Name A-Z</option>
+          </select>
         </div>
 
         {/* Advisers Table Card */}
         <div style={{
           background: colors.core.white,
-          borderRadius: '12px',
+          borderRadius: '16px',
           border: `1px solid ${colors.core.greyLight}`,
           overflow: 'hidden',
         }}>
-        
-        {/* Search and Filters */}
-        <div style={{
-          padding: '20px 24px',
-          borderBottom: `1px solid ${colors.core.greyLight}`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '16px',
-        }}>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flex: 1 }}>
-            <div style={{ position: 'relative', width: '200px' }}>
-              <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: colors.core.slateLight }} />
-              <Input
-                placeholder="Search advisers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ paddingLeft: '36px', height: '36px' }}
-              />
-            </div>
-            
-            <select style={{
-              height: '36px',
-              padding: '8px 12px',
-              border: `1px solid ${colors.core.greyLight}`,
-              borderRadius: '6px',
-              fontSize: '14px',
-              color: colors.core.navy,
-              background: colors.core.white,
-              cursor: 'pointer',
-            }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-              <option>All Statuses</option>
-              <option>Active</option>
-              <option>Pending</option>
-            </select>
-
-            <select style={{
-              height: '36px',
-              padding: '8px 12px',
-              border: `1px solid ${colors.core.greyLight}`,
-              borderRadius: '6px',
-              fontSize: '14px',
-              color: colors.core.navy,
-              background: colors.core.white,
-              cursor: 'pointer',
-            }} value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option>Most Active</option>
-              <option>Least Active</option>
-              <option>Name A-Z</option>
-            </select>
-          </div>
-
-          <Button onClick={() => setShowInvite(!showInvite)} style={{
-            background: colors.accent.blue,
-            color: colors.core.white,
-            padding: '8px 16px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 500,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            whiteSpace: 'nowrap',
-          }}>
-            <Plus size={16} />
-            Invite Adviser
-          </Button>
-        </div>
-
-        {showInvite && (
-          <div style={{
-            padding: '16px 24px',
-            borderBottom: `1px solid ${colors.core.greyLight}`,
-            background: colors.core.offWhite,
-          }}>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <Input
-                type="email"
-                placeholder="adviser@example.com"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                style={{ flex: 1, height: '36px' }}
-              />
-              <Button onClick={handleInvite} style={{
-                background: colors.accent.blue,
-                color: colors.core.white,
-                padding: '8px 16px',
-                borderRadius: '6px',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 500,
-              }}>
-                Send Invite
-              </Button>
-            </div>
-          </div>
-        )}
 
         <div style={{ overflowX: 'auto' }}>
           <table style={{
@@ -341,10 +325,10 @@ export default function AdviceGroupAdvisers() {
                 borderBottom: `1px solid ${colors.core.greyLight}`,
                 background: colors.core.offWhite,
               }}>
-                {['ADVISER', 'AB NUMBER', 'STATUS', 'ACTIVE SOAs', 'THIS MONTH', 'TOTAL SOAs', 'ACTIONS'].map(header => (
+                {['ADVISER', 'AR NUMBER', 'STATUS', 'ACTIVE SOAs', 'THIS MONTH', 'TOTAL SOAs', 'ACTIONS'].map(header => (
                   <th key={header} style={{
                     padding: '12px 16px',
-                    textAlign: 'left',
+                    textAlign: header !== 'ADVISER' && header !== 'STATUS' && header !== 'ACTIONS' ? 'center' : 'left',
                     fontSize: '11px',
                     fontWeight: 700,
                     color: colors.core.slateLight,
@@ -357,113 +341,160 @@ export default function AdviceGroupAdvisers() {
               </tr>
             </thead>
             <tbody>
-              {paginatedAdvisers.map((adviser) => (
-                <tr key={adviser.id} style={{
-                  borderBottom: `1px solid ${colors.core.greyLight}`,
-                  transition: 'background-color 0.2s ease',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = colors.core.offWhite}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                >
-                  <td style={{
-                    padding: '16px',
-                    fontSize: '14px',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '8px',
-                        background: `linear-gradient(135deg, ${colors.accent.blue}, ${colors.accent.purple})`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: colors.core.white,
-                        fontWeight: 600,
-                        fontSize: '14px',
-                      }}>
-                        {adviser.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || adviser.email?.charAt(0)}
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 600, color: colors.core.navy }}>{adviser.full_name || adviser.email}</div>
-                        <div style={{ fontSize: '12px', color: colors.core.slateLight }}>{adviser.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td style={{
-                    padding: '16px',
-                    fontSize: '14px',
-                    color: colors.core.navy,
-                  }}>
-                    08128756
-                  </td>
-                  <td style={{
-                    padding: '16px',
-                    fontSize: '14px',
-                  }}>
-                    <span style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      padding: '4px 10px',
-                      borderRadius: '4px',
-                      background: 'rgba(16, 185, 129, 0.1)',
-                      color: colors.accent.success,
-                      fontSize: '12px',
-                      fontWeight: 600,
+              {paginatedAdvisers.map((adviser, idx) => {
+                const isPending = adviser.status === 'pending';
+                return (
+                  <tr key={adviser.id} style={{
+                    borderBottom: `1px solid ${colors.core.greyLight}`,
+                    background: isPending ? 'rgba(245, 158, 11, 0.05)' : 'transparent',
+                    transition: 'background-color 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => !isPending && (e.currentTarget.style.background = colors.core.offWhite)}
+                  onMouseLeave={(e) => !isPending && (e.currentTarget.style.background = 'rgba(245, 158, 11, 0.05)')}
+                  >
+                    <td style={{
+                      padding: '16px',
+                      fontSize: '14px',
                     }}>
-                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: colors.accent.success }}></span>
-                      Active
-                    </span>
-                  </td>
-                  <td style={{
-                    padding: '16px',
-                    fontSize: '14px',
-                    color: colors.core.navy,
-                    fontWeight: 500,
-                  }}>
-                    5
-                  </td>
-                  <td style={{
-                    padding: '16px',
-                    fontSize: '14px',
-                    color: colors.core.navy,
-                    fontWeight: 500,
-                  }}>
-                    12
-                  </td>
-                  <td style={{
-                    padding: '16px',
-                    fontSize: '14px',
-                    color: colors.core.navy,
-                    fontWeight: 500,
-                  }}>
-                    89
-                  </td>
-                  <td style={{
-                    padding: '16px',
-                    fontSize: '14px',
-                    display: 'flex',
-                    gap: '8px',
-                  }}>
-                    <Button size="sm" variant="outline" style={{
-                      height: '32px',
-                      padding: '4px 12px',
-                      fontSize: '13px',
-                    }}>View</Button>
-                    <Button size="sm" style={{
-                      background: colors.accent.blue,
-                      color: colors.core.white,
-                      height: '32px',
-                      padding: '4px 12px',
-                      fontSize: '13px',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                    }}>SOAs</Button>
-                  </td>
-                </tr>
-              ))}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '8px',
+                          background: getAvatarGradient(idx),
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: colors.core.white,
+                          fontWeight: 600,
+                          fontSize: '14px',
+                        }}>
+                          {adviser.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || adviser.email?.charAt(0)}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 600, color: colors.core.navy }}>{adviser.full_name || adviser.email}</div>
+                          <div style={{ fontSize: '12px', color: colors.core.slateLight }}>{adviser.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{
+                      padding: '16px',
+                      fontSize: '14px',
+                      color: colors.core.navy,
+                      textAlign: 'center',
+                    }}>
+                      {isPending ? '—' : '08128756'}
+                    </td>
+                    <td style={{
+                      padding: '16px',
+                      fontSize: '14px',
+                    }}>
+                      {isPending ? (
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '4px 10px',
+                          borderRadius: '4px',
+                          background: 'rgba(245, 158, 11, 0.1)',
+                          color: '#d97706',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                        }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b' }}></span>
+                          Pending Invite
+                        </span>
+                      ) : (
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '4px 10px',
+                          borderRadius: '4px',
+                          background: 'rgba(16, 185, 129, 0.1)',
+                          color: colors.accent.success,
+                          fontSize: '12px',
+                          fontWeight: 600,
+                        }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: colors.accent.success }}></span>
+                          Active
+                        </span>
+                      )}
+                    </td>
+                    <td style={{
+                      padding: '16px',
+                      fontSize: '14px',
+                      color: colors.core.navy,
+                      fontWeight: 500,
+                      textAlign: 'center',
+                    }}>
+                      {isPending ? '—' : '5'}
+                    </td>
+                    <td style={{
+                      padding: '16px',
+                      fontSize: '14px',
+                      color: colors.core.navy,
+                      fontWeight: 500,
+                      textAlign: 'center',
+                    }}>
+                      {isPending ? '—' : '12'}
+                    </td>
+                    <td style={{
+                      padding: '16px',
+                      fontSize: '14px',
+                      color: colors.core.navy,
+                      fontWeight: 500,
+                      textAlign: 'center',
+                    }}>
+                      {isPending ? '—' : '89'}
+                    </td>
+                    <td style={{
+                      padding: '16px',
+                      fontSize: '14px',
+                    }}>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {isPending ? (
+                          <>
+                            <Button size="sm" variant="outline" style={{
+                              height: '32px',
+                              padding: '4px 12px',
+                              fontSize: '13px',
+                            }}>Resend</Button>
+                            <Button size="sm" style={{
+                              background: colors.accent.error,
+                              color: colors.core.white,
+                              height: '32px',
+                              padding: '4px 12px',
+                              fontSize: '13px',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                            }}>Cancel</Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button size="sm" variant="outline" style={{
+                              height: '32px',
+                              padding: '4px 12px',
+                              fontSize: '13px',
+                            }}>View</Button>
+                            <Button size="sm" style={{
+                              background: colors.accent.blue,
+                              color: colors.core.white,
+                              height: '32px',
+                              padding: '4px 12px',
+                              fontSize: '13px',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                            }}>SOAs</Button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
