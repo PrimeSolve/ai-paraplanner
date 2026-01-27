@@ -34,8 +34,9 @@ export default function AdminTemplate() {
       groupLabel: 'Executive Summary & Scope',
       icon: '📋',
       sections: [
-        { id: 'executive-summary', label: 'Executive Summary', description: 'High-level overview of recommendations', status: 'configured' },
-        { id: 'subject-matter', label: 'Subject Matter - Financial Needs & Objectives', description: "Client's stated goals and objectives", status: 'needs-comment' }
+        { id: 'executive-summary', label: 'Executive Summary', description: 'High-level overview of recommendations', status: 'configured', badge: null },
+        { id: 'subject-matter', label: 'Subject Matter - Financial Needs & Objectives', description: "Client's stated goals and objectives", status: 'needs-comment', badge: null },
+        { id: 'scope-of-advice', label: 'Scope of Advice', description: "What this advice covers and doesn't cover", status: 'needs-comment', badge: null }
       ]
     },
     {
