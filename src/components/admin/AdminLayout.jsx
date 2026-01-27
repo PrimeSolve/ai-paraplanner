@@ -82,8 +82,13 @@ export default function AdminLayout({ children, currentPage }) {
             <div className="w-10 h-10 bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] rounded-xl flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-900/30">
               AI
             </div>
-            <div className="font-['Playfair_Display'] text-xl font-semibold">
-              AI <span className="text-[#22d3ee]">Paraplanner</span>
+            <div>
+              <div className="font-['Playfair_Display'] text-xl font-semibold">
+                AI <span className="text-[#22d3ee]">Paraplanner</span>
+              </div>
+              <div className="text-[#64748b] text-xs font-medium">
+                Admin portal
+              </div>
             </div>
           </Link>
         </div>
