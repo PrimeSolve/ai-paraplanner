@@ -118,8 +118,50 @@ export default function AdviceGroupLayout({ children, currentPage }) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 ml-64">
-        {children}
+      <div className="flex-1 ml-64 flex flex-col">
+        {/* Top User Bar */}
+        <div className="bg-white border-b border-[#e2e8f0] px-8 py-1 flex justify-end">
+          {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 px-3 py-2 bg-white border border-[#e2e8f0] rounded-lg hover:bg-[#f8fafc] transition-colors">
+                  {user.profile_image_url ? (
+                    <img src={user.profile_image_url} alt="Profile" className="w-8 h-8 rounded-lg object-cover" />
+                  ) : (
+                    <div className="w-8 h-8 bg-[#8b5cf6] rounded-lg flex items-center justify-center text-white text-sm font-semibold">
+                      {(user.display_name || user.full_name) ? 
+                        (user.display_name || user.full_name).split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 
+                        user.email?.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="font-medium text-[#0f172a]">{user.display_name || user.full_name || user.email}</span>
+                  <ChevronDown className="w-4 h-4 text-[#64748b]" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link to={createPageUrl('MyProfile')} className="flex items-center cursor-pointer">
+                    <User className="w-4 h-4 mr-3 text-[#64748b]" />
+                    My Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <HelpCircle className="w-4 h-4 mr-3 text-[#64748b]" />
+                  Help & Support
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => base44.auth.logout()}>
+                  <LogOut className="w-4 h-4 mr-3 text-[#64748b]" />
+                  Log Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+        
+        <div className="flex-1">
+          {children}
+        </div>
       </div>
     </div>
   );
