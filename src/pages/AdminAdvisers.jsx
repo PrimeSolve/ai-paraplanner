@@ -81,28 +81,19 @@ export default function AdminAdvisers() {
 
   return (
     <AdminLayout currentPage="AdminAdvisers">
-      <div className="bg-white border-b border-slate-200 px-8 py-5 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
+      <div className="p-8">
+        <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="font-['Playfair_Display'] text-2xl font-semibold text-[#0f172a]">
               Advisers
             </h1>
             <p className="text-sm text-[#64748b] mt-1">Manage all advisers across advice groups</p>
           </div>
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-              <Download className="w-4 h-4" />
-              Export
-            </button>
-            <button className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
-              PrimeSolve Group
-              <ChevronDown className="w-4 h-4" />
-            </button>
-          </div>
+          <button className="flex items-center gap-2 px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+            <Download className="w-4 h-4" />
+            Export
+          </button>
         </div>
-      </div>
-
-      <div className="p-8">
         {/* Stats */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white">

@@ -74,9 +74,8 @@ export default function AdminClients() {
 
   return (
     <AdminLayout currentPage="AdminClients">
-      {/* Header */}
-      <div className="bg-white px-8 py-5 border-b border-slate-200 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
+      <div className="p-8">
+        <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="font-['Playfair_Display'] text-2xl font-semibold text-[#0f172a] mb-1">
               All Clients
@@ -88,9 +87,6 @@ export default function AdminClients() {
             Export
           </button>
         </div>
-      </div>
-
-      <div className="p-8">
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white">
