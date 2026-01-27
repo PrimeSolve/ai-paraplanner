@@ -10,14 +10,88 @@ import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
 import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 
 export default function AdviceGroupSOATemplate() {
-  const [template, setTemplate] = useState(null);
   const [adminTemplate, setAdminTemplate] = useState(null);
+  const [groupTemplate, setGroupTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
-  const [expandedGroups, setExpandedGroups] = useState(['getting-started']);
+  const [expandedGroups, setExpandedGroups] = useState(['welcome-intro', 'executive-summary']);
+  const [sections, setSections] = useState([]);
+
+  const defaultSections = [
+    {
+      group: 'welcome-intro',
+      groupLabel: 'Welcome & Introduction',
+      icon: '👋',
+      sections: [
+        { id: 'cover-letter', label: 'Cover Letter', description: 'Personalised introduction letter to the client', status: 'configured' },
+        { id: 'cover-page', label: 'Cover Page', description: 'Title page with client and adviser details', status: 'configured' },
+        { id: 'how-to-read', label: 'How to Read This Document', description: 'Guide for navigating the SOA', status: 'needs-comment' }
+      ]
+    },
+    {
+      group: 'executive-summary',
+      groupLabel: 'Executive Summary & Scope',
+      icon: '📋',
+      sections: [
+        { id: 'executive-summary', label: 'Executive Summary', description: 'High-level overview of recommendations', status: 'configured', badge: null },
+        { id: 'subject-matter', label: 'Subject Matter - Financial Needs & Objectives', description: "Client's stated goals and objectives", status: 'needs-comment', badge: null },
+        { id: 'scope-of-advice', label: 'Scope of Advice', description: "What this advice covers and doesn't cover", status: 'needs-comment', badge: null }
+      ]
+    },
+    {
+      group: 'relevant-circumstances',
+      groupLabel: 'Relevant Circumstances & Current Situation',
+      icon: '👤',
+      sections: [
+        { id: 'relevant-circumstances', label: 'Relevant Circumstances', description: 'Key factors considered', status: 'needs-comment', badge: null },
+        { id: 'personal-information', label: 'Personal Information', description: 'Demographics and life situation', status: 'needs-comment', badge: 'Fact Find' },
+        { id: 'dependants', label: 'Dependants', description: "Client's dependants", status: 'needs-comment', badge: 'Fact Find' },
+        { id: 'insurance-in-force', label: 'Insurance in Force', description: 'Existing coverage', status: 'needs-comment', badge: 'Insurance' },
+        { id: 'estate-planning', label: 'Estate Planning', description: 'Current arrangements', status: 'needs-comment', badge: null },
+        { id: 'financial-position', label: 'Financial Position', description: 'Assets and liabilities', status: 'needs-comment', badge: 'Fact Find' },
+        { id: 'cash-flow-statement', label: 'Cash Flow Statement', description: 'Income and expenses', status: 'needs-comment', badge: 'Cashflow' },
+        { id: 'tax-position', label: 'Tax Position', description: 'Current tax situation', status: 'needs-comment', badge: null }
+      ]
+    },
+    {
+      group: 'recommendations',
+      groupLabel: 'Recommended Strategies',
+      icon: '💡',
+      sections: [
+        { id: 'wealth-asset-protection', label: 'Wealth & Asset Protection', description: 'Insurance strategies', status: 'needs-comment', badge: null },
+        { id: 'insurance-needs-analysis', label: 'Insurance Needs Analysis', description: 'Requirements analysis', status: 'needs-comment', badge: 'Insurance' },
+        { id: 'recommended-insurance-cover', label: 'Recommended Insurance Cover', description: 'Coverage amounts', status: 'needs-comment', badge: 'Insurance' },
+        { id: 'debt-management', label: 'Debt Management', description: 'Debt strategies', status: 'needs-comment', badge: null },
+        { id: 'wealth-accumulation', label: 'Wealth Accumulation', description: 'Investment strategies', status: 'needs-comment', badge: null },
+        { id: 'retirement-planning', label: 'Retirement Planning', description: 'Retirement preparation', status: 'needs-comment', badge: null }
+      ]
+    },
+    {
+      group: 'product-recommendations',
+      groupLabel: 'Product Recommendations',
+      icon: '🎯',
+      sections: [
+        { id: 'recommended-insurance-product', label: 'Recommended Insurance Product', description: 'Insurance recommendations', status: 'needs-comment', badge: 'Products' },
+        { id: 'recommended-wealth-product', label: 'Recommended Wealth Product', description: 'Investment products', status: 'needs-comment', badge: 'Products' },
+        { id: 'recommended-portfolio', label: 'Recommended Portfolio', description: 'Portfolio recommendation', status: 'needs-comment', badge: 'Portfolio' }
+      ]
+    },
+    {
+      group: 'fees-disclosure',
+      groupLabel: 'Fees & Disclosure',
+      icon: '💰',
+      sections: [
+        { id: 'adviser-fee-disclosure', label: 'Adviser Fee Disclosure', description: 'Full fee disclosure', status: 'needs-comment', badge: null },
+        { id: 'commissions', label: 'Commissions', description: 'Commission disclosure', status: 'needs-comment', badge: null },
+        { id: 'disclaimer', label: 'Disclaimer', description: 'Legal disclaimers', status: 'needs-comment', badge: null },
+        { id: 'how-to-proceed', label: 'How to Proceed', description: 'Next steps', status: 'needs-comment', badge: null }
+      ]
+    }
+  ];
 
   useEffect(() => {
+    setSections(defaultSections);
     loadTemplates();
   }, []);
 
@@ -26,20 +100,18 @@ export default function AdviceGroupSOATemplate() {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
 
-      // Load admin template (base)
       const adminTemplates = await base44.entities.SOATemplate.filter({ owner_type: 'admin' });
       if (adminTemplates[0]) {
         setAdminTemplate(adminTemplates[0]);
       }
 
-      // Load group template if exists
       if (currentUser.advice_group_id) {
         const groupTemplates = await base44.entities.SOATemplate.filter({
           owner_type: 'advice_group',
           advice_group_id: currentUser.advice_group_id
         });
         if (groupTemplates[0]) {
-          setTemplate(groupTemplates[0]);
+          setGroupTemplate(groupTemplates[0]);
         }
       }
     } catch (error) {
@@ -52,10 +124,8 @@ export default function AdviceGroupSOATemplate() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const sections = adminTemplate?.sections || [];
-      
-      if (template?.id) {
-        await base44.entities.SOATemplate.update(template.id, { sections });
+      if (groupTemplate?.id) {
+        await base44.entities.SOATemplate.update(groupTemplate.id, { sections });
       } else {
         await base44.entities.SOATemplate.create({
           owner_type: 'advice_group',
