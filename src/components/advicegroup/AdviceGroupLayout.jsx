@@ -141,10 +141,7 @@ export default function AdviceGroupLayout({ children, currentPage }) {
                         user.email?.slice(0, 2).toUpperCase()}
                     </div>
                   )}
-                  <div className="text-left">
-                    <span className="font-medium text-[#0f172a] block">{user.display_name || user.full_name || user.email}</span>
-                    <span className="text-xs text-[#64748b]">Advice Group</span>
-                  </div>
+                  <span className="font-medium text-[#0f172a]">{user.display_name || user.full_name || user.email}</span>
                   <ChevronDown className="w-4 h-4 text-[#64748b]" />
                 </button>
               </DropdownMenuTrigger>
