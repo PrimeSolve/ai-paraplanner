@@ -1,22 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Building2, Mail, Phone } from 'lucide-react';
+import { Settings, Bell, Palette, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
 import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 
 export default function AdviceGroupSettings() {
+  const [activeTab, setActiveTab] = useState('general');
+  const [user, setUser] = useState(null);
+  const [adviceGroup, setAdviceGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [user, setUser] = useState(null);
-  const [group, setGroup] = useState(null);
+
   const [formData, setFormData] = useState({
     name: '',
     contact_email: '',
@@ -26,9 +24,12 @@ export default function AdviceGroupSettings() {
       city: '',
       state: '',
       postcode: '',
-      country: 'Australia'
-    }
+      country: ''
+    },
+    logo_url: ''
   });
+
+  const [logoFile, setLogoFile] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -39,187 +40,320 @@ export default function AdviceGroupSettings() {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
 
-      if (currentUser.advice_group_id) {
-        const groups = await base44.entities.AdviceGroup.filter({ id: currentUser.advice_group_id });
-        if (groups[0]) {
-          setGroup(groups[0]);
+      let groupId = currentUser.advice_group_id;
+      if (!groupId) {
+        const groups = await base44.entities.AdviceGroup.list('created_date', 1);
+        if (groups.length > 0) {
+          groupId = groups[0].id;
+        }
+      }
+
+      if (groupId) {
+        const groups = await base44.entities.AdviceGroup.filter({ id: groupId });
+        if (groups.length > 0) {
+          const group = groups[0];
+          setAdviceGroup(group);
           setFormData({
-            name: groups[0].name || '',
-            contact_email: groups[0].contact_email || '',
-            contact_phone: groups[0].contact_phone || '',
-            address: groups[0].address || {
-              street: '',
-              city: '',
-              state: '',
-              postcode: '',
-              country: 'Australia'
-            }
+            name: group.name || '',
+            contact_email: group.contact_email || '',
+            contact_phone: group.contact_phone || '',
+            address: group.address || { street: '', city: '', state: '', postcode: '', country: '' },
+            logo_url: group.logo_url || ''
           });
         }
       }
     } catch (error) {
-      console.error('Failed to load group:', error);
+      console.error('Failed to load settings:', error);
+      toast.error('Failed to load settings');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSave = async () => {
-    setSaving(true);
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     try {
-      if (group?.id) {
-        await base44.entities.AdviceGroup.update(group.id, formData);
-        toast.success('Settings saved successfully');
-        loadData();
-      }
+      const uploadedFile = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({ ...prev, logo_url: uploadedFile.file_url }));
+      setLogoFile(URL.createObjectURL(file));
+      toast.success('Logo uploaded');
     } catch (error) {
+      console.error('Upload failed:', error);
+      toast.error('Failed to upload logo');
+    }
+  };
+
+  const handleSave = async () => {
+    if (!adviceGroup?.id) {
+      toast.error('No advice group found');
+      return;
+    }
+
+    if (!formData.name.trim()) {
+      toast.error('Business name is required');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await base44.entities.AdviceGroup.update(adviceGroup.id, formData);
+      toast.success('Settings saved');
+      await loadData();
+    } catch (error) {
+      console.error('Save failed:', error);
       toast.error('Failed to save settings');
     } finally {
       setSaving(false);
     }
   };
 
-  const colors = {
-    core: {
-      navy: '#1e293b',
-      slate: '#475569',
-      slateLight: '#64748b',
-      grey: '#94a3b8',
-      greyLight: '#e2e8f0',
-      offWhite: '#f8fafc',
-      white: '#ffffff',
-    },
-    accent: {
-      blue: '#3b82f6',
-      blueDeep: '#1d4ed8',
-      success: '#10b981',
-      warning: '#f59e0b',
-      error: '#ef4444',
-      coral: '#f97316',
-      purple: '#8b5cf6',
-      pink: '#ec4899',
-      cyan: '#06b6d4',
-    }
-  };
+  if (loading) {
+    return (
+      <div className="flex">
+        <AdviceGroupSidebar currentPage="settings" />
+        <div style={{ marginLeft: '260px', flex: 1 }}>
+          <AdviceGroupHeader user={user} />
+          <div className="p-8 flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const tabs = [
+    { id: 'general', label: 'General', icon: Settings },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'branding', label: 'Branding', icon: Palette },
+    { id: 'permissions', label: 'Permissions', icon: Lock }
+  ];
 
   return (
-    <div style={{
-      display: 'flex',
-      minHeight: '100vh',
-      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-      background: colors.core.offWhite,
-    }}>
+    <div className="flex">
       <AdviceGroupSidebar currentPage="settings" />
 
-      <div style={{
-        marginLeft: '260px',
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
+      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
         <AdviceGroupHeader user={user} />
 
-        {/* Main Content */}
-        <div style={{
-          flex: 1,
-          padding: '32px',
-        }}>
-          <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="w-5 h-5" />
-                Business Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Business Name</Label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  placeholder="Your Advice Group"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Contact Email</Label>
-                  <Input
-                    type="email"
-                    value={formData.contact_email}
-                    onChange={(e) => setFormData({...formData, contact_email: e.target.value})}
-                    placeholder="info@example.com"
-                  />
-                </div>
-                <div>
-                  <Label>Contact Phone</Label>
-                  <Input
-                    type="tel"
-                    value={formData.contact_phone}
-                    onChange={(e) => setFormData({...formData, contact_phone: e.target.value})}
-                    placeholder="+61 2 1234 5678"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="p-8 flex-1 bg-gradient-to-br from-slate-50 to-slate-100">
+          <div style={{ display: 'flex', gap: '32px' }}>
+            {/* Settings Tabs */}
+            <div style={{ width: '220px', flexShrink: 0 }}>
+              {tabs.map(tab => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px 16px',
+                      borderRadius: '10px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: activeTab === tab.id ? '#3b82f6' : '#475569',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      marginBottom: '4px',
+                      border: 'none',
+                      background: activeTab === tab.id ? 'white' : 'transparent',
+                      width: '100%',
+                      textAlign: 'left',
+                      boxShadow: activeTab === tab.id ? '0 2px 8px rgba(0, 0, 0, 0.06)' : 'none'
+                    }}
+                  >
+                    <Icon size={20} />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Business Address</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Street Address</Label>
-                <Input
-                  value={formData.address?.street || ''}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    address: {...formData.address, street: e.target.value}
-                  })}
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
+            {/* Settings Content */}
+            <div style={{ flex: 1 }}>
+              {activeTab === 'general' && (
                 <div>
-                  <Label>City</Label>
-                  <Input
-                    value={formData.address?.city || ''}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      address: {...formData.address, city: e.target.value}
-                    })}
-                  />
-                </div>
-                <div>
-                  <Label>State</Label>
-                  <Input
-                    value={formData.address?.state || ''}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      address: {...formData.address, state: e.target.value}
-                    })}
-                  />
-                </div>
-                <div>
-                  <Label>Postcode</Label>
-                  <Input
-                    value={formData.address?.postcode || ''}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      address: {...formData.address, postcode: e.target.value}
-                    })}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          </div>
+                  {/* Business Details Card */}
+                  <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden', marginBottom: '24px' }}>
+                    <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+                        Business Details
+                      </h3>
+                      <p style={{ fontSize: '14px', color: '#64748b' }}>
+                        Manage your advice group's business information
+                      </p>
+                    </div>
+                    <div style={{ padding: '24px' }}>
+                      <div style={{ marginBottom: '24px' }}>
+                        <Label className="text-sm font-bold">Business Name</Label>
+                        <Input
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          className="mt-2"
+                        />
+                      </div>
 
-          <div className="flex justify-end gap-3 mt-6">
-            <Button variant="outline" onClick={loadData}>Cancel</Button>
-            <Button onClick={handleSave} disabled={saving} className="bg-cyan-600 hover:bg-cyan-700">
-              {saving ? 'Saving...' : 'Save Changes'}
-            </Button>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+                        <div>
+                          <Label className="text-sm font-bold">Contact Email</Label>
+                          <Input
+                            type="email"
+                            value={formData.contact_email}
+                            onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                            className="mt-2"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-bold">Contact Phone</Label>
+                          <Input
+                            value={formData.contact_phone}
+                            onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+                            className="mt-2"
+                          />
+                        </div>
+                      </div>
+
+                      <div style={{ marginBottom: '24px' }}>
+                        <Label className="text-sm font-bold">Business Address</Label>
+                        <Input
+                          value={formData.address.street}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            address: { ...formData.address, street: e.target.value }
+                          })}
+                          placeholder="Street address"
+                          className="mt-2 mb-2"
+                        />
+                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '12px' }}>
+                          <Input
+                            value={formData.address.city}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              address: { ...formData.address, city: e.target.value }
+                            })}
+                            placeholder="City"
+                          />
+                          <Input
+                            value={formData.address.state}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              address: { ...formData.address, state: e.target.value }
+                            })}
+                            placeholder="State"
+                          />
+                          <Input
+                            value={formData.address.postcode}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              address: { ...formData.address, postcode: e.target.value }
+                            })}
+                            placeholder="Postcode"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Logo Card */}
+                  <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden', marginBottom: '24px' }}>
+                    <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+                        Logo
+                      </h3>
+                      <p style={{ fontSize: '14px', color: '#64748b' }}>
+                        Upload your business logo for SOA documents
+                      </p>
+                    </div>
+                    <div style={{ padding: '24px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <div
+                          style={{
+                            width: '80px',
+                            height: '80px',
+                            background: '#f8fafc',
+                            border: '2px dashed #e2e8f0',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '32px',
+                            color: '#94a3b8',
+                            overflow: 'hidden'
+                          }}
+                        >
+                          {logoFile || formData.logo_url ? (
+                            <img
+                              src={logoFile || formData.logo_url}
+                              alt="Logo"
+                              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                            />
+                          ) : (
+                            '📷'
+                          )}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <label htmlFor="logo-input">
+                            <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                              <span>📤 Upload Logo</span>
+                            </Button>
+                          </label>
+                          <input
+                            id="logo-input"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            style={{ display: 'none' }}
+                          />
+                          <p style={{ fontSize: '12px', color: '#64748b' }}>
+                            PNG, JPG up to 2MB. Recommended 200x200px
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Save Button */}
+                  <Button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {saving ? 'Saving...' : '💾 Save Changes'}
+                  </Button>
+                </div>
+              )}
+
+              {activeTab === 'notifications' && (
+                <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '20px' }}>
+                    Notification Settings
+                  </h3>
+                  <p style={{ color: '#64748b' }}>Notification settings coming soon...</p>
+                </div>
+              )}
+
+              {activeTab === 'branding' && (
+                <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '20px' }}>
+                    Branding Settings
+                  </h3>
+                  <p style={{ color: '#64748b' }}>Branding settings coming soon...</p>
+                </div>
+              )}
+
+              {activeTab === 'permissions' && (
+                <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '20px' }}>
+                    Permission Settings
+                  </h3>
+                  <p style={{ color: '#64748b' }}>Permission settings coming soon...</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
