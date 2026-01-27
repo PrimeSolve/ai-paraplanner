@@ -238,12 +238,12 @@ export default function AdviceGroupRiskProfiles() {
                     {isExpanded && (
                       <div className="border-t border-slate-200 p-4 bg-slate-50">
                         {/* Asset Allocation Section */}
-                        <div className="mb-6">
-                          <div className="flex items-center justify-between mb-4">
-                            <h4 className="font-bold text-slate-900 flex items-center gap-2">
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="text-sm font-semibold text-slate-900">
                               📊 Asset Allocation
                             </h4>
-                            <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-full">
+                            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
                               Target Total: 100%
                             </span>
                           </div>
