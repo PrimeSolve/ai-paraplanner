@@ -152,8 +152,8 @@ export default function AdminLayout({ children, currentPage }) {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 px-3 py-2 bg-white border border-[#e2e8f0] rounded-lg hover:bg-[#f8fafc] transition-colors">
                   <div className="w-8 h-8 bg-[#8b5cf6] rounded-lg flex items-center justify-center text-white text-sm font-semibold">
-                    {user.full_name ? 
-                      user.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 
+                    {(user.display_name || user.full_name) ? 
+                      (user.display_name || user.full_name).split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 
                       user.email?.slice(0, 2).toUpperCase()}
                   </div>
                   <span className="font-medium text-[#0f172a]">{user.display_name || user.full_name || user.email}</span>
