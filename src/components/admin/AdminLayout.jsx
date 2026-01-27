@@ -15,6 +15,7 @@ import {
 
 export default function AdminLayout({ children, currentPage }) {
   const [user, setUser] = useState(null);
+  const [businessDetails, setBusinessDetails] = useState(null);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -26,6 +27,17 @@ export default function AdminLayout({ children, currentPage }) {
       }
     };
     loadUser();
+    
+    const loadBusinessDetails = () => {
+      const saved = localStorage.getItem('businessDetails');
+      if (saved) {
+        setBusinessDetails(JSON.parse(saved));
+      }
+    };
+    loadBusinessDetails();
+    
+    window.addEventListener('storage', loadBusinessDetails);
+    return () => window.removeEventListener('storage', loadBusinessDetails);
   }, []);
 
   const navItems = [
@@ -105,14 +117,14 @@ export default function AdminLayout({ children, currentPage }) {
           <Link to={createPageUrl('AdminSettings')} className="no-underline">
             <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.05] cursor-pointer transition-all">
               <div className="w-10 h-10 bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] rounded-xl flex items-center justify-center text-white font-bold text-sm">
-                AI
+                {businessDetails?.companyName?.charAt(0) || 'AI'}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-white font-semibold text-sm truncate">
-                  AI Paraplanner
+                  {businessDetails?.companyName || 'AI Paraplanner'}
                 </div>
                 <div className="text-[#64748b] text-xs capitalize">
-                  {user?.role === 'advice_group' ? 'Advice Group' : user?.role || 'Admin'}
+                  {businessDetails?.role === 'advice_group' ? 'Advice Group' : businessDetails?.role || 'Admin'}
                 </div>
               </div>
             </div>

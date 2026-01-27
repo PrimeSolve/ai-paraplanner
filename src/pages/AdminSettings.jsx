@@ -26,13 +26,16 @@ export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState('business');
   const [logoPreview, setLogoPreview] = useState(null);
   
-  const [businessDetails, setBusinessDetails] = useState({
-    companyName: 'AI Paraplanner',
-    abn: '12 345 678 901',
-    businessEmail: 'hello@aiparaplanner.com.au',
-    supportEmail: 'support@aiparaplanner.com.au',
-    address: 'Level 10, 123 Collins Street\nMelbourne VIC 3000',
-    role: 'admin'
+  const [businessDetails, setBusinessDetails] = useState(() => {
+    const saved = localStorage.getItem('businessDetails');
+    return saved ? JSON.parse(saved) : {
+      companyName: 'AI Paraplanner',
+      abn: '12 345 678 901',
+      businessEmail: 'hello@aiparaplanner.com.au',
+      supportEmail: 'support@aiparaplanner.com.au',
+      address: 'Level 10, 123 Collins Street\nMelbourne VIC 3000',
+      role: 'admin'
+    };
   });
 
   const [slaTargets, setSlaTargets] = useState([
