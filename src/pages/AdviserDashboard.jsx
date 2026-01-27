@@ -28,18 +28,27 @@ export default function AdviserDashboard() {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
 
-      const [clients, soas, factFinds] = await Promise.all([
-        base44.entities.Client.filter({ adviser_email: currentUser.email }),
+      const [clientsList, soas, factFinds] = await Promise.all([
+        base44.entities.Client.filter({ adviser_email: currentUser.email }, '-updated_date', 5),
         base44.entities.SOARequest.filter({ created_by: currentUser.email }),
         base44.entities.FactFind.filter({ assigned_adviser: currentUser.email })
       ]);
 
+      setClients(clientsList);
       setStats({
-        totalClients: clients.length,
+        totalClients: clientsList.length,
+        pendingFactFinds: factFinds.filter(f => f.status !== 'submitted' && f.status !== 'completed').length,
         activeSOAs: soas.filter(s => s.status === 'in_progress').length,
-        completedSOAs: soas.filter(s => s.status === 'completed').length,
-        pendingFactFinds: factFinds.filter(f => f.status !== 'submitted').length
+        readyForDownload: soas.filter(s => s.status === 'completed').length
       });
+
+      // Mock recent activity
+      const activities = [
+        { type: 'factfind', name: 'John Smith', action: 'completed their Fact Find', time: '2 hrs ago', icon: '📋' },
+        { type: 'soa', name: 'Sarah Jones', action: 'is ready for download', time: '5 hrs ago', icon: '✅' },
+        { type: 'factfind', name: 'David Wilson', action: 'sent to', time: 'Yesterday', icon: '📤' }
+      ];
+      setRecentActivity(activities);
     } catch (error) {
       console.error('Failed to load stats:', error);
     } finally {
