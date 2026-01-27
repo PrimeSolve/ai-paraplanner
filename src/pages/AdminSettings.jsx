@@ -271,7 +271,13 @@ export default function AdminSettings() {
                   </div>
 
                   <div className="pt-4 border-t border-[#e2e8f0]">
-                    <Button className="bg-[#0f172a] hover:bg-[#1e293b] text-white">
+                    <Button 
+                      className="bg-[#0f172a] hover:bg-[#1e293b] text-white"
+                      onClick={() => {
+                        localStorage.setItem('businessDetails', JSON.stringify(businessDetails));
+                        window.dispatchEvent(new Event('storage'));
+                      }}
+                    >
                       Save Changes
                     </Button>
                   </div>
