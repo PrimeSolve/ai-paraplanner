@@ -512,7 +512,7 @@ export default function AdviceGroupAdvisers() {
           <div>
             Showing {filteredAdvisers.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredAdvisers.length)} of {filteredAdvisers.length} advisers
           </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
             <button 
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
@@ -523,11 +523,17 @@ export default function AdviceGroupAdvisers() {
                 background: colors.core.white,
                 cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
                 opacity: currentPage === 1 ? 0.5 : 1,
+                fontSize: '12px',
               }}
             >
               ← Prev
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+              if (totalPages <= 5) return i + 1;
+              if (currentPage <= 3) return i + 1;
+              if (currentPage >= totalPages - 2) return totalPages - 4 + i;
+              return currentPage - 2 + i;
+            }).map(page => (
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
@@ -540,6 +546,7 @@ export default function AdviceGroupAdvisers() {
                   color: page === currentPage ? colors.core.white : colors.core.navy,
                   fontWeight: page === currentPage ? 600 : 500,
                   cursor: 'pointer',
+                  fontSize: '12px',
                 }}
               >
                 {page}
@@ -555,12 +562,47 @@ export default function AdviceGroupAdvisers() {
                 background: colors.core.white,
                 cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
                 opacity: currentPage === totalPages ? 0.5 : 1,
+                fontSize: '12px',
               }}
             >
               Next →
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Invite Modal */}
+      <Dialog open={showInvite} onOpenChange={setShowInvite}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Invite New Adviser</DialogTitle>
+          </DialogHeader>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: colors.core.navy }}>Email Address</label>
+              <Input
+                type="email"
+                placeholder="adviser@example.com"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                style={{ height: '40px' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <Button variant="outline" onClick={() => { setShowInvite(false); setInviteEmail(''); }}>
+                Cancel
+              </Button>
+              <Button onClick={handleInvite} style={{
+                background: colors.accent.blue,
+                color: colors.core.white,
+                border: 'none',
+              }}>
+                Send Invite
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       </div>
       </div>
       </div>
