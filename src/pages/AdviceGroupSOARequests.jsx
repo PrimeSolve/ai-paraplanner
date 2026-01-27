@@ -11,11 +11,22 @@ import { LayoutGrid, FileText, CheckCircle, Users, Tag, PlusCircle, Settings, Us
 export default function AdviceGroupSOARequests() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
     loadRequests();
+    loadUser();
   }, []);
+
+  const loadUser = async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+    } catch (error) {
+      console.error('Failed to load user:', error);
+    }
+  };
 
   const loadRequests = async () => {
     try {
@@ -475,7 +486,8 @@ export default function AdviceGroupSOARequests() {
             </Card>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
-    </AdviceGroupLayout>
+    </div>
   );
 }
