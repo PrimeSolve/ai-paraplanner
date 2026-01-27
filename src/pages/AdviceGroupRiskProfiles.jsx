@@ -413,9 +413,9 @@ export default function AdviceGroupRiskProfiles() {
                      </tr>
                      <tr className="border-b border-slate-200">
                        <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#F59E0B'}}></span>Australian Equity</span></td>
-                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.au_equities?.target || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, au_equities: {...formData.allocation.au_equities, target: Number(e.target.value)}}})} className="h-8 text-center" /></td>
-                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.au_equities?.min || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, au_equities: {...formData.allocation.au_equities, min: Number(e.target.value)}}})} className="h-8 text-center" /></td>
-                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.au_equities?.max || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, au_equities: {...formData.allocation.au_equities, max: Number(e.target.value)}}})} className="h-8 text-center" /></td>
+                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.au_equities?.target || 0} onChange={(e) => updateAllocation('au_equities', 'target', e.target.value)} className="h-8 text-center" /></td>
+                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.au_equities?.min || 0} onChange={(e) => updateAllocation('au_equities', 'min', e.target.value)} className="h-8 text-center" /></td>
+                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.au_equities?.max || 0} onChange={(e) => updateAllocation('au_equities', 'max', e.target.value)} className="h-8 text-center" /></td>
                      </tr>
                      <tr>
                        <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#EF4444'}}></span>International Equity</span></td>
