@@ -294,6 +294,7 @@ export default function AdviceGroupDashboard() {
         display: 'flex',
         padding: '24px 32px',
         gap: '24px',
+        marginLeft: '260px',
       }}>
           {/* Main Column */}
           <div style={{ flex: 1 }}>
