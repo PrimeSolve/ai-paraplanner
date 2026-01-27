@@ -130,21 +130,15 @@ export default function AdminTeam() {
     <AdminLayout currentPage="AdminTeam">
       <div className="p-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-[28px] font-['Playfair_Display'] font-semibold text-[#0f172a] mb-1">
-              Team
-            </h1>
-            <p className="text-sm text-[#64748b]">Manage your paraplanners and admins</p>
-          </div>
-          <Button 
-            onClick={() => setShowInviteModal(true)}
-            className="bg-[#3b82f6] hover:bg-[#2563eb] text-white shadow-sm"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Invite Member
-          </Button>
-        </div>
+         <div className="mb-8 flex justify-end">
+           <Button 
+             onClick={() => setShowInviteModal(true)}
+             className="bg-[#3b82f6] hover:bg-[#2563eb] text-white shadow-sm"
+           >
+             <Plus className="w-4 h-4 mr-2" />
+             Invite Member
+           </Button>
+         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-4 gap-6 mb-8">
