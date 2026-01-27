@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronUp, GripVertical, AlertCircle } from 'lucide-react';
+import { ChevronDown, GripVertical, AlertCircle, Edit } from 'lucide-react';
 import { toast } from 'sonner';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
 import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 
