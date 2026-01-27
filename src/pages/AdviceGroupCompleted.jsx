@@ -159,7 +159,7 @@ export default function AdviceGroupCompleted() {
   return (
     <div className="flex">
       <AdviceGroupSidebar currentPage="completed" />
-      <div className="flex-1">
+      <div className="flex-1" style={{ marginLeft: '260px' }}>
       <div className="p-8">
 
         {/* Stats Grid */}
