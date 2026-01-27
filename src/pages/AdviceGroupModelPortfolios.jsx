@@ -152,7 +152,7 @@ export default function AdviceGroupModelPortfolios() {
         <div style={{
           flex: 1,
           padding: '32px',
-        }}
+        }}>
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600 mx-auto"></div>

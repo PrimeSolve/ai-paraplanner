@@ -217,16 +217,16 @@ export default function AdviceGroupSOATemplate() {
 
         {/* Main Content */}
         <div style={{
-        flex: 1,
-        padding: '32px',
-      }}>
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          border: `1px solid ${colors.core.greyLight}`,
-          padding: '24px',
-          marginBottom: '24px',
+          flex: 1,
+          padding: '32px',
         }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            border: `1px solid ${colors.core.greyLight}`,
+            padding: '24px',
+            marginBottom: '24px',
+          }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px'}}>
             <div>
               <h1 style={{fontSize: '24px', fontWeight: 600, color: colors.core.navy, margin: 0}}>SOA Template</h1>
@@ -310,6 +310,7 @@ export default function AdviceGroupSOATemplate() {
               </Card>
             );
           })}
+          </div>
         </div>
       </div>
     </div>

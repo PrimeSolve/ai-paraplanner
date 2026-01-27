@@ -196,7 +196,7 @@ export default function AdviceGroupSettings() {
           flex: 1,
           padding: '32px',
         }}>
-        <div className="space-y-6">
+          <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -285,13 +285,14 @@ export default function AdviceGroupSettings() {
               </div>
             </CardContent>
           </Card>
-        </div>
+          </div>
 
-        <div className="flex justify-end gap-3 mt-6">
-          <Button variant="outline" onClick={loadData}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving} className="bg-cyan-600 hover:bg-cyan-700">
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
+          <div className="flex justify-end gap-3 mt-6">
+            <Button variant="outline" onClick={loadData}>Cancel</Button>
+            <Button onClick={handleSave} disabled={saving} className="bg-cyan-600 hover:bg-cyan-700">
+              {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
