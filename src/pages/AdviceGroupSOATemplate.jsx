@@ -143,55 +143,35 @@ export default function AdviceGroupSOATemplate() {
     }
   };
 
-  const colors = {
-    core: {
-      navy: '#1e293b',
-      slate: '#475569',
-      slateLight: '#64748b',
-      grey: '#94a3b8',
-      greyLight: '#e2e8f0',
-      offWhite: '#f8fafc',
-      white: '#ffffff',
-    },
-    accent: {
-      blue: '#3b82f6',
-      blueDeep: '#1d4ed8',
-      success: '#10b981',
-      warning: '#f59e0b',
-      error: '#ef4444',
-      coral: '#f97316',
-      purple: '#8b5cf6',
-      pink: '#ec4899',
-      cyan: '#06b6d4',
-    }
-  };
-
   const toggleGroup = (groupId) => {
     setExpandedGroups(prev =>
       prev.includes(groupId) ? prev.filter(g => g !== groupId) : [...prev, groupId]
     );
   };
 
-  const sectionGroups = [
-    {
-      id: 'getting-started',
-      label: 'Getting Started',
-      icon: '🚀',
-      sections: [
-        { id: 'executive-summary', label: 'Executive Summary', enabled: true, required: true },
-        { id: 'scope-of-advice', label: 'Scope of Advice', enabled: true, required: true }
-      ]
-    },
-    {
-      id: 'client-info',
-      label: 'Client Information',
-      icon: '👤',
-      sections: [
-        { id: 'personal-details', label: 'Personal Details', enabled: true, required: true },
-        { id: 'family-situation', label: 'Family Situation', enabled: true, required: false }
-      ]
+  const handleDragEnd = (result) => {
+    const { source, destination, type, draggableId } = result;
+    
+    if (!destination) return;
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+
+    const newSections = Array.from(sections);
+
+    if (type === 'GROUP') {
+      const [movedGroup] = newSections.splice(source.index, 1);
+      newSections.splice(destination.index, 0, movedGroup);
+      setSections(newSections);
+    } else if (type === 'SECTION') {
+      const sourceGroupIdx = newSections.findIndex(g => g.group === source.droppableId);
+      const destGroupIdx = newSections.findIndex(g => g.group === destination.droppableId);
+      
+      const [movedSection] = newSections[sourceGroupIdx].sections.splice(source.index, 1);
+      newSections[destGroupIdx].sections.splice(destination.index, 0, movedSection);
+      setSections(newSections);
     }
-  ];
+
+    toast.success('Order updated');
+  };
 
   return (
     <div style={{
