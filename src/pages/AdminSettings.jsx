@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import AdminLayout from '../components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -104,11 +106,24 @@ export default function AdminSettings() {
       <div className="min-h-screen bg-[#f8fafc]">
         {/* Header */}
         <div className="bg-white border-b border-[#e2e8f0] px-8 py-6">
-          <div>
-            <h1 className="text-2xl font-['Playfair_Display'] font-semibold text-[#0f172a] mb-1">
-              Settings
-            </h1>
-            <p className="text-sm text-[#64748b]">Configure your AI Paraplanner workspace</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-['Playfair_Display'] font-semibold text-[#0f172a] mb-1">
+                Settings
+              </h1>
+              <p className="text-sm text-[#64748b]">Configure your AI Paraplanner workspace</p>
+            </div>
+            <Link to={createPageUrl('AdminSettings')} className="no-underline">
+              <button className="flex items-center gap-2 px-4 py-2 bg-[#8b5cf6] text-white rounded-lg hover:bg-[#7c3aed] transition-colors">
+                <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center text-xs font-bold">
+                  P
+                </div>
+                <span className="font-medium">PrimeSolve Group</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </Link>
           </div>
         </div>
 
