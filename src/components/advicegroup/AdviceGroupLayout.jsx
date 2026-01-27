@@ -35,6 +35,13 @@ export default function AdviceGroupLayout({ children, currentPage }) {
       }
     };
     loadData();
+
+    const handleProfileUpdate = () => {
+      loadData();
+    };
+    
+    window.addEventListener('userProfileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('userProfileUpdated', handleProfileUpdate);
   }, []);
 
   const navItems = [
