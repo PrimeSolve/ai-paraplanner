@@ -168,18 +168,6 @@ export default function AdminLayout({ children, currentPage }) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <Settings2 className="w-4 h-4 mr-3 text-[#64748b]" />
-                  Account Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CreditCard className="w-4 h-4 mr-3 text-[#64748b]" />
-                  Billing
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Users className="w-4 h-4 mr-3 text-[#64748b]" />
-                  Team Management
-                </DropdownMenuItem>
-                <DropdownMenuItem>
                   <HelpCircle className="w-4 h-4 mr-3 text-[#64748b]" />
                   Help & Support
                 </DropdownMenuItem>
