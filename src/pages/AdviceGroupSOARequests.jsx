@@ -88,116 +88,170 @@ export default function AdviceGroupSOARequests() {
     );
   };
 
+  const filteredRequests = requests.filter((req) => {
+    const matchesSearch = !searchQuery || 
+      req.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      req.client_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || req.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div className="flex">
       <AdviceGroupSidebar currentPage="soa-requests" />
       <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
         <AdviceGroupHeader user={user} />
 
-        <div style={{
-          flex: 1,
-          padding: '32px',
-        }}>
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          <Card className="p-4">
-            <div className="text-3xl font-['Fraunces'] font-semibold text-cyan-600 mb-1">
-              {requests.length}
-            </div>
-            <div className="text-sm text-slate-600">Total Requests</div>
-          </Card>
-          <Card className="p-4">
-            <div className="text-3xl font-['Fraunces'] font-semibold text-amber-600 mb-1">
-              {requests.filter(r => r.status === 'in_progress').length}
-            </div>
-            <div className="text-sm text-slate-600">In Progress</div>
-          </Card>
-          <Card className="p-4">
-            <div className="text-3xl font-['Fraunces'] font-semibold text-blue-600 mb-1">
-              {requests.filter(r => r.status === 'submitted').length}
-            </div>
-            <div className="text-sm text-slate-600">Submitted</div>
-          </Card>
-          <Card className="p-4">
-            <div className="text-3xl font-['Fraunces'] font-semibold text-green-600 mb-1">
-              {requests.filter(r => r.status === 'completed').length}
-            </div>
-            <div className="text-sm text-slate-600">Completed</div>
-          </Card>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="draft">Draft</TabsTrigger>
-            <TabsTrigger value="in_progress">In Progress</TabsTrigger>
-            <TabsTrigger value="submitted">Submitted</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value={activeTab}>
-            <Card>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
-                        Client
-                      </th>
-                      <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
-                        Adviser
-                      </th>
-                      <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
-                        Status
-                      </th>
-                      <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
-                        Progress
-                      </th>
-                      <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {requests
-                      .filter(r => activeTab === 'all' || r.status === activeTab)
-                      .map((req) => (
-                        <tr key={req.id} className="border-b border-slate-100 hover:bg-slate-50">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center font-semibold text-cyan-600">
-                                {req.client_name?.charAt(0) || 'C'}
-                              </div>
-                              <span className="font-medium">{req.client_name}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-slate-600">
-                            {req.created_by?.split('@')[0] || 'Adviser'}
-                          </td>
-                          <td className="px-6 py-4">
-                            {getStatusBadge(req.status)}
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              <div className="flex-1 bg-slate-200 rounded-full h-2">
-                                <div 
-                                  className="bg-cyan-500 h-2 rounded-full"
-                                  style={{ width: `${req.completion_percentage || 0}%` }}
-                                />
-                              </div>
-                              <span className="text-xs text-slate-600">{req.completion_percentage || 0}%</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <Button size="sm" variant="outline">View</Button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
+        <div className="p-8">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-4 gap-6 mb-8">
+            <div className="bg-gradient-to-br from-[#f97316] to-[#ea580c] rounded-2xl p-6 text-white">
+              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4">
+                <UserX className="w-6 h-6" />
               </div>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              <div className="text-4xl font-bold mb-1">{stats.awaiting}</div>
+              <div className="text-sm opacity-90">Awaiting Review</div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
+                <Clock className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="text-4xl font-bold text-slate-800 mb-1">{stats.inProgress}</div>
+              <div className="text-sm text-slate-600">In Progress</div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+              <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-6 h-6 text-green-600" />
+              </div>
+              <div className="text-4xl font-bold text-slate-800 mb-1">{stats.completedToday}</div>
+              <div className="text-sm text-slate-600">Completed</div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+              <div className="w-12 h-12 rounded-xl bg-cyan-50 flex items-center justify-center mb-4">
+                <Zap className="w-6 h-6 text-cyan-600" />
+              </div>
+              <div className="text-4xl font-bold text-slate-800 mb-1">{requests.length}</div>
+              <div className="text-sm text-slate-600">Total Requests</div>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="bg-white rounded-2xl border border-slate-200 mb-6">
+            <div className="p-6 flex items-center gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Input
+                  placeholder="Search by SOA ID or client..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-11 border-slate-200"
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-40 h-11">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="submitted">Submitted</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="bg-white rounded-2xl border border-slate-200">
+            <div className="px-6 py-4 border-b border-slate-200">
+              <h3 className="font-semibold text-slate-800">SOA Requests</h3>
+              <p className="text-sm text-slate-600 mt-0.5">Showing {filteredRequests.length} requests</p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="text-left px-6 py-3 w-12">
+                      <Checkbox />
+                    </th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      SOA Request
+                    </th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      Client
+                    </th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      Progress
+                    </th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      Submitted
+                    </th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRequests.map((req) => (
+                    <tr key={req.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <Checkbox />
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-semibold text-sm text-slate-800">{req.id || 'SOA-' + req.id}</span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-800">{req.client_name}</td>
+                      <td className="px-6 py-4">
+                        {getStatusBadge(req.status)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-slate-200 rounded-full h-2 max-w-xs">
+                            <div 
+                              className="bg-blue-500 h-2 rounded-full"
+                              style={{ width: `${req.completion_percentage || 0}%` }}
+                            />
+                          </div>
+                          <span className="text-xs text-slate-600 w-8">{req.completion_percentage || 0}%</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-600">{new Date(req.created_date).toLocaleDateString()}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <button className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+              <span className="text-sm text-slate-600">Showing {filteredRequests.length} of {requests.length} requests</span>
+              <div className="flex items-center gap-2">
+                <button className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+                  ← Prev
+                </button>
+                <button className="px-3 py-2 text-sm font-semibold bg-[#3b82f6] text-white rounded-lg">
+                  1
+                </button>
+                <button className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+                  Next →
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
