@@ -91,6 +91,13 @@ export default function AdviserClients() {
       <div style={{ marginLeft: '260px', flex: 1 }}>
         <AdviserHeader user={user} />
         <div className="p-8">
+          {/* Page Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>Clients</h1>
+            <button style={{ padding: '10px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              + Add Client
+            </button>
+          </div>
           
           {/* Stats Bar */}
           <div style={{ display: 'flex', gap: '32px', padding: '20px 24px', background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '24px' }}>
