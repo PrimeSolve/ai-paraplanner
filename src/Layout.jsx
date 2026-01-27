@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
+import { RoleProvider } from '@/components/RoleContext';
 
 export default function Layout({ children, currentPageName }) {
   const [loading, setLoading] = useState(true);
