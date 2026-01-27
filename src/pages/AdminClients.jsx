@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Download, Users, CheckCircle, Clock, MoreHorizontal, Eye, Edit2, Trash2 } from 'lucide-react';
+import { Search, Users, CheckCircle, Clock, MoreHorizontal, Eye, Edit2, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function AdminClients() {
@@ -75,18 +75,7 @@ export default function AdminClients() {
   return (
     <AdminLayout currentPage="AdminClients">
       <div className="p-8">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="font-['Playfair_Display'] text-2xl font-semibold text-[#0f172a] mb-1">
-              All Clients
-            </h1>
-            <p className="text-sm text-[#64748b]">Manage all clients across advisers</p>
-          </div>
-          <button className="flex items-center gap-2 px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-            <Download className="w-4 h-4" />
-            Export
-          </button>
-        </div>
+
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white">
