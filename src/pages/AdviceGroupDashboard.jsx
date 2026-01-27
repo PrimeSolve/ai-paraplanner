@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { 
   FileText, 
   Clock, 
@@ -11,7 +14,10 @@ import {
   Tag,
   PlusCircle,
   Settings,
-  Download
+  Download,
+  User,
+  HelpCircle,
+  LogOut
 } from 'lucide-react';
 
 // ============================================
