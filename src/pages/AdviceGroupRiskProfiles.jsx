@@ -315,19 +315,19 @@ export default function AdviceGroupRiskProfiles() {
         </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="sm:max-w-2xl">
-          <div className="border-b pb-4 mb-4">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <div className="border-b pb-4 mb-6">
             <h2 className="text-xl font-bold text-slate-900">{editingProfile ? 'Edit' : 'Add'} Risk Profile</h2>
           </div>
           
-          <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+          <div className="space-y-6">
             <div>
               <Label className="text-sm font-bold text-slate-900">Profile Name</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="e.g., Defensive, Conservative, Balanced"
-                className="mt-1 h-10"
+                className="mt-2 h-10"
               />
             </div>
 
@@ -336,11 +336,11 @@ export default function AdviceGroupRiskProfiles() {
               <Input
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                className="mt-1 h-10"
+                className="mt-2 h-10"
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label className="text-sm font-bold text-slate-900">Risk Level (1-7)</Label>
                 <Input
@@ -349,7 +349,7 @@ export default function AdviceGroupRiskProfiles() {
                   max="7"
                   value={formData.risk_level}
                   onChange={(e) => setFormData({...formData, risk_level: Number(e.target.value)})}
-                  className="mt-1 h-10"
+                  className="mt-2 h-10"
                 />
               </div>
               <div>
@@ -358,7 +358,7 @@ export default function AdviceGroupRiskProfiles() {
                   type="number"
                   value={formData.min_score}
                   onChange={(e) => setFormData({...formData, min_score: Number(e.target.value)})}
-                  className="mt-1 h-10"
+                  className="mt-2 h-10"
                 />
               </div>
               <div>
@@ -367,7 +367,7 @@ export default function AdviceGroupRiskProfiles() {
                   type="number"
                   value={formData.max_score}
                   onChange={(e) => setFormData({...formData, max_score: Number(e.target.value)})}
-                  className="mt-1 h-10"
+                  className="mt-2 h-10"
                 />
               </div>
             </div>
@@ -379,17 +379,82 @@ export default function AdviceGroupRiskProfiles() {
                 step="0.1"
                 value={formData.expected_return}
                 onChange={(e) => setFormData({...formData, expected_return: Number(e.target.value)})}
-                className="mt-1 h-10"
+                className="mt-2 h-10"
               />
             </div>
 
-            <div className="flex gap-3 justify-end pt-2 border-t">
-              <Button variant="outline" onClick={() => setShowDialog(false)} className="h-10">
-                Cancel
+            <div className="border-t pt-6">
+              <h3 className="text-sm font-bold text-slate-900 mb-4">Asset Allocation</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-300">
+                      <th className="text-left py-2 px-3 font-bold text-slate-700">ASSET CLASS</th>
+                      <th className="text-center py-2 px-3 font-bold text-slate-700">TARGET %</th>
+                      <th className="text-center py-2 px-3 font-bold text-slate-700">MIN %</th>
+                      <th className="text-center py-2 px-3 font-bold text-slate-700">MAX %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-slate-200">
+                      <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#3B82F6'}}></span>Cash</span></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.cash || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, cash: Number(e.target.value)}})} className="h-8 text-center" /></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" defaultValue="20" className="h-8 text-center" /></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" defaultValue="50" className="h-8 text-center" /></td>
+                    </tr>
+                    <tr className="border-b border-slate-200">
+                      <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#10B981'}}></span>Australian Fixed Interest</span></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.au_fixed_interest || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, au_fixed_interest: Number(e.target.value)}})} className="h-8 text-center" /></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" defaultValue="25" className="h-8 text-center" /></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" defaultValue="45" className="h-8 text-center" /></td>
+                    </tr>
+                    <tr className="border-b border-slate-200">
+                      <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#06B6D4'}}></span>International Fixed Interest</span></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.int_fixed_interest || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, int_fixed_interest: Number(e.target.value)}})} className="h-8 text-center" /></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" defaultValue="10" className="h-8 text-center" /></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" defaultValue="30" className="h-8 text-center" /></td>
+                    </tr>
+                    <tr className="border-b border-slate-200">
+                      <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#8B5CF6'}}></span>Property</span></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.property || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, property: Number(e.target.value)}})} className="h-8 text-center" /></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" defaultValue="0" className="h-8 text-center" /></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" defaultValue="10" className="h-8 text-center" /></td>
+                    </tr>
+                    <tr className="border-b border-slate-200">
+                      <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#EC4899'}}></span>Alternatives</span></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.alternatives || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, alternatives: Number(e.target.value)}})} className="h-8 text-center" /></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" defaultValue="0" className="h-8 text-center" /></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" defaultValue="5" className="h-8 text-center" /></td>
+                    </tr>
+                    <tr className="border-b border-slate-200">
+                      <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#F59E0B'}}></span>Australian Equity</span></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.au_equities || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, au_equities: Number(e.target.value)}})} className="h-8 text-center" /></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" defaultValue="0" className="h-8 text-center" /></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" defaultValue="20" className="h-8 text-center" /></td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#EF4444'}}></span>International Equity</span></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.int_equities || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, int_equities: Number(e.target.value)}})} className="h-8 text-center" /></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" defaultValue="0" className="h-8 text-center" /></td>
+                      <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" defaultValue="15" className="h-8 text-center" /></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-between pt-2 border-t">
+              <Button variant="outline" onClick={() => handleDelete(editingProfile?.id)} className="text-red-600 hover:bg-red-50 border border-red-200">
+                🗑️ Delete Profile
               </Button>
-              <Button onClick={handleSave} className="bg-cyan-600 hover:bg-cyan-700 text-white h-10">
-                {editingProfile ? 'Update' : 'Create'}
-              </Button>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setShowDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  💾 Save Changes
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>
