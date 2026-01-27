@@ -275,7 +275,7 @@ export default function AdminSettings() {
                       className="bg-[#0f172a] hover:bg-[#1e293b] text-white"
                       onClick={() => {
                         localStorage.setItem('businessDetails', JSON.stringify(businessDetails));
-                        window.dispatchEvent(new Event('storage'));
+                        window.dispatchEvent(new Event('businessDetailsUpdated'));
                       }}
                     >
                       Save Changes

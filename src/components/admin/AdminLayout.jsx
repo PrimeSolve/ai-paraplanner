@@ -36,8 +36,8 @@ export default function AdminLayout({ children, currentPage }) {
     };
     loadBusinessDetails();
     
-    window.addEventListener('storage', loadBusinessDetails);
-    return () => window.removeEventListener('storage', loadBusinessDetails);
+    window.addEventListener('businessDetailsUpdated', loadBusinessDetails);
+    return () => window.removeEventListener('businessDetailsUpdated', loadBusinessDetails);
   }, []);
 
   const navItems = [
