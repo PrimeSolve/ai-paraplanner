@@ -156,7 +156,7 @@ export default function AdminLayout({ children, currentPage }) {
                       user.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 
                       user.email?.slice(0, 2).toUpperCase()}
                   </div>
-                  <span className="font-medium text-[#0f172a]">{user.full_name || user.email}</span>
+                  <span className="font-medium text-[#0f172a]">{user.display_name || user.full_name || user.email}</span>
                   <ChevronDown className="w-4 h-4 text-[#64748b]" />
                 </button>
               </DropdownMenuTrigger>

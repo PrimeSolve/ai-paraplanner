@@ -34,7 +34,7 @@ export default function MyProfile() {
       console.log('Loaded user from API:', currentUser);
       setUser(currentUser);
       setFormData({
-        full_name: currentUser.full_name || '',
+        full_name: currentUser.display_name || currentUser.full_name || '',
         email: currentUser.email || '',
         phone: currentUser.phone || '',
         role: currentUser.role || 'user'
@@ -279,28 +279,25 @@ export default function MyProfile() {
             >
               Cancel
             </Button>
-            <button
-              type="button"
-              className="px-4 py-2 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-md font-medium"
+            <Button 
+              className="bg-[#3b82f6] hover:bg-[#2563eb] text-white"
               onClick={async () => {
-                console.log('🔴 RAW BUTTON CLICKED');
                 try {
-                  console.log('Form data:', formData);
-                  const result = await base44.auth.updateMe({
-                    full_name: formData.full_name,
+                  await base44.auth.updateMe({
+                    display_name: formData.full_name,
                     phone: formData.phone
                   });
-                  console.log('Update result:', result);
-                  toast.success('Profile updated');
+                  setUser(prev => ({ ...prev, display_name: formData.full_name, phone: formData.phone }));
+                  toast.success('Profile updated successfully');
                   window.dispatchEvent(new Event('userProfileUpdated'));
                 } catch (error) {
                   console.error('Error:', error);
-                  toast.error('Failed to update');
+                  toast.error('Failed to update profile');
                 }
               }}
             >
               Save Changes
-            </button>
+            </Button>
           </div>
         </div>
       </div>
