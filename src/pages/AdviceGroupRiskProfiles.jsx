@@ -205,7 +205,7 @@ export default function AdviceGroupRiskProfiles() {
                     {/* Header */}
                     <button
                       onClick={() => setExpandedId(isExpanded ? null : profile.id)}
-                      className="w-full p-6 flex items-center gap-4 hover:bg-blue-50 text-left"
+                      className="w-full p-4 flex items-center gap-3 hover:bg-slate-50 text-left"
                     >
                       <div
                         className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 text-xl"
