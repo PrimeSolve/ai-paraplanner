@@ -15,7 +15,7 @@ export default function AdviserHeader({ user }) {
   return (
     <div style={{
       background: 'white',
-      padding: '16px 32px',
+      padding: '12px 32px',
       borderBottom: '1px solid #e2e8f0',
       display: 'flex',
       alignItems: 'center',
