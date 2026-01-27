@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Users, FileText, CheckCircle, Clock, Eye, Plus, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import AdviserSidebar from '../components/adviser/AdviserSidebar';
-import AdviserHeader from '../components/adviser/AdviserHeader';
+import AdviserSidebar from '../components/adviser/AdviserSidebar.js';
+import AdviserHeader from '../components/adviser/AdviserHeader.js';
 
 export default function AdviserDashboard() {
   const [loading, setLoading] = useState(true);
