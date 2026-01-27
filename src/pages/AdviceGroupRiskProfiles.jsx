@@ -181,7 +181,7 @@ export default function AdviceGroupRiskProfiles() {
               <p className="text-center text-slate-600 max-w-md mb-8">
                 Risk profiles define asset allocation guidelines for different investor types. Create your first profile to get started.
               </p>
-              <Button onClick={() => { setEditingProfile(null); setFormData({ name: '', description: '', risk_level: 1, allocation: defaultAllocation }); setShowDialog(true); }} className="bg-blue-600 hover:bg-blue-700 px-6">
+              <Button onClick={() => { setEditingProfile(null); setFormData(getEmptyFormData()); setShowDialog(true); }} className="bg-blue-600 hover:bg-blue-700 px-6">
                 <Plus className="w-4 h-4 mr-2" />
                 Create First Profile
               </Button>
