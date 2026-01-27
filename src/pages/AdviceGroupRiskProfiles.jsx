@@ -143,151 +143,176 @@ export default function AdviceGroupRiskProfiles() {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      minHeight: '100vh',
-      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-      background: colors.core.offWhite,
-    }}>
+    <div className="flex">
       <AdviceGroupSidebar currentPage="risk-profiles" />
 
-      <div style={{
-        marginLeft: '260px',
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
-        {/* Header with User Profile */}
-        <div style={{
-          background: colors.core.white,
-          padding: '4px 32px',
-          borderBottom: `1px solid ${colors.core.greyLight}`,
-          position: 'sticky',
-          top: 0,
-          zIndex: 50,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-        }}>
-          {user && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '8px 12px',
-                  background: colors.core.white,
-                  border: `1px solid ${colors.core.greyLight}`,
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                }}>
-                  {user.profile_image_url ? (
-                    <img src={user.profile_image_url} alt="Profile" style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '8px',
-                      objectFit: 'cover',
-                    }} />
-                  ) : (
-                    <div style={{
-                      width: '32px',
-                      height: '32px',
-                      background: `linear-gradient(135deg, ${colors.accent.purple}, ${colors.accent.blueDeep})`,
-                      borderRadius: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: colors.core.white,
-                      fontSize: '12px',
-                      fontWeight: 700,
-                    }}>
-                      {(user.display_name || user.full_name)?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <AdviceGroupHeader user={user} />
+
+        <div className="p-8 flex-1">
+          {/* Info Banner */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-blue-900 mb-0.5">Asset Allocation Guidelines</h4>
+              <p className="text-sm text-blue-700">
+                Define target, minimum, and maximum allocations for each asset class. Target allocations must total 100%. Min/max ranges enable flexibility while maintaining investment policy compliance.
+              </p>
+            </div>
+          </div>
+
+          {/* Header with Add Button */}
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-800">Risk Profiles</h1>
+              <p className="text-sm text-slate-600 mt-1">{profiles.length} profiles configured</p>
+            </div>
+            <Button onClick={() => { setEditingProfile(null); setFormData({ name: '', description: '', risk_level: 1, min_score: 0, max_score: 10, allocation: defaultAllocation, expected_return: 0, timeframe: '', volatility_tolerance: '' }); setShowDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Profile
+            </Button>
+          </div>
+
+          {/* Risk Profiles List */}
+          <div className="space-y-3">
+            {profiles.map((profile) => {
+              const isExpanded = expandedId === profile.id;
+              const defensiveAlloc = (profile.allocation?.cash || 0) + (profile.allocation?.au_fixed_interest || 0) + (profile.allocation?.int_fixed_interest || 0);
+              const growthAlloc = (profile.allocation?.au_equities || 0) + (profile.allocation?.int_equities || 0) + (profile.allocation?.alternatives || 0);
+              
+              return (
+                <div
+                  key={profile.id}
+                  className={`bg-white border-2 rounded-lg overflow-hidden transition-all ${
+                    isExpanded ? 'border-blue-400 shadow-lg' : 'border-slate-200'
+                  }`}
+                >
+                  {/* Header */}
+                  <button
+                    onClick={() => setExpandedId(isExpanded ? null : profile.id)}
+                    className="w-full p-5 flex items-center gap-4 hover:bg-slate-50 text-left"
+                  >
+                    <div
+                      className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 text-xl"
+                      style={{ background: profileColors[profile.risk_level] || '#DBEAFE' }}
+                    >
+                      {profileIcons[profile.risk_level] || '💼'}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-slate-800">{profile.name}</h3>
+                      <p className="text-sm text-slate-600">{profile.description}</p>
+                    </div>
+                    <div className="flex items-center gap-6 mr-2">
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-slate-800">{defensiveAlloc}%</div>
+                        <div className="text-xs text-slate-500 uppercase">Defensive</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-slate-800">{growthAlloc}%</div>
+                        <div className="text-xs text-slate-500 uppercase">Growth</div>
+                      </div>
+                    </div>
+                    <ChevronDown
+                      className={`w-5 h-5 text-slate-400 transition-transform ${
+                        isExpanded ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {/* Expanded Content */}
+                  {isExpanded && (
+                    <div className="border-t border-slate-200 p-6 bg-slate-50">
+                      {/* Asset Allocation Table */}
+                      <div className="mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-semibold text-slate-800 flex items-center gap-2">
+                            📊 Asset Allocation
+                          </h4>
+                          <span className="text-xs font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                            Target Total: {(Object.values(profile.allocation || {}).reduce((sum, val) => sum + (val || 0), 0))}%
+                          </span>
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b border-slate-200">
+                                <th className="text-left py-3 px-4 font-semibold text-slate-700">Asset Class</th>
+                                <th className="text-center py-3 px-4 font-semibold text-slate-700">Target %</th>
+                                <th className="text-center py-3 px-4 font-semibold text-slate-700">Min %</th>
+                                <th className="text-center py-3 px-4 font-semibold text-slate-700">Max %</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr className="border-b border-slate-100 hover:bg-white">
+                                <td className="py-3 px-4"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#3B82F6'}}></span> Cash</span></td>
+                                <td className="text-center py-3 px-4">{profile.allocation?.cash || 0}</td>
+                                <td className="text-center py-3 px-4">0</td>
+                                <td className="text-center py-3 px-4">50</td>
+                              </tr>
+                              <tr className="border-b border-slate-100 hover:bg-white">
+                                <td className="py-3 px-4"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#10B981'}}></span> Australian Fixed Interest</span></td>
+                                <td className="text-center py-3 px-4">{profile.allocation?.au_fixed_interest || 0}</td>
+                                <td className="text-center py-3 px-4">0</td>
+                                <td className="text-center py-3 px-4">50</td>
+                              </tr>
+                              <tr className="border-b border-slate-100 hover:bg-white">
+                                <td className="py-3 px-4"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#06B6D4'}}></span> International Fixed Interest</span></td>
+                                <td className="text-center py-3 px-4">{profile.allocation?.int_fixed_interest || 0}</td>
+                                <td className="text-center py-3 px-4">0</td>
+                                <td className="text-center py-3 px-4">30</td>
+                              </tr>
+                              <tr className="border-b border-slate-100 hover:bg-white">
+                                <td className="py-3 px-4"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#8B5CF6'}}></span> Property</span></td>
+                                <td className="text-center py-3 px-4">{profile.allocation?.property || 0}</td>
+                                <td className="text-center py-3 px-4">0</td>
+                                <td className="text-center py-3 px-4">20</td>
+                              </tr>
+                              <tr className="border-b border-slate-100 hover:bg-white">
+                                <td className="py-3 px-4"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#EC4899'}}></span> Alternatives</span></td>
+                                <td className="text-center py-3 px-4">{profile.allocation?.alternatives || 0}</td>
+                                <td className="text-center py-3 px-4">0</td>
+                                <td className="text-center py-3 px-4">15</td>
+                              </tr>
+                              <tr className="border-b border-slate-100 hover:bg-white">
+                                <td className="py-3 px-4"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#F59E0B'}}></span> Australian Equity</span></td>
+                                <td className="text-center py-3 px-4">{profile.allocation?.au_equities || 0}</td>
+                                <td className="text-center py-3 px-4">0</td>
+                                <td className="text-center py-3 px-4">40</td>
+                              </tr>
+                              <tr className="hover:bg-white">
+                                <td className="py-3 px-4"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#EF4444'}}></span> International Equity</span></td>
+                                <td className="text-center py-3 px-4">{profile.allocation?.int_equities || 0}</td>
+                                <td className="text-center py-3 px-4">0</td>
+                                <td className="text-center py-3 px-4">30</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-2 pt-4 border-t border-slate-200">
+                        <Button size="sm" onClick={() => handleEdit(profile)} className="bg-blue-600 hover:bg-blue-700">
+                          <Edit className="w-3.5 h-3.5 mr-1.5" />
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDelete(profile.id)}
+                          className="text-red-600 hover:bg-red-50"
+                        >
+                          <Trash className="w-3.5 h-3.5 mr-1.5" />
+                          Delete
+                        </Button>
+                      </div>
                     </div>
                   )}
-                  <span style={{ color: colors.core.navy }}>{user.display_name || user.full_name || user.email}</span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" style={{ width: '224px' }}>
-                <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('AdviceGroupMyProfile')} style={{ cursor: 'pointer' }}>
-                    <User size={16} style={{ marginRight: '12px' }} />
-                    My Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <HelpCircle size={16} style={{ marginRight: '12px' }} />
-                  Help & Support
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => base44.auth.logout()}>
-                  <LogOut size={16} style={{ marginRight: '12px' }} />
-                  Log Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-
-        {/* Main Content */}
-        <div style={{
-          flex: 1,
-          padding: '32px',
-        }}>
-          {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600 mx-auto"></div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-6">
-            {profiles.map((profile) => (
-              <Card key={profile.id} className="hover:border-cyan-400 transition-all">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center">
-                        <Target className="w-6 h-6 text-cyan-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">{profile.name}</h3>
-                        <p className="text-sm text-slate-600">{profile.description}</p>
-                      </div>
-                    </div>
-                    <Badge>Risk {profile.risk_level}/7</Badge>
-                  </div>
-
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Score Range</span>
-                      <span className="font-medium">{profile.min_score} - {profile.max_score}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Expected Return</span>
-                      <span className="font-medium">{profile.expected_return}% p.a.</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Timeframe</span>
-                      <span className="font-medium">{profile.timeframe || 'N/A'}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 pt-4 border-t">
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(profile)} className="flex-1">
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleDelete(profile.id)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
