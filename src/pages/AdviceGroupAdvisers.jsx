@@ -493,36 +493,38 @@ export default function AdviceGroupAdvisers() {
             </div>
             </div>
             </div>
+            </div>
+            </div>
 
             {/* Invite Modal */}
             <Dialog open={showInvite} onOpenChange={setShowInvite}>
             <DialogContent>
             <DialogHeader>
-              <DialogTitle>Invite New Adviser</DialogTitle>
+            <DialogTitle>Invite New Adviser</DialogTitle>
             </DialogHeader>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: colors.core.navy }}>Email Address</label>
-                <Input
-                  type="email"
-                  placeholder="adviser@example.com"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  style={{ height: '40px' }}
-                />
-              </div>
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                <Button variant="outline" onClick={() => { setShowInvite(false); setInviteEmail(''); }}>
-                  Cancel
-                </Button>
-                <Button onClick={handleInvite} style={{
-                  background: colors.accent.blue,
-                  color: colors.core.white,
-                  border: 'none',
-                }}>
-                  Send Invite
-                </Button>
-              </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: colors.core.navy }}>Email Address</label>
+              <Input
+                type="email"
+                placeholder="adviser@example.com"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                style={{ height: '40px' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <Button variant="outline" onClick={() => { setShowInvite(false); setInviteEmail(''); }}>
+                Cancel
+              </Button>
+              <Button onClick={handleInvite} style={{
+                background: colors.accent.blue,
+                color: colors.core.white,
+                border: 'none',
+              }}>
+                Send Invite
+              </Button>
+            </div>
             </div>
             </DialogContent>
             </Dialog>
