@@ -67,6 +67,7 @@ import SOARequestStrategy from './pages/SOARequestStrategy';
 import SOARequestTransactions from './pages/SOARequestTransactions';
 import SOARequestWelcome from './pages/SOARequestWelcome';
 import SignIn from './pages/SignIn';
+import AdviceGroupCompleted from './pages/AdviceGroupCompleted';
 import __Layout from './Layout.jsx';
 
 
@@ -140,6 +141,7 @@ export const PAGES = {
     "SOARequestTransactions": SOARequestTransactions,
     "SOARequestWelcome": SOARequestWelcome,
     "SignIn": SignIn,
+    "AdviceGroupCompleted": AdviceGroupCompleted,
 }
 
 export const pagesConfig = {
