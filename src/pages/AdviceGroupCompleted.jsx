@@ -359,8 +359,7 @@ export default function AdviceGroupCompleted() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
-    </div>
-  );
-}
+        </div>
+        </div>
+        );
+        }
