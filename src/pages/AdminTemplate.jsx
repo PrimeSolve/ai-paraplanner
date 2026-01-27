@@ -189,20 +189,7 @@ export default function AdminTemplate() {
 
   return (
     <AdminLayout currentPage="AdminTemplate">
-      <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">Default SOA Template</h1>
-            <p className="text-sm text-slate-600 mt-1">Configure the base template inherited by all groups</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline">Preview</Button>
-            <Button onClick={handleSave} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
-              {saving ? 'Saving...' : 'Save Template'}
-            </Button>
-          </div>
-        </div>
-      </div>
+
 
       <div className="p-8">
         {/* Info Banner */}
@@ -217,20 +204,28 @@ export default function AdminTemplate() {
         </div>
 
         {/* Stats */}
-        <div className="flex gap-4 mb-6">
-          <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
-            <span className="text-2xl font-bold text-slate-800">{defaultSections.reduce((acc, g) => acc + g.sections.length, 0)}</span>
-            <span className="text-sm text-slate-600">Total sections</span>
-          </div>
-          <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
-            <span className="text-2xl font-bold text-green-600">{defaultSections.reduce((acc, g) => acc + g.sections.filter(s => s.status === 'configured').length, 0)}</span>
-            <span className="text-sm text-slate-600">Configured</span>
-          </div>
-          <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
-            <span className="text-2xl font-bold text-orange-600">{defaultSections.reduce((acc, g) => acc + g.sections.filter(s => s.status === 'needs-comment').length, 0)}</span>
-            <span className="text-sm text-slate-600">Pending</span>
-          </div>
-        </div>
+         <div className="flex gap-4 mb-6 items-center justify-between">
+           <div className="flex gap-4">
+             <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
+               <span className="text-2xl font-bold text-slate-800">{defaultSections.reduce((acc, g) => acc + g.sections.length, 0)}</span>
+               <span className="text-sm text-slate-600">Total sections</span>
+             </div>
+             <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
+               <span className="text-2xl font-bold text-green-600">{defaultSections.reduce((acc, g) => acc + g.sections.filter(s => s.status === 'configured').length, 0)}</span>
+               <span className="text-sm text-slate-600">Configured</span>
+             </div>
+             <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
+               <span className="text-2xl font-bold text-orange-600">{defaultSections.reduce((acc, g) => acc + g.sections.filter(s => s.status === 'needs-comment').length, 0)}</span>
+               <span className="text-sm text-slate-600">Pending</span>
+             </div>
+           </div>
+           <div className="flex gap-2">
+             <Button variant="outline">Preview</Button>
+             <Button onClick={handleSave} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
+               {saving ? 'Saving...' : 'Save Template'}
+             </Button>
+           </div>
+         </div>
 
         {/* Section Groups with Drag & Drop */}
         <DragDropContext onDragEnd={handleDragEnd}>
