@@ -604,7 +604,6 @@ export default function AdviceGroupAdvisers() {
         </DialogContent>
       </Dialog>
       </div>
-      </div>
     </div>
     );
   }
