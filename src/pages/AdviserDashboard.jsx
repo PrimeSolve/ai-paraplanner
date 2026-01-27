@@ -234,7 +234,6 @@ export default function AdviserDashboard() {
             </div>
           </div>
           </div>
-          </div>
           </AdviserLayout>
           );
           }
