@@ -39,7 +39,16 @@ export default function AdviceGroupRiskProfiles() {
     allocation: defaultAllocation,
     expected_return: 0,
     timeframe: '',
-    volatility_tolerance: ''
+    volatility_tolerance: '',
+    min_max: {
+      cash: { min: 20, max: 50 },
+      au_fixed_interest: { min: 25, max: 45 },
+      int_fixed_interest: { min: 10, max: 30 },
+      property: { min: 0, max: 10 },
+      alternatives: { min: 0, max: 5 },
+      au_equities: { min: 0, max: 20 },
+      int_equities: { min: 0, max: 15 }
+    }
   });
 
   useEffect(() => {
