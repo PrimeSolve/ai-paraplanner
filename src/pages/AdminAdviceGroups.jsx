@@ -83,114 +83,104 @@ export default function AdminAdviceGroups() {
 
   return (
     <AdminLayout currentPage="AdminAdviceGroups">
-      {/* Header */}
-      <div className="bg-white px-8 py-5 border-b border-slate-200 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
+      <div className="p-8">
+        <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="font-['Playfair_Display'] text-2xl font-semibold text-[#0f172a] mb-1">
               Advice Groups
             </h1>
             <p className="text-sm text-[#64748b]">Manage licensees and dealer groups</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Advice Group
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Create New Advice Group</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Group Name *</Label>
-                      <Input
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        placeholder="e.g., PrimeSolve Group"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Slug</Label>
-                      <Input
-                        value={formData.slug}
-                        onChange={(e) => setFormData({...formData, slug: e.target.value})}
-                        placeholder="e.g., primesolve"
-                      />
-                    </div>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Advice Group
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Create New Advice Group</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Group Name *</Label>
+                    <Input
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      placeholder="e.g., PrimeSolve Group"
+                    />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Contact Email</Label>
-                      <Input
-                        type="email"
-                        value={formData.contact_email}
-                        onChange={(e) => setFormData({...formData, contact_email: e.target.value})}
-                        placeholder="contact@advicegroup.com"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Contact Phone</Label>
-                      <Input
-                        value={formData.contact_phone}
-                        onChange={(e) => setFormData({...formData, contact_phone: e.target.value})}
-                        placeholder="+61 2 1234 5678"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label>Slug</Label>
+                    <Input
+                      value={formData.slug}
+                      onChange={(e) => setFormData({...formData, slug: e.target.value})}
+                      placeholder="e.g., primesolve"
+                    />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Status</Label>
-                      <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="inactive">Inactive</SelectItem>
-                          <SelectItem value="suspended">Suspended</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Subscription Tier</Label>
-                      <Select value={formData.subscription_tier} onValueChange={(value) => setFormData({...formData, subscription_tier: value})}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="starter">Starter</SelectItem>
-                          <SelectItem value="professional">Professional</SelectItem>
-                          <SelectItem value="enterprise">Enterprise</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Contact Email</Label>
+                    <Input
+                      type="email"
+                      value={formData.contact_email}
+                      onChange={(e) => setFormData({...formData, contact_email: e.target.value})}
+                      placeholder="contact@advicegroup.com"
+                    />
                   </div>
-                  <div className="flex justify-end gap-2 pt-4">
-                    <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                      Create Advice Group
-                    </Button>
+                  <div className="space-y-2">
+                    <Label>Contact Phone</Label>
+                    <Input
+                      value={formData.contact_phone}
+                      onChange={(e) => setFormData({...formData, contact_phone: e.target.value})}
+                      placeholder="+61 2 1234 5678"
+                    />
                   </div>
-                </form>
-              </DialogContent>
-            </Dialog>
-            <button className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 whitespace-nowrap">
-              PrimeSolve Group
-              <ChevronDown className="w-4 h-4" />
-            </button>
-          </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="suspended">Suspended</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Subscription Tier</Label>
+                    <Select value={formData.subscription_tier} onValueChange={(value) => setFormData({...formData, subscription_tier: value})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="starter">Starter</SelectItem>
+                        <SelectItem value="professional">Professional</SelectItem>
+                        <SelectItem value="enterprise">Enterprise</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                    Create Advice Group
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
-      </div>
-
-      <div className="p-8">
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl p-6 text-white">
