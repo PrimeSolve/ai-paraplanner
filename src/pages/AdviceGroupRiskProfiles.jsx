@@ -3,15 +3,14 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Target, Edit, Trash2, User, HelpCircle, LogOut } from 'lucide-react';
+import { Plus, Edit, Trash2, User, HelpCircle, LogOut, ChevronDown, AlertCircle, Trash } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
+import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 
 export default function AdviceGroupRiskProfiles() {
   const [profiles, setProfiles] = useState([]);
