@@ -154,6 +154,7 @@ export default function AdviceGroupClients() {
           </div>
         </Card>
       </div>
-    </AdviceGroupLayout>
+      </div>
+    </div>
   );
 }
