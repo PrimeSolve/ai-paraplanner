@@ -116,27 +116,30 @@ export default function AdviceGroupRiskProfiles() {
     }
   };
 
-  const colors = {
-    core: {
-      navy: '#1e293b',
-      slate: '#475569',
-      slateLight: '#64748b',
-      grey: '#94a3b8',
-      greyLight: '#e2e8f0',
-      offWhite: '#f8fafc',
-      white: '#ffffff',
-    },
-    accent: {
-      blue: '#3b82f6',
-      blueDeep: '#1d4ed8',
-      success: '#10b981',
-      warning: '#f59e0b',
-      error: '#ef4444',
-      coral: '#f97316',
-      purple: '#8b5cf6',
-      pink: '#ec4899',
-      cyan: '#06b6d4',
-    }
+  const assetClasses = [
+    { name: 'Cash', color: '#3B82F6' },
+    { name: 'Australian Fixed Interest', color: '#10B981' },
+    { name: 'International Fixed Interest', color: '#06B6D4' },
+    { name: 'Property', color: '#8B5CF6' },
+    { name: 'Alternatives', color: '#EC4899' },
+    { name: 'Australian Equity', color: '#F59E0B' },
+    { name: 'International Equity', color: '#EF4444' }
+  ];
+
+  const profileIcons = {
+    1: '🛡️',
+    2: '🌱',
+    3: '⚖️',
+    4: '📈',
+    5: '🚀'
+  };
+
+  const profileColors = {
+    1: '#DBEAFE',
+    2: '#D1FAE5',
+    3: '#FEF3C7',
+    4: '#FED7AA',
+    5: '#FECACA'
   };
 
   return (
