@@ -138,15 +138,7 @@ export default function AdminCompleted() {
   return (
     <AdminLayout currentPage="AdminCompleted">
       <div className="p-8">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="font-['Playfair_Display'] text-2xl font-semibold text-[#0f172a]">
-            Completed SOAs
-          </h1>
-          <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
-        </div>
+
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           <div className="bg-gradient-to-br from-green-600 to-emerald-700 rounded-2xl p-6 text-white">
