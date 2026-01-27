@@ -48,6 +48,17 @@ export default function AdviceGroupAdvisers() {
   const handleInvite = async () => {
     try {
       await base44.users.inviteUser(inviteEmail, 'user');
+      
+      // Update the invited user with adviser-specific fields
+      const users = await base44.entities.User.filter({ email: inviteEmail });
+      if (users.length > 0) {
+        await base44.entities.User.update(users[0].id, {
+          advice_group_id: user.advice_group_id,
+          user_type: 'adviser',
+          status: 'pending'
+        });
+      }
+      
       toast.success('Adviser invited successfully');
       setInviteEmail('');
       setShowInvite(false);
