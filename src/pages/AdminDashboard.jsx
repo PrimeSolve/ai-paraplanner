@@ -110,14 +110,8 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout currentPage="AdminDashboard">
-      <div className="p-8">
-        <div className="mb-6">
-          <h1 className="font-['Playfair_Display'] text-2xl font-semibold text-[#0f172a] mb-1">
-            Admin Dashboard
-          </h1>
-          <p className="text-sm text-[#64748b]">System overview and management</p>
-        </div>
-        {/* Stats Grid */}
+      <div className="p-8 font-['Inter']">
+         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           {/* Total Advice Groups */}
           <div className="bg-white rounded-2xl p-6 border border-slate-200 hover:shadow-lg transition-all">
