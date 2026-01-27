@@ -466,7 +466,7 @@ export default function AdviceGroupRiskProfiles() {
                <Button variant="outline" onClick={() => setShowDialog(false)}>
                  Cancel
                </Button>
-               <Button onClick={() => { alert('BUTTON CLICKED'); handleSave(); }} className="bg-blue-600 hover:bg-blue-700 text-white">
+               <Button onClick={() => handleSave()} className="bg-blue-600 hover:bg-blue-700 text-white">
                   Save Profile
                 </Button>
              </div>
