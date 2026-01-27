@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
-import AdviceGroupLayout from '../components/advicegroup/AdviceGroupLayout';
-import { Card } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, LayoutGrid, FileText, CheckCircle, Users, Tag, PlusCircle, Settings, User, HelpCircle, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdviceGroupAdvisers() {
@@ -56,102 +56,517 @@ export default function AdviceGroupAdvisers() {
     a.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  return (
-    <AdviceGroupLayout currentPage="AdviceGroupAdvisers">
-      <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">Advisers</h1>
-            <p className="text-sm text-slate-600 mt-1">Manage your advice team</p>
+  const colors = {
+    sidebar: {
+      bg: '#0f172a',
+      hover: '#1e293b',
+      active: 'rgba(59, 130, 246, 0.15)',
+      text: '#94a3b8',
+      textActive: '#ffffff',
+      accent: '#3b82f6',
+    },
+    core: {
+      navy: '#1e293b',
+      slate: '#475569',
+      slateLight: '#64748b',
+      grey: '#94a3b8',
+      greyLight: '#e2e8f0',
+      offWhite: '#f8fafc',
+      white: '#ffffff',
+    },
+    accent: {
+      blue: '#3b82f6',
+      blueDeep: '#1d4ed8',
+      success: '#10b981',
+      warning: '#f59e0b',
+      error: '#ef4444',
+      coral: '#f97316',
+      purple: '#8b5cf6',
+      pink: '#ec4899',
+      cyan: '#06b6d4',
+    }
+  };
+
+  const Sidebar = ({ currentPage }) => {
+    const navItems = [
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid, badge: null },
+      { id: 'soa-requests', label: 'SOA Requests', icon: FileText, badge: '12' },
+      { id: 'completed', label: 'Completed SOAs', icon: CheckCircle, badge: null },
+    ];
+
+    const teamItems = [
+      { id: 'advisers', label: 'Advisers', icon: Users, badge: '8' },
+    ];
+
+    const configItems = [
+      { id: 'template', label: 'SOA Template', icon: FileText, badge: null },
+      { id: 'risk-profiles', label: 'Risk Profiles', icon: Tag, badge: null },
+      { id: 'portfolios', label: 'Model Portfolios', icon: PlusCircle, badge: null },
+      { id: 'settings', label: 'Settings', icon: Settings, badge: null },
+    ];
+
+    const NavItem = ({ item, isActive }) => {
+      const Icon = item.icon;
+      return (
+        <a
+          href="#"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '12px 14px',
+            borderRadius: '10px',
+            color: isActive ? colors.sidebar.accent : colors.sidebar.text,
+            backgroundColor: isActive ? colors.sidebar.active : 'transparent',
+            textDecoration: 'none',
+            fontSize: '14px',
+            fontWeight: 500,
+            transition: 'all 0.2s ease',
+            marginBottom: '4px',
+          }}
+          onMouseEnter={(e) => {
+            if (!isActive) {
+              e.currentTarget.style.backgroundColor = colors.sidebar.hover;
+              e.currentTarget.style.color = colors.sidebar.textActive;
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isActive) {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = colors.sidebar.text;
+            }
+          }}
+        >
+          <Icon size={20} />
+          <span style={{ flex: 1 }}>{item.label}</span>
+          {item.badge && (
+            <span style={{
+              padding: '2px 8px',
+              backgroundColor: colors.sidebar.accent,
+              color: 'white',
+              fontSize: '11px',
+              fontWeight: 700,
+              borderRadius: '10px',
+            }}>
+              {item.badge}
+            </span>
+          )}
+        </a>
+      );
+    };
+
+    const NavSection = ({ title, items }) => (
+      <div style={{ marginBottom: '24px' }}>
+        {title && (
+          <div style={{
+            fontSize: '11px',
+            fontWeight: 700,
+            color: colors.sidebar.text,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            padding: '0 12px',
+            marginBottom: '8px',
+          }}>
+            {title}
           </div>
-          <Button onClick={() => setShowInvite(!showInvite)} className="bg-cyan-600 hover:bg-cyan-700">
-            <Plus className="w-4 h-4 mr-2" />
+        )}
+        {items.map(item => (
+          <NavItem key={item.id} item={item} isActive={currentPage === item.id} />
+        ))}
+      </div>
+    );
+
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '260px',
+        height: '100vh',
+        background: colors.sidebar.bg,
+        display: 'flex',
+        flexDirection: 'column',
+        zIndex: 100,
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+      }}>
+        <div style={{
+          padding: '24px 20px',
+          borderBottom: `1px solid rgba(255, 255, 255, 0.1)`,
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '14px',
+          }}>
+            <div style={{
+              width: '44px',
+              height: '44px',
+              background: `linear-gradient(135deg, ${colors.accent.blue}, ${colors.accent.blueDeep})`,
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 700,
+              color: 'white',
+              fontSize: '16px',
+            }}>
+              AI
+            </div>
+            <div>
+              <div style={{
+                fontWeight: 700,
+                fontSize: '16px',
+                color: 'white',
+              }}>
+                AI Paraplanner
+              </div>
+              <div style={{
+                fontSize: '12px',
+                color: colors.sidebar.text,
+              }}>
+                Advice Group Portal
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <nav style={{
+          flex: 1,
+          padding: '20px 12px',
+          overflowY: 'auto',
+        }}>
+          <NavSection title="OVERVIEW" items={navItems} />
+          <NavSection title="TEAM" items={teamItems} />
+          <NavSection title="CONFIGURATION" items={configItems} />
+        </nav>
+
+        <div style={{
+          padding: '16px',
+          borderTop: `1px solid rgba(255, 255, 255, 0.1)`,
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '12px',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              background: `linear-gradient(135deg, ${colors.accent.coral}, ${colors.accent.pink})`,
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 700,
+              color: 'white',
+              fontSize: '14px',
+            }}>
+              PS
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: 'white',
+              }}>
+                PrimeSolve Group
+              </div>
+              <div style={{
+                fontSize: '12px',
+                color: colors.sidebar.text,
+              }}>
+                Group Admin
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{
+      display: 'flex',
+      minHeight: '100vh',
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+      background: colors.core.offWhite,
+    }}>
+      <Sidebar currentPage="advisers" />
+
+      <div style={{
+        marginLeft: '260px',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        {/* Header with User Profile */}
+        <div style={{
+          background: colors.core.white,
+          padding: '4px 32px',
+          borderBottom: `1px solid ${colors.core.greyLight}`,
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+        }}>
+          {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '8px 12px',
+                  background: colors.core.white,
+                  border: `1px solid ${colors.core.greyLight}`,
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                }}>
+                  {user.profile_image_url ? (
+                    <img src={user.profile_image_url} alt="Profile" style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      objectFit: 'cover',
+                    }} />
+                  ) : (
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      background: `linear-gradient(135deg, ${colors.accent.purple}, ${colors.accent.blueDeep})`,
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: colors.core.white,
+                      fontSize: '12px',
+                      fontWeight: 700,
+                    }}>
+                      {(user.display_name || user.full_name)?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <span style={{ color: colors.core.navy }}>{user.display_name || user.full_name || user.email}</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" style={{ width: '224px' }}>
+                <DropdownMenuItem asChild>
+                  <Link to={createPageUrl('AdviceGroupMyProfile')} style={{ cursor: 'pointer' }}>
+                    <User size={16} style={{ marginRight: '12px' }} />
+                    My Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <HelpCircle size={16} style={{ marginRight: '12px' }} />
+                  Help & Support
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => base44.auth.logout()}>
+                  <LogOut size={16} style={{ marginRight: '12px' }} />
+                  Log Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+
+        {/* Main Content */}
+        <div style={{
+          flex: 1,
+          padding: '32px',
+        }}>
+
+      <div style={{
+        background: colors.core.white,
+        borderRadius: '16px',
+        border: `1px solid ${colors.core.greyLight}`,
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          padding: '20px 32px',
+          borderBottom: `1px solid ${colors.core.greyLight}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <h3 style={{
+            fontSize: '18px',
+            fontWeight: 600,
+            color: colors.core.navy,
+            margin: 0,
+          }}>
+            Advisers
+          </h3>
+          <Button onClick={() => setShowInvite(!showInvite)} style={{
+            background: colors.accent.blue,
+            color: colors.core.white,
+            padding: '8px 16px',
+            borderRadius: '8px',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 500,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}>
+            <Plus size={16} />
             Invite Adviser
           </Button>
         </div>
-      </div>
 
-      <div className="p-8">
         {showInvite && (
-          <Card className="p-6 mb-6">
-            <div className="flex gap-3">
+          <div style={{
+            padding: '20px 32px',
+            borderBottom: `1px solid ${colors.core.greyLight}`,
+            background: colors.core.offWhite,
+          }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
               <Input
                 type="email"
                 placeholder="adviser@example.com"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
-                className="flex-1"
+                style={{ flex: 1 }}
               />
-              <Button onClick={handleInvite} className="bg-cyan-600 hover:bg-cyan-700">
+              <Button onClick={handleInvite} style={{
+                background: colors.accent.blue,
+                color: colors.core.white,
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 500,
+              }}>
                 Send Invite
               </Button>
             </div>
-          </Card>
+          </div>
         )}
 
-        <div className="mb-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <div style={{ padding: '20px 32px', borderBottom: `1px solid ${colors.core.greyLight}` }}>
+          <div style={{ position: 'relative', maxWidth: '300px' }}>
+            <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: colors.core.slateLight }} />
             <Input
               placeholder="Search advisers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              style={{ paddingLeft: '36px' }}
             />
           </div>
         </div>
 
-        <Card>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
-                    Adviser
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+          }}>
+            <thead>
+              <tr style={{
+                borderBottom: `1px solid ${colors.core.greyLight}`,
+                background: colors.core.offWhite,
+              }}>
+                {['ADVISER', 'CLIENTS', 'ACTIVE SOAs', 'STATUS', 'ACTIONS'].map(header => (
+                  <th key={header} style={{
+                    padding: '16px 32px',
+                    textAlign: 'left',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: colors.core.slateLight,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    {header}
                   </th>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
-                    Clients
-                  </th>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
-                    Active SOAs
-                  </th>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
-                    Status
-                  </th>
-                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-4">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAdvisers.map((adviser) => (
-                  <tr key={adviser.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center font-semibold text-cyan-600">
-                          {adviser.full_name?.charAt(0) || adviser.email?.charAt(0)}
-                        </div>
-                        <div>
-                          <div className="font-medium">{adviser.full_name || adviser.email}</div>
-                          <div className="text-xs text-slate-500">{adviser.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm">12</td>
-                    <td className="px-6 py-4 text-sm">3</td>
-                    <td className="px-6 py-4">
-                      <Badge>Active</Badge>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Button size="sm" variant="outline">View</Button>
-                    </td>
-                  </tr>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredAdvisers.map((adviser) => (
+                <tr key={adviser.id} style={{
+                  borderBottom: `1px solid ${colors.core.greyLight}`,
+                  transition: 'background-color 0.2s ease',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = colors.core.offWhite}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <td style={{
+                    padding: '16px 32px',
+                    fontSize: '14px',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '8px',
+                        background: `linear-gradient(135deg, ${colors.accent.blue}, ${colors.accent.blueDeep})`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: colors.core.white,
+                        fontWeight: 600,
+                        fontSize: '14px',
+                      }}>
+                        {adviser.full_name?.charAt(0) || adviser.email?.charAt(0)}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: colors.core.navy }}>{adviser.full_name || adviser.email}</div>
+                        <div style={{ fontSize: '12px', color: colors.core.slateLight }}>{adviser.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style={{
+                    padding: '16px 32px',
+                    fontSize: '14px',
+                    color: colors.core.navy,
+                  }}>
+                    12
+                  </td>
+                  <td style={{
+                    padding: '16px 32px',
+                    fontSize: '14px',
+                    color: colors.core.navy,
+                  }}>
+                    3
+                  </td>
+                  <td style={{
+                    padding: '16px 32px',
+                    fontSize: '14px',
+                  }}>
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '4px 12px',
+                      borderRadius: '6px',
+                      background: 'rgba(16, 185, 129, 0.1)',
+                      color: colors.accent.success,
+                      fontSize: '12px',
+                      fontWeight: 600,
+                    }}>
+                      Active
+                    </span>
+                  </td>
+                  <td style={{
+                    padding: '16px 32px',
+                    fontSize: '14px',
+                  }}>
+                    <Button size="sm" variant="outline">View</Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </AdviceGroupLayout>
-  );
+      </div>
+      </div>
+      </div>
+      );
 }
