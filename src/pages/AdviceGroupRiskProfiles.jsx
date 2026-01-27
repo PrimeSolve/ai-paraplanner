@@ -339,8 +339,7 @@ export default function AdviceGroupRiskProfiles() {
               })}
             </div>
           )}
-              </div>
-          </div>
+            </div>
 
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
