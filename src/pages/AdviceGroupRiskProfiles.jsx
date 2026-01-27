@@ -383,9 +383,9 @@ export default function AdviceGroupRiskProfiles() {
                   <tbody>
                     <tr className="border-b border-slate-200">
                        <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#3B82F6'}}></span>Cash</span></td>
-                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.cash?.target || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, cash: {...formData.allocation.cash, target: Number(e.target.value)}}})} className="h-8 text-center" /></td>
-                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.cash?.min || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, cash: {...formData.allocation.cash, min: Number(e.target.value)}}})} className="h-8 text-center" /></td>
-                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.cash?.max || 0} onChange={(e) => setFormData({...formData, allocation: {...formData.allocation, cash: {...formData.allocation.cash, max: Number(e.target.value)}}})} className="h-8 text-center" /></td>
+                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.cash?.target || 0} onChange={(e) => updateAllocation('cash', 'target', e.target.value)} className="h-8 text-center" /></td>
+                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.cash?.min || 0} onChange={(e) => updateAllocation('cash', 'min', e.target.value)} className="h-8 text-center" /></td>
+                       <td className="text-center py-3 px-3"><Input type="number" min="0" max="100" value={formData.allocation?.cash?.max || 0} onChange={(e) => updateAllocation('cash', 'max', e.target.value)} className="h-8 text-center" /></td>
                      </tr>
                      <tr className="border-b border-slate-200">
                        <td className="py-3 px-3"><span className="inline-flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{background: '#10B981'}}></span>Australian Fixed Interest</span></td>
