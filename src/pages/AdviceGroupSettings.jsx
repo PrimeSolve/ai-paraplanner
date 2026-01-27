@@ -575,11 +575,80 @@ export default function AdviceGroupSettings() {
               )}
 
               {activeTab === 'permissions' && (
-                <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '20px' }}>
-                    Permission Settings
-                  </h3>
-                  <p style={{ color: '#64748b' }}>Permission settings coming soon...</p>
+                <div>
+                  {/* Adviser Permissions Card */}
+                  <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden', marginBottom: '24px' }}>
+                    <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+                        Adviser Permissions
+                      </h3>
+                      <p style={{ fontSize: '14px', color: '#64748b' }}>
+                        Control what advisers can do in the portal
+                      </p>
+                    </div>
+                    <div style={{ padding: '24px' }}>
+                      {[
+                        { key: 'submit_soa', label: 'Submit SOA requests', desc: 'All advisers can submit new SOA requests' },
+                        { key: 'view_all_completed', label: 'View all completed SOAs', desc: 'Advisers can view SOAs submitted by other advisers' },
+                        { key: 'download_soa', label: 'Download SOA documents', desc: 'Advisers can download completed SOA documents' }
+                      ].map(item => (
+                        <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '16px', borderBottom: '1px solid #e2e8f0' }} className="last:border-b-0">
+                          <div>
+                            <p style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>{item.label}</p>
+                            <p style={{ fontSize: '13px', color: '#64748b' }}>{item.desc}</p>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={formData.permissions[item.key]}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              permissions: { ...formData.permissions, [item.key]: e.target.checked }
+                            })}
+                            style={{ width: '48px', height: '28px', cursor: 'pointer', accentColor: '#3b82f6' }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Configuration Access Card */}
+                  <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden', marginBottom: '24px' }}>
+                    <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+                        Configuration Access
+                      </h3>
+                      <p style={{ fontSize: '14px', color: '#64748b' }}>
+                        Control who can modify configuration settings
+                      </p>
+                    </div>
+                    <div style={{ padding: '24px' }}>
+                      {[
+                        { key: 'edit_risk_profiles', label: 'Advisers can edit risk profiles', desc: 'Allow advisers to create and modify risk profiles' },
+                        { key: 'edit_model_portfolios', label: 'Advisers can edit model portfolios', desc: 'Allow advisers to create and modify model portfolios' },
+                        { key: 'invite_advisers', label: 'Advisers can invite other advisers', desc: 'Allow advisers to send invitations to new team members' }
+                      ].map(item => (
+                        <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '16px', borderBottom: '1px solid #e2e8f0' }} className="last:border-b-0">
+                          <div>
+                            <p style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>{item.label}</p>
+                            <p style={{ fontSize: '13px', color: '#64748b' }}>{item.desc}</p>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={formData.permissions[item.key]}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              permissions: { ...formData.permissions, [item.key]: e.target.checked }
+                            })}
+                            style={{ width: '48px', height: '28px', cursor: 'pointer', accentColor: '#3b82f6' }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
+                    {saving ? 'Saving...' : '💾 Save Changes'}
+                  </Button>
                 </div>
               )}
             </div>
