@@ -10,6 +10,7 @@ import AdminTeam from './pages/AdminTeam';
 import AdminTemplate from './pages/AdminTemplate';
 import AdviceGroupAdvisers from './pages/AdviceGroupAdvisers';
 import AdviceGroupClients from './pages/AdviceGroupClients';
+import AdviceGroupCompleted from './pages/AdviceGroupCompleted';
 import AdviceGroupDashboard from './pages/AdviceGroupDashboard';
 import AdviceGroupModelPortfolios from './pages/AdviceGroupModelPortfolios';
 import AdviceGroupMyProfile from './pages/AdviceGroupMyProfile';
@@ -67,7 +68,6 @@ import SOARequestStrategy from './pages/SOARequestStrategy';
 import SOARequestTransactions from './pages/SOARequestTransactions';
 import SOARequestWelcome from './pages/SOARequestWelcome';
 import SignIn from './pages/SignIn';
-import AdviceGroupCompleted from './pages/AdviceGroupCompleted';
 import __Layout from './Layout.jsx';
 
 
@@ -84,6 +84,7 @@ export const PAGES = {
     "AdminTemplate": AdminTemplate,
     "AdviceGroupAdvisers": AdviceGroupAdvisers,
     "AdviceGroupClients": AdviceGroupClients,
+    "AdviceGroupCompleted": AdviceGroupCompleted,
     "AdviceGroupDashboard": AdviceGroupDashboard,
     "AdviceGroupModelPortfolios": AdviceGroupModelPortfolios,
     "AdviceGroupMyProfile": AdviceGroupMyProfile,
@@ -141,7 +142,6 @@ export const PAGES = {
     "SOARequestTransactions": SOARequestTransactions,
     "SOARequestWelcome": SOARequestWelcome,
     "SignIn": SignIn,
-    "AdviceGroupCompleted": AdviceGroupCompleted,
 }
 
 export const pagesConfig = {
