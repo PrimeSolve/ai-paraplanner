@@ -15,7 +15,7 @@ import {
   HelpCircle,
   LogOut
 } from 'lucide-react';
-import AdviceGroupLayout from '../components/advicegroup/AdviceGroupLayout';
+import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
 
 // ============================================
 // DESIGN TOKENS
@@ -286,7 +286,8 @@ export default function AdviceGroupDashboard() {
   }, []);
 
   return (
-    <AdviceGroupLayout currentPage="AdviceGroupDashboard">
+    <div className="flex">
+      <AdviceGroupSidebar currentPage="dashboard" />
 
       <div style={{
         flex: 1,
@@ -657,6 +658,7 @@ export default function AdviceGroupDashboard() {
             </div>
           </div>
         </div>
-    </AdviceGroupLayout>
+      </div>
+    </div>
   );
 }

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search, User, HelpCircle, LogOut, ChevronRight, Download, X } from 'lucide-react';
 import { toast } from 'sonner';
-import AdviceGroupLayout from '../components/advicegroup/AdviceGroupLayout';
+import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function AdviceGroupAdvisers() {
@@ -119,7 +119,8 @@ export default function AdviceGroupAdvisers() {
   };
 
   return (
-    <AdviceGroupLayout currentPage="AdviceGroupAdvisers">
+    <div className="flex">
+      <AdviceGroupSidebar currentPage="advisers" />
 
       <div style={{
         flex: 1,
@@ -518,6 +519,6 @@ export default function AdviceGroupAdvisers() {
           </div>
         </DialogContent>
       </Dialog>
-    </AdviceGroupLayout>
+    </div>
     );
 }

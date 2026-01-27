@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, HelpCircle, LogOut } from 'lucide-react';
-import AdviceGroupLayout from '../components/advicegroup/AdviceGroupLayout';
+import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
 
 export default function AdviceGroupSOARequests() {
   const [requests, setRequests] = useState([]);
@@ -75,7 +75,9 @@ export default function AdviceGroupSOARequests() {
   };
 
   return (
-    <AdviceGroupLayout currentPage="AdviceGroupSOARequests">
+    <div className="flex">
+      <AdviceGroupSidebar currentPage="soa-requests" />
+      <div className="flex-1">
 
       <div style={{
         flex: 1,
@@ -182,6 +184,7 @@ export default function AdviceGroupSOARequests() {
           </TabsContent>
         </Tabs>
       </div>
-    </AdviceGroupLayout>
+    </div>
+    </div>
   );
 }

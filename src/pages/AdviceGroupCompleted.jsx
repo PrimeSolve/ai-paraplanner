@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import AdviceGroupLayout from '../components/advicegroup/AdviceGroupLayout';
+import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
 import { Input } from '@/components/ui/input';
 import { CheckCircle2, Award, Clock, Star, Search, Calendar, Download, MoreHorizontal, ChevronDown, FileText, Clipboard } from 'lucide-react';
 
@@ -147,16 +147,19 @@ export default function AdviceGroupCompleted() {
 
   if (loading) {
     return (
-      <AdviceGroupLayout currentPage="AdviceGroupCompleted">
-        <div className="flex items-center justify-center min-h-screen">
+      <div className="flex">
+        <AdviceGroupSidebar currentPage="completed" />
+        <div className="flex-1 flex items-center justify-center min-h-screen">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
-      </AdviceGroupLayout>
+      </div>
     );
   }
 
   return (
-    <AdviceGroupLayout currentPage="AdviceGroupCompleted">
+    <div className="flex">
+      <AdviceGroupSidebar currentPage="completed" />
+      <div className="flex-1">
       <div className="p-8">
 
         {/* Stats Grid */}
@@ -355,6 +358,7 @@ export default function AdviceGroupCompleted() {
           </div>
         </div>
       </div>
-    </AdviceGroupLayout>
+    </div>
+    </div>
   );
 }
