@@ -492,11 +492,9 @@ export default function AdviceGroupAdvisers() {
             </button>
           </div>
         </div>
-        </div>
-      </div>
 
-      {/* Invite Modal */}
-      <Dialog open={showInvite} onOpenChange={setShowInvite}>
+        {/* Invite Modal */}
+        <Dialog open={showInvite} onOpenChange={setShowInvite}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Invite New Adviser</DialogTitle>
@@ -526,7 +524,8 @@ export default function AdviceGroupAdvisers() {
             </div>
           </div>
         </DialogContent>
-      </Dialog>
+        </Dialog>
+      </div>
     </div>
-    );
+  );
 }
