@@ -8,7 +8,7 @@ export default function AdviserSidebar({ currentPage }) {
     { label: 'Dashboard', icon: LayoutDashboard, path: 'AdviserDashboard', id: 'dashboard' },
     { label: 'Clients', icon: Users, path: 'AdviserClients', id: 'clients' },
     { label: 'SOA Requests', icon: FileText, path: 'AdviserSOARequests', id: 'soa-requests' },
-    { label: 'Completed SOAs', icon: CheckCircle, path: 'AdviserAnalytics', id: 'completed' }
+    { label: 'Documents', icon: CheckCircle, path: 'AdviserDocuments', id: 'documents' }
   ];
 
   const accountItems = [
