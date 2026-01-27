@@ -80,6 +80,12 @@ export default function AdviceGroupRiskProfiles() {
         toast.error('Profile name is required');
         return;
       }
+
+      if (!user?.advice_group_id) {
+        toast.error('Error: advice_group_id not found. Please reload the page.');
+        console.error('User object:', user);
+        return;
+      }
       
       if (editingProfile) {
         await base44.entities.RiskProfile.update(editingProfile.id, {
