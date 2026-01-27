@@ -34,10 +34,23 @@ export default function AdviceGroupRiskProfiles() {
     name: '',
     description: '',
     risk_level: 1,
-    allocation: JSON.parse(JSON.stringify(defaultAllocation))
+    allocation: structuredClone(defaultAllocation)
   });
 
-  const [formData, setFormData] = useState(getEmptyFormData());
+  const [formData, setFormData] = useState(() => getEmptyFormData());
+
+  const updateAllocation = (assetClass, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      allocation: {
+        ...(prev.allocation || defaultAllocation),
+        [assetClass]: {
+          ...(prev.allocation?.[assetClass] || { target: 0, min: 0, max: 0 }),
+          [field]: Number(value)
+        }
+      }
+    }));
+  };
 
   useEffect(() => {
     loadData();
