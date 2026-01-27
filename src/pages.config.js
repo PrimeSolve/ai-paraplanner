@@ -22,6 +22,7 @@ import AdviserAnalytics from './pages/AdviserAnalytics';
 import AdviserCalendar from './pages/AdviserCalendar';
 import AdviserClientDetail from './pages/AdviserClientDetail';
 import AdviserClients from './pages/AdviserClients';
+import AdviserCompletions from './pages/AdviserCompletions';
 import AdviserDashboard from './pages/AdviserDashboard';
 import AdviserDocuments from './pages/AdviserDocuments';
 import AdviserFactFinds from './pages/AdviserFactFinds';
@@ -68,7 +69,6 @@ import SOARequestStrategy from './pages/SOARequestStrategy';
 import SOARequestTransactions from './pages/SOARequestTransactions';
 import SOARequestWelcome from './pages/SOARequestWelcome';
 import SignIn from './pages/SignIn';
-import AdviserCompletions from './pages/AdviserCompletions';
 import __Layout from './Layout.jsx';
 
 
@@ -97,6 +97,7 @@ export const PAGES = {
     "AdviserCalendar": AdviserCalendar,
     "AdviserClientDetail": AdviserClientDetail,
     "AdviserClients": AdviserClients,
+    "AdviserCompletions": AdviserCompletions,
     "AdviserDashboard": AdviserDashboard,
     "AdviserDocuments": AdviserDocuments,
     "AdviserFactFinds": AdviserFactFinds,
@@ -143,7 +144,6 @@ export const PAGES = {
     "SOARequestTransactions": SOARequestTransactions,
     "SOARequestWelcome": SOARequestWelcome,
     "SignIn": SignIn,
-    "AdviserCompletions": AdviserCompletions,
 }
 
 export const pagesConfig = {

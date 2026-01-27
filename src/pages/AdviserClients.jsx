@@ -79,6 +79,12 @@ export default function AdviserClients() {
     );
   }
 
+  // Calculate fact find stats
+  const ffComplete = clients.filter(c => c.fact_find === 'complete').length;
+  const ffInProgress = clients.filter(c => c.fact_find === 'in_progress').length;
+  const ffSent = clients.filter(c => c.fact_find === 'sent').length;
+  const ffNotStarted = clients.filter(c => c.fact_find === 'not_started').length;
+
   return (
     <div className="flex">
       <AdviserSidebar currentPage="clients" />
@@ -86,69 +92,70 @@ export default function AdviserClients() {
         <AdviserHeader user={user} />
         <div className="p-8">
           
-          {/* Stats Grid */}
-          <div className="grid grid-cols-4 gap-6 mb-8">
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white">
-              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4">
-                <Users className="w-6 h-6" />
+          {/* Stats Bar */}
+          <div style={{ display: 'flex', gap: '32px', padding: '20px 24px', background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(59, 130, 246, 0.1)' }}>
+                👤
               </div>
-              <div className="text-4xl font-bold mb-1">{clients.length}</div>
-              <div className="text-sm opacity-90">Total Clients</div>
+              <div>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{clients.length}</div>
+                <div style={{ fontSize: '13px', color: '#64748b' }}>Total Clients</div>
+              </div>
             </div>
-
-            <div className="bg-white rounded-2xl p-6 border border-slate-200">
-              <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(16, 185, 129, 0.1)' }}>
+                ✓
               </div>
-              <div className="text-4xl font-bold text-slate-800 mb-1">{clients.filter(c => c.status === 'active').length}</div>
-              <div className="text-sm text-slate-600">Active Clients</div>
+              <div>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{ffComplete}</div>
+                <div style={{ fontSize: '13px', color: '#64748b' }}>FF Complete</div>
+              </div>
             </div>
-
-            <div className="bg-white rounded-2xl p-6 border border-slate-200">
-              <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center mb-4">
-                <Clock className="w-6 h-6 text-orange-600" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(245, 158, 11, 0.1)' }}>
+                ⟳
               </div>
-              <div className="text-4xl font-bold text-slate-800 mb-1">{clients.filter(c => c.status === 'prospect').length}</div>
-              <div className="text-sm text-slate-600">Prospects</div>
+              <div>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{ffInProgress}</div>
+                <div style={{ fontSize: '13px', color: '#64748b' }}>FF In Progress</div>
+              </div>
             </div>
-
-            <div className="bg-white rounded-2xl p-6 border border-slate-200">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-blue-600" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(148, 163, 184, 0.1)' }}>
+                ✉
               </div>
-              <div className="text-4xl font-bold text-slate-800 mb-1">0</div>
-              <div className="text-sm text-slate-600">Pending Fact Finds</div>
+              <div>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{ffNotStarted}</div>
+                <div style={{ fontSize: '13px', color: '#64748b' }}>FF Not Sent</div>
+              </div>
             </div>
           </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-2xl border border-slate-200 mb-6">
-            <div className="p-6 flex items-end gap-4 flex-wrap">
-              <div className="flex-1 min-w-[250px] relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <Input
-                  placeholder="Search clients by name or email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-11 border-slate-200"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fact Find</span>
-                <Select value={factFindFilter} onValueChange={setFactFindFilter}>
-                  <SelectTrigger className="w-[180px] h-11">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="complete">Complete</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="sent">Sent</SelectItem>
-                    <SelectItem value="not_started">Not Started</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', width: '280px' }}>
+              <Search style={{ width: '18px', height: '18px', color: '#94a3b8', flexShrink: 0 }} />
+              <input
+                type="text"
+                placeholder="Search clients..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ border: 'none', background: 'transparent', fontSize: '14px', color: '#1e293b', width: '100%', outline: 'none', fontFamily: 'Inter, sans-serif' }}
+              />
             </div>
+            <Select value={factFindFilter} onValueChange={setFactFindFilter}>
+              <SelectTrigger style={{ width: '180px', height: '40px', padding: '10px 14px' }}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Fact Find Status</SelectItem>
+                <SelectItem value="complete">Complete</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="sent">Sent</SelectItem>
+                <SelectItem value="not_started">Not Started</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Table */}
