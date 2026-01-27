@@ -73,17 +73,24 @@ export default function AdviserDashboard() {
 
   if (loading) {
     return (
-      <AdviserLayout currentPage="AdviserDashboard">
-        <div className="p-8 flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+      <div className="flex">
+        <AdviserSidebar currentPage="dashboard" />
+        <div style={{ marginLeft: '260px', flex: 1 }}>
+          <AdviserHeader user={user} />
+          <div className="p-8 flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+          </div>
         </div>
-      </AdviserLayout>
+      </div>
     );
   }
 
   return (
-    <AdviserLayout currentPage="AdviserDashboard">
-      <div style={{ padding: '24px 32px' }}>
+    <div className="flex">
+      <AdviserSidebar currentPage="dashboard" />
+      <div style={{ marginLeft: '260px', flex: 1 }}>
+        <AdviserHeader user={user} />
+        <div style={{ padding: '24px 32px' }}>
 
           {/* Stats Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
