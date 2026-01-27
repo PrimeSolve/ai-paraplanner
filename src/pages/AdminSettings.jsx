@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 import { 
   Building2, 
   Target, 
@@ -282,6 +283,7 @@ export default function AdminSettings() {
                       onClick={() => {
                         localStorage.setItem('businessDetails', JSON.stringify(businessDetails));
                         window.dispatchEvent(new Event('businessDetailsUpdated'));
+                        toast.success('Business details saved successfully');
                       }}
                     >
                       Save Changes
