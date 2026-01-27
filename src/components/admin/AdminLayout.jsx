@@ -111,7 +111,9 @@ export default function AdminLayout({ children, currentPage }) {
                 <div className="text-white font-semibold text-sm truncate">
                   AI Paraplanner
                 </div>
-                <div className="text-[#64748b] text-xs">Admin</div>
+                <div className="text-[#64748b] text-xs capitalize">
+                  {user?.role === 'advice_group' ? 'Advice Group' : user?.role || 'Admin'}
+                </div>
               </div>
             </div>
           </Link>
