@@ -12,11 +12,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useRole } from '../components/RoleContext';
 
 export default function AdminAdvisers() {
+  const navigate = useNavigate();
+  const { switchRole } = useRole();
   const [advisers, setAdvisers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [planFilter, setPlanFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [user, setUser] = useState(null);
   const itemsPerPage = 7;
 
   useEffect(() => {
