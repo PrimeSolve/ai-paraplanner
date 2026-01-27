@@ -110,7 +110,9 @@ export default function AdviceGroupRiskProfiles() {
       name: profile.name || '',
       description: profile.description || '',
       risk_level: profile.risk_level || 1,
-      allocation: JSON.parse(JSON.stringify(profile.allocation || defaultAllocation))
+      allocation: profile.allocation 
+        ? structuredClone(profile.allocation) 
+        : structuredClone(defaultAllocation)
     });
     setShowDialog(true);
   };
