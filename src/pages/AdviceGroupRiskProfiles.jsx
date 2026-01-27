@@ -315,188 +315,79 @@ export default function AdviceGroupRiskProfiles() {
         </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingProfile ? 'Edit' : 'Add'} Risk Profile</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-6 py-4">
-            {/* Basic Info */}
+        <DialogContent className="sm:max-w-2xl">
+          <div className="border-b pb-4 mb-4">
+            <h2 className="text-xl font-bold text-slate-900">{editingProfile ? 'Edit' : 'Add'} Risk Profile</h2>
+          </div>
+          
+          <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
             <div>
-              <Label className="text-sm font-semibold">Profile Name</Label>
+              <Label className="text-sm font-bold text-slate-900">Profile Name</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="e.g., Defensive, Conservative, Balanced"
-                className="mt-2"
+                className="mt-1 h-10"
               />
             </div>
 
             <div>
-              <Label className="text-sm font-semibold">Description</Label>
+              <Label className="text-sm font-bold text-slate-900">Description</Label>
               <Input
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                placeholder="e.g., Capital preservation focus with minimal growth exposure"
-                className="mt-2"
+                className="mt-1 h-10"
               />
             </div>
 
-            {/* Risk Settings */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-3">
               <div>
-                <Label className="text-sm font-semibold">Risk Level (1-7)</Label>
+                <Label className="text-sm font-bold text-slate-900">Risk Level (1-7)</Label>
                 <Input
                   type="number"
                   min="1"
                   max="7"
                   value={formData.risk_level}
                   onChange={(e) => setFormData({...formData, risk_level: Number(e.target.value)})}
-                  className="mt-2"
+                  className="mt-1 h-10"
                 />
               </div>
               <div>
-                <Label className="text-sm font-semibold">Min Score</Label>
+                <Label className="text-sm font-bold text-slate-900">Min Score</Label>
                 <Input
                   type="number"
                   value={formData.min_score}
                   onChange={(e) => setFormData({...formData, min_score: Number(e.target.value)})}
-                  className="mt-2"
+                  className="mt-1 h-10"
                 />
               </div>
               <div>
-                <Label className="text-sm font-semibold">Max Score</Label>
+                <Label className="text-sm font-bold text-slate-900">Max Score</Label>
                 <Input
                   type="number"
                   value={formData.max_score}
                   onChange={(e) => setFormData({...formData, max_score: Number(e.target.value)})}
-                  className="mt-2"
+                  className="mt-1 h-10"
                 />
               </div>
             </div>
 
             <div>
-              <Label className="text-sm font-semibold">Expected Return (%)</Label>
+              <Label className="text-sm font-bold text-slate-900">Expected Return (%)</Label>
               <Input
                 type="number"
                 step="0.1"
                 value={formData.expected_return}
                 onChange={(e) => setFormData({...formData, expected_return: Number(e.target.value)})}
-                className="mt-2"
+                className="mt-1 h-10"
               />
             </div>
 
-            {/* Asset Allocation */}
-            <div className="border-t pt-6">
-              <h3 className="font-bold text-slate-900 mb-4">Asset Allocation</h3>
-              <div className="space-y-3">
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-xs font-semibold text-slate-600 uppercase">Cash</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={formData.allocation?.cash || 0}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        allocation: {...formData.allocation, cash: Number(e.target.value)}
-                      })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs font-semibold text-slate-600 uppercase">Australian Fixed Interest</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={formData.allocation?.au_fixed_interest || 0}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        allocation: {...formData.allocation, au_fixed_interest: Number(e.target.value)}
-                      })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs font-semibold text-slate-600 uppercase">International Fixed Interest</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={formData.allocation?.int_fixed_interest || 0}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        allocation: {...formData.allocation, int_fixed_interest: Number(e.target.value)}
-                      })}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-xs font-semibold text-slate-600 uppercase">Property</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={formData.allocation?.property || 0}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        allocation: {...formData.allocation, property: Number(e.target.value)}
-                      })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs font-semibold text-slate-600 uppercase">Alternatives</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={formData.allocation?.alternatives || 0}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        allocation: {...formData.allocation, alternatives: Number(e.target.value)}
-                      })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs font-semibold text-slate-600 uppercase">Australian Equity</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={formData.allocation?.au_equities || 0}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        allocation: {...formData.allocation, au_equities: Number(e.target.value)}
-                      })}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs font-semibold text-slate-600 uppercase">International Equity</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={formData.allocation?.int_equities || 0}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      allocation: {...formData.allocation, int_equities: Number(e.target.value)}
-                    })}
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-2 justify-end pt-4 border-t">
-              <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-              <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <div className="flex gap-3 justify-end pt-2 border-t">
+              <Button variant="outline" onClick={() => setShowDialog(false)} className="h-10">
+                Cancel
+              </Button>
+              <Button onClick={handleSave} className="bg-cyan-600 hover:bg-cyan-700 text-white h-10">
                 {editingProfile ? 'Update' : 'Create'}
               </Button>
             </div>
