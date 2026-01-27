@@ -222,12 +222,32 @@ export default function AdviserClients() {
                         </td>
                         <td style={{ padding: '16px 24px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <button style={{ padding: '6px 12px', background: 'transparent', border: 'none', color: '#3b82f6', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
-                              View Fact Find
-                            </button>
-                            <button style={{ padding: '4px 8px', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                              <MoreHorizontal style={{ width: '18px', height: '18px', color: '#64748b' }} />
-                            </button>
+                            {client.fact_find === 'complete' && (
+                              <button style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #e2e8f0', color: '#3b82f6', fontSize: '13px', fontWeight: '500', cursor: 'pointer', borderRadius: '8px' }}>
+                                View Fact Find
+                              </button>
+                            )}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button style={{ padding: '4px 8px', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                                  <MoreHorizontal style={{ width: '18px', height: '18px', color: '#64748b' }} />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', color: '#3b82f6', cursor: 'pointer' }}>
+                                  <div style={{ fontSize: '14px' }}>📧</div>
+                                  Send Fact Find
+                                </DropdownMenuItem>
+                                <DropdownMenuItem style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', color: '#3b82f6', cursor: 'pointer' }}>
+                                  <Edit2 style={{ width: '14px', height: '14px' }} />
+                                  Edit Client
+                                </DropdownMenuItem>
+                                <DropdownMenuItem style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', color: '#ef4444', cursor: 'pointer' }}>
+                                  <Trash2 style={{ width: '14px', height: '14px' }} />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </td>
                       </tr>
