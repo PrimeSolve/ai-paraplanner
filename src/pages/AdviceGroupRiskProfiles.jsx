@@ -340,8 +340,9 @@ export default function AdviceGroupRiskProfiles() {
             </div>
           )}
               </div>
+          </div>
 
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+          <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <div className="border-b pb-4 mb-6">
             <h2 className="text-xl font-bold text-slate-900">{editingProfile ? 'Edit' : 'Add'} Risk Profile</h2>
