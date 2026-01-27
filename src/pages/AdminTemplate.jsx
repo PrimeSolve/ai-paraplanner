@@ -91,12 +91,15 @@ export default function AdminTemplate() {
       ]
     },
     {
-      group: 'assumptions',
-      groupLabel: 'Assumptions & Basis',
-      icon: '📊',
+      group: 'fees-disclosure',
+      groupLabel: 'Fees & Disclosure',
+      icon: '💰',
       sections: [
-        { id: 'financial-assumptions', label: 'Financial Assumptions', description: 'Market returns and economic assumptions', status: 'configured' },
-        { id: 'basis-of-advice', label: 'Basis of Advice', description: 'How the advice was developed', status: 'needs-comment' }
+        { id: 'adviser-fee-disclosure', label: 'Adviser Fee Disclosure', description: 'Full fee disclosure', status: 'needs-comment', badge: null },
+        { id: 'ongoing-service-fees', label: 'Ongoing Service Fees', description: 'Recurring fees', status: 'needs-comment', badge: null },
+        { id: 'commissions', label: 'Commissions', description: 'Commission disclosure', status: 'needs-comment', badge: null },
+        { id: 'disclaimer', label: 'Disclaimer', description: 'Legal disclaimers', status: 'needs-comment', badge: null },
+        { id: 'how-to-proceed', label: 'How to Proceed', description: 'Next steps', status: 'needs-comment', badge: null }
       ]
     }
   ];
