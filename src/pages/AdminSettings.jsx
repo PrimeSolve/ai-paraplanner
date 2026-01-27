@@ -31,7 +31,8 @@ export default function AdminSettings() {
     abn: '12 345 678 901',
     businessEmail: 'hello@aiparaplanner.com.au',
     supportEmail: 'support@aiparaplanner.com.au',
-    address: 'Level 10, 123 Collins Street\nMelbourne VIC 3000'
+    address: 'Level 10, 123 Collins Street\nMelbourne VIC 3000',
+    role: 'admin'
   });
 
   const [slaTargets, setSlaTargets] = useState([
@@ -116,9 +117,9 @@ export default function AdminSettings() {
             <Link to={createPageUrl('AdminSettings')} className="no-underline">
               <button className="flex items-center gap-2 px-4 py-2 bg-[#8b5cf6] text-white rounded-lg hover:bg-[#7c3aed] transition-colors">
                 <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center text-xs font-bold">
-                  P
+                  {businessDetails.companyName.charAt(0)}
                 </div>
-                <span className="font-medium">PrimeSolve Group</span>
+                <span className="font-medium">{businessDetails.companyName}</span>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -195,8 +196,8 @@ export default function AdminSettings() {
                     <p className="text-xs text-[#64748b] mt-2">PNG or SVG, max 2MB</p>
                   </div>
 
-                  {/* Company Name & ABN */}
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* Company Name, ABN & Role */}
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
                       <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Company Name</Label>
                       <Input
@@ -212,6 +213,23 @@ export default function AdminSettings() {
                         onChange={(e) => setBusinessDetails({...businessDetails, abn: e.target.value})}
                         className="border-[#e2e8f0]"
                       />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Role</Label>
+                      <Select
+                        value={businessDetails.role}
+                        onValueChange={(value) => setBusinessDetails({...businessDetails, role: value})}
+                      >
+                        <SelectTrigger className="border-[#e2e8f0]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="advice_group">Advice Group</SelectItem>
+                          <SelectItem value="adviser">Adviser</SelectItem>
+                          <SelectItem value="client">Client</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
