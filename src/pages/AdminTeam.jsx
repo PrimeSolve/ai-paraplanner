@@ -137,22 +137,13 @@ export default function AdminTeam() {
             </h1>
             <p className="text-sm text-[#64748b]">Manage your paraplanners and admins</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Button 
-              onClick={() => setShowInviteModal(true)}
-              className="bg-[#3b82f6] hover:bg-[#2563eb] text-white shadow-sm"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Invite Member
-            </Button>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white border border-[#e2e8f0] rounded-lg cursor-pointer hover:bg-[#f8fafc] transition-colors">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                P
-              </div>
-              <span className="text-sm font-medium text-[#0f172a]">PrimeSolve Group</span>
-              <ChevronDown className="w-4 h-4 text-[#64748b]" />
-            </div>
-          </div>
+          <Button 
+            onClick={() => setShowInviteModal(true)}
+            className="bg-[#3b82f6] hover:bg-[#2563eb] text-white shadow-sm"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Invite Member
+          </Button>
         </div>
 
         {/* Stats Cards */}
