@@ -85,6 +85,9 @@ export default function AdminAdviceGroups() {
     <AdminLayout currentPage="AdminAdviceGroups">
       <div className="p-8">
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <button style={{ display: 'none' }} />
+          </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Create New Advice Group</DialogTitle>
@@ -222,12 +225,13 @@ export default function AdminAdviceGroups() {
                  <option value="default">Default</option>
                </select>
              </div>
-             <DialogTrigger asChild>
-               <Button className="bg-blue-600 hover:bg-blue-700">
-                 <Plus className="w-4 h-4 mr-2" />
-                 Add Advice Group
-               </Button>
-             </DialogTrigger>
+             <Button 
+               onClick={() => setDialogOpen(true)}
+               className="bg-blue-600 hover:bg-blue-700"
+             >
+               <Plus className="w-4 h-4 mr-2" />
+               Add Advice Group
+             </Button>
            </div>
          </div>
 
