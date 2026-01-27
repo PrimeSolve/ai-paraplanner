@@ -63,6 +63,11 @@ export default function AdviceGroupRiskProfiles() {
 
   const handleSave = async () => {
     try {
+      if (!formData.name.trim()) {
+        toast.error('Profile name is required');
+        return;
+      }
+      
       if (editingProfile) {
         await base44.entities.RiskProfile.update(editingProfile.id, {
           ...formData,
@@ -78,14 +83,10 @@ export default function AdviceGroupRiskProfiles() {
       }
       setShowDialog(false);
       setEditingProfile(null);
-      setFormData({
-       name: '',
-       description: '',
-       risk_level: 1,
-       allocation: defaultAllocation
-      });
+      setFormData(getEmptyFormData());
       loadData();
     } catch (error) {
+      console.error('Save error:', error);
       toast.error('Failed to save risk profile');
     }
   };
