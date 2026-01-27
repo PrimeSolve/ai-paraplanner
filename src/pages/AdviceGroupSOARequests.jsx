@@ -76,12 +76,13 @@ export default function AdviceGroupSOARequests() {
   return (
     <div className="flex">
       <AdviceGroupSidebar currentPage="soa-requests" />
-      <div className="flex-1">
+      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <AdviceGroupHeader user={user} />
 
-      <div style={{
-        flex: 1,
-        padding: '32px',
-      }}>
+        <div style={{
+          flex: 1,
+          padding: '32px',
+        }}>
         <div className="grid grid-cols-4 gap-4 mb-6">
           <Card className="p-4">
             <div className="text-3xl font-['Fraunces'] font-semibold text-cyan-600 mb-1">
