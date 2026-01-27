@@ -54,8 +54,17 @@ export default function MyProfile() {
         phone: formData.phone
       });
       console.log('Update result:', result);
+      
+      // Update local state directly instead of reloading from API
+      // This prevents stale data from overwriting the form
+      setUser(prev => ({
+        ...prev,
+        full_name: formData.full_name,
+        phone: formData.phone
+      }));
+      
       toast.success('Profile updated successfully');
-      await loadUser();
+      
       // Trigger event to update user in AdminLayout
       window.dispatchEvent(new Event('userProfileUpdated'));
     } catch (error) {
