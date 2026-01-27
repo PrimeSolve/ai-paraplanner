@@ -130,13 +130,7 @@ export default function AdminSettings() {
     <AdminLayout currentPage="AdminSettings">
       <div className="min-h-screen bg-[#f8fafc]">
         <div className="p-8">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-['Playfair_Display'] font-semibold text-[#0f172a] mb-1">
-              Settings
-            </h1>
-            <p className="text-sm text-[#64748b]">Configure your AI Paraplanner workspace</p>
-          </div>
+
 
           {/* Content */}
           <div className="flex gap-6">
