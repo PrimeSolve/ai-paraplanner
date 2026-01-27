@@ -123,9 +123,17 @@ export default function AdviceGroupAdvisers() {
       <AdviceGroupSidebar currentPage="advisers" />
 
       <div style={{
+        marginLeft: '260px',
         flex: 1,
-        padding: '32px',
+        display: 'flex',
+        flexDirection: 'column',
       }}>
+        <AdviceGroupHeader user={user} />
+
+        <div style={{
+          flex: 1,
+          padding: '32px',
+        }}>
         
         {/* Stats Pills */}
         <div style={{
