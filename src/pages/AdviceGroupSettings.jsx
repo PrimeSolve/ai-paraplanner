@@ -372,11 +372,80 @@ export default function AdviceGroupSettings() {
               )}
 
               {activeTab === 'notifications' && (
-                <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '20px' }}>
-                    Notification Settings
-                  </h3>
-                  <p style={{ color: '#64748b' }}>Notification settings coming soon...</p>
+                <div>
+                  {/* Email Notifications Card */}
+                  <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden', marginBottom: '24px' }}>
+                    <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+                        Email Notifications
+                      </h3>
+                      <p style={{ fontSize: '14px', color: '#64748b' }}>
+                        Choose which events trigger email notifications
+                      </p>
+                    </div>
+                    <div style={{ padding: '24px' }}>
+                      {[
+                        { key: 'new_soa_submitted', label: 'New SOA submitted', desc: 'Receive an email when an adviser submits a new SOA request' },
+                        { key: 'soa_status_changes', label: 'SOA status changes', desc: 'Receive updates when an SOA moves to a new status' },
+                        { key: 'soa_completed', label: 'SOA completed', desc: 'Receive an email when SOA is marked as complete' },
+                        { key: 'comments_feedback', label: 'Comments & feedback', desc: 'Receive notifications when someone comments on an SOA' }
+                      ].map(item => (
+                        <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '16px', borderBottom: '1px solid #e2e8f0' }} className="last:border-b-0">
+                          <div>
+                            <p style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>{item.label}</p>
+                            <p style={{ fontSize: '13px', color: '#64748b' }}>{item.desc}</p>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={formData.notifications[item.key]}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              notifications: { ...formData.notifications, [item.key]: e.target.checked }
+                            })}
+                            style={{ width: '48px', height: '28px', cursor: 'pointer', accentColor: '#3b82f6' }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Summary Reports Card */}
+                  <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden', marginBottom: '24px' }}>
+                    <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+                        Summary Reports
+                      </h3>
+                      <p style={{ fontSize: '14px', color: '#64748b' }}>
+                        Configure automated summary emails
+                      </p>
+                    </div>
+                    <div style={{ padding: '24px' }}>
+                      {[
+                        { key: 'daily_summary', label: 'Daily summary', desc: 'Receive a daily overview of SOA activity each morning' },
+                        { key: 'weekly_report', label: 'Weekly report', desc: 'Receive a comprehensive weekly report every Monday' }
+                      ].map(item => (
+                        <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '16px', borderBottom: '1px solid #e2e8f0' }} className="last:border-b-0">
+                          <div>
+                            <p style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>{item.label}</p>
+                            <p style={{ fontSize: '13px', color: '#64748b' }}>{item.desc}</p>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={formData.notifications[item.key]}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              notifications: { ...formData.notifications, [item.key]: e.target.checked }
+                            })}
+                            style={{ width: '48px', height: '28px', cursor: 'pointer', accentColor: '#3b82f6' }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
+                    {saving ? 'Saving...' : '💾 Save Changes'}
+                  </Button>
                 </div>
               )}
 
