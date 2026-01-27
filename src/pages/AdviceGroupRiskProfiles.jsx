@@ -189,7 +189,7 @@ export default function AdviceGroupRiskProfiles() {
               </Button>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {profiles.map((profile) => {
                 const isExpanded = expandedId === profile.id;
                 const defensiveAlloc = (profile.allocation?.cash?.target || 0) + (profile.allocation?.au_fixed_interest?.target || 0) + (profile.allocation?.int_fixed_interest?.target || 0);
