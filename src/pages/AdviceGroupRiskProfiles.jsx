@@ -75,6 +75,7 @@ export default function AdviceGroupRiskProfiles() {
   };
 
   const handleSave = async () => {
+    console.log('handleSave called with formData:', formData);
     try {
       if (!formData.name.trim()) {
         toast.error('Profile name is required');
