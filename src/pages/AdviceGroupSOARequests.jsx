@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LayoutGrid, FileText, CheckCircle, Users, Tag, PlusCircle, Settings, User, HelpCircle, LogOut } from 'lucide-react';
 
