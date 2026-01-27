@@ -167,7 +167,7 @@ export default function AdviceGroupRiskProfiles() {
               <h1 className="text-2xl font-bold text-slate-800">Risk Profiles</h1>
               <p className="text-sm text-slate-600 mt-1">{profiles.length} profiles configured</p>
             </div>
-            <Button onClick={() => { setEditingProfile(null); setFormData({ name: '', description: '', risk_level: 1, min_score: 0, max_score: 10, allocation: defaultAllocation, expected_return: 0, timeframe: '', volatility_tolerance: '', min_max: { cash: { min: 20, max: 50 }, au_fixed_interest: { min: 25, max: 45 }, int_fixed_interest: { min: 10, max: 30 }, property: { min: 0, max: 10 }, alternatives: { min: 0, max: 5 }, au_equities: { min: 0, max: 20 }, int_equities: { min: 0, max: 15 } } }); setShowDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={() => { setEditingProfile(null); setFormData({ name: '', description: '', risk_level: 1, min_score: 0, max_score: 10, allocation: defaultAllocation, expected_return: 0, timeframe: '', volatility_tolerance: '' }); setShowDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
               <Plus className="w-4 h-4 mr-2" />
               Add Profile
             </Button>
