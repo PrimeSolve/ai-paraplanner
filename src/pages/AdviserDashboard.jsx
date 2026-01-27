@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import AdviserLayout from '../components/adviser/AdviserLayout';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, FileText, CheckCircle, Clock } from 'lucide-react';
+import { Users, FileText, CheckCircle, Clock, Eye, Plus, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import AdviserSidebar from '../components/adviser/AdviserSidebar';
+import AdviserHeader from '../components/adviser/AdviserHeader';
 
 export default function AdviserDashboard() {
   const [loading, setLoading] = useState(true);
