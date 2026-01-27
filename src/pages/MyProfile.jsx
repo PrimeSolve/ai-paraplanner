@@ -281,7 +281,10 @@ export default function MyProfile() {
             </Button>
             <Button 
               className="bg-[#3b82f6] hover:bg-[#2563eb] text-white"
-              onClick={handleSave}
+              onClick={() => {
+                console.log('🔴 BUTTON CLICKED - BEFORE HANDLESAVE');
+                handleSave();
+              }}
             >
               Save Changes
             </Button>
