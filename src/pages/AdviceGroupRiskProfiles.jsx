@@ -85,24 +85,34 @@ export default function AdviceGroupRiskProfiles() {
       };
 
   const handleSave = async () => {
-        try {
-          if (!formData.name.trim()) {
-            toast.error('Profile name is required');
-            return;
-          }
+          try {
+            if (!formData.name.trim()) {
+              toast.error('Profile name is required');
+              return;
+            }
 
-          if (!user?.advice_group_id) {
-            toast.error('Error: advice_group_id not found. Please reload the page.');
-            return;
-          }
+            let groupId = user?.advice_group_id;
 
-          const dataToSave = {
-            name: formData.name,
-            description: formData.description,
-            risk_level: formData.risk_level,
-            allocation: formData.allocation,
-            advice_group_id: user.advice_group_id
-          };
+            // If no advice_group_id, get the first available one
+            if (!groupId) {
+              const groups = await base44.entities.AdviceGroup.list('created_date', 1);
+              if (groups.length > 0) {
+                groupId = groups[0].id;
+              }
+            }
+
+            if (!groupId) {
+              toast.error('No advice group found. Please contact support.');
+              return;
+            }
+
+            const dataToSave = {
+              name: formData.name,
+              description: formData.description,
+              risk_level: formData.risk_level,
+              allocation: formData.allocation,
+              advice_group_id: groupId
+            };
 
           if (editingProfile) {
             await base44.entities.RiskProfile.update(editingProfile.id, dataToSave);
