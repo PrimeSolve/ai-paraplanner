@@ -5,8 +5,9 @@ import { base44 } from '@/api/base44Client';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, LayoutGrid, FileText, CheckCircle, Users, Tag, PlusCircle, Settings, User, HelpCircle, LogOut } from 'lucide-react';
+import { Plus, Search, User, HelpCircle, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
+import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
 
 export default function AdviceGroupAdvisers() {
   const [advisers, setAdvisers] = useState([]);
@@ -57,14 +58,6 @@ export default function AdviceGroupAdvisers() {
   );
 
   const colors = {
-    sidebar: {
-      bg: '#0f172a',
-      hover: '#1e293b',
-      active: 'rgba(59, 130, 246, 0.15)',
-      text: '#94a3b8',
-      textActive: '#ffffff',
-      accent: '#3b82f6',
-    },
     core: {
       navy: '#1e293b',
       slate: '#475569',
@@ -87,218 +80,6 @@ export default function AdviceGroupAdvisers() {
     }
   };
 
-  const Sidebar = ({ currentPage }) => {
-    const navItems = [
-      { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid, badge: null },
-      { id: 'soa-requests', label: 'SOA Requests', icon: FileText, badge: '12' },
-      { id: 'completed', label: 'Completed SOAs', icon: CheckCircle, badge: null },
-    ];
-
-    const teamItems = [
-      { id: 'advisers', label: 'Advisers', icon: Users, badge: '8' },
-    ];
-
-    const configItems = [
-      { id: 'template', label: 'SOA Template', icon: FileText, badge: null },
-      { id: 'risk-profiles', label: 'Risk Profiles', icon: Tag, badge: null },
-      { id: 'portfolios', label: 'Model Portfolios', icon: PlusCircle, badge: null },
-      { id: 'settings', label: 'Settings', icon: Settings, badge: null },
-    ];
-
-    const pageMap = {
-      'dashboard': 'AdviceGroupDashboard',
-      'soa-requests': 'AdviceGroupSOARequests',
-      'completed': 'AdviceGroupCompleted',
-      'advisers': 'AdviceGroupAdvisers',
-      'template': 'AdviceGroupSOATemplate',
-      'risk-profiles': 'AdviceGroupRiskProfiles',
-      'portfolios': 'AdviceGroupModelPortfolios',
-      'settings': 'AdviceGroupSettings',
-    };
-
-    const NavItem = ({ item, isActive }) => {
-      const Icon = item.icon;
-      return (
-        <Link
-          to={createPageUrl(pageMap[item.id])}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '12px 14px',
-            borderRadius: '10px',
-            color: isActive ? colors.sidebar.accent : colors.sidebar.text,
-            backgroundColor: isActive ? colors.sidebar.active : 'transparent',
-            textDecoration: 'none',
-            fontSize: '14px',
-            fontWeight: 500,
-            transition: 'all 0.2s ease',
-            marginBottom: '4px',
-          }}
-          onMouseEnter={(e) => {
-            if (!isActive) {
-              e.currentTarget.style.backgroundColor = colors.sidebar.hover;
-              e.currentTarget.style.color = colors.sidebar.textActive;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive) {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = colors.sidebar.text;
-            }
-          }}
-        >
-          <Icon size={20} />
-          <span style={{ flex: 1 }}>{item.label}</span>
-          {item.badge && (
-            <span style={{
-              padding: '2px 8px',
-              backgroundColor: colors.sidebar.accent,
-              color: 'white',
-              fontSize: '11px',
-              fontWeight: 700,
-              borderRadius: '10px',
-            }}>
-              {item.badge}
-            </span>
-          )}
-        </Link>
-      );
-    };
-
-    const NavSection = ({ title, items }) => (
-      <div style={{ marginBottom: '24px' }}>
-        {title && (
-          <div style={{
-            fontSize: '11px',
-            fontWeight: 700,
-            color: colors.sidebar.text,
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            padding: '0 12px',
-            marginBottom: '8px',
-          }}>
-            {title}
-          </div>
-        )}
-        {items.map(item => (
-          <NavItem key={item.id} item={item} isActive={currentPage === item.id} />
-        ))}
-      </div>
-    );
-
-    return (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '260px',
-        height: '100vh',
-        background: colors.sidebar.bg,
-        display: 'flex',
-        flexDirection: 'column',
-        zIndex: 100,
-        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-      }}>
-        <div style={{
-          padding: '24px 20px',
-          borderBottom: `1px solid rgba(255, 255, 255, 0.1)`,
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px',
-          }}>
-            <div style={{
-              width: '44px',
-              height: '44px',
-              background: `linear-gradient(135deg, ${colors.accent.blue}, ${colors.accent.blueDeep})`,
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 700,
-              color: 'white',
-              fontSize: '16px',
-            }}>
-              AI
-            </div>
-            <div>
-              <div style={{
-                fontWeight: 700,
-                fontSize: '16px',
-                color: 'white',
-              }}>
-                AI Paraplanner
-              </div>
-              <div style={{
-                fontSize: '12px',
-                color: colors.sidebar.text,
-              }}>
-                Advice Group Portal
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <nav style={{
-          flex: 1,
-          padding: '20px 12px',
-          overflowY: 'auto',
-        }}>
-          <NavSection title="OVERVIEW" items={navItems} />
-          <NavSection title="TEAM" items={teamItems} />
-          <NavSection title="CONFIGURATION" items={configItems} />
-        </nav>
-
-        <div style={{
-          padding: '16px',
-          borderTop: `1px solid rgba(255, 255, 255, 0.1)`,
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '12px',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              background: `linear-gradient(135deg, ${colors.accent.coral}, ${colors.accent.pink})`,
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 700,
-              color: 'white',
-              fontSize: '14px',
-            }}>
-              PS
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{
-                fontSize: '14px',
-                fontWeight: 600,
-                color: 'white',
-              }}>
-                PrimeSolve Group
-              </div>
-              <div style={{
-                fontSize: '12px',
-                color: colors.sidebar.text,
-              }}>
-                Group Admin
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div style={{
       display: 'flex',
@@ -306,7 +87,7 @@ export default function AdviceGroupAdvisers() {
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
       background: colors.core.offWhite,
     }}>
-      <Sidebar currentPage="advisers" />
+      <AdviceGroupSidebar currentPage="advisers" />
 
       <div style={{
         marginLeft: '260px',
