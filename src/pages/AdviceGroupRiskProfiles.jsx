@@ -340,49 +340,7 @@ export default function AdviceGroupRiskProfiles() {
               <Input
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                className="mt-2 h-10"
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label className="text-sm font-bold text-slate-900">Risk Level (1-7)</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="7"
-                  value={formData.risk_level}
-                  onChange={(e) => setFormData({...formData, risk_level: Number(e.target.value)})}
-                  className="mt-2 h-10"
-                />
-              </div>
-              <div>
-                <Label className="text-sm font-bold text-slate-900">Min Score</Label>
-                <Input
-                  type="number"
-                  value={formData.min_score}
-                  onChange={(e) => setFormData({...formData, min_score: Number(e.target.value)})}
-                  className="mt-2 h-10"
-                />
-              </div>
-              <div>
-                <Label className="text-sm font-bold text-slate-900">Max Score</Label>
-                <Input
-                  type="number"
-                  value={formData.max_score}
-                  onChange={(e) => setFormData({...formData, max_score: Number(e.target.value)})}
-                  className="mt-2 h-10"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-sm font-bold text-slate-900">Expected Return (%)</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={formData.expected_return}
-                onChange={(e) => setFormData({...formData, expected_return: Number(e.target.value)})}
+                placeholder="e.g., Capital preservation focus with minimal growth exposure"
                 className="mt-2 h-10"
               />
             </div>
