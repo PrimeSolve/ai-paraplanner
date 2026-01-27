@@ -279,15 +279,28 @@ export default function MyProfile() {
             >
               Cancel
             </Button>
-            <Button 
-              className="bg-[#3b82f6] hover:bg-[#2563eb] text-white"
-              onClick={() => {
-                console.log('🔴 BUTTON CLICKED - BEFORE HANDLESAVE');
-                handleSave();
+            <button
+              type="button"
+              className="px-4 py-2 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-md font-medium"
+              onClick={async () => {
+                console.log('🔴 RAW BUTTON CLICKED');
+                try {
+                  console.log('Form data:', formData);
+                  const result = await base44.auth.updateMe({
+                    full_name: formData.full_name,
+                    phone: formData.phone
+                  });
+                  console.log('Update result:', result);
+                  toast.success('Profile updated');
+                  window.dispatchEvent(new Event('userProfileUpdated'));
+                } catch (error) {
+                  console.error('Error:', error);
+                  toast.error('Failed to update');
+                }
               }}
             >
               Save Changes
-            </Button>
+            </button>
           </div>
         </div>
       </div>
