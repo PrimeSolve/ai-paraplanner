@@ -67,26 +67,28 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
       inset: 0,
       background: 'rgba(0, 0, 0, 0.5)',
       display: 'flex',
-      alignItems: 'flex-end',
+      alignItems: 'center',
+      justifyContent: 'center',
       zIndex: 1000
     }}>
       <div style={{
         background: 'white',
-        width: '100%',
-        borderRadius: '16px 16px 0 0',
+        width: '90%',
+        maxWidth: '400px',
+        borderRadius: '12px',
         padding: '32px',
-        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.1)',
-        animation: 'slideUp 0.3s ease-out'
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+        animation: 'fadeIn 0.3s ease-out'
       }}>
         <style>{`
-          @keyframes slideUp {
+          @keyframes fadeIn {
             from {
-              transform: translateY(100%);
               opacity: 0;
+              transform: scale(0.95);
             }
             to {
-              transform: translateY(0);
               opacity: 1;
+              transform: scale(1);
             }
           }
         `}</style>
