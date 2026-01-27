@@ -65,12 +65,17 @@ export default function AdminTemplate() {
     },
     {
       group: 'recommendations',
-      groupLabel: 'Recommendations & Strategy',
-      icon: '🎯',
+      groupLabel: 'Recommended Strategies',
+      icon: '💡',
       sections: [
-        { id: 'investment-strategy', label: 'Investment Strategy', description: 'Asset allocation and portfolio approach', status: 'configured' },
-        { id: 'product-recommendations', label: 'Product Recommendations', description: 'Specific products and platforms', status: 'needs-comment' },
-        { id: 'insurance-recommendations', label: 'Insurance Recommendations', description: 'Insurance products and coverage', status: 'configured' }
+        { id: 'wealth-asset-protection', label: 'Wealth & Asset Protection', description: 'Insurance strategies', status: 'needs-comment', badge: null },
+        { id: 'insurance-needs-analysis', label: 'Insurance Needs Analysis', description: 'Requirements analysis', status: 'needs-comment', badge: 'Insurance' },
+        { id: 'recommended-insurance-cover', label: 'Recommended Insurance Cover', description: 'Coverage amounts', status: 'needs-comment', badge: 'Insurance' },
+        { id: 'debt-management', label: 'Debt Management', description: 'Debt strategies', status: 'needs-comment', badge: null },
+        { id: 'wealth-accumulation', label: 'Wealth Accumulation', description: 'Investment strategies', status: 'needs-comment', badge: null },
+        { id: 'retirement-planning', label: 'Retirement Planning', description: 'Retirement preparation', status: 'needs-comment', badge: null },
+        { id: 'social-security', label: 'Social Security', description: 'Government benefits', status: 'needs-comment', badge: null },
+        { id: 'estate-planning-strategy', label: 'Estate Planning Strategy', description: 'Estate succession', status: 'needs-comment', badge: null }
       ]
     },
     {
