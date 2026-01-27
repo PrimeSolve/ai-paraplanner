@@ -160,8 +160,9 @@ export default function AdviceGroupCompleted() {
   return (
     <div className="flex">
       <AdviceGroupSidebar currentPage="completed" />
-      <div className="flex-1" style={{ marginLeft: '260px' }}>
-      <div className="p-8">
+      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <AdviceGroupHeader user={user} />
+        <div className="p-8" style={{ flex: 1 }}>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
