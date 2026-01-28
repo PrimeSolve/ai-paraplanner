@@ -91,73 +91,73 @@ export default function AdviserClients() {
       
       {/* Stats Bar */}
       <div style={{ display: 'flex', gap: '32px', padding: '20px 24px', background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(59, 130, 246, 0.1)' }}>
-                👤
-              </div>
-              <div>
-                <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{clients.length}</div>
-                <div style={{ fontSize: '13px', color: '#64748b' }}>Total Clients</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(16, 185, 129, 0.1)' }}>
-                ✓
-              </div>
-              <div>
-                <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{ffComplete}</div>
-                <div style={{ fontSize: '13px', color: '#64748b' }}>FF Complete</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(245, 158, 11, 0.1)' }}>
-                ⟳
-              </div>
-              <div>
-                <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{ffInProgress}</div>
-                <div style={{ fontSize: '13px', color: '#64748b' }}>FF In Progress</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(148, 163, 184, 0.1)' }}>
-                ✉
-              </div>
-              <div>
-                <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{ffNotStarted}</div>
-                <div style={{ fontSize: '13px', color: '#64748b' }}>FF Not Sent</div>
-              </div>
-            </div>
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(59, 130, 246, 0.1)' }}>
+            👤
+          </div>
+          <div>
+            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{clients.length}</div>
+            <div style={{ fontSize: '13px', color: '#64748b' }}>Total Clients</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(16, 185, 129, 0.1)' }}>
+            ✓
+          </div>
+          <div>
+            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{ffComplete}</div>
+            <div style={{ fontSize: '13px', color: '#64748b' }}>FF Complete</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(245, 158, 11, 0.1)' }}>
+            ⟳
+          </div>
+          <div>
+            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{ffInProgress}</div>
+            <div style={{ fontSize: '13px', color: '#64748b' }}>FF In Progress</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(148, 163, 184, 0.1)' }}>
+            ✉
+          </div>
+          <div>
+            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{ffNotStarted}</div>
+            <div style={{ fontSize: '13px', color: '#64748b' }}>FF Not Sent</div>
+          </div>
+        </div>
+      </div>
 
-            {/* Filters */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', width: '280px' }}>
-              <Search style={{ width: '18px', height: '18px', color: '#94a3b8', flexShrink: 0 }} />
-              <input
-                type="text"
-                placeholder="Search clients..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ border: 'none', background: 'transparent', fontSize: '14px', color: '#1e293b', width: '100%', outline: 'none', fontFamily: 'Inter, sans-serif' }}
-              />
-            </div>
-            <Select value={factFindFilter} onValueChange={setFactFindFilter}>
-              <SelectTrigger style={{ width: '180px', height: '40px', padding: '10px 14px' }}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Fact Find Status</SelectItem>
-                <SelectItem value="complete">Complete</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="sent">Sent</SelectItem>
-                <SelectItem value="not_started">Not Started</SelectItem>
-              </SelectContent>
-            </Select>
-            </div>
+      {/* Filters */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', width: '280px' }}>
+          <Search style={{ width: '18px', height: '18px', color: '#94a3b8', flexShrink: 0 }} />
+          <input
+            type="text"
+            placeholder="Search clients..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ border: 'none', background: 'transparent', fontSize: '14px', color: '#1e293b', width: '100%', outline: 'none', fontFamily: 'Inter, sans-serif' }}
+          />
+        </div>
+        <Select value={factFindFilter} onValueChange={setFactFindFilter}>
+          <SelectTrigger style={{ width: '180px', height: '40px', padding: '10px 14px' }}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Fact Find Status</SelectItem>
+            <SelectItem value="complete">Complete</SelectItem>
+            <SelectItem value="in_progress">In Progress</SelectItem>
+            <SelectItem value="sent">Sent</SelectItem>
+            <SelectItem value="not_started">Not Started</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-            {/* Table */}
-            <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-            <div style={{ overflowX: 'auto' }}>
+      {/* Table */}
+      <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%' }}>
                 <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
                   <tr>
@@ -274,7 +274,7 @@ export default function AdviserClients() {
                 </button>
               </div>
             </div>
-      </div>
+            </div>
 
       {/* Add Client Modal */}
       <AddClientModal 
