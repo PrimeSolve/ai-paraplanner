@@ -472,16 +472,31 @@ export default function FactFindRiskProfile() {
       <FactFindHeader
         title="Risk Profile"
         description="Your attitude to investing and additional information."
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
         factFind={factFind}
         user={user}
       />
 
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
         <div className="w-full space-y-4">
-          {activeTab === 'questionnaire' ? (
+           {/* Tabs - Part of form content */}
+           <div className="flex gap-2">
+             {tabs.map(tab => (
+               <button
+                 key={tab.id}
+                 onClick={() => setActiveTab(tab.id)}
+                 className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${
+                   activeTab === tab.id
+                     ? 'bg-blue-600 text-white'
+                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                 }`}
+               >
+                 <span>{tab.icon}</span>
+                 {tab.label}
+               </button>
+             ))}
+           </div>
+
+           {activeTab === 'questionnaire' ? (
             <>
               <Card className="border-slate-200 shadow-sm bg-gradient-to-r from-blue-50 to-indigo-50">
                 <CardContent className="p-6">
