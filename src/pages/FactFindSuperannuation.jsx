@@ -759,17 +759,6 @@ export default function FactFindSuperannuation() {
         description="Record super funds, pensions, and annuities."
         factFind={factFind}
         user={user}
-        tabs={[
-          { id: 'super', label: 'Superannuation' },
-          { id: 'pension', label: 'Pension' },
-          { id: 'annuities', label: 'Annuities' }
-        ]}
-        activeTab={currentTab}
-        onTabChange={(tab) => {
-          setCurrentTab(tab);
-          setActiveIndex(0);
-          setTimeout(() => updatePills(tab, 0), 0);
-        }}
       />
 
       {/* Hidden Templates */}
@@ -1095,6 +1084,52 @@ export default function FactFindSuperannuation() {
 
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
+          {/* Tabs - Part of form content */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setCurrentTab('super');
+                setActiveIndex(0);
+                setTimeout(() => updatePills('super', 0), 0);
+              }}
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                currentTab === 'super'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              Superannuation
+            </button>
+            <button
+              onClick={() => {
+                setCurrentTab('pension');
+                setActiveIndex(0);
+                setTimeout(() => updatePills('pension', 0), 0);
+              }}
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                currentTab === 'pension'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              Pension
+            </button>
+            <button
+              onClick={() => {
+                setCurrentTab('annuities');
+                setActiveIndex(0);
+                setTimeout(() => updatePills('annuities', 0), 0);
+              }}
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                currentTab === 'annuities'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              Annuities
+            </button>
+          </div>
+
           <div id="superWrap" style={{ display: currentTab === 'super' ? 'block' : 'none' }} className="space-y-4" />
           <div id="pensionWrap" style={{ display: currentTab === 'pension' ? 'block' : 'none' }} className="space-y-4" />
           <div id="annuitiesWrap" style={{ display: currentTab === 'annuities' ? 'block' : 'none' }} className="space-y-4" />

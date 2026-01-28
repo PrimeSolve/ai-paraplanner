@@ -196,19 +196,37 @@ export default function FactFindAssetsLiabilities() {
       <FactFindHeader
         title="Assets & Liabilities"
         description="Add your assets and debts. Use the summary to select an item; edit its full details below."
-        tabs={[
-          { id: 'assets', label: 'Assets' },
-          { id: 'debts', label: 'Liabilities' }
-        ]}
-        activeTab={currentTab}
-        onTabChange={setCurrentTab}
         factFind={factFind}
         user={user}
       />
 
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
-          {currentTab === 'assets' ? (
+           {/* Tabs - Part of form content */}
+           <div className="flex gap-2">
+             <button
+               onClick={() => setCurrentTab('assets')}
+               className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                 currentTab === 'assets'
+                   ? 'bg-blue-600 text-white'
+                   : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+               }`}
+             >
+               Assets
+             </button>
+             <button
+               onClick={() => setCurrentTab('debts')}
+               className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                 currentTab === 'debts'
+                   ? 'bg-blue-600 text-white'
+                   : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+               }`}
+             >
+               Liabilities
+             </button>
+           </div>
+
+           {currentTab === 'assets' ? (
             <>
               {/* EMPTY STATE */}
               {assetsList.length === 0 ? (

@@ -449,16 +449,6 @@ export default function FactFindInvestment() {
       <FactFindHeader
         title="Investments"
         description="Capture Wrap/Mastertrusts and Investment bonds."
-        tabs={[
-          { id: 'wrap', label: 'Wrap / Mastertrust' },
-          { id: 'bonds', label: 'Investment bonds' }
-        ]}
-        activeTab={currentTab}
-        onTabChange={(tab) => {
-          setCurrentTab(tab);
-          setActiveIndex(0);
-          setTimeout(() => updatePills(tab, 0), 0);
-        }}
         factFind={factFind}
         user={user}
       />
@@ -597,6 +587,38 @@ export default function FactFindInvestment() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
+          {/* Tabs - Part of form content */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setCurrentTab('wrap');
+                setActiveIndex(0);
+                setTimeout(() => updatePills('wrap', 0), 0);
+              }}
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                currentTab === 'wrap'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              Wrap / Mastertrust
+            </button>
+            <button
+              onClick={() => {
+                setCurrentTab('bonds');
+                setActiveIndex(0);
+                setTimeout(() => updatePills('bonds', 0), 0);
+              }}
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                currentTab === 'bonds'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              Investment bonds
+            </button>
+          </div>
+
           <div id="wrapWrap" style={{ display: currentTab === 'wrap' ? 'block' : 'none' }} className="space-y-4" />
           <div id="bondsWrap" style={{ display: currentTab === 'bonds' ? 'block' : 'none' }} className="space-y-4" />
 
