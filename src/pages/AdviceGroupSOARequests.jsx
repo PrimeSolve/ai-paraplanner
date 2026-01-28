@@ -9,6 +9,7 @@ import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
 import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 
 export default function AdviceGroupSOARequests() {
+  const { switchedToId } = useRole();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [groupName, setGroupName] = useState('');
@@ -26,7 +27,7 @@ export default function AdviceGroupSOARequests() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [switchedToId]);
 
   const loadData = async () => {
     try {
@@ -34,18 +35,19 @@ export default function AdviceGroupSOARequests() {
       setUser(currentUser);
 
       // Load requests filtered by advice group
-      if (currentUser.advice_group_id) {
+      const groupId = switchedToId || currentUser.advice_group_id;
+      if (groupId) {
         const [data, groups] = await Promise.all([
           base44.entities.SOARequest.filter(
             { 
-              advice_group_id: currentUser.advice_group_id 
+              advice_group_id: groupId 
             },
             '-created_date'
           ),
           base44.entities.AdviceGroup.list()
         ]);
         setRequests(data);
-        const currentGroup = groups.find(g => g.id === currentUser.advice_group_id);
+        const currentGroup = groups.find(g => g.id === groupId);
         if (currentGroup) setGroupName(currentGroup.name);
         
         // Calculate stats
