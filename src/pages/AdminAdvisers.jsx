@@ -108,8 +108,7 @@ export default function AdminAdvisers() {
   const totalPages = Math.ceil(filteredAdvisers.length / itemsPerPage);
 
   return (
-    <AdminLayout currentPage="AdminAdvisers">
-      <div className="p-8">
+    <div className="py-6 px-8">
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-6 mb-8">
