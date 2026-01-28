@@ -125,11 +125,6 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
           </div>
           <div className="flex flex-col gap-0.5">
             <div className="text-lg font-extrabold text-slate-50">SOA Request</div>
-            {soaRequest?.client_name && (
-              <div className="text-xs text-slate-400">
-                Client: {soaRequest.client_name}
-              </div>
-            )}
           </div>
         </div>
 
