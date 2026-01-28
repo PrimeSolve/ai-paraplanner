@@ -279,7 +279,7 @@ export default function MyProfile() {
               <div>
                 <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Role</Label>
                 <Input
-                  value={user?.advice_group_id ? 'Advice Group' : (formData.role === 'admin' ? 'Admin' : 'User')}
+                  value={formData.role === 'admin' ? 'Admin' : (formData.role === 'user' ? 'User' : formData.role)}
                   disabled
                   className="border-[#e2e8f0] bg-[#f8fafc] text-[#64748b] capitalize"
                 />
