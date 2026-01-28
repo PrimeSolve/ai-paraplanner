@@ -18,7 +18,6 @@ export default function AdviceGroupAdvisers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showInvite, setShowInvite] = useState(false);
   const [formData, setFormData] = useState({
-    full_name: '',
     email: '',
     company: ''
   });
@@ -70,7 +69,7 @@ export default function AdviceGroupAdvisers() {
         
         toast.success('Adviser invited successfully');
         setShowInvite(false);
-        setFormData({ full_name: '', email: '', company: '' });
+        setFormData({ email: '', company: '' });
         await loadData();
       } else {
         toast.error('User not found after invitation');
@@ -474,15 +473,6 @@ export default function AdviceGroupAdvisers() {
             </DialogHeader>
             <form onSubmit={handleCreateAdviser} style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <Label>Full Name *</Label>
-              <Input
-                required
-                value={formData.full_name}
-                onChange={(e) => setFormData({...formData, full_name: e.target.value})}
-                placeholder="John Smith"
-              />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <Label>Email *</Label>
               <Input
                 required
@@ -501,7 +491,7 @@ export default function AdviceGroupAdvisers() {
               />
             </div>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', paddingTop: '8px' }}>
-              <Button type="button" variant="outline" onClick={() => { setShowInvite(false); setFormData({ full_name: '', email: '', company: '' }); }}>
+              <Button type="button" variant="outline" onClick={() => { setShowInvite(false); setFormData({ email: '', company: '' }); }}>
                 Cancel
               </Button>
               <Button type="submit" style={{
