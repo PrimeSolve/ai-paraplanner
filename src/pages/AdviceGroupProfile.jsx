@@ -275,9 +275,10 @@ export default function AdviceGroupProfile() {
                   <div className="text-sm text-[#64748b]">Get notified when SOAs are ready for review</div>
                 </div>
                 <Switch
-                  checked={notifications.soaSubmitted}
-                  onCheckedChange={(checked) => setNotifications({...notifications, soaSubmitted: checked})}
-                />
+                   checked={notifications.soaSubmitted}
+                   onCheckedChange={(checked) => setNotifications({...notifications, soaSubmitted: checked})}
+                   className="data-[state=checked]:bg-blue-500"
+                 />
               </div>
 
               <div className="flex items-center justify-between">

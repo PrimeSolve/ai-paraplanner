@@ -263,9 +263,10 @@ export default function ClientProfile() {
                   <div className="text-sm text-[#64748b]">Get notified when your SOAs are ready for download</div>
                 </div>
                 <Switch
-                  checked={notifications.documentReady}
-                  onCheckedChange={(checked) => setNotifications({...notifications, documentReady: checked})}
-                />
+                   checked={notifications.documentReady}
+                   onCheckedChange={(checked) => setNotifications({...notifications, documentReady: checked})}
+                   className="data-[state=checked]:bg-blue-500"
+                 />
               </div>
 
               <div className="flex items-center justify-between">
@@ -274,9 +275,10 @@ export default function ClientProfile() {
                   <div className="text-sm text-[#64748b]">Get notified of important account changes</div>
                 </div>
                 <Switch
-                  checked={notifications.updates}
-                  onCheckedChange={(checked) => setNotifications({...notifications, updates: checked})}
-                />
+                   checked={notifications.updates}
+                   onCheckedChange={(checked) => setNotifications({...notifications, updates: checked})}
+                   className="data-[state=checked]:bg-blue-500"
+                 />
               </div>
 
               <div className="flex items-center justify-between">
@@ -285,9 +287,10 @@ export default function ClientProfile() {
                   <div className="text-sm text-[#64748b]">Receive financial planning tips and market updates</div>
                 </div>
                 <Switch
-                  checked={notifications.newsletter}
-                  onCheckedChange={(checked) => setNotifications({...notifications, newsletter: checked})}
-                />
+                   checked={notifications.newsletter}
+                   onCheckedChange={(checked) => setNotifications({...notifications, newsletter: checked})}
+                   className="data-[state=checked]:bg-blue-500"
+                 />
               </div>
             </div>
           </div>
