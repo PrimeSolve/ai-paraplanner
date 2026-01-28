@@ -577,10 +577,42 @@ export default function FactFindDependants() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
-        <div className="w-full space-y-6">
-          {/* Containers - Always exist, visibility based on active tab */}
-          <div id="childrenWrap" className="space-y-4" style={{ display: currentTab === 'children' ? 'block' : 'none' }} />
-          <div id="dependantsWrap" className="space-y-4" style={{ display: currentTab === 'dependants' ? 'block' : 'none' }} />
+       <div className="w-full space-y-6">
+         {/* Tabs - Part of form content */}
+         <div className="flex gap-2">
+           <button
+             onClick={() => {
+               setCurrentTab('children');
+               setActiveIndex(0);
+               setTimeout(() => updatePills('children', 0), 0);
+             }}
+             className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+               currentTab === 'children'
+                 ? 'bg-blue-600 text-white'
+                 : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+             }`}
+           >
+             Children
+           </button>
+           <button
+             onClick={() => {
+               setCurrentTab('dependants');
+               setActiveIndex(0);
+               setTimeout(() => updatePills('dependants', 0), 0);
+             }}
+             className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+               currentTab === 'dependants'
+                 ? 'bg-blue-600 text-white'
+                 : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+             }`}
+           >
+             Dependants
+           </button>
+         </div>
+
+         {/* Containers - Always exist, visibility based on active tab */}
+         <div id="childrenWrap" className="space-y-4" style={{ display: currentTab === 'children' ? 'block' : 'none' }} />
+         <div id="dependantsWrap" className="space-y-4" style={{ display: currentTab === 'dependants' ? 'block' : 'none' }} />
 
           {/* Welcome Screen */}
           {(currentTab === 'children' ? childrenCount : dependantsCount) === 0 ? (
