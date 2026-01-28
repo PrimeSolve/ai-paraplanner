@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRole } from './RoleContext';
 import { useLocation } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 
 // Import all sidebars
 import AdminSidebar from './admin/AdminLayout';
@@ -11,8 +12,26 @@ import AdviserSidebar from './adviser/AdviserLayout';
 import AppHeader from './AppHeader';
 
 export default function AppShell({ children }) {
-  const { navigationChain, originalUser, user, isViewingAs } = useRole();
+  const { navigationChain, originalUser, user, isViewingAs, loadUserData } = useRole();
   const location = useLocation();
+  const [loading, setLoading] = useState(true);
+
+  // Initialize user on mount
+  useEffect(() => {
+    const initUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        if (currentUser) {
+          loadUserData(currentUser);
+        }
+      } catch (error) {
+        console.error('Failed to load user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    initUser();
+  }, [loadUserData]);
 
   // Determine current navigation level from the chain
   const currentLevel = navigationChain.length > 0 
@@ -60,6 +79,15 @@ export default function AppShell({ children }) {
 
   if (!shouldShowShell) {
     return <>{children}</>;
+  }
+
+  // Show loading while initializing user
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+      </div>
+    );
   }
 
   return (
