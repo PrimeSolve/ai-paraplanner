@@ -121,6 +121,7 @@ import SignIn from './pages/SignIn';
 import AdminProfile from './pages/AdminProfile';
 import AdminHelp from './pages/AdminHelp';
 import AdviceGroupProfile from './pages/AdviceGroupProfile';
+import AdviceGroupHelp from './pages/AdviceGroupHelp';
 import __Layout from './Layout.jsx';
 
 
@@ -199,6 +200,7 @@ export const PAGES = {
     "AdminProfile": AdminProfile,
     "AdminHelp": AdminHelp,
     "AdviceGroupProfile": AdviceGroupProfile,
+    "AdviceGroupHelp": AdviceGroupHelp,
 }
 
 export const pagesConfig = {
