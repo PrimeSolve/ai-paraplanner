@@ -166,7 +166,7 @@ export default function AdminAdviceGroupDetail() {
         </div>
       </div>
 
-      <div className="p-8">
+      <div style={{ padding: '32px 32px 32px 0' }}>
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <form onSubmit={handleSaveChanges} className="space-y-6 max-w-4xl">
