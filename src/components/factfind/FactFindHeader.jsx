@@ -60,18 +60,8 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
 
   return (
     <div className="bg-white border-b border-slate-200 px-8 py-5 flex-shrink-0">
-      <div className="flex items-center justify-between">
-        {/* Left: Home Button */}
-        <Link to={createPageUrl('Home')}>
-          <button className="w-11 h-11 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-all flex-shrink-0 relative group">
-            <Home className="w-5 h-5" />
-            <span className="absolute left-full ml-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-              Back to Dashboard
-            </span>
-          </button>
-        </Link>
-
-        {/* Center/Right: Action Buttons */}
+      <div className="flex items-center justify-end">
+        {/* Action Buttons */}
         <div className="flex items-center gap-3">
           {/* Talk to Assistant - Green Banner */}
           <Link to={createPageUrl('FactFindAssistant') + (factFind?.id ? `?id=${factFind.id}` : '')}>
