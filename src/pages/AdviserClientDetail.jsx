@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import AdviserLayout from '../components/adviser/AdviserLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -35,17 +34,15 @@ export default function AdviserClientDetail() {
 
   if (loading) {
     return (
-      <AdviserLayout currentPage="AdviserClients">
-        <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
-        </div>
-      </AdviserLayout>
+      <div style={{ padding: '24px 32px' }} className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+      </div>
     );
   }
 
   return (
-    <AdviserLayout currentPage="AdviserClients">
-      <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
+    <div style={{ padding: '24px 32px' }}>
+      <div className="bg-white border-b border-slate-200 px-6 py-4 mb-6 rounded-lg">
         <div className="flex items-center gap-4 mb-4">
           <Link to={createPageUrl('AdviserClients')}>
             <Button variant="ghost" size="sm">
@@ -80,7 +77,7 @@ export default function AdviserClientDetail() {
         </div>
       </div>
 
-      <div className="p-8">
+      <div>
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -146,7 +143,7 @@ export default function AdviserClientDetail() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
-    </AdviserLayout>
-  );
+        </div>
+        </div>
+        );
 }

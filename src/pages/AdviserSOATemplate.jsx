@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import AdviserLayout from '../components/adviser/AdviserLayout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -60,20 +59,18 @@ export default function AdviserSOATemplate() {
   ];
 
   return (
-    <AdviserLayout currentPage="AdviserSOATemplate">
-      <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">My SOA Template</h1>
-            <p className="text-sm text-slate-600 mt-1">Customize sections for your SOAs</p>
-          </div>
-          <Button onClick={handleSave} disabled={saving} className="bg-teal-600 hover:bg-teal-700">
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
+    <div style={{ padding: '24px 32px' }}>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">My SOA Template</h1>
+          <p className="text-sm text-slate-600 mt-1">Customize sections for your SOAs</p>
         </div>
+        <Button onClick={handleSave} disabled={saving} className="bg-teal-600 hover:bg-teal-700">
+          {saving ? 'Saving...' : 'Save Changes'}
+        </Button>
       </div>
 
-      <div className="p-8">
+      <div>
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <div>
@@ -132,7 +129,7 @@ export default function AdviserSOATemplate() {
             );
           })}
         </div>
-      </div>
-    </AdviserLayout>
-  );
+        </div>
+        </div>
+        );
 }

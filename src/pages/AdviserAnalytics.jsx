@@ -1,5 +1,4 @@
 import React from 'react';
-import AdviserLayout from '../components/adviser/AdviserLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, Users, FileText, DollarSign } from 'lucide-react';
 
@@ -12,13 +11,13 @@ export default function AdviserAnalytics() {
   ];
 
   return (
-    <AdviserLayout currentPage="AdviserAnalytics">
-      <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
-        <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">Analytics</h1>
+    <div style={{ padding: '24px 32px' }}>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-800">Analytics</h1>
         <p className="text-sm text-slate-600 mt-1">Track your performance and insights</p>
       </div>
 
-      <div className="p-8">
+      <div>
         <div className="grid grid-cols-4 gap-4 mb-6">
           {stats.map((stat, idx) => {
             const Icon = stat.icon;
@@ -43,7 +42,7 @@ export default function AdviserAnalytics() {
             <p className="text-slate-600">Track trends, performance metrics, and business insights</p>
           </CardContent>
         </Card>
-      </div>
-    </AdviserLayout>
-  );
+        </div>
+        </div>
+        );
 }

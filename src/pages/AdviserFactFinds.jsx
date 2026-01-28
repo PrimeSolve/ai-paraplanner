@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import AdviserLayout from '../components/adviser/AdviserLayout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -43,13 +42,13 @@ export default function AdviserFactFinds() {
   };
 
   return (
-    <AdviserLayout currentPage="AdviserFactFinds">
-      <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
-        <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">Client Fact Finds</h1>
+    <div style={{ padding: '24px 32px' }}>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-800">Client Fact Finds</h1>
         <p className="text-sm text-slate-600 mt-1">View fact finds submitted by your clients</p>
       </div>
 
-      <div className="p-8">
+      <div>
         <div className="grid grid-cols-4 gap-4 mb-6">
           <Card className="p-4">
             <div className="text-3xl font-['Fraunces'] font-semibold text-teal-600 mb-1">
@@ -142,7 +141,7 @@ export default function AdviserFactFinds() {
             </table>
           </div>
         </Card>
-      </div>
-    </AdviserLayout>
-  );
+        </div>
+        </div>
+        );
 }

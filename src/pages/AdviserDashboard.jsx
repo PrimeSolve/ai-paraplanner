@@ -93,8 +93,7 @@ export default function AdviserDashboard() {
 
   return (
     <div style={{ padding: '24px 32px' }}>
-
-          {/* Stats Grid */}
+      {/* Stats Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
             {[
               { label: 'Total Clients', value: stats.totalClients, icon: '👤', color: '#8b5cf6' },
@@ -242,6 +241,7 @@ export default function AdviserDashboard() {
                 </div>
               </div>
             </div>
+          </div>
           </div>
           </div>
           );

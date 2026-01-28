@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import AdviserSidebar from '../components/adviser/AdviserSidebar.jsx';
-import AdviserHeader from '../components/adviser/AdviserHeader.jsx';
 import { Download, Eye, ArrowRight } from 'lucide-react';
 
 export default function AdviserCompletions() {
@@ -35,24 +33,14 @@ export default function AdviserCompletions() {
 
   if (loading) {
     return (
-      <div className="flex">
-        <AdviserSidebar currentPage="completed" />
-        <div style={{ marginLeft: '260px', flex: 1 }}>
-          <AdviserHeader user={user} />
-          <div className="p-8 flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-          </div>
-        </div>
+      <div style={{ padding: '24px 32px' }} className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex">
-      <AdviserSidebar currentPage="completed" />
-      <div style={{ marginLeft: '260px', flex: 1 }}>
-        <AdviserHeader user={user} />
-        <div style={{ padding: '32px' }}>
+    <div style={{ padding: '24px 32px' }}>
           <div style={{ marginBottom: '32px' }}>
             <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#1e293b', marginBottom: '8px' }}>
               ✅ Completed SOAs
@@ -108,8 +96,6 @@ export default function AdviserCompletions() {
               ))}
             </div>
           )}
-        </div>
-      </div>
-    </div>
-  );
+          </div>
+          );
 }
