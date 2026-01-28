@@ -109,7 +109,7 @@ export default function AppShell({ children }) {
   return (
     <div className="flex min-h-screen bg-[#f8fafc]">
       {renderSidebar()}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: location.pathname.includes('FactFind') ? '0' : '64px', marginLeft: location.pathname.includes('FactFind') ? '0' : '260px' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: location.pathname.includes('FactFind') || location.pathname.includes('SOARequest') ? '0' : '64px', marginLeft: location.pathname.includes('FactFind') || location.pathname.includes('SOARequest') ? '0' : '260px' }}>
         <AppHeader />
         <main className="flex-1">
           {children}
