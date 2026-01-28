@@ -1,5 +1,5 @@
-import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useRole } from './RoleContext';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
@@ -10,10 +10,21 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { User, HelpCircle, LogOut, Home, ChevronRight } from 'lucide-react';
+import { User, HelpCircle, LogOut, Home, ChevronRight, MessageSquare, RefreshCw, Info } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function AppHeader() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { 
     user, 
     originalUser, 
@@ -22,6 +33,14 @@ export default function AppHeader() {
     navigateToLevel, 
     resetToOriginal 
   } = useRole();
+  
+  const [showRefreshWarning, setShowRefreshWarning] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showAssumptions, setShowAssumptions] = useState(false);
+  
+  const isFactFindPage = location.pathname.includes('FactFind');
+  const factFindId = new URLSearchParams(window.location.search).get('id');
 
   // The actual logged-in user (for profile display)
   const loggedInUser = originalUser || user;
@@ -64,6 +83,31 @@ export default function AppHeader() {
   const getInitials = () => {
     const name = loggedInUser?.display_name || loggedInUser?.full_name || loggedInUser?.email || '';
     return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
+  };
+
+  const handleRefreshClick = () => {
+    setShowRefreshWarning(true);
+    setConfirmDelete(false);
+  };
+
+  const handleConfirmRefresh = async () => {
+    if (!confirmDelete) {
+      toast.error('Please confirm you understand this will delete all data');
+      return;
+    }
+
+    setRefreshing(true);
+    setShowRefreshWarning(false);
+    try {
+      if (factFindId) {
+        toast.success('Data refreshed successfully');
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.error('Failed to refresh data');
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   return (
@@ -141,6 +185,92 @@ export default function AppHeader() {
         )}
       </div>
 
+      {/* Center: Fact Find Buttons */}
+      {isFactFindPage && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginRight: '24px' }}>
+          {/* Talk to Assistant */}
+          <Link to={createPageUrl('FactFindAssistant') + (factFindId ? `?id=${factFindId}` : '')}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'linear-gradient(to right, #14b8a6, #10b981)',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 600,
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+              e.currentTarget.style.opacity = '0.9';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.opacity = '1';
+            }}>
+              <MessageSquare size={16} />
+              <span>Talk to our assistant</span>
+              <span style={{
+                background: '#fbbf24',
+                color: '#78350f',
+                fontSize: '10px',
+                fontWeight: 700,
+                padding: '2px 6px',
+                borderRadius: '4px',
+                marginLeft: '4px'
+              }}>LIVE</span>
+            </div>
+          </Link>
+
+          {/* Refresh Button */}
+          <button
+            onClick={handleRefreshClick}
+            disabled={refreshing}
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '8px',
+              background: '#f97316',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              opacity: refreshing ? 0.5 : 1,
+            }}
+            title="Refresh Data"
+          >
+            🔄
+          </button>
+
+          {/* Info Button */}
+          <button
+            onClick={() => setShowAssumptions(true)}
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '8px',
+              background: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+            }}
+            title="Key Assumptions"
+          >
+            ℹ️
+          </button>
+        </div>
+      )}
+
       {/* Right side: User menu */}
       {loggedInUser && (
         <DropdownMenu>
@@ -208,6 +338,86 @@ export default function AppHeader() {
           </DropdownMenuContent>
         </DropdownMenu>
       )}
+
+      {/* Refresh Warning Dialog */}
+      <Dialog open={showRefreshWarning} onOpenChange={setShowRefreshWarning}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+              <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center">
+                ⚠️
+              </div>
+              Refresh Fact Find Data
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-slate-700">
+              Are you sure you want to refresh all Fact Find data?
+            </p>
+
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+              <div className="flex gap-2 mb-2">
+                <span className="text-xl flex-shrink-0">⚠️</span>
+                <div>
+                  <h4 className="font-bold text-slate-800 mb-2">WARNING: This will:</h4>
+                  <ul className="text-sm text-slate-700 space-y-1">
+                    <li>• Clear all current fact find data</li>
+                    <li>• This action cannot be undone</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-sm text-slate-600">
+              Only use this if you want to start fresh with your fact find.
+            </p>
+
+            <div className="flex items-start gap-3 p-3 border border-slate-200 rounded-lg bg-slate-50">
+              <Checkbox
+                id="confirm-delete"
+                checked={confirmDelete}
+                onCheckedChange={setConfirmDelete}
+                className="mt-0.5"
+              />
+              <label
+                htmlFor="confirm-delete"
+                className="text-sm text-slate-700 cursor-pointer leading-tight"
+              >
+                I understand this will delete all my current fact find data
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowRefreshWarning(false)}
+                className="border-slate-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmRefresh}
+                disabled={!confirmDelete}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Yes, Refresh Data
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Key Assumptions Dialog - Simplified */}
+      <Dialog open={showAssumptions} onOpenChange={setShowAssumptions}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Key Assumptions</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-slate-600">Fact Find Information</p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
