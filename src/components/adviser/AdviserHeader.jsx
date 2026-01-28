@@ -10,7 +10,8 @@ export default function AdviserHeader({ user }) {
   const navigate = useNavigate();
   const { originalUser, resetToOriginal } = useRole();
 
-  if (!user) return null;
+  // Always display the actual logged-in user - NEVER switch
+  if (!user || !user.full_name) return null;
 
   const getInitials = (name) => {
     return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
