@@ -397,8 +397,7 @@ export default function AdminQueue() {
               </button>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+          </div>
+          </div>
+          );
+          }
