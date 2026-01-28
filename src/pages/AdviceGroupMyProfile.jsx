@@ -230,7 +230,7 @@ export default function AdviceGroupMyProfile() {
               <div>
                 <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Role</Label>
                 <Input
-                  value="Advice Group"
+                  value={user?.role === 'admin' ? 'Administrator' : 'Advice Group'}
                   disabled
                   className="border-[#e2e8f0] bg-[#f8fafc] text-[#64748b]"
                 />
