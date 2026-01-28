@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import AdminLayout from '../components/admin/AdminLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -109,8 +108,7 @@ export default function AdminAdviceGroups() {
   };
 
   return (
-    <AdminLayout currentPage="AdminAdviceGroups">
-      <div className="p-8">
+    <div className="p-8">
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <button style={{ display: 'none' }} />
@@ -394,6 +392,6 @@ export default function AdminAdviceGroups() {
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
