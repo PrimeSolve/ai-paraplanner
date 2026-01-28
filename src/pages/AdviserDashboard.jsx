@@ -76,7 +76,7 @@ export default function AdviserDashboard() {
       <div className="flex">
         <AdviserSidebar currentPage="dashboard" />
         <div style={{ marginLeft: '260px', flex: 1 }}>
-          <AdviserHeader user={user} />
+          <AdviserHeader user={loggedInUser} />
           <div className="p-8 flex items-center justify-center h-full">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
           </div>
