@@ -46,8 +46,9 @@ export default function AppShell({ children }) {
 
   // Determine which sidebar to render based on navigation chain
   const renderSidebar = () => {
-    // Don't render sidebar for Fact Find pages
-    if (location.pathname.includes('FactFind')) {
+    // Don't render sidebar for Fact Find and SOA Request pages
+    const isSpecialLayout = location.pathname.includes('FactFind') || location.pathname.includes('SOARequest');
+    if (isSpecialLayout) {
       return null;
     }
 
