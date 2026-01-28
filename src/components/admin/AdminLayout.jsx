@@ -175,14 +175,16 @@ export default function AdminLayout({ children, currentPage }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem asChild>
-                  <Link to={createPageUrl('MyProfile')} className="flex items-center cursor-pointer">
+                  <Link to={createPageUrl('AdminProfile')} className="flex items-center cursor-pointer">
                     <User className="w-4 h-4 mr-3 text-[#64748b]" />
                     My Profile
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <HelpCircle className="w-4 h-4 mr-3 text-[#64748b]" />
-                  Help & Support
+                <DropdownMenuItem asChild>
+                  <Link to={createPageUrl('AdminHelp')} className="flex items-center cursor-pointer">
+                    <HelpCircle className="w-4 h-4 mr-3 text-[#64748b]" />
+                    Help & Support
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => base44.auth.logout()}>
