@@ -36,9 +36,10 @@ export default function AdviserHeader({ user }) {
     const profileUser = originalUser || user;
     if (!profileUser) return 'MyProfile';
     
+    // Check role FIRST to handle cases where advice_group_id exists but shouldn't (data corruption)
     if (profileUser.role === 'admin') {
       return 'MyProfile';
-    } else if (profileUser.advice_group_id) {
+    } else if (profileUser.role === 'user' && profileUser.advice_group_id) {
       return 'AdviceGroupMyProfile';
     } else {
       return 'AdviserSettings';
