@@ -291,11 +291,11 @@ export default function AdviceGroupDashboard() {
 
   return (
     <div style={{
-          flex: 1,
-          padding: '24px 32px',
-          display: 'flex',
-          gap: '24px',
-        }}>
+      flex: 1,
+      padding: '24px 32px',
+      display: 'flex',
+      gap: '24px',
+    }}>
           {/* Main Column */}
           <div style={{ flex: 1 }}>
             {/* Stats Grid */}
@@ -657,6 +657,9 @@ export default function AdviceGroupDashboard() {
                 })}
               </div>
             </div>
-    </div>
-  );
-}
+            </div>
+            </div>
+            </div>
+            </div>
+            );
+            }

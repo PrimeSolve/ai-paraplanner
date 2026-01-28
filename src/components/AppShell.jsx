@@ -3,9 +3,9 @@ import { useRole } from './RoleContext';
 import { useLocation } from 'react-router-dom';
 
 // Import all sidebars
-import AdminSidebar from './admin/AdminSidebar';
+import AdminSidebar from './admin/AdminLayout';
 import AdviceGroupSidebar from './advicegroup/AdviceGroupSidebar';
-import AdviserSidebar from './adviser/AdviserSidebar';
+import AdviserSidebar from './adviser/AdviserLayout';
 
 // Import unified header
 import AppHeader from './AppHeader';
