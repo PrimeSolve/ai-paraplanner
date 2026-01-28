@@ -145,6 +145,76 @@ export default function AdminAdvisers() {
     <AdminLayout currentPage="AdminAdvisers">
       <div className="p-8">
 
+        {/* Add Adviser Dialog */}
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add New Adviser</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreateAdviser} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Full Name *</Label>
+                <Input
+                  required
+                  value={formData.full_name}
+                  onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                  placeholder="John Smith"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Email *</Label>
+                <Input
+                  required
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  placeholder="john@example.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Company</Label>
+                <Input
+                  value={formData.company}
+                  onChange={(e) => setFormData({...formData, company: e.target.value})}
+                  placeholder="Company Name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Advice Group</Label>
+                <Select value={formData.advice_group_id} onValueChange={(value) => setFormData({...formData, advice_group_id: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select advice group" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {adviceGroups.map(group => (
+                      <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                  Create Adviser
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Header */}
+        <div className="mb-8 flex justify-end">
+          <Button 
+            onClick={() => setDialogOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Adviser
+          </Button>
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
