@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import AdminLayout from '../components/admin/AdminLayout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -188,10 +187,7 @@ export default function AdminTemplate() {
   };
 
   return (
-    <AdminLayout currentPage="AdminTemplate">
-
-
-      <div className="p-8">
+    <div className="py-6 px-8">
         {/* Info Banner */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -335,7 +331,6 @@ export default function AdminTemplate() {
             )}
           </Droppable>
         </DragDropContext>
-      </div>
-    </AdminLayout>
+    </div>
   );
 }

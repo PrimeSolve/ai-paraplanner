@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import AdminLayout from '../components/admin/AdminLayout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -128,8 +127,7 @@ export default function AdminTeam() {
   };
 
   return (
-    <AdminLayout currentPage="AdminTeam">
-      <div className="p-8">
+    <div className="py-6 px-8">
         {/* Header */}
          <div className="mb-8 flex justify-end">
            <Button 
@@ -354,7 +352,6 @@ export default function AdminTeam() {
             Showing 1-{filteredTeam.length} of {filteredTeam.length} members
           </div>
         </Card>
-      </div>
 
       {/* Invite Modal */}
       <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
@@ -463,6 +460,6 @@ export default function AdminTeam() {
           </div>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </div>
   );
 }
