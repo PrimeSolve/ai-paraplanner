@@ -69,14 +69,15 @@ export default function AppHeader() {
   return (
     <div style={{
       background: '#ffffff',
-      padding: '8px 32px',
+      padding: '12px 32px',
       borderBottom: '1px solid #e2e8f0',
       position: 'sticky',
       top: 0,
-      zIndex: 50,
+      zIndex: 40,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
+      minHeight: '64px',
     }}>
       {/* Left side: Home button + Breadcrumbs */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
