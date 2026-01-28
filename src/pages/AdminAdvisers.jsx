@@ -7,10 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, ChevronDown, Users, CheckCircle, Briefcase, Star, MoreHorizontal, Edit, Trash2, Plus, Mail } from 'lucide-react';
+import { Search, ChevronDown, Users, CheckCircle, Briefcase, Star, MoreHorizontal, Edit, Trash2, Mail } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useRole } from '../components/RoleContext';
 import { toast } from 'sonner';
@@ -24,13 +21,6 @@ export default function AdminAdvisers() {
   const [planFilter, setPlanFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [user, setUser] = useState(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    full_name: '',
-    email: '',
-    company: '',
-    advice_group_id: ''
-  });
   const [adviceGroups, setAdviceGroups] = useState([]);
   const itemsPerPage = 7;
 
@@ -51,41 +41,6 @@ export default function AdminAdvisers() {
     } catch (error) {
       console.error('Failed to load advisers:', error);
       setAdvisers(mockAdvisers);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateAdviser = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await base44.users.inviteUser(formData.email, 'user');
-      
-      // Add to local state immediately
-      const newAdviser = {
-        id: Date.now(),
-        email: formData.email,
-        full_name: formData.full_name,
-        company: formData.company,
-        user_type: 'adviser',
-        advice_group_id: formData.advice_group_id,
-        status: 'pending'
-      };
-      
-      setAdvisers(prev => [newAdviser, ...prev]);
-      
-      toast.success('Adviser invited - they will appear once they accept the invitation');
-      setDialogOpen(false);
-      setFormData({
-        full_name: '',
-        email: '',
-        company: '',
-        advice_group_id: ''
-      });
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error(error.message || 'Failed to invite adviser');
     } finally {
       setLoading(false);
     }
@@ -156,76 +111,6 @@ export default function AdminAdvisers() {
   return (
     <AdminLayout currentPage="AdminAdvisers">
       <div className="p-8">
-
-        {/* Add Adviser Dialog */}
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Add New Adviser</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleCreateAdviser} className="space-y-4">
-              <div className="space-y-2">
-                <Label>Full Name *</Label>
-                <Input
-                  required
-                  value={formData.full_name}
-                  onChange={(e) => setFormData({...formData, full_name: e.target.value})}
-                  placeholder="John Smith"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Email *</Label>
-                <Input
-                  required
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  placeholder="john@example.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Company</Label>
-                <Input
-                  value={formData.company}
-                  onChange={(e) => setFormData({...formData, company: e.target.value})}
-                  placeholder="Company Name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Advice Group</Label>
-                <Select value={formData.advice_group_id} onValueChange={(value) => setFormData({...formData, advice_group_id: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select advice group" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {adviceGroups.map(group => (
-                      <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                  Create Adviser
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        {/* Header */}
-        <div className="mb-8 flex justify-end">
-          <Button 
-            onClick={() => setDialogOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Adviser
-          </Button>
-        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-6 mb-8">
