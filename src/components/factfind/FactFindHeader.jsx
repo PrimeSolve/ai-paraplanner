@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, RefreshCw, Info, AlertTriangle, Home } from 'lucide-react';
+import { MessageSquare, RefreshCw, Info, AlertTriangle, Home, User, HelpCircle, LogOut } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Checkbox } from '@/components/ui/checkbox';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
@@ -106,19 +112,37 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
             </span>
           </button>
 
-          {/* User Profile */}
+          {/* User Profile Dropdown */}
           {user && (
-            <div className="flex items-center gap-3 ml-3 pl-3 border-l border-slate-200">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
-                  {user.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || user.email?.charAt(0).toUpperCase()}
-                </div>
-                <div className="text-left">
-                  <div className="text-sm font-semibold text-slate-800">{user.full_name || user.email}</div>
-                  <div className="text-xs text-slate-500">{user.email}</div>
-                </div>
-              </div>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 ml-3 pl-3 border-l border-slate-200 hover:bg-slate-50 rounded-lg px-3 py-2 transition-colors">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
+                    {user.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="text-left">
+                    <div className="text-sm font-semibold text-slate-800">{user.full_name || user.email}</div>
+                    <div className="text-xs text-slate-500">{user.email}</div>
+                  </div>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link to={createPageUrl('MyProfile')} className="cursor-pointer">
+                    <User className="w-4 h-4 mr-2" />
+                    My Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <HelpCircle className="w-4 h-4 mr-2" />
+                  Help & Support
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => base44.auth.logout()}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Log Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>
