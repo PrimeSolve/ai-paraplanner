@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import SOARequestHeader from '../components/soa/SOARequestHeader';
 import { toast } from 'sonner';
 
 export default function SOARequestAssumptions() {
@@ -73,11 +72,6 @@ export default function SOARequestAssumptions() {
 
   return (
     <SOARequestLayout currentSection="assumptions" soaRequest={soaRequest}>
-      <SOARequestHeader 
-        title="Assumptions"
-        description="Define values, choices, longevity"
-      />
-      
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
         <div className="w-full space-y-6">
           <Card className="border-blue-200 bg-blue-50">
