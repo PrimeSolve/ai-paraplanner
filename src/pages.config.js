@@ -53,6 +53,8 @@ import AdminAdvisers from './pages/AdminAdvisers';
 import AdminClients from './pages/AdminClients';
 import AdminCompleted from './pages/AdminCompleted';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminHelp from './pages/AdminHelp';
+import AdminProfile from './pages/AdminProfile';
 import AdminQueue from './pages/AdminQueue';
 import AdminSettings from './pages/AdminSettings';
 import AdminTeam from './pages/AdminTeam';
@@ -61,8 +63,10 @@ import AdviceGroupAdvisers from './pages/AdviceGroupAdvisers';
 import AdviceGroupClients from './pages/AdviceGroupClients';
 import AdviceGroupCompleted from './pages/AdviceGroupCompleted';
 import AdviceGroupDashboard from './pages/AdviceGroupDashboard';
+import AdviceGroupHelp from './pages/AdviceGroupHelp';
 import AdviceGroupModelPortfolios from './pages/AdviceGroupModelPortfolios';
 import AdviceGroupMyProfile from './pages/AdviceGroupMyProfile';
+import AdviceGroupProfile from './pages/AdviceGroupProfile';
 import AdviceGroupRiskProfiles from './pages/AdviceGroupRiskProfiles';
 import AdviceGroupSOARequests from './pages/AdviceGroupSOARequests';
 import AdviceGroupSOATemplate from './pages/AdviceGroupSOATemplate';
@@ -75,11 +79,15 @@ import AdviserCompletions from './pages/AdviserCompletions';
 import AdviserDashboard from './pages/AdviserDashboard';
 import AdviserDocuments from './pages/AdviserDocuments';
 import AdviserFactFinds from './pages/AdviserFactFinds';
+import AdviserHelp from './pages/AdviserHelp';
+import AdviserProfile from './pages/AdviserProfile';
 import AdviserSOARequests from './pages/AdviserSOARequests';
 import AdviserSOATemplate from './pages/AdviserSOATemplate';
 import AdviserSettings from './pages/AdviserSettings';
 import ClientDocuments from './pages/ClientDocuments';
+import ClientHelp from './pages/ClientHelp';
 import ClientMessages from './pages/ClientMessages';
+import ClientProfile from './pages/ClientProfile';
 import ClientSettings from './pages/ClientSettings';
 import FactFindAboutYou from './pages/FactFindAboutYou';
 import FactFindAdviceReason from './pages/FactFindAdviceReason';
@@ -99,6 +107,7 @@ import FactFindSuperannuation from './pages/FactFindSuperannuation';
 import FactFindTrusts from './pages/FactFindTrusts';
 import FactFindWelcome from './pages/FactFindWelcome';
 import Home from './pages/Home';
+import MyProfile from './pages/MyProfile';
 import PublicAbout from './pages/PublicAbout';
 import PublicContact from './pages/PublicContact';
 import PublicHome from './pages/PublicHome';
@@ -117,15 +126,6 @@ import SOARequestStrategy from './pages/SOARequestStrategy';
 import SOARequestTransactions from './pages/SOARequestTransactions';
 import SOARequestWelcome from './pages/SOARequestWelcome';
 import SignIn from './pages/SignIn';
-import AdminProfile from './pages/AdminProfile';
-import AdminHelp from './pages/AdminHelp';
-import AdviceGroupProfile from './pages/AdviceGroupProfile';
-import AdviceGroupHelp from './pages/AdviceGroupHelp';
-import AdviserProfile from './pages/AdviserProfile';
-import AdviserHelp from './pages/AdviserHelp';
-import ClientProfile from './pages/ClientProfile';
-import ClientHelp from './pages/ClientHelp';
-import MyProfile from './pages/MyProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -136,6 +136,8 @@ export const PAGES = {
     "AdminClients": AdminClients,
     "AdminCompleted": AdminCompleted,
     "AdminDashboard": AdminDashboard,
+    "AdminHelp": AdminHelp,
+    "AdminProfile": AdminProfile,
     "AdminQueue": AdminQueue,
     "AdminSettings": AdminSettings,
     "AdminTeam": AdminTeam,
@@ -144,8 +146,10 @@ export const PAGES = {
     "AdviceGroupClients": AdviceGroupClients,
     "AdviceGroupCompleted": AdviceGroupCompleted,
     "AdviceGroupDashboard": AdviceGroupDashboard,
+    "AdviceGroupHelp": AdviceGroupHelp,
     "AdviceGroupModelPortfolios": AdviceGroupModelPortfolios,
     "AdviceGroupMyProfile": AdviceGroupMyProfile,
+    "AdviceGroupProfile": AdviceGroupProfile,
     "AdviceGroupRiskProfiles": AdviceGroupRiskProfiles,
     "AdviceGroupSOARequests": AdviceGroupSOARequests,
     "AdviceGroupSOATemplate": AdviceGroupSOATemplate,
@@ -158,11 +162,15 @@ export const PAGES = {
     "AdviserDashboard": AdviserDashboard,
     "AdviserDocuments": AdviserDocuments,
     "AdviserFactFinds": AdviserFactFinds,
+    "AdviserHelp": AdviserHelp,
+    "AdviserProfile": AdviserProfile,
     "AdviserSOARequests": AdviserSOARequests,
     "AdviserSOATemplate": AdviserSOATemplate,
     "AdviserSettings": AdviserSettings,
     "ClientDocuments": ClientDocuments,
+    "ClientHelp": ClientHelp,
     "ClientMessages": ClientMessages,
+    "ClientProfile": ClientProfile,
     "ClientSettings": ClientSettings,
     "FactFindAboutYou": FactFindAboutYou,
     "FactFindAdviceReason": FactFindAdviceReason,
@@ -182,6 +190,7 @@ export const PAGES = {
     "FactFindTrusts": FactFindTrusts,
     "FactFindWelcome": FactFindWelcome,
     "Home": Home,
+    "MyProfile": MyProfile,
     "PublicAbout": PublicAbout,
     "PublicContact": PublicContact,
     "PublicHome": PublicHome,
@@ -200,15 +209,6 @@ export const PAGES = {
     "SOARequestTransactions": SOARequestTransactions,
     "SOARequestWelcome": SOARequestWelcome,
     "SignIn": SignIn,
-    "AdminProfile": AdminProfile,
-    "AdminHelp": AdminHelp,
-    "AdviceGroupProfile": AdviceGroupProfile,
-    "AdviceGroupHelp": AdviceGroupHelp,
-    "AdviserProfile": AdviserProfile,
-    "AdviserHelp": AdviserHelp,
-    "ClientProfile": ClientProfile,
-    "ClientHelp": ClientHelp,
-    "MyProfile": MyProfile,
 }
 
 export const pagesConfig = {

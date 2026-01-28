@@ -74,9 +74,9 @@ export default function AdviceGroupAdvisers() {
         email: formData.email,
         phone: formData.phone,
         company: formData.company,
-        status: 'active'
+        status: 'pending'
       });
-      toast.success('Adviser added successfully');
+      toast.success('Adviser created with pending status. They can register when ready.');
       setShowInvite(false);
       setFormData({ first_name: '', last_name: '', email: '', phone: '', company: '' });
       loadData();
@@ -327,24 +327,24 @@ export default function AdviceGroupAdvisers() {
                       </div>
                     </td>
                     <td style={{
-                      padding: '16px',
-                      fontSize: '14px',
-                    }}>
-                      <span style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '4px 10px',
-                        borderRadius: '4px',
-                        background: 'rgba(16, 185, 129, 0.1)',
-                        color: colors.accent.success,
-                        fontSize: '12px',
-                        fontWeight: 600,
-                      }}>
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: colors.accent.success }}></span>
-                        Active
-                      </span>
-                    </td>
+                       padding: '16px',
+                       fontSize: '14px',
+                     }}>
+                       <span style={{
+                         display: 'inline-flex',
+                         alignItems: 'center',
+                         gap: '6px',
+                         padding: '4px 10px',
+                         borderRadius: '4px',
+                         background: adviser.status === 'pending' ? 'rgba(249, 115, 22, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                         color: adviser.status === 'pending' ? colors.accent.warning : colors.accent.success,
+                         fontSize: '12px',
+                         fontWeight: 600,
+                       }}>
+                         <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: adviser.status === 'pending' ? colors.accent.warning : colors.accent.success }}></span>
+                         {adviser.status?.charAt(0).toUpperCase() + adviser.status?.slice(1) || 'Active'}
+                       </span>
+                     </td>
                     <td style={{
                       padding: '16px',
                       fontSize: '14px',
