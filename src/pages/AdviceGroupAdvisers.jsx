@@ -54,7 +54,22 @@ export default function AdviceGroupAdvisers() {
     e.preventDefault();
     setLoading(true);
     try {
+      // Invite the user
       await base44.users.inviteUser(formData.email, 'user');
+      
+      // Wait a bit for the user to be created
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Update the user with adviser details
+      const users = await base44.entities.User.filter({ email: formData.email });
+      if (users.length > 0) {
+        await base44.entities.User.update(users[0].id, {
+          advice_group_id: user.advice_group_id,
+          user_type: 'adviser',
+          full_name: formData.full_name,
+          company: formData.company
+        });
+      }
       
       // Reload advisers to show the newly created one
       await loadData();
