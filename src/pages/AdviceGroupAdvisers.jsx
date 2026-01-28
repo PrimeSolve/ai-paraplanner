@@ -531,7 +531,7 @@ export default function AdviceGroupAdvisers() {
                 color: colors.core.white,
                 border: 'none',
               }}>
-                Create Adviser
+                Add Adviser
               </Button>
             </div>
             </form>
