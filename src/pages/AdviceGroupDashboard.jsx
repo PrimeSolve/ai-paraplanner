@@ -296,369 +296,368 @@ export default function AdviceGroupDashboard() {
       display: 'flex',
       gap: '24px',
     }}>
-          {/* Main Column */}
-          <div style={{ flex: 1 }}>
-            {/* Stats Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '20px',
-              marginBottom: '24px',
-            }}>
-              <StatCard 
-                icon={FileText} 
-                value="12" 
-                label="Active SOA Requests" 
-                trend="↑ 15%"
-                iconColor={`linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.2))`}
-              />
-              <StatCard 
-                icon={CheckCircle} 
-                value="47" 
-                label="Completed This Month" 
-                trend="↑ 8%"
-                iconColor={`linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2))`}
-              />
-              <StatCard 
-                icon={Clock} 
-                value="2.3d" 
-                label="Avg. Turnaround Time"
-                iconColor={`linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(8, 145, 178, 0.2))`}
-              />
-              <StatCard 
-                icon={Users} 
-                value="8" 
-                label="Active Advisers"
-                iconColor={`linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(124, 58, 237, 0.2))`}
-              />
-            </div>
+      {/* Main Column */}
+      <div style={{ flex: 1 }}>
+        {/* Stats Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: '20px',
+          marginBottom: '24px',
+        }}>
+          <StatCard 
+            icon={FileText} 
+            value="12" 
+            label="Active SOA Requests" 
+            trend="↑ 15%"
+            iconColor={`linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.2))`}
+          />
+          <StatCard 
+            icon={CheckCircle} 
+            value="47" 
+            label="Completed This Month" 
+            trend="↑ 8%"
+            iconColor={`linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2))`}
+          />
+          <StatCard 
+            icon={Clock} 
+            value="2.3d" 
+            label="Avg. Turnaround Time"
+            iconColor={`linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(8, 145, 178, 0.2))`}
+          />
+          <StatCard 
+            icon={Users} 
+            value="8" 
+            label="Active Advisers"
+            iconColor={`linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(124, 58, 237, 0.2))`}
+          />
+        </div>
 
-            {/* Recent SOA Requests Table */}
-            <div style={{
-              background: colors.core.white,
-              borderRadius: '16px',
-              border: `1px solid ${colors.core.greyLight}`,
-              overflow: 'hidden',
+        {/* Recent SOA Requests Table */}
+        <div style={{
+          background: colors.core.white,
+          borderRadius: '16px',
+          border: `1px solid ${colors.core.greyLight}`,
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            padding: '20px 32px',
+            borderBottom: `1px solid ${colors.core.greyLight}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: 600,
+              color: colors.core.navy,
+              margin: 0,
             }}>
-              <div style={{
-                padding: '20px 32px',
-                borderBottom: `1px solid ${colors.core.greyLight}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}>
-                <h3 style={{
-                  fontSize: '18px',
-                  fontWeight: 600,
-                  color: colors.core.navy,
-                  margin: 0,
-                }}>
-                  Recent SOA Requests
-                </h3>
-                <a href="#" style={{
-                  fontSize: '14px',
-                  color: colors.accent.blue,
-                  textDecoration: 'none',
-                  fontWeight: 600,
-                }}>
-                  View All →
-                </a>
-              </div>
-
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{
-                  width: '100%',
-                  borderCollapse: 'collapse',
-                }}>
-                  <thead>
-                    <tr style={{
-                      borderBottom: `1px solid ${colors.core.greyLight}`,
-                      background: colors.core.offWhite,
-                    }}>
-                      {['CLIENT', 'ADVISER', 'STATUS', 'PRIORITY', 'SUBMITTED'].map(header => (
-                        <th key={header} style={{
-                          padding: '16px 32px',
-                          textAlign: 'left',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          color: colors.core.slateLight,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px',
-                        }}>
-                          {header}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {mockSoaRequests.map((req) => (
-                      <tr key={req.id} style={{
-                        borderBottom: `1px solid ${colors.core.greyLight}`,
-                        transition: 'background-color 0.2s ease',
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = colors.core.offWhite}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                      >
-                        <td style={{
-                          padding: '16px 32px',
-                          fontSize: '14px',
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <Avatar initials={req.initials} gradientIndex={req.avatarGradient} size={40} />
-                            <div>
-                              <div style={{ fontWeight: 600, color: colors.core.navy }}>{req.client}</div>
-                              <div style={{ fontSize: '12px', color: colors.core.slateLight }}>{req.clientType}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td style={{
-                          padding: '16px 32px',
-                          fontSize: '14px',
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <Avatar initials={req.advInitials} gradientIndex={req.advAvatarGradient} size={40} />
-                            <div style={{ fontWeight: 600, color: colors.core.navy }}>{req.adviser}</div>
-                          </div>
-                        </td>
-                        <td style={{
-                          padding: '16px 32px',
-                          fontSize: '14px',
-                        }}>
-                          <StatusBadge status={req.status} />
-                        </td>
-                        <td style={{
-                          padding: '16px 32px',
-                          fontSize: '14px',
-                        }}>
-                          <PriorityBadge priority={req.priority} />
-                        </td>
-                        <td style={{
-                          padding: '16px 32px',
-                          fontSize: '14px',
-                          color: colors.core.slateLight,
-                        }}>
-                          {req.submitted}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+              Recent SOA Requests
+            </h3>
+            <a href="#" style={{
+              fontSize: '14px',
+              color: colors.accent.blue,
+              textDecoration: 'none',
+              fontWeight: 600,
+            }}>
+              View All →
+            </a>
           </div>
 
-          {/* Right Sidebar */}
-          <div style={{
-            width: '320px',
-            flexShrink: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '24px',
-          }}>
-            {/* Template Status */}
-            <div style={{
-              background: colors.core.white,
-              borderRadius: '16px',
-              border: `1px solid ${colors.core.greyLight}`,
-              padding: '24px',
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{
+              width: '100%',
+              borderCollapse: 'collapse',
             }}>
-              <h4 style={{
-                fontSize: '16px',
-                fontWeight: 600,
-                color: colors.core.navy,
-                marginBottom: '16px',
-              }}>
-                Template Status
-              </h4>
-              <div style={{
-                background: `linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05))`,
-                border: `1px solid rgba(16, 185, 129, 0.2)`,
-                borderRadius: '12px',
-                padding: '16px',
-                marginBottom: '16px',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <CheckCircle size={18} color={colors.accent.success} />
-                  <span style={{ fontWeight: 600, color: colors.core.navy }}>Custom Template</span>
-                  <span style={{
-                    marginLeft: 'auto',
-                    display: 'inline-block',
-                    background: colors.accent.blue,
-                    color: colors.core.white,
-                    padding: '4px 12px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                  }}>
-                    Edit
-                  </span>
-                </div>
-                <div style={{
-                  fontSize: '13px',
-                  color: colors.core.slateLight,
-                  marginBottom: '8px',
+              <thead>
+                <tr style={{
+                  borderBottom: `1px solid ${colors.core.greyLight}`,
+                  background: colors.core.offWhite,
                 }}>
-                  26 of 35 sections configured
-                </div>
-                <div style={{
-                  fontSize: '12px',
-                  color: colors.core.slateLight,
-                }}>
-                  Last updated 3 days ago by Sarah Mitchell
-                </div>
-              </div>
-            </div>
-
-            {/* Adviser Activity */}
-            <div style={{
-              background: colors.core.white,
-              borderRadius: '16px',
-              border: `1px solid ${colors.core.greyLight}`,
-              padding: '24px',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <h4 style={{
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  color: colors.core.navy,
-                  margin: 0,
-                }}>
-                  Adviser Activity
-                </h4>
-                <a href="#" style={{
-                  fontSize: '13px',
-                  color: colors.accent.blue,
-                  textDecoration: 'none',
-                }}>
-                  View All →
-                </a>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {adviserActivity.map((adviser, idx) => (
-                  <div key={idx} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    paddingBottom: idx !== adviserActivity.length - 1 ? '16px' : 0,
-                    borderBottom: idx !== adviserActivity.length - 1 ? `1px solid ${colors.core.greyLight}` : 'none',
-                  }}>
-                    <Avatar initials={adviser.initials} gradientIndex={adviser.gradient} size={40} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, color: colors.core.navy, fontSize: '14px' }}>
-                        {adviser.name}
-                      </div>
-                      <div style={{ fontSize: '12px', color: colors.core.slateLight }}>
-                        {adviser.active} active, {adviser.completed} completed
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontWeight: 700, color: colors.core.navy, fontSize: '16px' }}>
-                        {adviser.total}
-                      </div>
-                      <div style={{ fontSize: '11px', color: colors.core.slateLight }}>
-                        This month
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Top Clients */}
-            <div style={{
-              background: colors.core.white,
-              borderRadius: '16px',
-              border: `1px solid ${colors.core.greyLight}`,
-              padding: '24px',
-            }}>
-              <h4 style={{
-                fontSize: '16px',
-                fontWeight: 600,
-                color: colors.core.navy,
-                marginBottom: '16px',
-              }}>
-                Top Clients
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {[
-                  { name: 'James & Emma Wilson', adviser: 'Michael Ross', status: 'Active' },
-                  { name: 'Sarah Chen', adviser: 'Jessica Taylor', status: 'Active' },
-                  { name: 'David & Lisa Park', adviser: 'Andrew Walsh', status: 'Prospect' },
-                ].map((client, idx) => (
-                  <div key={idx} style={{
-                    paddingBottom: '16px',
-                    borderBottom: idx !== 2 ? `1px solid ${colors.core.greyLight}` : 'none',
-                  }}>
-                    <div style={{ fontWeight: 600, color: colors.core.navy, fontSize: '13px', marginBottom: '4px' }}>
-                      {client.name}
-                    </div>
-                    <div style={{ fontSize: '12px', color: colors.core.slateLight, marginBottom: '6px' }}>
-                      Adviser: {client.adviser}
-                    </div>
-                    <span style={{
-                      display: 'inline-block',
-                      padding: '4px 8px',
-                      borderRadius: '6px',
-                      background: client.status === 'Active' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-                      color: client.status === 'Active' ? colors.accent.success : colors.accent.blue,
-                      fontSize: '11px',
-                      fontWeight: 600,
+                  {['CLIENT', 'ADVISER', 'STATUS', 'PRIORITY', 'SUBMITTED'].map(header => (
+                    <th key={header} style={{
+                      padding: '16px 32px',
+                      textAlign: 'left',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      color: colors.core.slateLight,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
                     }}>
-                      {client.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div style={{
-              background: colors.core.white,
-              borderRadius: '16px',
-              border: `1px solid ${colors.core.greyLight}`,
-              padding: '24px',
-            }}>
-              <h4 style={{
-                fontSize: '16px',
-                fontWeight: 600,
-                color: colors.core.navy,
-                marginBottom: '16px',
-              }}>
-                Quick Actions
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {[
-                  { label: 'Edit SOA Template', icon: FileText },
-                  { label: 'Invite New Adviser', icon: Users },
-                  { label: 'Generate Report', icon: Download },
-                ].map((action, idx) => {
-                  const Icon = action.icon;
-                  return (
-                    <a key={idx} href="#" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px',
-                      borderRadius: '8px',
-                      textDecoration: 'none',
-                      color: colors.core.navy,
-                      transition: 'background-color 0.2s ease',
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {mockSoaRequests.map((req) => (
+                  <tr key={req.id} style={{
+                    borderBottom: `1px solid ${colors.core.greyLight}`,
+                    transition: 'background-color 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = colors.core.offWhite}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <td style={{
+                      padding: '16px 32px',
                       fontSize: '14px',
-                      fontWeight: 500,
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = colors.core.offWhite}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                    >
-                      <Icon size={16} color={colors.core.slateLight} />
-                      <span style={{ flex: 1 }}>{action.label}</span>
-                      <ChevronRight size={16} color={colors.core.slateLight} />
-                    </a>
-                  );
-                })}
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Avatar initials={req.initials} gradientIndex={req.avatarGradient} size={40} />
+                        <div>
+                          <div style={{ fontWeight: 600, color: colors.core.navy }}>{req.client}</div>
+                          <div style={{ fontSize: '12px', color: colors.core.slateLight }}>{req.clientType}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{
+                      padding: '16px 32px',
+                      fontSize: '14px',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Avatar initials={req.advInitials} gradientIndex={req.advAvatarGradient} size={40} />
+                        <div style={{ fontWeight: 600, color: colors.core.navy }}>{req.adviser}</div>
+                      </div>
+                    </td>
+                    <td style={{
+                      padding: '16px 32px',
+                      fontSize: '14px',
+                    }}>
+                      <StatusBadge status={req.status} />
+                    </td>
+                    <td style={{
+                      padding: '16px 32px',
+                      fontSize: '14px',
+                    }}>
+                      <PriorityBadge priority={req.priority} />
+                    </td>
+                    <td style={{
+                      padding: '16px 32px',
+                      fontSize: '14px',
+                      color: colors.core.slateLight,
+                    }}>
+                      {req.submitted}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Sidebar */}
+      <div style={{
+        width: '320px',
+        flexShrink: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '24px',
+      }}>
+        {/* Template Status */}
+        <div style={{
+          background: colors.core.white,
+          borderRadius: '16px',
+          border: `1px solid ${colors.core.greyLight}`,
+          padding: '24px',
+        }}>
+          <h4 style={{
+            fontSize: '16px',
+            fontWeight: 600,
+            color: colors.core.navy,
+            marginBottom: '16px',
+          }}>
+            Template Status
+          </h4>
+          <div style={{
+            background: `linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05))`,
+            border: `1px solid rgba(16, 185, 129, 0.2)`,
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '16px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <CheckCircle size={18} color={colors.accent.success} />
+              <span style={{ fontWeight: 600, color: colors.core.navy }}>Custom Template</span>
+              <span style={{
+                marginLeft: 'auto',
+                display: 'inline-block',
+                background: colors.accent.blue,
+                color: colors.core.white,
+                padding: '4px 12px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: 700,
+              }}>
+                Edit
+              </span>
+            </div>
+            <div style={{
+              fontSize: '13px',
+              color: colors.core.slateLight,
+              marginBottom: '8px',
+            }}>
+              26 of 35 sections configured
+            </div>
+            <div style={{
+              fontSize: '12px',
+              color: colors.core.slateLight,
+            }}>
+              Last updated 3 days ago by Sarah Mitchell
+            </div>
+          </div>
+        </div>
+
+        {/* Adviser Activity */}
+        <div style={{
+          background: colors.core.white,
+          borderRadius: '16px',
+          border: `1px solid ${colors.core.greyLight}`,
+          padding: '24px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <h4 style={{
+              fontSize: '16px',
+              fontWeight: 600,
+              color: colors.core.navy,
+              margin: 0,
+            }}>
+              Adviser Activity
+            </h4>
+            <a href="#" style={{
+              fontSize: '13px',
+              color: colors.accent.blue,
+              textDecoration: 'none',
+            }}>
+              View All →
+            </a>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {adviserActivity.map((adviser, idx) => (
+              <div key={idx} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                paddingBottom: idx !== adviserActivity.length - 1 ? '16px' : 0,
+                borderBottom: idx !== adviserActivity.length - 1 ? `1px solid ${colors.core.greyLight}` : 'none',
+              }}>
+                <Avatar initials={adviser.initials} gradientIndex={adviser.gradient} size={40} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, color: colors.core.navy, fontSize: '14px' }}>
+                    {adviser.name}
+                  </div>
+                  <div style={{ fontSize: '12px', color: colors.core.slateLight }}>
+                    {adviser.active} active, {adviser.completed} completed
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontWeight: 700, color: colors.core.navy, fontSize: '16px' }}>
+                    {adviser.total}
+                  </div>
+                  <div style={{ fontSize: '11px', color: colors.core.slateLight }}>
+                    This month
+                  </div>
+                </div>
               </div>
-            </div>
-            </div>
-            </div>
-            </div>
-            );
-            }
+            ))}
+          </div>
+        </div>
+
+        {/* Top Clients */}
+        <div style={{
+          background: colors.core.white,
+          borderRadius: '16px',
+          border: `1px solid ${colors.core.greyLight}`,
+          padding: '24px',
+        }}>
+          <h4 style={{
+            fontSize: '16px',
+            fontWeight: 600,
+            color: colors.core.navy,
+            marginBottom: '16px',
+          }}>
+            Top Clients
+          </h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {[
+              { name: 'James & Emma Wilson', adviser: 'Michael Ross', status: 'Active' },
+              { name: 'Sarah Chen', adviser: 'Jessica Taylor', status: 'Active' },
+              { name: 'David & Lisa Park', adviser: 'Andrew Walsh', status: 'Prospect' },
+            ].map((client, idx) => (
+              <div key={idx} style={{
+                paddingBottom: '16px',
+                borderBottom: idx !== 2 ? `1px solid ${colors.core.greyLight}` : 'none',
+              }}>
+                <div style={{ fontWeight: 600, color: colors.core.navy, fontSize: '13px', marginBottom: '4px' }}>
+                  {client.name}
+                </div>
+                <div style={{ fontSize: '12px', color: colors.core.slateLight, marginBottom: '6px' }}>
+                  Adviser: {client.adviser}
+                </div>
+                <span style={{
+                  display: 'inline-block',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  background: client.status === 'Active' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                  color: client.status === 'Active' ? colors.accent.success : colors.accent.blue,
+                  fontSize: '11px',
+                  fontWeight: 600,
+                }}>
+                  {client.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div style={{
+          background: colors.core.white,
+          borderRadius: '16px',
+          border: `1px solid ${colors.core.greyLight}`,
+          padding: '24px',
+        }}>
+          <h4 style={{
+            fontSize: '16px',
+            fontWeight: 600,
+            color: colors.core.navy,
+            marginBottom: '16px',
+          }}>
+            Quick Actions
+          </h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {[
+              { label: 'Edit SOA Template', icon: FileText },
+              { label: 'Invite New Adviser', icon: Users },
+              { label: 'Generate Report', icon: Download },
+            ].map((action, idx) => {
+              const Icon = action.icon;
+              return (
+                <a key={idx} href="#" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  color: colors.core.navy,
+                  transition: 'background-color 0.2s ease',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = colors.core.offWhite}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <Icon size={16} color={colors.core.slateLight} />
+                  <span style={{ flex: 1 }}>{action.label}</span>
+                  <ChevronRight size={16} color={colors.core.slateLight} />
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
