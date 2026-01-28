@@ -129,7 +129,7 @@ export default function AdviserHeader({ user }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuItem asChild>
-            <Link to={createPageUrl('AdviserSettings')} className="flex items-center cursor-pointer">
+            <Link to={createPageUrl(getProfilePageByRole())} className="flex items-center cursor-pointer">
               <User className="w-4 h-4 mr-3 text-[#64748b]" />
               My Profile
             </Link>
