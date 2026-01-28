@@ -266,7 +266,6 @@ export default function SOARequestWelcome() {
           </div>
           </div>
           </div>
-          </div>
           </SOARequestLayout>
           );
           }
