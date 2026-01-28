@@ -57,12 +57,6 @@ export default function Register() {
           password: formData.password,
           full_name: formData.fullName
         });
-
-        // Check if there's a pending Adviser record for this email and activate it
-        const pendingAdvisers = await base44.entities.Adviser.filter({ email: formData.email, status: 'pending' });
-        if (pendingAdvisers.length > 0) {
-          await base44.entities.Adviser.update(pendingAdvisers[0].id, { status: 'active' });
-        }
       } else {
         await base44.auth.register({
           email: formData.email,
