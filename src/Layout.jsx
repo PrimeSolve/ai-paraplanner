@@ -9,7 +9,8 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     const loadUser = async () => {
       try {
-        await base44.auth.me();
+        const userData = await base44.auth.me();
+        // This will cause a re-render after RoleProvider's loadUserData is called
       } catch (error) {
         // User not authenticated
       } finally {
