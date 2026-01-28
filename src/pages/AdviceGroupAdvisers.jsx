@@ -320,9 +320,9 @@ export default function AdviceGroupAdvisers() {
                           {adviser.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || adviser.email?.charAt(0)}
                         </div>
                         <div>
-                          <div style={{ fontWeight: 600, color: colors.core.navy }}>{adviser.full_name || adviser.email}</div>
-                          <div style={{ fontSize: '12px', color: colors.core.slateLight }}>{adviser.email}</div>
-                        </div>
+                           <div style={{ fontWeight: 600, color: colors.core.navy }}>{`${adviser.first_name} ${adviser.last_name}` || adviser.email}</div>
+                           <div style={{ fontSize: '12px', color: colors.core.slateLight }}>{adviser.email}</div>
+                         </div>
                       </div>
                     </td>
                     <td style={{
