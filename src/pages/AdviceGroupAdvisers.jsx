@@ -21,7 +21,10 @@ export default function AdviceGroupAdvisers() {
     const [searchTerm, setSearchTerm] = useState('');
     const [showInvite, setShowInvite] = useState(false);
     const [formData, setFormData] = useState({
+      first_name: '',
+      last_name: '',
       email: '',
+      phone: '',
       company: ''
     });
     const [statusFilter, setStatusFilter] = useState('All Statuses');
