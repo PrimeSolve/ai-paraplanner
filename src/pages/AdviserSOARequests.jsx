@@ -300,7 +300,6 @@ export default function AdviserSOARequests() {
          onSuccess={loadRequests}
          adviserEmail={user?.email}
        />
-     </div>
-   </div>
-   );
- }
+       </div>
+       );
+       }
