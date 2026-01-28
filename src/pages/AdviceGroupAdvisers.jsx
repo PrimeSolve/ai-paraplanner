@@ -52,15 +52,14 @@ export default function AdviceGroupAdvisers() {
 
   const handleCreateAdviser = async (e) => {
     e.preventDefault();
-    setLoading(true);
     try {
-      // Invite the user
+      // Invite the user as an adviser
       await base44.users.inviteUser(formData.email, 'user');
       
-      // Wait a bit for the user to be created
+      // Wait for user creation
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Update the user with adviser details
+      // Update the user to be an adviser with all details
       const users = await base44.entities.User.filter({ email: formData.email });
       if (users.length > 0) {
         await base44.entities.User.update(users[0].id, {
@@ -69,19 +68,19 @@ export default function AdviceGroupAdvisers() {
           full_name: formData.full_name,
           company: formData.company
         });
+        
+        toast.success('Adviser created and invited successfully');
+        setShowInvite(false);
+        setFormData({ full_name: '', email: '', company: '' });
+        
+        // Reload advisers
+        await loadData();
+      } else {
+        throw new Error('User creation failed');
       }
-      
-      // Reload advisers to show the newly created one
-      await loadData();
-      
-      toast.success('Adviser created successfully');
-      setShowInvite(false);
-      setFormData({ full_name: '', email: '', company: '' });
     } catch (error) {
-      console.error('Error:', error);
-      toast.error(error.message || 'Failed to invite adviser');
-    } finally {
-      setLoading(false);
+      console.error('Error creating adviser:', error);
+      toast.error(error.message || 'Failed to create adviser');
     }
   };
 
