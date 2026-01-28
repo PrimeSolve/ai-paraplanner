@@ -123,7 +123,7 @@ export default function AdviceGroupMyProfile() {
                 <div className="flex items-center gap-4 flex-wrap">
                   <div className="flex items-center gap-1.5 text-sm text-[#8b5cf6]">
                     <Shield className="w-4 h-4" />
-                    <span className="font-medium">Advice Group</span>
+                    <span className="font-medium">System Administrator</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-sm text-[#64748b]">
                     <Mail className="w-4 h-4" />
