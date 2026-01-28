@@ -104,7 +104,7 @@ export default function AdviceGroupSOARequests() {
 
   return (
     <div className="flex">
-      <AdviceGroupSidebar currentPage="soa-requests" />
+      <AdviceGroupSidebar currentPage="soa-requests" groupName={groupName} />
       <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
         <AdviceGroupHeader user={user} />
 
