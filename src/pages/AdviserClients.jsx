@@ -82,15 +82,15 @@ export default function AdviserClients() {
 
   return (
     <div style={{ padding: '24px 32px' }}>
-          {/* Page Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: '24px' }}>
-            <button onClick={() => setShowAddModal(true)} style={{ padding: '10px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              + Add Client
-            </button>
-          </div>
-          
-          {/* Stats Bar */}
-          <div style={{ display: 'flex', gap: '32px', padding: '20px 24px', background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '24px' }}>
+      {/* Page Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: '24px' }}>
+        <button onClick={() => setShowAddModal(true)} style={{ padding: '10px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          + Add Client
+        </button>
+      </div>
+      
+      {/* Stats Bar */}
+      <div style={{ display: 'flex', gap: '32px', padding: '20px 24px', background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(59, 130, 246, 0.1)' }}>
                 👤
@@ -127,10 +127,10 @@ export default function AdviserClients() {
                 <div style={{ fontSize: '13px', color: '#64748b' }}>FF Not Sent</div>
               </div>
             </div>
-          </div>
+            </div>
 
-          {/* Filters */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+            {/* Filters */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', width: '280px' }}>
               <Search style={{ width: '18px', height: '18px', color: '#94a3b8', flexShrink: 0 }} />
               <input
@@ -153,10 +153,10 @@ export default function AdviserClients() {
                 <SelectItem value="not_started">Not Started</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+            </div>
 
-          {/* Table */}
-          <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+            {/* Table */}
+            <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%' }}>
                 <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
