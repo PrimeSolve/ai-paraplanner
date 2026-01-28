@@ -240,6 +240,7 @@ export default function FactFindPersonal() {
         title="Personal Details"
         description="Please provide basic information about you and your partner."
         factFind={factFind}
+        user={user}
       />
 
       {/* Content */}
