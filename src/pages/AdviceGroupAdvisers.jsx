@@ -461,12 +461,12 @@ export default function AdviceGroupAdvisers() {
 
             {/* Add Adviser Modal */}
             <Dialog open={showInvite} onOpenChange={setShowInvite}>
-            <DialogContent className="max-w-md">
-            <DialogHeader>
-            <DialogTitle>Add New Adviser</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleCreateAdviser} style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px' }}>
-            <div style={{ display: 'flex', gap: '12px' }}>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Add New Adviser</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleCreateAdviser} style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px' }}>
+                  <div style={{ display: 'flex', gap: '12px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
                 <Label>First Name *</Label>
                 <Input
@@ -527,6 +527,6 @@ export default function AdviceGroupAdvisers() {
             </form>
             </DialogContent>
             </Dialog>
-    </div>
+            </div>
   );
 }
