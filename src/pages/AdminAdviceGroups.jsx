@@ -71,7 +71,7 @@ export default function AdminAdviceGroups() {
         status: 'active',
         subscription_tier: 'professional'
       });
-      loadGroups();
+      loadData();
     } catch (error) {
       console.error('Failed to create advice group:', error);
     }
