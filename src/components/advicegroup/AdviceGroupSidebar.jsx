@@ -127,7 +127,7 @@ const NavSection = ({ title, items, currentPage }) => (
   </div>
 );
 
-export default function AdviceGroupSidebar({ currentPage }) {
+export default function AdviceGroupSidebar({ currentPage, groupName }) {
   return (
     <div style={{
       position: 'fixed',
@@ -176,7 +176,7 @@ export default function AdviceGroupSidebar({ currentPage }) {
               fontSize: '12px',
               color: colors.sidebar.text,
             }}>
-              Advice Group Portal
+              {groupName || 'Advice Group Portal'}
             </div>
           </div>
         </div>
