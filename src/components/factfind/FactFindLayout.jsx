@@ -81,7 +81,7 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
       {/* Sidebar Navigation */}
-      <div className="w-80 bg-slate-800 text-slate-200 flex flex-col border-r border-slate-900 fixed left-0 top-16 bottom-0 z-10">
+      <div className="w-80 bg-slate-800 text-slate-200 flex flex-col border-r border-slate-900 fixed left-0 top-0 bottom-0 z-10">
         {/* Brand */}
         <Link to={createPageUrl('Home')}>
           <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-700 flex-shrink-0 cursor-pointer hover:bg-slate-700/50 transition-colors">
