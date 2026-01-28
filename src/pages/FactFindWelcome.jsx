@@ -84,11 +84,6 @@ export default function FactFindWelcome() {
 
   return (
     <FactFindLayout currentSection="welcome" factFind={factFind}>
-      <FactFindHeader
-        factFind={factFind}
-        user={user}
-      />
-
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
         <div className="w-full space-y-4">
