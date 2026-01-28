@@ -228,17 +228,16 @@ export default function AdviceGroupModelPortfolios() {
               </div>
             </>
           )}
-          </div>
 
           {showEditDialog && (
           <EditPortfolioDialog
-            open={showEditDialog}
-            onOpenChange={setShowEditDialog}
-            portfolio={editingPortfolio}
-            riskProfiles={riskProfiles}
-            assetClassColors={assetClassColors}
-            onSave={handleSavePortfolio}
-            onDelete={handleDeletePortfolio}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          portfolio={editingPortfolio}
+          riskProfiles={riskProfiles}
+          assetClassColors={assetClassColors}
+          onSave={handleSavePortfolio}
+          onDelete={handleDeletePortfolio}
           />
           )}
           </div>
