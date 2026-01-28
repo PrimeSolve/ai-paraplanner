@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import AdminLayout from '../components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -127,9 +126,7 @@ export default function AdminSettings() {
   ];
 
   return (
-    <AdminLayout currentPage="AdminSettings">
-      <div className="min-h-screen bg-[#f8fafc]">
-        <div className="p-8">
+    <div className="py-6 px-8">
 
 
           {/* Content */}
@@ -755,9 +752,7 @@ export default function AdminSettings() {
               </div>
             )}
             </div>
-          </div>
-        </div>
-      </div>
-    </AdminLayout>
-  );
-}
+            </div>
+            </div>
+            );
+            }
