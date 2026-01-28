@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import AdminLayout from '../components/admin/AdminLayout';
 import { Building2, Users, UserCheck, Clock, Clock3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -109,8 +108,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <AdminLayout currentPage="AdminDashboard">
-      <div className="p-8">
+    <div className="p-8">
          {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           {/* Total Advice Groups */}
@@ -258,6 +256,6 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
