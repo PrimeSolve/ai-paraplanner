@@ -13,49 +13,52 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Label } from '@/components/ui/label';
 
 export default function AdviceGroupAdvisers() {
-  const [advisers, setAdvisers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showInvite, setShowInvite] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    company: ''
-  });
-  const [statusFilter, setStatusFilter] = useState('All Statuses');
-  const [sortBy, setSortBy] = useState('Most Active');
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+    const { switchedToId } = useRole();
+    const [advisers, setAdvisers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
+    const [groupName, setGroupName] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showInvite, setShowInvite] = useState(false);
+    const [formData, setFormData] = useState({
+      email: '',
+      company: ''
+    });
+    const [statusFilter, setStatusFilter] = useState('All Statuses');
+    const [sortBy, setSortBy] = useState('Most Active');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
 
-  useEffect(() => {
-    loadData();
-  }, []);
+    useEffect(() => {
+      loadData();
+    }, [switchedToId]);
 
-  const loadData = async () => {
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
+    const loadData = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
 
-      if (currentUser.advice_group_id) {
-        const [advisersData, groups] = await Promise.all([
-          base44.entities.User.filter({
-            advice_group_id: currentUser.advice_group_id,
-            user_type: 'adviser'
-          }),
-          base44.entities.AdviceGroup.list()
-        ]);
-        setAdvisers(advisersData);
-        const currentGroup = groups.find(g => g.id === currentUser.advice_group_id);
-        if (currentGroup) {
-          window.currentGroupName = currentGroup.name;
+        const groupId = switchedToId || currentUser.advice_group_id;
+        if (groupId) {
+          const [advisersData, groups] = await Promise.all([
+            base44.entities.User.filter({
+              advice_group_id: groupId,
+              user_type: 'adviser'
+            }),
+            base44.entities.AdviceGroup.list()
+          ]);
+          setAdvisers(advisersData);
+          const currentGroup = groups.find(g => g.id === groupId);
+          if (currentGroup) {
+            setGroupName(currentGroup.name);
+          }
         }
+      } catch (error) {
+        console.error('Failed to load advisers:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Failed to load advisers:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
   const handleCreateAdviser = async (e) => {
     e.preventDefault();
