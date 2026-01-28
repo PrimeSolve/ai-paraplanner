@@ -294,14 +294,13 @@ export default function AdviserSOARequests() {
                 </button>
               </div>
             </div>
-            </div>
-            </div>
-
             <NewSOARequestModal
-            isOpen={showNewModal}
-            onClose={() => setShowNewModal(false)}
-            onSuccess={loadRequests}
-            adviserEmail={user?.email}
+              isOpen={showNewModal}
+              onClose={() => setShowNewModal(false)}
+              onSuccess={loadRequests}
+              adviserEmail={user?.email}
             />
+                  </div>
+                  </div>
             </div>
             );
