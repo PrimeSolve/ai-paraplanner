@@ -88,7 +88,7 @@ export default function AdviserDashboard() {
 
   return (
     <div className="flex">
-      <AdviserSidebar currentPage="dashboard" />
+      <AdviserSidebar currentPage="dashboard" loggedInUser={loggedInUser} />
       <div style={{ marginLeft: '260px', flex: 1 }}>
         <AdviserHeader user={loggedInUser} />
         <div style={{ padding: '24px 32px' }}>
