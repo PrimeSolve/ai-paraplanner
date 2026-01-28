@@ -148,7 +148,7 @@ export default function AdviceGroupLayout({ children, currentPage }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem asChild>
-                  <Link to={createPageUrl(user?.role === 'admin' ? 'AdminProfile' : 'AdviceGroupMyProfile')} className="flex items-center cursor-pointer">
+                  <Link to={createPageUrl('AdviceGroupMyProfile')} className="flex items-center cursor-pointer">
                     <User className="w-4 h-4 mr-3 text-[#64748b]" />
                     My Profile
                   </Link>
