@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import AdminLayout from '../components/admin/AdminLayout';
 import { Input } from '@/components/ui/input';
 import { CheckCircle2, Award, Clock, Star, Search, Calendar, Download, MoreHorizontal, ChevronDown, FileText, Clipboard } from 'lucide-react';
 
@@ -136,8 +135,7 @@ export default function AdminCompleted() {
   };
 
   return (
-    <AdminLayout currentPage="AdminCompleted">
-      <div className="p-8">
+    <div className="py-6 px-8">
 
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
@@ -349,6 +347,6 @@ export default function AdminCompleted() {
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
