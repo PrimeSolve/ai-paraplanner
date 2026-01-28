@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Users, FileText, CheckCircle, Clock, Eye, Plus, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import AdviserSidebar from '../components/adviser/AdviserSidebar.jsx';
-import AdviserHeader from '../components/adviser/AdviserHeader.jsx';
+
 
 export default function AdviserDashboard() {
   const [loading, setLoading] = useState(true);
@@ -86,24 +85,14 @@ export default function AdviserDashboard() {
 
   if (loading) {
     return (
-      <div className="flex">
-        <AdviserSidebar currentPage="dashboard" loggedInUser={loggedInUser} />
-        <div style={{ marginLeft: '260px', flex: 1 }}>
-          <AdviserHeader user={loggedInUser} />
-          <div className="p-8 flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-          </div>
-        </div>
+      <div style={{ padding: '24px 32px' }} className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex">
-      <AdviserSidebar currentPage="dashboard" loggedInUser={loggedInUser} />
-      <div style={{ marginLeft: '260px', flex: 1 }}>
-        <AdviserHeader user={loggedInUser} />
-        <div style={{ padding: '24px 32px' }}>
+    <div style={{ padding: '24px 32px' }}>
 
           {/* Stats Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
@@ -253,8 +242,6 @@ export default function AdviserDashboard() {
                 </div>
               </div>
             </div>
-          </div>
-          </div>
           </div>
           </div>
           );

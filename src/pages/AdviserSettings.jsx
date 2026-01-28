@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import AdviserLayout from '../components/adviser/AdviserLayout';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,13 +58,7 @@ export default function AdviserSettings() {
   };
 
   return (
-    <AdviserLayout currentPage="AdviserSettings">
-      <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
-        <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">Settings</h1>
-        <p className="text-sm text-slate-600 mt-1">Manage your account preferences</p>
-      </div>
-
-      <div className="p-8 max-w-4xl">
+    <div style={{ padding: '24px 32px' }}>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -116,8 +110,7 @@ export default function AdviserSettings() {
           <Button onClick={handleSave} disabled={saving} className="bg-teal-600 hover:bg-teal-700">
             {saving ? 'Saving...' : 'Save Changes'}
           </Button>
-        </div>
       </div>
-    </AdviserLayout>
+    </div>
   );
 }

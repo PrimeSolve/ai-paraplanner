@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import AdviserSidebar from '../components/adviser/AdviserSidebar.jsx';
-import AdviserHeader from '../components/adviser/AdviserHeader.jsx';
+
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, MoreHorizontal, Eye, Download } from 'lucide-react';
@@ -85,24 +84,14 @@ export default function AdviserSOARequests() {
 
   if (loading) {
     return (
-      <div className="flex">
-        <AdviserSidebar currentPage="soa-requests" />
-        <div style={{ marginLeft: '260px', flex: 1 }}>
-          <AdviserHeader user={user} />
-          <div className="p-8 flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-          </div>
-        </div>
+      <div style={{ padding: '24px 32px' }} className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex">
-      <AdviserSidebar currentPage="soa-requests" />
-      <div style={{ marginLeft: '260px', flex: 1 }}>
-        <AdviserHeader user={user} />
-        <div className="p-8">
+    <div style={{ padding: '24px 32px' }}>
           {/* Page Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: '24px' }}>
             <button onClick={() => setShowNewModal(true)} style={{ padding: '10px 18px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -315,7 +304,5 @@ export default function AdviserSOARequests() {
           onSuccess={loadRequests}
           adviserEmail={user?.email}
         />
-      </div>
-    </div>
-  );
-}
+        </div>
+        );

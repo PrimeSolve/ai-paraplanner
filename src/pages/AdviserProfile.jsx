@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AdviserLayout from '../components/adviser/AdviserLayout';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -89,17 +89,14 @@ export default function AdviserProfile() {
 
   if (loading) {
     return (
-      <AdviserLayout currentPage="AdviserProfile">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b5cf6]"></div>
-        </div>
-      </AdviserLayout>
+      <div style={{ padding: '24px 32px' }} className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b5cf6]"></div>
+      </div>
     );
   }
 
   return (
-    <AdviserLayout currentPage="AdviserProfile">
-      <div className="min-h-screen bg-[#f8fafc] p-8">
+    <div style={{ padding: '24px 32px' }}>
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Profile Header Card */}
           <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
@@ -310,9 +307,8 @@ export default function AdviserProfile() {
             >
               Save Changes
             </Button>
-          </div>
         </div>
       </div>
-    </AdviserLayout>
+    </div>
   );
 }
