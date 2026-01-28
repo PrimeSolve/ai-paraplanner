@@ -96,7 +96,7 @@ export default function AdviserHeader({ user }) {
               {getInitials(user.full_name)}
             </div>
             <span style={{ fontSize: '14px', fontWeight: '500', color: '#1e293b' }}>
-              {user.full_name || user.email}
+              {user?.full_name || user?.email}
             </span>
             <ChevronDown size={16} style={{ color: '#64748b' }} />
           </button>
