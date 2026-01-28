@@ -265,6 +265,7 @@ export default function AdviceGroupProfile() {
                 <Switch
                   checked={notifications.newClient}
                   onCheckedChange={(checked) => setNotifications({...notifications, newClient: checked})}
+                  className="data-[state=checked]:bg-blue-500"
                 />
               </div>
 
@@ -287,6 +288,7 @@ export default function AdviceGroupProfile() {
                 <Switch
                   checked={notifications.dailySummary}
                   onCheckedChange={(checked) => setNotifications({...notifications, dailySummary: checked})}
+                  className="data-[state=checked]:bg-blue-500"
                 />
               </div>
             </div>

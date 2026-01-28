@@ -265,6 +265,7 @@ export default function AdviserProfile() {
                 <Switch
                   checked={notifications.newClient}
                   onCheckedChange={(checked) => setNotifications({...notifications, newClient: checked})}
+                  className="data-[state=checked]:bg-blue-500"
                 />
               </div>
 
@@ -276,6 +277,7 @@ export default function AdviserProfile() {
                 <Switch
                   checked={notifications.soaComments}
                   onCheckedChange={(checked) => setNotifications({...notifications, soaComments: checked})}
+                  className="data-[state=checked]:bg-blue-500"
                 />
               </div>
 
@@ -287,6 +289,7 @@ export default function AdviserProfile() {
                 <Switch
                   checked={notifications.dailySummary}
                   onCheckedChange={(checked) => setNotifications({...notifications, dailySummary: checked})}
+                  className="data-[state=checked]:bg-blue-500"
                 />
               </div>
             </div>
