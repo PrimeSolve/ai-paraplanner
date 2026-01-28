@@ -68,6 +68,7 @@ export default function AdviceGroupAdvisers() {
       toast.success('Invitation sent to ' + formData.email);
       setShowInvite(false);
       setFormData({ email: '', company: '' });
+      loadData();
     } catch (error) {
       console.error('Error:', error);
       toast.error(error.message || 'Failed to send invitation');
