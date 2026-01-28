@@ -95,10 +95,11 @@ export default function AdviceGroupAdvisers() {
     }
   };
 
-  const filteredAdvisers = advisers.filter(a =>
-    a.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredAdvisers = advisers.filter(a => {
+    const fullName = `${a.first_name || ''} ${a.last_name || ''}`.toLowerCase();
+    return fullName.includes(searchTerm.toLowerCase()) || 
+           a.email?.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   const avatarGradients = [
     'linear-gradient(135deg, #3b82f6, #1d4ed8)',
