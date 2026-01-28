@@ -182,11 +182,11 @@ export default function AdviserSidebar({ currentPage }) {
             color: 'white',
             fontSize: '14px'
           }}>
-            A
+            {adviser ? `${adviser.first_name?.[0]}${adviser.last_name?.[0]}`.toUpperCase() : 'A'}
           </div>
           <div>
             <div style={{ fontSize: '14px', fontWeight: '600', color: 'white' }}>
-              Adviser Name
+              {adviser ? `${adviser.first_name} ${adviser.last_name}` : 'Adviser Name'}
             </div>
             <div style={{ fontSize: '12px', color: '#94a3b8' }}>
               Adviser Account
