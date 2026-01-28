@@ -476,6 +476,26 @@ export default function AdviceGroupAdvisers() {
             <DialogTitle>Add New Adviser</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreateAdviser} style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                <Label>First Name *</Label>
+                <Input
+                  required
+                  value={formData.first_name}
+                  onChange={(e) => setFormData({...formData, first_name: e.target.value})}
+                  placeholder="John"
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                <Label>Last Name *</Label>
+                <Input
+                  required
+                  value={formData.last_name}
+                  onChange={(e) => setFormData({...formData, last_name: e.target.value})}
+                  placeholder="Smith"
+                />
+              </div>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <Label>Email *</Label>
               <Input
@@ -484,6 +504,14 @@ export default function AdviceGroupAdvisers() {
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 placeholder="john@example.com"
+              />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Label>Phone</Label>
+              <Input
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                placeholder="+1 (555) 123-4567"
               />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
