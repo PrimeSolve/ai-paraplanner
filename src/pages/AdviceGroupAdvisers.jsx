@@ -7,8 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search, ChevronRight, Download, X, Mail } from 'lucide-react';
 import { toast } from 'sonner';
-import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
-import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 
@@ -147,21 +145,9 @@ export default function AdviceGroupAdvisers() {
   };
 
   return (
-    <div className="flex">
-      <AdviceGroupSidebar currentPage="advisers" groupName={groupName} />
-
-      <div style={{
-        marginLeft: '260px',
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
-        <AdviceGroupHeader user={user} />
-
-        <div style={{
-          flex: 1,
-          padding: '32px',
-        }}>
+    <div style={{
+      padding: '32px',
+    }}>
         
         {/* Stats Pills */}
         <div style={{
@@ -542,6 +528,6 @@ export default function AdviceGroupAdvisers() {
             </form>
             </DialogContent>
             </Dialog>
-            </div>
-            );
-            }
+    </div>
+  );
+}
