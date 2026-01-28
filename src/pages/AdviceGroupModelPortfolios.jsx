@@ -3,8 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
-import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 import PortfolioCard from '../components/advicegroup/PortfolioCard';
 import EditPortfolioDialog from '../components/advicegroup/EditPortfolioDialog';
 
@@ -152,26 +150,14 @@ export default function AdviceGroupModelPortfolios() {
 
   if (loading) {
     return (
-      <div className="flex">
-        <AdviceGroupSidebar currentPage="portfolios" />
-        <div style={{ marginLeft: '260px', flex: 1 }}>
-          <AdviceGroupHeader user={user} />
-          <div className="p-8 flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-          </div>
-        </div>
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex">
-      <AdviceGroupSidebar currentPage="portfolios" />
-
-      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <AdviceGroupHeader user={user} />
-
-        <div className="p-8 flex-1 bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="p-8 bg-gradient-to-br from-slate-50 to-slate-100">
           {portfolios.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-8">
               <div className="text-6xl mb-6">📊</div>
@@ -254,8 +240,7 @@ export default function AdviceGroupModelPortfolios() {
             onSave={handleSavePortfolio}
             onDelete={handleDeletePortfolio}
           />
-        )}
-      </div>
-    </div>
-  );
-}
+          )}
+          </div>
+          );
+          }

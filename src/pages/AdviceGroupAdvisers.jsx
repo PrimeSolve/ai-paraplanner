@@ -146,7 +146,7 @@ export default function AdviceGroupAdvisers() {
 
   return (
     <div style={{
-      padding: '32px',
+      padding: '24px 32px',
     }}>
         
         {/* Stats Pills */}

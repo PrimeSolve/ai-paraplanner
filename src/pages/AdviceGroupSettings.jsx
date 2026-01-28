@@ -5,8 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Settings, Bell, Palette, Lock } from 'lucide-react';
 import { toast } from 'sonner';
-import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
-import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
+
 
 export default function AdviceGroupSettings() {
   const [activeTab, setActiveTab] = useState('general');
@@ -155,14 +154,8 @@ export default function AdviceGroupSettings() {
 
   if (loading) {
     return (
-      <div className="flex">
-        <AdviceGroupSidebar currentPage="settings" />
-        <div style={{ marginLeft: '260px', flex: 1 }}>
-          <AdviceGroupHeader user={user} />
-          <div className="p-8 flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-          </div>
-        </div>
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
       </div>
     );
   }
@@ -175,13 +168,7 @@ export default function AdviceGroupSettings() {
   ];
 
   return (
-    <div className="flex">
-      <AdviceGroupSidebar currentPage="settings" />
-
-      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <AdviceGroupHeader user={user} />
-
-        <div className="p-8 flex-1 bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="p-8 bg-gradient-to-br from-slate-50 to-slate-100">
           <div style={{ display: 'flex', gap: '32px' }}>
             {/* Settings Tabs */}
             <div style={{ width: '220px', flexShrink: 0 }}>
@@ -653,8 +640,6 @@ export default function AdviceGroupSettings() {
               )}
             </div>
           </div>
-        </div>
-      </div>
     </div>
   );
 }

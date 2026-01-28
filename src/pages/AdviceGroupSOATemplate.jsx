@@ -6,8 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronDown, GripVertical, AlertCircle, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
-import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
+
 
 export default function AdviceGroupSOATemplate() {
   const [adminTemplate, setAdminTemplate] = useState(null);
@@ -174,18 +173,7 @@ export default function AdviceGroupSOATemplate() {
   };
 
   return (
-    <div className="flex">
-      <AdviceGroupSidebar currentPage="template" />
-
-      <div style={{
-        marginLeft: '260px',
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
-        <AdviceGroupHeader user={user} />
-
-        <div className="p-8 flex-1">
+    <div className="p-8 flex-1">
           {/* Info Banner */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -322,8 +310,6 @@ export default function AdviceGroupSOATemplate() {
               )}
             </Droppable>
           </DragDropContext>
-        </div>
-      </div>
     </div>
   );
 }

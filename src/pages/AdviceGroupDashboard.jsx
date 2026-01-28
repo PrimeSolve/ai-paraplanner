@@ -291,7 +291,6 @@ export default function AdviceGroupDashboard() {
 
   return (
     <div style={{
-      flex: 1,
       padding: '24px 32px',
       display: 'flex',
       gap: '24px',

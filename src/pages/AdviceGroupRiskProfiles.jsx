@@ -9,8 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Plus, Edit, Trash2, User, HelpCircle, LogOut, ChevronDown, AlertCircle, Trash } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
-import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
+
 
 export default function AdviceGroupRiskProfiles() {
   const [profiles, setProfiles] = useState([]);
@@ -184,13 +183,7 @@ export default function AdviceGroupRiskProfiles() {
   };
 
   return (
-    <div className="flex">
-      <AdviceGroupSidebar currentPage="risk-profiles" />
-
-      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <AdviceGroupHeader user={user} />
-
-        <div className="p-8 flex-1">
+    <div className="p-8 flex-1">
           {/* Info Banner */}
           <div style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.05))', border: '1px solid rgba(245, 158, 11, 0.2)' }} className="rounded-lg p-4 mb-6 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -475,6 +468,5 @@ export default function AdviceGroupRiskProfiles() {
         </DialogContent>
       </Dialog>
       </div>
-    </div>
-  );
-}
+      );
+      }
