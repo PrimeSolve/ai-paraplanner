@@ -457,7 +457,8 @@ export default function AdminTeam() {
               disabled={inviting || !inviteEmail}
               className="bg-[#3b82f6] hover:bg-[#2563eb]"
             >
-              {inviting ? 'Saving...' : 'Save Member'}
+              <Send className="w-4 h-4 mr-2" />
+              {inviting ? 'Sending...' : 'Send Invite'}
             </Button>
           </div>
         </DialogContent>
