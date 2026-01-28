@@ -295,6 +295,7 @@ export default function AdviserSOARequests() {
               </div>
             </div>
             </div>
+            </div>
 
             <NewSOARequestModal
             isOpen={showNewModal}
@@ -303,4 +304,4 @@ export default function AdviserSOARequests() {
             adviserEmail={user?.email}
             />
             </div>
-  );
+            );

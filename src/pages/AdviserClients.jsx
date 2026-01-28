@@ -275,6 +275,7 @@ export default function AdviserClients() {
               </div>
             </div>
             </div>
+            </div>
 
             <AddClientModal 
             isOpen={showAddModal} 
@@ -283,4 +284,4 @@ export default function AdviserClients() {
             adviserEmail={user?.email}
             />
             </div>
-  );
+            );
