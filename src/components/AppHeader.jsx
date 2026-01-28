@@ -185,7 +185,7 @@ export default function AppHeader() {
         )}
       </div>
 
-      {/* Right side: Fact Find Buttons + User menu */}
+      {/* Right side: Fact Find / SOA Request Buttons + User menu */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         {isFactFindPage && (
           <>
@@ -247,6 +247,64 @@ export default function AppHeader() {
               title="Refresh Data"
             >
               🔄
+            </button>
+          </>
+        )}
+        {isSOARequestPage && (
+          <>
+            {/* Talk to AI Paraplanner */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'linear-gradient(to right, #14b8a6, #10b981)',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 600,
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+              e.currentTarget.style.opacity = '0.9';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.opacity = '1';
+            }}>
+              <MessageSquare size={16} />
+              <span>Talk to AI Paraplanner</span>
+              <span style={{
+                background: '#fbbf24',
+                color: '#78350f',
+                fontSize: '10px',
+                fontWeight: 700,
+                padding: '2px 6px',
+                borderRadius: '4px',
+                marginLeft: '4px'
+              }}>NEW</span>
+            </div>
+
+            {/* Projected Position Button */}
+            <button style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '8px',
+              background: '#a855f7',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              fontSize: '18px'
+            }}
+            title="Projected Position"
+            >
+              📊
             </button>
           </>
         )}
