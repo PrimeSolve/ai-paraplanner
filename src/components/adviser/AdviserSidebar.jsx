@@ -72,7 +72,7 @@ export default function AdviserSidebar({ currentPage }) {
               AI Paraplanner
             </div>
             <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-              Adviser Portal
+              {adviser ? `${adviser.first_name} ${adviser.last_name}` : 'Adviser Portal'}
             </div>
           </div>
         </Link>
