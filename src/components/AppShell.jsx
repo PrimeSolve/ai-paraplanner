@@ -46,6 +46,11 @@ export default function AppShell({ children }) {
 
   // Determine which sidebar to render based on navigation chain
   const renderSidebar = () => {
+    // Don't render sidebar for Fact Find pages
+    if (location.pathname.includes('FactFind')) {
+      return null;
+    }
+
     console.log('renderSidebar called');
     console.log('currentLevel:', currentLevel);
     console.log('originalRole:', originalRole);
