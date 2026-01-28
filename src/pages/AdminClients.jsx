@@ -304,7 +304,6 @@ export default function AdminClients() {
             </div>
           </div>
         </div>
-      </div>
-    </AdminLayout>
+    </div>
   );
 }
