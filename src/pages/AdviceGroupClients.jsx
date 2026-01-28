@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
-import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,23 +41,17 @@ export default function AdviceGroupClients() {
   );
 
   return (
-    <div className="flex">
-      <AdviceGroupSidebar currentPage="clients" />
-      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <AdviceGroupHeader user={user} />
-        <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">Clients</h1>
-            <p className="text-sm text-slate-600 mt-1">All clients across your adviser network</p>
-          </div>
-          <Button className="bg-cyan-600 hover:bg-cyan-700">
-            Export Data
-          </Button>
+    <div className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10 mb-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-['Fraunces'] font-medium text-slate-800">Clients</h1>
+          <p className="text-sm text-slate-600 mt-1">All clients across your adviser network</p>
         </div>
+        <Button className="bg-cyan-600 hover:bg-cyan-700">
+          Export Data
+        </Button>
       </div>
-
-      <div className="p-8">
+      <div className="p-8 -mx-8 -mb-6">
         <div className="grid grid-cols-4 gap-4 mb-6">
           <Card className="p-4">
             <div className="text-3xl font-['Fraunces'] font-semibold text-cyan-600 mb-1">
@@ -153,7 +145,6 @@ export default function AdviceGroupClients() {
             </table>
           </div>
         </Card>
-      </div>
       </div>
     </div>
   );
