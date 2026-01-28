@@ -12,7 +12,7 @@ export default function MyProfile() {
       try {
         const user = await base44.auth.me();
         
-        // Determine which profile page based on user role and entity
+        // Always prioritize admin role - even if advice_group_id is set during mimicking
         if (user.role === 'admin') {
           navigate(createPageUrl('AdminProfile'));
         } else if (user.role === 'user') {
