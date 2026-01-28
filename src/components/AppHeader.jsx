@@ -89,24 +89,25 @@ export default function AppHeader() {
             <button
               onClick={handleGoHome}
               style={{
+                marginLeft: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
                 padding: '8px 12px',
-                background: 'transparent',
-                border: '1px solid #e2e8f0',
+                background: '#eff6ff',
+                border: '1px solid #bfdbfe',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                color: '#64748b',
+                color: '#3b82f6',
                 transition: 'all 0.2s',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#f8fafc';
-                e.currentTarget.style.color = '#1e293b';
+                e.currentTarget.style.background = '#dbeafe';
+                e.currentTarget.style.borderColor = '#93c5fd';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = '#64748b';
+                e.currentTarget.style.background = '#eff6ff';
+                e.currentTarget.style.borderColor = '#bfdbfe';
               }}
               title="Return to my dashboard"
             >
