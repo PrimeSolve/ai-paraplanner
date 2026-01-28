@@ -280,7 +280,6 @@ export default function AdviserClients() {
               onSuccess={loadData}
               adviserEmail={user?.email}
             />
-                  </div>
-                  </div>
+            </div>
             </div>
             );
