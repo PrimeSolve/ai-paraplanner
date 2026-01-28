@@ -44,9 +44,8 @@ export default function AdviceGroupAdvisers() {
         const groupId = switchedToId || currentUser.advice_group_id;
         if (groupId) {
           const [advisersData, groups] = await Promise.all([
-            base44.entities.User.filter({
-              advice_group_id: groupId,
-              user_type: 'adviser'
+            base44.entities.Adviser.filter({
+              advice_group_id: groupId
             }),
             base44.entities.AdviceGroup.list()
           ]);
