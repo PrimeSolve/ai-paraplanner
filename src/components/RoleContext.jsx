@@ -7,6 +7,8 @@ export function RoleProvider({ children }) {
   const [admin, setAdmin] = useState(null); // Admin entity if user is admin
   const [adviser, setAdviser] = useState(null); // Adviser entity if user is adviser
   const [client, setClient] = useState(null); // Client entity if user is client
+  const [switchedToId, setSwitchedToId] = useState(null); // Track switched role ID
+  const [originalUser, setOriginalUser] = useState(null); // Store original user for returning
 
   const loadUserData = (userData) => {
     setUser(userData);
@@ -30,8 +32,20 @@ export function RoleProvider({ children }) {
     setClient(null);
   };
 
+  const switchRole = (newUserId) => {
+    if (!originalUser) {
+      setOriginalUser(user);
+    }
+    setSwitchedToId(newUserId);
+  };
+
+  const resetToOriginal = () => {
+    setSwitchedToId(null);
+    setOriginalUser(null);
+  };
+
   return (
-    <RoleContext.Provider value={{ user, admin, adviser, client, loadUserData, clearUserData }}>
+    <RoleContext.Provider value={{ user, admin, adviser, client, loadUserData, clearUserData, switchRole, resetToOriginal, switchedToId, originalUser }}>
       {children}
     </RoleContext.Provider>
   );
