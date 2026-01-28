@@ -83,21 +83,23 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
       {/* Sidebar Navigation */}
       <div className="w-80 bg-slate-800 text-slate-200 flex flex-col border-r border-slate-900 fixed left-0 top-0 bottom-0 z-10">
         {/* Brand */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-700 flex-shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-600 flex flex-col justify-center px-2 py-1.5 gap-1 shadow-lg">
-            <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '70%'}}></div>
-            <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '55%'}}></div>
-            <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '80%'}}></div>
+        <Link to={createPageUrl('Home')}>
+          <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-700 flex-shrink-0 cursor-pointer hover:bg-slate-700/50 transition-colors">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-600 flex flex-col justify-center px-2 py-1.5 gap-1 shadow-lg">
+              <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '70%'}}></div>
+              <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '55%'}}></div>
+              <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '80%'}}></div>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <div className="text-lg font-extrabold text-slate-50">Fact Find</div>
+              {factFind?.personal?.first_name && (
+                <div className="text-xs text-slate-400">
+                  Client: {factFind.personal.first_name} {factFind.personal.last_name}
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex flex-col gap-0.5">
-            <div className="text-lg font-extrabold text-slate-50">Fact Find</div>
-            {factFind?.personal?.first_name && (
-              <div className="text-xs text-slate-400">
-                Client: {factFind.personal.first_name} {factFind.personal.last_name}
-              </div>
-            )}
-          </div>
-        </div>
+        </Link>
 
         {/* Navigation Links */}
         <div className="flex-1 overflow-y-auto px-3 py-4">
