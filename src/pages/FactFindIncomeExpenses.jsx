@@ -227,19 +227,37 @@ export default function FactFindIncomeExpenses() {
       <FactFindHeader
         title="Income & Expenses"
         description="Record current details and add any future adjustments."
-        tabs={[
-          { id: 'inc', label: 'Income' },
-          { id: 'exp', label: 'Expenses' }
-        ]}
-        activeTab={currentTab}
-        onTabChange={setCurrentTab}
         factFind={factFind}
         user={user}
       />
 
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
-          {/* CLIENT/PARTNER BAR (INCOME ONLY) */}
+           {/* Tabs - Part of form content */}
+           <div className="flex gap-2">
+             <button
+               onClick={() => setCurrentTab('inc')}
+               className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                 currentTab === 'inc'
+                   ? 'bg-blue-600 text-white'
+                   : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+               }`}
+             >
+               Income
+             </button>
+             <button
+               onClick={() => setCurrentTab('exp')}
+               className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                 currentTab === 'exp'
+                   ? 'bg-blue-600 text-white'
+                   : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+               }`}
+             >
+               Expenses
+             </button>
+           </div>
+
+           {/* CLIENT/PARTNER BAR (INCOME ONLY) */}
           {currentTab === 'inc' && (
             <Card className="border-slate-200 shadow-sm">
               <CardContent className="p-4">

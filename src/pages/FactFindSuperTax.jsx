@@ -191,16 +191,31 @@ export default function FactFindSuperTax() {
       <FactFindHeader
         title="Super & Tax"
         description="Enter superannuation and tax details. Switch between Client and Partner as needed."
-        tabs={TABS}
-        activeTab={currentTab}
-        onTabChange={setCurrentTab}
         factFind={factFind}
         user={user}
       />
 
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
-          {/* Person Pills */}
+           {/* Tabs - Part of form content */}
+           <div className="flex gap-2">
+             {TABS.map(tab => (
+               <button
+                 key={tab.id}
+                 onClick={() => setCurrentTab(tab.id)}
+                 className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${
+                   currentTab === tab.id
+                     ? 'bg-blue-600 text-white'
+                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                 }`}
+               >
+                 <span>{tab.icon}</span>
+                 {tab.label}
+               </button>
+             ))}
+           </div>
+
+           {/* Person Pills */}
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
