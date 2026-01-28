@@ -266,6 +266,7 @@ const PriorityBadge = ({ priority }) => {
 // MAIN DASHBOARD COMPONENT
 // ============================================
 export default function AdviceGroupDashboard() {
+  const { switchedToId } = useRole();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [groupName, setGroupName] = useState('');
@@ -275,9 +276,10 @@ export default function AdviceGroupDashboard() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.advice_group_id) {
+        const groupId = switchedToId || currentUser.advice_group_id;
+        if (groupId) {
           const group = await base44.entities.AdviceGroup.list();
-          const current = group.find(g => g.id === currentUser.advice_group_id);
+          const current = group.find(g => g.id === groupId);
           if (current) setGroupName(current.name);
         }
       } catch (error) {
@@ -287,7 +289,7 @@ export default function AdviceGroupDashboard() {
       }
     };
     loadData();
-  }, []);
+  }, [switchedToId]);
 
   return (
     <div className="flex">
