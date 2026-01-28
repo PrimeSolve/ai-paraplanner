@@ -281,5 +281,6 @@ export default function AdviserClients() {
          adviserEmail={user?.email}
        />
      </div>
+   </div>
    );
  }
