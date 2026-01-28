@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import SOARequestHeader from '../components/soa/SOARequestHeader';
 import { toast } from 'sonner';
 
 export default function SOARequestStrategy() {
@@ -70,11 +69,6 @@ export default function SOARequestStrategy() {
 
   return (
     <SOARequestLayout currentSection="strategy" soaRequest={soaRequest}>
-      <SOARequestHeader 
-        title="Strategy"
-        description="Optional section models to compare cashflow scenarios, as well as add strategy recommendations to your product strategy"
-      />
-      
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
         <div className="w-full space-y-6">
           <Card className="border-blue-200 bg-blue-50">

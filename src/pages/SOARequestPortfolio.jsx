@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import SOARequestHeader from '../components/soa/SOARequestHeader';
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -102,11 +101,6 @@ export default function SOARequestPortfolio() {
 
   return (
     <SOARequestLayout currentSection="portfolio" soaRequest={soaRequest}>
-      <SOARequestHeader 
-        title="Portfolio"
-        description="Build portfolios for each product"
-      />
-      
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
         <div className="w-full space-y-6">
           <Card className="border-blue-200 bg-blue-50">
