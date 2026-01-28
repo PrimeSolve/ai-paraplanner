@@ -135,7 +135,7 @@ export default function AdviceGroupAdvisers() {
 
   return (
     <div className="flex">
-      <AdviceGroupSidebar currentPage="advisers" groupName={window.currentGroupName || user?.advice_group_id} />
+      <AdviceGroupSidebar currentPage="advisers" groupName={groupName} />
 
       <div style={{
         marginLeft: '260px',
