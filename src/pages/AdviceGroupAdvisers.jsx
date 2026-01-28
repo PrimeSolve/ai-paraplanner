@@ -362,7 +362,7 @@ export default function AdviceGroupAdvisers() {
                         <Button 
                           size="sm" 
                           onClick={() => {
-                            switchRole('adviser', adviser.id, user);
+                            switchRole('adviser', adviser.id, `${adviser.first_name} ${adviser.last_name}`);
                             navigate(createPageUrl(`AdviserDashboard?adviser_email=${adviser.email}`));
                           }}
                           style={{

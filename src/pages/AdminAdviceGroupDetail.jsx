@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useRole } from '../components/RoleContext';
 import AdviceGroupLayout from '../components/advicegroup/AdviceGroupLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
 export default function AdminAdviceGroupDetail() {
+  const { switchRole } = useRole();
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
@@ -49,6 +51,7 @@ export default function AdminAdviceGroupDetail() {
         const groups = await base44.entities.AdviceGroup.filter({ id });
         const groupData = groups[0];
         setGroup(groupData);
+        switchRole('advice_group', groupData.id, groupData.name);
         setFormData({
           name: groupData.name || '',
           slug: groupData.slug || '',
