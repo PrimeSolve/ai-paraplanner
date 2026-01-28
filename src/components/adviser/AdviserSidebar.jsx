@@ -3,21 +3,26 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { LayoutDashboard, Users, FileText, CheckCircle, Settings } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useRole } from '../RoleContext';
 
 export default function AdviserSidebar({ currentPage }) {
-  const [user, setUser] = useState(null);
+  const [adviser, setAdviser] = useState(null);
+  const { switchedToId } = useRole();
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-      } catch (error) {
-        console.error('Failed to load user:', error);
+    const loadAdviser = async () => {
+      if (switchedToId) {
+        try {
+          const adviserData = await base44.entities.Adviser.list();
+          const selectedAdviser = adviserData.find(a => a.id === switchedToId);
+          setAdviser(selectedAdviser);
+        } catch (error) {
+          console.error('Failed to load adviser:', error);
+        }
       }
     };
-    loadUser();
-  }, []);
+    loadAdviser();
+  }, [switchedToId]);
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: 'AdviserDashboard', id: 'dashboard' },
     { label: 'Clients', icon: Users, path: 'AdviserClients', id: 'clients' },
