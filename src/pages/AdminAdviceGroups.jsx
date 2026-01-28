@@ -313,11 +313,11 @@ export default function AdminAdviceGroups() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <Link 
-                          to={`${createPageUrl('AdminAdviceGroupDetail')}?id=${group.id}`}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors inline-block no-underline">
-                          Manage
-                        </Link>
+                        <button 
+                          onClick={() => handleViewAsAdviceGroup(group)}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+                          View
+                        </button>
                         <div className="relative group/menu">
                           <button className="p-1.5 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
                             <MoreHorizontal className="w-4 h-4" />
