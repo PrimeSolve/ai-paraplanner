@@ -12,8 +12,6 @@ import {
   Edit,
   Download,
 } from 'lucide-react';
-import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
-import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 
 // ============================================
 // DESIGN TOKENS
@@ -292,18 +290,7 @@ export default function AdviceGroupDashboard() {
   }, [switchedToId]);
 
   return (
-    <div className="flex">
-      <AdviceGroupSidebar currentPage="dashboard" groupName={groupName} />
-
-      <div style={{
-        marginLeft: '260px',
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
-        <AdviceGroupHeader user={user} />
-
-        <div style={{
+    <div style={{
           flex: 1,
           padding: '24px 32px',
           display: 'flex',
@@ -670,9 +657,6 @@ export default function AdviceGroupDashboard() {
                 })}
               </div>
             </div>
-          </div>
-          </div>
-          </div>
-          </div>
-          );
-          }
+    </div>
+  );
+}
