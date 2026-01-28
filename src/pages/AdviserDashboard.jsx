@@ -75,7 +75,7 @@ export default function AdviserDashboard() {
   if (loading) {
     return (
       <div className="flex">
-        <AdviserSidebar currentPage="dashboard" />
+        <AdviserSidebar currentPage="dashboard" loggedInUser={loggedInUser} />
         <div style={{ marginLeft: '260px', flex: 1 }}>
           <AdviserHeader user={loggedInUser} />
           <div className="p-8 flex items-center justify-center h-full">
