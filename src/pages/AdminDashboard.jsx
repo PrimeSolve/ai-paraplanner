@@ -108,7 +108,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="py-6 px-8">
+    <div className="py-6 pr-8 pl-4">
          {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           {/* Total Advice Groups */}
