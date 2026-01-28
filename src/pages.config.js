@@ -120,6 +120,7 @@ import SOARequestWelcome from './pages/SOARequestWelcome';
 import SignIn from './pages/SignIn';
 import AdminProfile from './pages/AdminProfile';
 import AdminHelp from './pages/AdminHelp';
+import AdviceGroupProfile from './pages/AdviceGroupProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -197,6 +198,7 @@ export const PAGES = {
     "SignIn": SignIn,
     "AdminProfile": AdminProfile,
     "AdminHelp": AdminHelp,
+    "AdviceGroupProfile": AdviceGroupProfile,
 }
 
 export const pagesConfig = {
