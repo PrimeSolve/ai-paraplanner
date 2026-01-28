@@ -24,6 +24,14 @@ export default function AdminAdvisers() {
   const [planFilter, setPlanFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [user, setUser] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    company: '',
+    advice_group_id: ''
+  });
+  const [adviceGroups, setAdviceGroups] = useState([]);
   const itemsPerPage = 7;
 
   useEffect(() => {
