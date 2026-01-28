@@ -660,6 +660,5 @@ export default function AdviceGroupDashboard() {
             </div>
             </div>
             </div>
-            </div>
             );
             }
