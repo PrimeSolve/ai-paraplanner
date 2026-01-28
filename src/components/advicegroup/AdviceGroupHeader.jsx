@@ -41,6 +41,36 @@ export default function AdviceGroupHeader({ user }) {
       alignItems: 'center',
       justifyContent: 'space-between',
     }}>
+      <div>
+        {originalUser && (
+          <button
+            onClick={handleGoHome}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 12px',
+              background: 'transparent',
+              border: `1px solid ${colors.core.greyLight}`,
+              borderRadius: '8px',
+              cursor: 'pointer',
+              color: '#64748b',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#f8fafc';
+              e.currentTarget.style.color = colors.core.navy;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = '#64748b';
+            }}
+            title="Return to my dashboard"
+          >
+            <Home size={18} />
+          </button>
+        )}
+      </div>
       {user && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
