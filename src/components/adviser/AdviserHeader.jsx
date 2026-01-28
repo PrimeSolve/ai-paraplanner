@@ -9,9 +9,22 @@ import { useRole } from '@/components/RoleContext';
 export default function AdviserHeader({ user }) {
   const navigate = useNavigate();
   const { originalUser, resetToOriginal } = useRole();
+  const [adviserName, setAdviserName] = React.useState(null);
+
+  React.useEffect(() => {
+    if (user?.email) {
+      base44.entities.Adviser.filter({ email: user.email }).then(advisers => {
+        if (advisers.length > 0) {
+          setAdviserName(`${advisers[0].first_name} ${advisers[0].last_name}`);
+        }
+      });
+    }
+  }, [user?.email]);
 
   // Always display the actual logged-in user - NEVER switch
-  if (!user || !user.full_name) return null;
+  if (!user) return null;
+  
+  const displayName = adviserName || user.full_name || user.email;
 
   const getInitials = (name) => {
     return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
