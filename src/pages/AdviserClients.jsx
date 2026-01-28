@@ -276,13 +276,14 @@ export default function AdviserClients() {
             </div>
             </div>
             </div>
+            </div>
 
             {/* Add Client Modal */}
-      <AddClientModal 
-        isOpen={showAddModal} 
-        onClose={() => setShowAddModal(false)}
-        onSuccess={loadData}
-        adviserEmail={user?.email}
-      />
+            <AddClientModal 
+            isOpen={showAddModal} 
+            onClose={() => setShowAddModal(false)}
+            onSuccess={loadData}
+            adviserEmail={user?.email}
+            />
     </div>
   );
