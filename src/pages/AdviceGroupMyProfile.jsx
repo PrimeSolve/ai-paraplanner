@@ -94,8 +94,6 @@ export default function AdviceGroupMyProfile() {
       <AdminLayout currentPage="AdminProfile">
         <div className="min-h-screen bg-[#f8fafc] p-8">
           <div className="max-w-4xl mx-auto space-y-6">
-        <div className="min-h-screen bg-[#f8fafc] p-8" style={{ flex: 1 }}>
-        <div className="max-w-4xl mx-auto space-y-6">
           {/* Profile Header Card */}
           <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
             <div className="flex items-center gap-4">
