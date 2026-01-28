@@ -270,7 +270,7 @@ export default function AdviceGroupAdvisers() {
                 borderBottom: `1px solid ${colors.core.greyLight}`,
                 background: colors.core.offWhite,
               }}>
-                {['ADVISER', 'AR NUMBER', 'STATUS', 'ACTIVE SOAs', 'THIS MONTH', 'TOTAL SOAs', 'ACTIONS'].map(header => (
+                {['ADVISER', 'STATUS', 'ACTIVE SOAs', 'ACTIONS'].map(header => (
                   <th key={header} style={{
                     padding: '12px 16px',
                     textAlign: header !== 'ADVISER' && header !== 'STATUS' && header !== 'ACTIONS' ? 'center' : 'left',
@@ -325,14 +325,6 @@ export default function AdviceGroupAdvisers() {
                     <td style={{
                       padding: '16px',
                       fontSize: '14px',
-                      color: colors.core.navy,
-                      textAlign: 'center',
-                    }}>
-                      {isPending ? '—' : '08128756'}
-                    </td>
-                    <td style={{
-                      padding: '16px',
-                      fontSize: '14px',
                     }}>
                       {isPending ? (
                         <span style={{
@@ -378,26 +370,22 @@ export default function AdviceGroupAdvisers() {
                     <td style={{
                       padding: '16px',
                       fontSize: '14px',
-                      color: colors.core.navy,
-                      fontWeight: 500,
-                      textAlign: 'center',
-                    }}>
-                      {isPending ? '—' : '12'}
-                    </td>
-                    <td style={{
-                      padding: '16px',
-                      fontSize: '14px',
-                      color: colors.core.navy,
-                      fontWeight: 500,
-                      textAlign: 'center',
-                    }}>
-                      {isPending ? '—' : '89'}
-                    </td>
-                    <td style={{
-                      padding: '16px',
-                      fontSize: '14px',
                     }}>
                       <div style={{ display: 'flex', gap: '8px' }}>
+                        {!isPending && (
+                          <Link to={createPageUrl('AdviserDashboard')}>
+                            <Button size="sm" style={{
+                              background: colors.accent.blue,
+                              color: colors.core.white,
+                              height: '32px',
+                              padding: '4px 12px',
+                              fontSize: '13px',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                            }}>View</Button>
+                          </Link>
+                        )}
                         <Button 
                           size="sm" 
                           variant="outline" 
@@ -414,18 +402,6 @@ export default function AdviceGroupAdvisers() {
                           <Mail size={14} />
                           {isPending ? 'Send Welcome' : 'Resend Welcome'}
                         </Button>
-                        {!isPending && (
-                          <Button size="sm" style={{
-                            background: colors.accent.blue,
-                            color: colors.core.white,
-                            height: '32px',
-                            padding: '4px 12px',
-                            fontSize: '13px',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                          }}>SOAs</Button>
-                        )}
                       </div>
                     </td>
                   </tr>
