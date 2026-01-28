@@ -670,16 +670,6 @@ export default function FactFindTrusts() {
         description="Add any trusts and companies you own or control."
         factFind={factFind}
         user={user}
-        tabs={[
-          { id: 'trust', label: 'Trusts' },
-          { id: 'company', label: 'Companies' }
-        ]}
-        activeTab={currentTab}
-        onTabChange={(tab) => {
-          setCurrentTab(tab);
-          setActiveIndex(0);
-          setTimeout(() => updatePills(tab, 0), 0);
-        }}
       />
 
       {/* Hidden Templates */}
@@ -868,6 +858,38 @@ export default function FactFindTrusts() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
+          {/* Tabs - Part of form content */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setCurrentTab('trust');
+                setActiveIndex(0);
+                setTimeout(() => updatePills('trust', 0), 0);
+              }}
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                currentTab === 'trust'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              Trusts
+            </button>
+            <button
+              onClick={() => {
+                setCurrentTab('company');
+                setActiveIndex(0);
+                setTimeout(() => updatePills('company', 0), 0);
+              }}
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                currentTab === 'company'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              Companies
+            </button>
+          </div>
+
           <div id="trustsWrap" className="space-y-4" style={{ display: currentTab === 'trust' ? 'block' : 'none' }} />
           <div id="companiesWrap" className="space-y-4" style={{ display: currentTab === 'company' ? 'block' : 'none' }} />
 
