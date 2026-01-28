@@ -85,7 +85,7 @@ export default function AdviserHeader({ user }) {
             <div style={{
               width: '32px',
               height: '32px',
-              background: 'linear-gradient(135deg, #f97316, #ec4899)',
+              background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
               borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
@@ -94,10 +94,10 @@ export default function AdviserHeader({ user }) {
               color: 'white',
               fontSize: '12px'
             }}>
-              {getInitials(user.full_name)}
+              {getInitials(user.full_name || user.email)}
             </div>
             <span style={{ fontSize: '14px', fontWeight: '500', color: '#1e293b' }}>
-              {user?.full_name || user?.email}
+              {user.full_name || user.email}
             </span>
             <ChevronDown size={16} style={{ color: '#64748b' }} />
           </button>
