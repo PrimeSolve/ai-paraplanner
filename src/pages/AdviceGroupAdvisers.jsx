@@ -56,20 +56,10 @@ export default function AdviceGroupAdvisers() {
     try {
       await base44.users.inviteUser(formData.email, 'user');
       
-      // Add to local state immediately
-      const newAdviser = {
-        id: Date.now(),
-        email: formData.email,
-        full_name: formData.full_name,
-        company: formData.company,
-        user_type: 'adviser',
-        advice_group_id: user.advice_group_id,
-        status: 'pending'
-      };
+      // Reload advisers to show the newly created one
+      await loadData();
       
-      setAdvisers(prev => [newAdviser, ...prev]);
-      
-      toast.success('Adviser invited - they will appear once they accept the invitation');
+      toast.success('Adviser created successfully');
       setShowInvite(false);
       setFormData({ full_name: '', email: '', company: '' });
     } catch (error) {
@@ -109,8 +99,7 @@ export default function AdviceGroupAdvisers() {
 
   const stats = [
     { label: 'Total Advisers', value: advisers.length },
-    { label: 'Active', value: advisers.filter(a => a.status === 'active' || !a.status).length },
-    { label: 'Pending Invite', value: advisers.filter(a => a.status === 'pending').length },
+    { label: 'Active', value: advisers.length },
     { label: 'SOAs This Month', value: 47 }
   ];
 
@@ -287,15 +276,13 @@ export default function AdviceGroupAdvisers() {
             </thead>
             <tbody>
               {paginatedAdvisers.map((adviser, idx) => {
-                const isPending = adviser.status === 'pending';
                 return (
                   <tr key={adviser.id} style={{
                     borderBottom: `1px solid ${colors.core.greyLight}`,
-                    background: isPending ? 'rgba(245, 158, 11, 0.05)' : 'transparent',
                     transition: 'background-color 0.2s ease',
                   }}
-                  onMouseEnter={(e) => !isPending && (e.currentTarget.style.background = colors.core.offWhite)}
-                  onMouseLeave={(e) => !isPending && (e.currentTarget.style.background = 'rgba(245, 158, 11, 0.05)')}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = colors.core.offWhite)}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                   >
                     <td style={{
                       padding: '16px',
@@ -326,37 +313,20 @@ export default function AdviceGroupAdvisers() {
                       padding: '16px',
                       fontSize: '14px',
                     }}>
-                      {isPending ? (
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          padding: '4px 10px',
-                          borderRadius: '4px',
-                          background: 'rgba(245, 158, 11, 0.1)',
-                          color: '#d97706',
-                          fontSize: '12px',
-                          fontWeight: 600,
-                        }}>
-                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b' }}></span>
-                          Pending Invite
-                        </span>
-                      ) : (
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          padding: '4px 10px',
-                          borderRadius: '4px',
-                          background: 'rgba(16, 185, 129, 0.1)',
-                          color: colors.accent.success,
-                          fontSize: '12px',
-                          fontWeight: 600,
-                        }}>
-                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: colors.accent.success }}></span>
-                          Active
-                        </span>
-                      )}
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '4px 10px',
+                        borderRadius: '4px',
+                        background: 'rgba(16, 185, 129, 0.1)',
+                        color: colors.accent.success,
+                        fontSize: '12px',
+                        fontWeight: 600,
+                      }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: colors.accent.success }}></span>
+                        Active
+                      </span>
                     </td>
                     <td style={{
                       padding: '16px',
@@ -365,27 +335,25 @@ export default function AdviceGroupAdvisers() {
                       fontWeight: 500,
                       textAlign: 'center',
                     }}>
-                      {isPending ? '—' : '5'}
+                      5
                     </td>
                     <td style={{
                       padding: '16px',
                       fontSize: '14px',
                     }}>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        {!isPending && (
-                          <Link to={createPageUrl('AdviserDashboard')}>
-                            <Button size="sm" style={{
-                              background: colors.accent.blue,
-                              color: colors.core.white,
-                              height: '32px',
-                              padding: '4px 12px',
-                              fontSize: '13px',
-                              border: 'none',
-                              borderRadius: '6px',
-                              cursor: 'pointer',
-                            }}>View</Button>
-                          </Link>
-                        )}
+                        <Link to={createPageUrl('AdviserDashboard')}>
+                          <Button size="sm" style={{
+                            background: colors.accent.blue,
+                            color: colors.core.white,
+                            height: '32px',
+                            padding: '4px 12px',
+                            fontSize: '13px',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                          }}>View</Button>
+                        </Link>
                         <Button 
                           size="sm" 
                           variant="outline" 
@@ -400,7 +368,7 @@ export default function AdviceGroupAdvisers() {
                           }}
                         >
                           <Mail size={14} />
-                          {isPending ? 'Send Welcome' : 'Resend Welcome'}
+                          Send Welcome
                         </Button>
                       </div>
                     </td>
