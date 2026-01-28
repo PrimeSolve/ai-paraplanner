@@ -26,7 +26,7 @@ export default function AdviserDashboard() {
   const loadData = async () => {
     try {
       const currentUser = await base44.auth.me();
-      setUser(currentUser);
+      setLoggedInUser(currentUser);
 
       const [clientsList, soas, factFinds] = await Promise.all([
         base44.entities.Client.filter({ adviser_email: currentUser.email }, '-updated_date', 5),
