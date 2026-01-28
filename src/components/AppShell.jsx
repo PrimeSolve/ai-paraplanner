@@ -105,7 +105,7 @@ export default function AppShell({ children }) {
       {renderSidebar()}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: '64px', marginLeft: '260px' }}>
         <AppHeader />
-        <main className="flex-1" style={{ paddingLeft: '32px' }}>
+        <main className="flex-1">
           {children}
         </main>
       </div>
