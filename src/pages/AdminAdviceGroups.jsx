@@ -15,11 +15,14 @@ import { createPageUrl } from '../utils';
 import { useRole } from '../components/RoleContext';
 
 export default function AdminAdviceGroups() {
+  const navigate = useNavigate();
+  const { switchRole } = useRole();
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [templateFilter, setTemplateFilter] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
