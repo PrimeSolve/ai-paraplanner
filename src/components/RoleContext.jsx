@@ -3,26 +3,35 @@ import React, { createContext, useState, useContext } from 'react';
 const RoleContext = createContext();
 
 export function RoleProvider({ children }) {
-  const [originalUser, setOriginalUser] = useState(null);
-  const [currentRole, setCurrentRole] = useState(null); // 'admin', 'advice_group', 'adviser', 'client'
-  const [switchedToId, setSwitchedToId] = useState(null); // ID of the entity being viewed as
+  const [user, setUser] = useState(null); // Current logged-in user
+  const [admin, setAdmin] = useState(null); // Admin entity if user is admin
+  const [adviser, setAdviser] = useState(null); // Adviser entity if user is adviser
+  const [client, setClient] = useState(null); // Client entity if user is client
 
-  const switchRole = (role, id, user) => {
-    if (!originalUser) {
-      setOriginalUser(user);
+  const loadUserData = (userData) => {
+    setUser(userData);
+    // Load related entity data based on user's role and IDs
+    if (userData.role === 'admin' && userData.admin_id) {
+      // Load admin data
+      setAdmin({ id: userData.admin_id });
+    } else if (userData.role === 'user' && userData.adviser_id) {
+      // Load adviser data
+      setAdviser({ id: userData.adviser_id });
+    } else if (userData.role === 'user' && userData.client_id) {
+      // Load client data
+      setClient({ id: userData.client_id });
     }
-    setCurrentRole(role);
-    setSwitchedToId(id);
   };
 
-  const resetToOriginal = () => {
-    setCurrentRole(null);
-    setSwitchedToId(null);
-    setOriginalUser(null);
+  const clearUserData = () => {
+    setUser(null);
+    setAdmin(null);
+    setAdviser(null);
+    setClient(null);
   };
 
   return (
-    <RoleContext.Provider value={{ originalUser, currentRole, switchedToId, switchRole, resetToOriginal }}>
+    <RoleContext.Provider value={{ user, admin, adviser, client, loadUserData, clearUserData }}>
       {children}
     </RoleContext.Provider>
   );
