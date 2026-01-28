@@ -65,7 +65,7 @@ export default function AdminTeam() {
     }
   };
 
-  const handleInvite = async () => {
+  const handleSaveMember = async () => {
     if (!inviteEmail) {
       toast.error('Please enter an email address');
       return;
@@ -73,15 +73,19 @@ export default function AdminTeam() {
 
     setInviting(true);
     try {
-      await base44.users.inviteUser(inviteEmail, selectedRole);
-      toast.success('Team member invited successfully');
+      await base44.entities.User.create({
+        full_name: inviteName || inviteEmail.split('@')[0],
+        email: inviteEmail,
+        role: selectedRole
+      });
+      toast.success('Team member added successfully');
       setInviteEmail('');
       setInviteName('');
       setSelectedRole('user');
       setShowInviteModal(false);
       loadTeam();
     } catch (error) {
-      toast.error('Failed to invite team member');
+      toast.error('Failed to add team member');
     } finally {
       setInviting(false);
     }
@@ -452,12 +456,11 @@ export default function AdminTeam() {
               Cancel
             </Button>
             <Button 
-              onClick={handleInvite} 
+              onClick={handleSaveMember} 
               disabled={inviting || !inviteEmail}
               className="bg-[#3b82f6] hover:bg-[#2563eb]"
             >
-              <Send className="w-4 h-4 mr-2" />
-              {inviting ? 'Sending...' : 'Send Invite'}
+              {inviting ? 'Saving...' : 'Save Member'}
             </Button>
           </div>
         </DialogContent>
