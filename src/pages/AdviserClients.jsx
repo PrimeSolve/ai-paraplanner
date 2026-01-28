@@ -276,7 +276,7 @@ export default function AdviserClients() {
             </div>
             </div>
 
-      {/* Add Client Modal */}
+            {/* Add Client Modal */}
       <AddClientModal 
         isOpen={showAddModal} 
         onClose={() => setShowAddModal(false)}
