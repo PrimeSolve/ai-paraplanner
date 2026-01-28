@@ -84,10 +84,12 @@ export default function AdviceGroupMyProfile() {
           <div className="flex items-center justify-center min-h-screen">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b5cf6]"></div>
           </div>
-        </div>
-      </div>
-    );
-  }
+          </div>
+          </div>
+          </div>
+          </div>
+          );
+          }
 
   if (user?.role === 'admin') {
     return (
