@@ -24,7 +24,7 @@ export default function AdviceGroupProfile() {
     soaSubmitted: true,
     dailySummary: false
   });
-  const [twoFactor, setTwoFactor] = useState(false);
+
 
   useEffect(() => {
     loadUser();

@@ -24,7 +24,7 @@ export default function AdviserProfile() {
     soaComments: true,
     dailySummary: false
   });
-  const [twoFactor, setTwoFactor] = useState(false);
+
 
   useEffect(() => {
     loadUser();

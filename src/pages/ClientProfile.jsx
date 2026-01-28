@@ -24,7 +24,7 @@ export default function ClientProfile() {
     updates: true,
     newsletter: false
   });
-  const [twoFactor, setTwoFactor] = useState(false);
+
 
   useEffect(() => {
     loadUser();
