@@ -101,14 +101,12 @@ export default function AppShell({ children }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-[#f8fafc]">
       {renderSidebar()}
-      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <AppHeader />
-        <main className="flex-1">
-          {children}
-        </main>
-      </div>
+      <AppHeader />
+      <main style={{ marginLeft: '260px', paddingTop: '64px', minHeight: '100vh' }}>
+        {children}
+      </main>
     </div>
   );
 }
