@@ -358,18 +358,18 @@ export default function AdviceGroupAdvisers() {
                       fontSize: '14px',
                     }}>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <Link to={createPageUrl('AdviserDashboard')}>
-                          <Button size="sm" style={{
-                            background: colors.accent.blue,
-                            color: colors.core.white,
-                            height: '32px',
-                            padding: '4px 12px',
-                            fontSize: '13px',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                          }}>View</Button>
-                        </Link>
+                        <Link to={createPageUrl(`AdviserDashboard?adviser_email=${adviser.email}`)}>
+                           <Button size="sm" style={{
+                             background: colors.accent.blue,
+                             color: colors.core.white,
+                             height: '32px',
+                             padding: '4px 12px',
+                             fontSize: '13px',
+                             border: 'none',
+                             borderRadius: '6px',
+                             cursor: 'pointer',
+                           }}>View</Button>
+                         </Link>
                         <Button 
                           size="sm" 
                           variant="outline" 

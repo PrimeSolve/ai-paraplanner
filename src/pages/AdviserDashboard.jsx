@@ -25,14 +25,19 @@ export default function AdviserDashboard() {
 
   const loadData = async () => {
     try {
-      // Always fetch the actual logged-in user (Tim Hall)
+      // Always fetch the actual logged-in user
       const currentUser = await base44.auth.me();
       setLoggedInUser(currentUser);
 
+      // Check if viewing a specific adviser
+      const urlParams = new URLSearchParams(window.location.search);
+      const adviserEmail = urlParams.get('adviser_email');
+      const emailToLoad = adviserEmail || currentUser.email;
+
       const [clientsList, soas, factFinds] = await Promise.all([
-        base44.entities.Client.filter({ adviser_email: currentUser.email }, '-updated_date', 5),
-        base44.entities.SOARequest.filter({ created_by: currentUser.email }),
-        base44.entities.FactFind.filter({ assigned_adviser: currentUser.email })
+        base44.entities.Client.filter({ adviser_email: emailToLoad }, '-updated_date', 5),
+        base44.entities.SOARequest.filter({ created_by: emailToLoad }),
+        base44.entities.FactFind.filter({ assigned_adviser: emailToLoad })
       ]);
 
       setClients(clientsList);
