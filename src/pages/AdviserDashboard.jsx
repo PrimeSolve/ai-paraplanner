@@ -27,20 +27,25 @@ export default function AdviserDashboard() {
     try {
       // Always fetch the actual logged-in user
       const currentUser = await base44.auth.me();
-      console.log('Current logged-in user:', currentUser);
+      console.log('🔍 Raw currentUser from auth.me():', currentUser);
+      console.log('🔍 currentUser.full_name:', currentUser?.full_name);
+      console.log('🔍 currentUser.email:', currentUser?.email);
       setLoggedInUser(currentUser);
 
       // Check if viewing a specific adviser
       const urlParams = new URLSearchParams(window.location.search);
       const adviserEmail = urlParams.get('adviser_email');
-      console.log('Adviser email from URL:', adviserEmail);
+      console.log('🔍 Adviser email from URL:', adviserEmail);
       const emailToLoad = adviserEmail || currentUser.email;
+      console.log('🔍 Email to load data for:', emailToLoad);
 
       const [clientsList, soas, factFinds] = await Promise.all([
         base44.entities.Client.filter({ adviser_email: emailToLoad }, '-updated_date', 5),
         base44.entities.SOARequest.filter({ created_by: emailToLoad }),
         base44.entities.FactFind.filter({ assigned_adviser: emailToLoad })
       ]);
+      
+      console.log('🔍 Loaded clients:', clientsList);
 
       setClients(clientsList);
       setStats({
