@@ -65,7 +65,6 @@ export default function AdviceGroupAdvisers() {
         await base44.entities.User.update(newUser.id, {
           advice_group_id: user.advice_group_id,
           user_type: 'adviser',
-          full_name: formData.full_name,
           company: formData.company || ''
         });
         
