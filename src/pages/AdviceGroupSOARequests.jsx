@@ -5,8 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { UserX, Clock, CheckCircle2, Zap, Search } from 'lucide-react';
-import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
-import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
+
 
 export default function AdviceGroupSOARequests() {
   const { switchedToId } = useRole();
@@ -106,12 +105,7 @@ export default function AdviceGroupSOARequests() {
   });
 
   return (
-    <div className="flex">
-      <AdviceGroupSidebar currentPage="soa-requests" groupName={groupName} />
-      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <AdviceGroupHeader user={user} />
-
-        <div className="py-6 px-8">
+    <div className="py-6 px-8">
           {/* Stats Grid */}
           <div className="grid grid-cols-4 gap-6 mb-8">
             <div className="bg-gradient-to-br from-[#f97316] to-[#ea580c] rounded-2xl p-6 text-white">
@@ -261,8 +255,6 @@ export default function AdviceGroupSOARequests() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
     </div>
   );
 }
