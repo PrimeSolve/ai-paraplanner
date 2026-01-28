@@ -63,7 +63,7 @@ export default function AdminAdviceGroups() {
   };
 
   const handleViewAsAdviceGroup = (group) => {
-    switchRole('advice_group', group.id, user);
+    switchRole('advice_group', group.id, group.name);
     navigate(createPageUrl('AdviceGroupDashboard'));
   };
 
