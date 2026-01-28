@@ -167,7 +167,7 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
         </div>
       </nav>
 
-      {/* User Profile */}
+      {/* User Profile - Always show logged-in user */}
       <div style={{ padding: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '12px', cursor: 'pointer' }}>
           <div style={{
@@ -182,14 +182,14 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
             color: 'white',
             fontSize: '14px'
           }}>
-            {adviser ? `${adviser.first_name?.[0]}${adviser.last_name?.[0]}`.toUpperCase() : 'A'}
+            {loggedInUser ? `${loggedInUser.full_name?.[0]}${loggedInUser.full_name?.split(' ')[1]?.[0]}`.toUpperCase() : 'TH'}
           </div>
           <div>
             <div style={{ fontSize: '14px', fontWeight: '600', color: 'white' }}>
-              {adviser ? `${adviser.first_name} ${adviser.last_name}` : 'Adviser Name'}
+              {loggedInUser?.full_name || 'Tim Hall'}
             </div>
             <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-              Adviser Account
+              Your Account
             </div>
           </div>
         </div>
