@@ -125,6 +125,7 @@ import AdviceGroupHelp from './pages/AdviceGroupHelp';
 import AdviserProfile from './pages/AdviserProfile';
 import AdviserHelp from './pages/AdviserHelp';
 import ClientProfile from './pages/ClientProfile';
+import ClientHelp from './pages/ClientHelp';
 import __Layout from './Layout.jsx';
 
 
@@ -207,6 +208,7 @@ export const PAGES = {
     "AdviserProfile": AdviserProfile,
     "AdviserHelp": AdviserHelp,
     "ClientProfile": ClientProfile,
+    "ClientHelp": ClientHelp,
 }
 
 export const pagesConfig = {
