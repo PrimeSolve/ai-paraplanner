@@ -16,6 +16,7 @@ export default function FactFindSMSF() {
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [user, setUser] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [smsfCount, setSmsfCount] = useState(0);
 
@@ -452,6 +453,9 @@ export default function FactFindSMSF() {
 
   const loadData = useCallback(async () => {
     try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
 
@@ -647,6 +651,7 @@ export default function FactFindSMSF() {
         title="SMSF"
         description="Add details about your SMSF, including trustees, members, and pension accounts."
         factFind={factFind}
+        user={user}
       />
 
       {/* Hidden Template */}

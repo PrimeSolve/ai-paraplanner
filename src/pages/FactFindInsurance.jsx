@@ -30,6 +30,7 @@ export default function FactFindInsurance() {
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [user, setUser] = useState(null);
   
   const [policies, setPolicies] = useState([]);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -70,6 +71,9 @@ export default function FactFindInsurance() {
 
   const loadData = useCallback(async () => {
     try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
 
@@ -191,6 +195,7 @@ export default function FactFindInsurance() {
         title="Insurance policies"
         description="Add details about your life, TPD, trauma, income protection, and other insurance coverage."
         factFind={factFind}
+        user={user}
       />
 
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">

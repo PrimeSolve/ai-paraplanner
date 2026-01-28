@@ -14,6 +14,7 @@ export default function FactFindInvestment() {
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('wrap');
   const [activeIndex, setActiveIndex] = useState(0);
   const [wrapCount, setWrapCount] = useState(0);
@@ -286,6 +287,9 @@ export default function FactFindInvestment() {
 
   const loadData = useCallback(async () => {
     try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
 
@@ -456,6 +460,7 @@ export default function FactFindInvestment() {
           setTimeout(() => updatePills(tab, 0), 0);
         }}
         factFind={factFind}
+        user={user}
       />
 
       {/* Hidden Templates */}

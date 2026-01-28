@@ -14,6 +14,7 @@ export default function FactFindDependants() {
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('children');
   const [activeIndex, setActiveIndex] = useState(0);
   const [childrenCount, setChildrenCount] = useState(0);
@@ -295,6 +296,9 @@ export default function FactFindDependants() {
 
   const loadData = useCallback(async () => {
     try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
 
@@ -450,6 +454,7 @@ export default function FactFindDependants() {
         title="Dependants"
         description="Add children and other dependants."
         factFind={factFind}
+        user={user}
         tabs={[
           { id: 'children', label: 'Children' },
           { id: 'dependants', label: 'Dependants' }

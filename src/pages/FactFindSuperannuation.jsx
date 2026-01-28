@@ -14,6 +14,7 @@ export default function FactFindSuperannuation() {
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('super');
   const [activeIndex, setActiveIndex] = useState(0);
   const [superCount, setSuperCount] = useState(0);
@@ -548,6 +549,9 @@ export default function FactFindSuperannuation() {
 
   const loadData = useCallback(async () => {
     try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
 
@@ -754,6 +758,7 @@ export default function FactFindSuperannuation() {
         title="Retirement products"
         description="Record super funds, pensions, and annuities."
         factFind={factFind}
+        user={user}
         tabs={[
           { id: 'super', label: 'Superannuation' },
           { id: 'pension', label: 'Pension' },

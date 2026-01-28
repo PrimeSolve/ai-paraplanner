@@ -306,6 +306,7 @@ export default function FactFindRiskProfile() {
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('questionnaire');
   const [activeOwner, setActiveOwner] = useState('client');
   const [mode, setMode] = useState('');
@@ -343,6 +344,9 @@ export default function FactFindRiskProfile() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+        
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
 
@@ -472,6 +476,7 @@ export default function FactFindRiskProfile() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         factFind={factFind}
+        user={user}
       />
 
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">

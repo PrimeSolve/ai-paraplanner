@@ -14,6 +14,7 @@ export default function FactFindAssetsLiabilities() {
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('assets');
   
   const [assetsList, setAssetsList] = useState([]);
@@ -72,6 +73,9 @@ export default function FactFindAssetsLiabilities() {
 
   const loadData = useCallback(async () => {
     try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
 
@@ -199,6 +203,7 @@ export default function FactFindAssetsLiabilities() {
         activeTab={currentTab}
         onTabChange={setCurrentTab}
         factFind={factFind}
+        user={user}
       />
 
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">

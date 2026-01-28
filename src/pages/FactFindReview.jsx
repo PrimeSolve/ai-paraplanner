@@ -40,10 +40,14 @@ export default function FactFindReview() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
       try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+        
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
 
@@ -172,6 +176,7 @@ export default function FactFindReview() {
         title="Review & Submit Your Fact Find"
         description="Review your responses across all sections before submitting to your adviser. You can click any section to review or update your information."
         factFind={factFind}
+        user={user}
       />
 
       {/* Content */}

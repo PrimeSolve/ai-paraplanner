@@ -14,6 +14,7 @@ export default function FactFindTrusts() {
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('trust');
   const [activeIndex, setActiveIndex] = useState(0);
   const [trustsCount, setTrustsCount] = useState(0);
@@ -454,6 +455,9 @@ export default function FactFindTrusts() {
 
   const loadData = useCallback(async () => {
     try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
 
@@ -665,6 +669,7 @@ export default function FactFindTrusts() {
         title="Trusts & Companies"
         description="Add any trusts and companies you own or control."
         factFind={factFind}
+        user={user}
         tabs={[
           { id: 'trust', label: 'Trusts' },
           { id: 'company', label: 'Companies' }
