@@ -65,15 +65,23 @@ export default function AdviceGroupAdvisers() {
   const handleCreateAdviser = async (e) => {
     e.preventDefault();
     try {
-      // Just invite - they'll need to register and set their details
-      await base44.users.inviteUser(formData.email, 'user');
-      toast.success('Invitation sent to ' + formData.email);
+      const groupId = switchedToId || user.advice_group_id;
+      await base44.entities.Adviser.create({
+        advice_group_id: groupId,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        phone: formData.phone,
+        company: formData.company,
+        status: 'active'
+      });
+      toast.success('Adviser added successfully');
       setShowInvite(false);
-      setFormData({ email: '', company: '' });
+      setFormData({ first_name: '', last_name: '', email: '', phone: '', company: '' });
       loadData();
     } catch (error) {
       console.error('Error:', error);
-      toast.error(error.message || 'Failed to send invitation');
+      toast.error(error.message || 'Failed to add adviser');
     }
   };
 
