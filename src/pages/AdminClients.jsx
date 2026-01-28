@@ -72,8 +72,7 @@ export default function AdminClients() {
   const paginatedClients = filteredClients.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-    <AdminLayout currentPage="AdminClients">
-      <div className="p-8">
+    <div className="py-6 px-8">
 
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
