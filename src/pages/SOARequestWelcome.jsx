@@ -74,6 +74,21 @@ export default function SOARequestWelcome() {
         
         <div className="flex-1 overflow-auto p-6">
         <div className="max-w-5xl mx-auto space-y-6">
+          {/* Info Banner */}
+          <Card className="border-blue-200 bg-blue-50">
+            <CardContent className="pt-6">
+              <h3 className="font-bold text-slate-800 mb-2">Welcome to SOA Request</h3>
+              <p className="text-sm text-slate-700 mb-3">
+                Build professional Statements of Advice with AI-powered assistance. Our paraplanner helps you develop strategy, define scope, and structure recommendations.
+              </p>
+              <p className="text-sm text-slate-600">
+                <strong>How it works:</strong> Start with prefill to extract document data → Define your scope and strategy → Build portfolios and recommendations → Review and submit your SOA.
+              </p>
+              <p className="text-xs text-slate-500 mt-2">
+                Get AI guidance at every step to ensure comprehensive and professional advice documentation.
+              </p>
+            </CardContent>
+          </Card>
           {/* Video Guide Card */}
           <Card className="border-slate-200">
             <CardHeader className="border-b border-slate-100 pb-4">
