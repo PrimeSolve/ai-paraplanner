@@ -523,7 +523,7 @@ export default function AdviceGroupAdvisers() {
               />
             </div>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', paddingTop: '8px' }}>
-              <Button type="button" variant="outline" onClick={() => { setShowInvite(false); setFormData({ email: '', company: '' }); }}>
+              <Button type="button" variant="outline" onClick={() => { setShowInvite(false); setFormData({ first_name: '', last_name: '', email: '', phone: '', company: '' }); }}>
                 Cancel
               </Button>
               <Button type="submit" style={{
