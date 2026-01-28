@@ -78,14 +78,8 @@ export default function SOARequestWelcome() {
           <Card className="border-blue-200 bg-blue-50">
             <CardContent className="pt-6">
               <h3 className="font-bold text-slate-800 mb-2">Welcome to SOA Request</h3>
-              <p className="text-sm text-slate-700 mb-3">
-                Build professional Statements of Advice with AI-powered assistance. Our paraplanner helps you develop strategy, define scope, and structure recommendations.
-              </p>
-              <p className="text-sm text-slate-600">
-                <strong>How it works:</strong> Start with prefill to extract document data → Define your scope and strategy → Build portfolios and recommendations → Review and submit your SOA.
-              </p>
-              <p className="text-xs text-slate-500 mt-2">
-                Get AI guidance at every step to ensure comprehensive and professional advice documentation.
+              <p className="text-sm text-slate-700">
+                Submit your Statement of Advice request to our AI paraplanner for professional SOA preparation.
               </p>
             </CardContent>
           </Card>
