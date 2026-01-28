@@ -261,8 +261,9 @@ export default function SOARequestWelcome() {
               Get started <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </div>
-        </div>
-      </div>
-    </SOARequestLayout>
-  );
-}
+          </div>
+          </div>
+          </div>
+          </SOARequestLayout>
+          );
+          }
