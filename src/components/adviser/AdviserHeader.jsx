@@ -41,6 +41,18 @@ export default function AdviserHeader({ user }) {
     }
   };
 
+  const getProfilePageByRole = () => {
+    if (!user) return 'MyProfile';
+    // Always use the actual logged-in user's role, not impersonated role
+    if (user.role === 'admin') {
+      return 'MyProfile';
+    } else if (user.advice_group_id) {
+      return 'AdviceGroupMyProfile';
+    } else {
+      return 'AdviserSettings';
+    }
+  };
+
   return (
     <div style={{
       background: 'white',
