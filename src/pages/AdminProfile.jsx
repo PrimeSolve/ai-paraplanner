@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import AdminLayout from '../components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -89,17 +88,14 @@ export default function AdminProfile() {
 
   if (loading) {
     return (
-      <AdminLayout currentPage="AdminProfile">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b5cf6]"></div>
-        </div>
-      </AdminLayout>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b5cf6]"></div>
+      </div>
     );
   }
 
   return (
-    <AdminLayout currentPage="AdminProfile">
-      <div className="min-h-screen bg-[#f8fafc] p-8">
+    <div className="min-h-screen bg-[#f8fafc] py-8 px-32">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Profile Header Card */}
           <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
@@ -311,8 +307,7 @@ export default function AdminProfile() {
               Save Changes
             </Button>
           </div>
-        </div>
-      </div>
-    </AdminLayout>
-  );
-}
+          </div>
+          </div>
+          );
+          }
