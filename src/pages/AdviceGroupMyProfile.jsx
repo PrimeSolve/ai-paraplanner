@@ -67,6 +67,15 @@ export default function AdviceGroupMyProfile() {
   };
 
   if (loading) {
+    if (user?.role === 'admin') {
+      return (
+        <AdminLayout currentPage="AdminProfile">
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b5cf6]"></div>
+          </div>
+        </AdminLayout>
+      );
+    }
     return (
       <div className="flex">
         <AdviceGroupSidebar currentPage="settings" />
@@ -80,11 +89,11 @@ export default function AdviceGroupMyProfile() {
     );
   }
 
-  return (
-    <div className="flex">
-      <AdviceGroupSidebar currentPage="settings" />
-      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <AdviceGroupHeader user={user} />
+  if (user?.role === 'admin') {
+    return (
+      <AdminLayout currentPage="AdminProfile">
+        <div className="min-h-screen bg-[#f8fafc] p-8">
+          <div className="max-w-4xl mx-auto space-y-6">
         <div className="min-h-screen bg-[#f8fafc] p-8" style={{ flex: 1 }}>
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Profile Header Card */}
