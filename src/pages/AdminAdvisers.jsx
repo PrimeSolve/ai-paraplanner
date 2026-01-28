@@ -316,7 +316,6 @@ export default function AdminAdvisers() {
             </div>
           </div>
         </div>
-      </div>
-    </AdminLayout>
+    </div>
   );
 }
