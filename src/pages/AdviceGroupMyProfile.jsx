@@ -346,12 +346,11 @@ export default function AdviceGroupMyProfile() {
               Save Changes
             </Button>
           </div>
-        </div>
-        </div>
-        </div>
-        </AdminLayout>
-        );
-        }
+          </div>
+          </div>
+          </AdminLayout>
+          );
+          }
 
         return (
         <div className="flex">
@@ -611,7 +610,6 @@ export default function AdviceGroupMyProfile() {
          >
            Save Changes
          </Button>
-        </div>
         </div>
         </div>
         </div>
