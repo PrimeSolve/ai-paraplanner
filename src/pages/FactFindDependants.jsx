@@ -455,16 +455,6 @@ export default function FactFindDependants() {
         description="Add children and other dependants."
         factFind={factFind}
         user={user}
-        tabs={[
-          { id: 'children', label: 'Children' },
-          { id: 'dependants', label: 'Dependants' }
-        ]}
-        activeTab={currentTab}
-        onTabChange={(tab) => {
-          setCurrentTab(tab);
-          setActiveIndex(0);
-          setTimeout(() => updatePills(tab, 0), 0);
-        }}
       />
 
       {/* Hidden Templates */}
