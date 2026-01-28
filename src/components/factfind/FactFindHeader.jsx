@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, RefreshCw, Info, AlertTriangle, LayoutDashboard } from 'lucide-react';
+import { MessageSquare, RefreshCw, Info, AlertTriangle, Home } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
-export default function FactFindHeader({ title, description, tabs, activeTab, onTabChange, factFind, hideDashboard = false }) {
+export default function FactFindHeader({ title, description, tabs, activeTab, onTabChange, factFind, hideDashboard = false, user }) {
   const [showAssumptions, setShowAssumptions] = useState(false);
   const [showRefreshWarning, setShowRefreshWarning] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -54,11 +54,18 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
 
   return (
     <div className="bg-white border-b border-slate-200 px-8 py-5 flex-shrink-0">
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <h3 className="text-xl font-extrabold text-slate-800 mb-1">{title}</h3>
-          <p className="text-sm text-slate-600">{description}</p>
-        </div>
+      <div className="flex items-center justify-between">
+        {/* Left: Home Button */}
+        <Link to={createPageUrl('Home')}>
+          <button className="w-11 h-11 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-all flex-shrink-0 relative group">
+            <Home className="w-5 h-5" />
+            <span className="absolute left-full ml-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              Back to Dashboard
+            </span>
+          </button>
+        </Link>
+
+        {/* Center/Right: Action Buttons */}
         <div className="flex items-center gap-3">
           {/* Talk to Assistant - Green Banner */}
           <Link to={createPageUrl('FactFindAssistant') + (factFind?.id ? `?id=${factFind.id}` : '')}>
@@ -75,20 +82,6 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
               </div>
             </div>
           </Link>
-
-          {/* Dashboard Button */}
-          {!hideDashboard && (
-            <Link to={createPageUrl('Home') + (factFind?.id ? `?id=${factFind.id}` : '')}>
-              <button
-                className="w-11 h-11 rounded-lg bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
-              >
-                📊
-                <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                  Dashboard
-                </span>
-              </button>
-            </Link>
-          )}
 
           {/* Refresh Button */}
           <button
@@ -112,12 +105,27 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
               Key Assumptions
             </span>
           </button>
+
+          {/* User Profile */}
+          {user && (
+            <div className="flex items-center gap-3 ml-3 pl-3 border-l border-slate-200">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
+                  {user.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-semibold text-slate-800">{user.full_name || user.email}</div>
+                  <div className="text-xs text-slate-500">{user.email}</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Tabs */}
       {tabs && tabs.length > 0 && (
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-3">
           {tabs.map(tab => (
             <button
               key={tab.id}

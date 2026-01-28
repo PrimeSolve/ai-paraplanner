@@ -85,14 +85,23 @@ export default function FactFindWelcome() {
   return (
     <FactFindLayout currentSection="welcome" factFind={factFind}>
       <FactFindHeader
-        title="Welcome to your Fact Find"
-        description="We'll guide you step-by-step to capture the information needed to prepare personalised advice."
         factFind={factFind}
+        user={user}
       />
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
         <div className="w-full space-y-4">
+          {/* Welcome Banner */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl px-6 py-5 shadow-lg">
+            <h1 className="text-2xl font-bold text-white mb-2">
+              Welcome to your Fact Find
+            </h1>
+            <p className="text-blue-50 text-sm">
+              We'll guide you step-by-step to capture the information needed to prepare personalised financial advice.
+            </p>
+          </div>
+
           {/* Video Card */}
           <Card className="border-slate-200 shadow-sm overflow-hidden">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
