@@ -294,6 +294,7 @@ export default function AdviserSOARequests() {
                 </button>
               </div>
               </div>
+              </div>
               <NewSOARequestModal
               isOpen={showNewModal}
               onClose={() => setShowNewModal(false)}
