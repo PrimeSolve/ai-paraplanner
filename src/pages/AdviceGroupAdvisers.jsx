@@ -317,7 +317,7 @@ export default function AdviceGroupAdvisers() {
                           fontWeight: 600,
                           fontSize: '14px',
                         }}>
-                          {adviser.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || adviser.email?.charAt(0)}
+                          {`${adviser.first_name?.[0]}${adviser.last_name?.[0]}`.toUpperCase()}
                         </div>
                         <div>
                            <div style={{ fontWeight: 600, color: colors.core.navy }}>{`${adviser.first_name} ${adviser.last_name}` || adviser.email}</div>
