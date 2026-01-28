@@ -111,7 +111,7 @@ export default function AdviceGroupSOARequests() {
       <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
         <AdviceGroupHeader user={user} />
 
-        <div className="p-8">
+        <div className="py-6 px-8">
           {/* Stats Grid */}
           <div className="grid grid-cols-4 gap-6 mb-8">
             <div className="bg-gradient-to-br from-[#f97316] to-[#ea580c] rounded-2xl p-6 text-white">
