@@ -21,8 +21,11 @@ export default function AppShell({ children }) {
     const initUser = async () => {
       try {
         const currentUser = await base44.auth.me();
+        console.log('AppShell loaded user:', currentUser);
+        console.log('User role:', currentUser?.role);
         if (currentUser) {
           loadUserData(currentUser);
+          console.log('Called loadUserData');
         }
       } catch (error) {
         console.error('Failed to load user:', error);
@@ -43,6 +46,12 @@ export default function AppShell({ children }) {
 
   // Determine which sidebar to render based on navigation chain
   const renderSidebar = () => {
+    console.log('renderSidebar called');
+    console.log('currentLevel:', currentLevel);
+    console.log('originalRole:', originalRole);
+    console.log('originalUser:', originalUser);
+    console.log('user:', user);
+    
     // If viewing as a different level, show that level's sidebar
     if (currentLevel === 'adviser') {
       return <AdviserSidebar currentPage={getCurrentPage()} />;
@@ -63,6 +72,7 @@ export default function AppShell({ children }) {
     }
 
     // Fallback
+    console.log('renderSidebar returning null - no role matched');
     return null;
   };
 
