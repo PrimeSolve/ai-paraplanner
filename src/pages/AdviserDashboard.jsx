@@ -9,7 +9,7 @@ import AdviserHeader from '../components/adviser/AdviserHeader.jsx';
 
 export default function AdviserDashboard() {
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const [loggedInUser, setLoggedInUser] = useState(null);
   const [clients, setClients] = useState([]);
   const [stats, setStats] = useState({
     totalClients: 0,
