@@ -66,12 +66,13 @@ export default function SOARequestWelcome() {
 
   return (
     <SOARequestLayout currentSection="welcome" soaRequest={soaRequest}>
-      <SOARequestHeader 
-        title="Welcome to SOA Request"
-        description="Submit your Statement of Advice request to our AI paraplanner for professional SOA preparation."
-      />
-      
-      <div className="flex-1 overflow-auto bg-slate-50 p-6">
+      <div className="flex-1 overflow-auto bg-slate-50 flex flex-col">
+        <div className="bg-white border-b border-slate-200 px-8 py-5 flex-shrink-0">
+          <h3 className="text-xl font-extrabold text-slate-800 mb-1">Welcome to SOA Request</h3>
+          <p className="text-sm text-slate-600">Submit your Statement of Advice request to our AI paraplanner for professional SOA preparation.</p>
+        </div>
+        
+        <div className="flex-1 overflow-auto p-6">
         <div className="max-w-5xl mx-auto space-y-6">
           {/* Video Guide Card */}
           <Card className="border-slate-200">
