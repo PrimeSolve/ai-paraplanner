@@ -19,6 +19,16 @@ const colors = {
 };
 
 export default function AdviceGroupHeader({ user }) {
+  const navigate = useNavigate();
+  const { originalUser, resetToOriginal } = useRole();
+
+  const handleGoHome = () => {
+    resetToOriginal();
+    if (originalUser?.role === 'admin') {
+      navigate(createPageUrl('AdminDashboard'));
+    }
+  };
+
   return (
     <div style={{
       background: colors.core.white,
@@ -29,7 +39,7 @@ export default function AdviceGroupHeader({ user }) {
       zIndex: 50,
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'flex-end',
+      justifyContent: 'space-between',
     }}>
       {user && (
         <DropdownMenu>
