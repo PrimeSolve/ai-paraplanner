@@ -42,13 +42,50 @@ export default function AdminAdvisers() {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
-      const data = await base44.entities.User.filter({ user_type: 'adviser' }, '-created_date');
-      setAdvisers(data.length > 0 ? data : mockAdvisers);
+      const [adviserData, groupsData] = await Promise.all([
+        base44.entities.User.filter({ user_type: 'adviser' }, '-created_date'),
+        base44.entities.AdviceGroup.list('-created_date')
+      ]);
+      setAdvisers(adviserData.length > 0 ? adviserData : mockAdvisers);
+      setAdviceGroups(groupsData);
     } catch (error) {
       console.error('Failed to load advisers:', error);
       setAdvisers(mockAdvisers);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateAdviser = async (e) => {
+    e.preventDefault();
+    try {
+      await base44.entities.User.create({
+        ...formData,
+        user_type: 'adviser',
+        role: 'user'
+      });
+      toast.success('Adviser created successfully');
+      setDialogOpen(false);
+      setFormData({
+        full_name: '',
+        email: '',
+        company: '',
+        advice_group_id: ''
+      });
+      loadData();
+    } catch (error) {
+      console.error('Failed to create adviser:', error);
+      toast.error('Failed to create adviser');
+    }
+  };
+
+  const handleSendWelcomeEmail = async (adviser) => {
+    try {
+      await base44.users.inviteUser(adviser.email, 'user');
+      toast.success('Welcome email sent');
+    } catch (error) {
+      console.error('Failed to send welcome email:', error);
+      toast.error('Failed to send welcome email');
     }
   };
 
