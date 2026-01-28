@@ -4,9 +4,9 @@ import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
 // Import all sidebars
-import AdminSidebar from './admin/AdminLayout';
+import AdminSidebar from './admin/AdminSidebar';
 import AdviceGroupSidebar from './advicegroup/AdviceGroupSidebar';
-import AdviserSidebar from './adviser/AdviserLayout';
+import AdviserSidebar from './adviser/AdviserSidebar';
 
 // Import unified header
 import AppHeader from './AppHeader';
@@ -103,7 +103,7 @@ export default function AppShell({ children }) {
   return (
     <div className="flex min-h-screen bg-[#f8fafc]">
       {renderSidebar()}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: '64px' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: '64px', marginLeft: '260px' }}>
         <AppHeader />
         <main className="flex-1">
           {children}
