@@ -33,11 +33,13 @@ export default function AdminAdviceGroups() {
   });
 
   useEffect(() => {
-    loadGroups();
+    loadData();
   }, []);
 
-  const loadGroups = async () => {
+  const loadData = async () => {
     try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
       const data = await base44.entities.AdviceGroup.list('-created_date');
       setGroups(data);
     } catch (error) {
@@ -45,6 +47,11 @@ export default function AdminAdviceGroups() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewAsAdviceGroup = (group) => {
+    switchRole('advice_group', group.id, user);
+    navigate(createPageUrl('AdviceGroupDashboard'));
   };
 
   const filteredGroups = groups.filter(group =>
