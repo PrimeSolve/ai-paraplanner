@@ -28,6 +28,8 @@ export default function AdminAdviceGroups() {
     slug: '',
     contact_email: '',
     contact_phone: '',
+    afsl: '',
+    abn: '',
     status: 'active',
     subscription_tier: 'professional'
   });
@@ -68,6 +70,8 @@ export default function AdminAdviceGroups() {
         slug: '',
         contact_email: '',
         contact_phone: '',
+        afsl: '',
+        abn: '',
         status: 'active',
         subscription_tier: 'professional'
       });
@@ -121,6 +125,24 @@ export default function AdminAdviceGroups() {
                     value={formData.slug}
                     onChange={(e) => setFormData({...formData, slug: e.target.value})}
                     placeholder="e.g., primesolve"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>AFSL Number</Label>
+                  <Input
+                    value={formData.afsl}
+                    onChange={(e) => setFormData({...formData, afsl: e.target.value})}
+                    placeholder="e.g., 123456"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>ABN</Label>
+                  <Input
+                    value={formData.abn}
+                    onChange={(e) => setFormData({...formData, abn: e.target.value})}
+                    placeholder="e.g., 12 345 678 901"
                   />
                 </div>
               </div>
@@ -284,7 +306,7 @@ export default function AdminAdviceGroups() {
                         </div>
                         <div>
                           <div className="font-semibold text-sm text-slate-800">{group.name}</div>
-                          <div className="text-xs text-slate-600">AFSL 123456</div>
+                          <div className="text-xs text-slate-600">{group.afsl ? `AFSL ${group.afsl}` : 'No AFSL'}</div>
                         </div>
                       </div>
                     </td>

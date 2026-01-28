@@ -106,7 +106,7 @@ export default function AdminAdviceGroupDetail() {
             <Link to={createPageUrl('AdminAdviceGroups')} className="text-sm text-slate-600 hover:text-slate-900 no-underline">Advice Groups</Link>
             <h1 className="font-['Playfair_Display'] text-2xl font-semibold text-slate-900 mt-1">{group?.name || 'Advice Group'}</h1>
             <div className="flex items-center gap-3 mt-2 text-sm">
-              <span className="text-slate-600">AFSL 123456</span>
+              {group?.afsl && <span className="text-slate-600">AFSL {group.afsl}</span>}
               <span className="text-slate-600">5 advisers</span>
               <Badge className="bg-cyan-100 text-cyan-700">Custom template</Badge>
             </div>
