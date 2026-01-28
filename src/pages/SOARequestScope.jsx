@@ -158,13 +158,17 @@ export default function SOARequestScope() {
 
   return (
     <SOARequestLayout currentSection="scope" soaRequest={soaRequest}>
-      <SOARequestHeader 
-        title="Scope of Advice"
-        description="Define the scope and objectives of your advice requirements"
-      />
-      
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
         <div className="max-w-6xl mx-auto space-y-6">
+          {/* Info Banner */}
+          <Card className="border-blue-200 bg-blue-50">
+            <CardContent className="pt-6">
+              <h3 className="font-bold text-slate-800 mb-2">Scope of Advice</h3>
+              <p className="text-sm text-slate-700">
+                Define the scope and objectives of your advice requirements
+              </p>
+            </CardContent>
+          </Card>
           {/* Advice Type */}
           <Card>
             <CardHeader>
