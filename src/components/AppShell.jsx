@@ -109,7 +109,7 @@ export default function AppShell({ children }) {
     <div className="flex min-h-screen bg-[#f8fafc]">
       {renderSidebar()}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: location.pathname.includes('FactFind') ? '0' : '64px', marginLeft: location.pathname.includes('FactFind') ? '0' : '260px' }}>
-        {!location.pathname.includes('FactFind') && <AppHeader />}
+        <AppHeader />
         <main className="flex-1">
           {children}
         </main>
