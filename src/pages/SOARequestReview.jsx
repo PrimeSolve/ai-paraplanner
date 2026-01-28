@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import SOARequestHeader from '../components/soa/SOARequestHeader';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -78,11 +77,6 @@ export default function SOARequestReview() {
 
   return (
     <SOARequestLayout currentSection="review" soaRequest={soaRequest}>
-      <SOARequestHeader 
-        title="Review and Submit"
-        description="Final review and send to paraplanner"
-      />
-      
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
         <div className="w-full space-y-6">
           <Card className="border-green-200 bg-green-50">

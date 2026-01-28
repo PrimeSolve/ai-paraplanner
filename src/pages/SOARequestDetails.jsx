@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import SOARequestHeader from '../components/soa/SOARequestHeader';
 import { toast } from 'sonner';
 
 const sections = [
@@ -100,11 +99,6 @@ export default function SOARequestDetails() {
 
   return (
     <SOARequestLayout currentSection="details" soaRequest={soaRequest}>
-      <SOARequestHeader 
-        title="SOA Details"
-        description="Configure which sections to include and provide guidance for each"
-      />
-      
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
         <div className="w-full space-y-6">
           <Card className="border-blue-200 bg-blue-50">
