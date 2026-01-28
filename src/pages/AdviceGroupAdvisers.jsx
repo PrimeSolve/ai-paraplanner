@@ -55,26 +55,26 @@ export default function AdviceGroupAdvisers() {
     setLoading(true);
     try {
       await base44.users.inviteUser(formData.email, 'user');
-      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      const users = await base44.entities.User.filter({ email: formData.email });
-      if (users.length > 0) {
-        await base44.entities.User.update(users[0].id, {
-          full_name: formData.full_name,
-          company: formData.company,
-          user_type: 'adviser',
-          advice_group_id: user.advice_group_id,
-          status: 'pending'
-        });
-      }
+      // Add to local state immediately
+      const newAdviser = {
+        id: Date.now(),
+        email: formData.email,
+        full_name: formData.full_name,
+        company: formData.company,
+        user_type: 'adviser',
+        advice_group_id: user.advice_group_id,
+        status: 'pending'
+      };
       
-      toast.success('Adviser invited successfully');
+      setAdvisers(prev => [newAdviser, ...prev]);
+      
+      toast.success('Adviser invited - they will appear once they accept the invitation');
       setShowInvite(false);
       setFormData({ full_name: '', email: '', company: '' });
-      await loadData();
     } catch (error) {
       console.error('Error:', error);
-      toast.error('Failed to invite adviser');
+      toast.error(error.message || 'Failed to invite adviser');
     } finally {
       setLoading(false);
     }
