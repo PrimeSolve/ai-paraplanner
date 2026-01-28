@@ -62,6 +62,9 @@ export default function AdminAdvisers() {
       // First invite the user
       await base44.users.inviteUser(formData.email, 'user');
       
+      // Wait a moment for user to be created
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       // Then update their profile with adviser details
       const users = await base44.entities.User.filter({ email: formData.email });
       if (users.length > 0) {
@@ -81,6 +84,9 @@ export default function AdminAdvisers() {
         company: '',
         advice_group_id: ''
       });
+      
+      // Wait before reloading to ensure DB propagation
+      await new Promise(resolve => setTimeout(resolve, 500));
       loadData();
     } catch (error) {
       console.error('Failed to create adviser:', error);
