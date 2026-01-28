@@ -103,7 +103,7 @@ export default function AdminAdviceGroupDetail() {
   return (
     <AdviceGroupLayout currentPage="settings">
       {/* Header */}
-      <div className="bg-white px-8 py-4 border-b border-slate-200 sticky top-0 z-10">
+      <div className="bg-white py-4 border-b border-slate-200 sticky top-0 z-10" style={{ paddingLeft: 0, paddingRight: '32px' }}>
         <div className="flex items-center justify-between mb-6">
           <div>
             <Link to={createPageUrl('AdminAdviceGroups')} className="text-sm text-slate-600 hover:text-slate-900 no-underline">Advice Groups</Link>
