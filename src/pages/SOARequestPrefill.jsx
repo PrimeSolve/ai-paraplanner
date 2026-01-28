@@ -126,11 +126,6 @@ export default function SOARequestPrefill() {
 
   return (
     <SOARequestLayout currentSection="prefill" soaRequest={soaRequest}>
-      <SOARequestHeader 
-        title="Getting started – Prefill your SOA request"
-        description="Save time by uploading relevant documents. Our AI will extract information to help pre-populate your SOA request."
-      />
-      
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
         <div className="w-full space-y-6">
           {/* Info Card */}
