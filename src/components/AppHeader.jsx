@@ -184,76 +184,74 @@ export default function AppHeader() {
         )}
       </div>
 
-      {/* Center: Fact Find Buttons */}
-      {isFactFindPage && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginRight: '24px' }}>
-          {/* Talk to Assistant */}
-          <Link to={createPageUrl('FactFindAssistant') + (factFindId ? `?id=${factFindId}` : '')}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: 'linear-gradient(to right, #14b8a6, #10b981)',
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 600,
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
-              e.currentTarget.style.opacity = '0.9';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = 'none';
-              e.currentTarget.style.opacity = '1';
-            }}>
-              <MessageSquare size={16} />
-              <span>Talk to our assistant</span>
-              <span style={{
-                background: '#fbbf24',
-                color: '#78350f',
-                fontSize: '10px',
-                fontWeight: 700,
-                padding: '2px 6px',
-                borderRadius: '4px',
-                marginLeft: '4px'
-              }}>LIVE</span>
-            </div>
-          </Link>
+      {/* Right side: Fact Find Buttons + User menu */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {isFactFindPage && (
+          <>
+            {/* Talk to Assistant */}
+            <Link to={createPageUrl('FactFindAssistant') + (factFindId ? `?id=${factFindId}` : '')}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'linear-gradient(to right, #14b8a6, #10b981)',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: 600,
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+                e.currentTarget.style.opacity = '0.9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.opacity = '1';
+              }}>
+                <MessageSquare size={16} />
+                <span>Talk to our assistant</span>
+                <span style={{
+                  background: '#fbbf24',
+                  color: '#78350f',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  marginLeft: '4px'
+                }}>LIVE</span>
+              </div>
+            </Link>
 
-          {/* Refresh Button */}
-          <button
-            onClick={handleRefreshClick}
-            disabled={refreshing}
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              background: '#f97316',
-              color: 'white',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s',
-              opacity: refreshing ? 0.5 : 1,
-            }}
-            title="Refresh Data"
-          >
-            🔄
-          </button>
+            {/* Refresh Button */}
+            <button
+              onClick={handleRefreshClick}
+              disabled={refreshing}
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '8px',
+                background: '#f97316',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+                opacity: refreshing ? 0.5 : 1,
+              }}
+              title="Refresh Data"
+            >
+              🔄
+            </button>
+          </>
+        )}
 
-
-        </div>
-      )}
-
-      {/* Right side: User menu */}
-      {loggedInUser && (
-        <DropdownMenu>
+        {loggedInUser && (
+          <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button style={{
               display: 'flex',
@@ -316,10 +314,11 @@ export default function AppHeader() {
               Log Out
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+          </DropdownMenu>
+          )}
+          </div>
 
-      {/* Refresh Warning Dialog */}
+          {/* Refresh Warning Dialog */}
       <Dialog open={showRefreshWarning} onOpenChange={setShowRefreshWarning}>
         <DialogContent className="max-w-md">
           <DialogHeader>
