@@ -228,9 +228,9 @@ export default function AdviceGroupModelPortfolios() {
               </div>
             </>
           )}
-        </div>
+          </div>
 
-        {showEditDialog && (
+          {showEditDialog && (
           <EditPortfolioDialog
             open={showEditDialog}
             onOpenChange={setShowEditDialog}
