@@ -329,8 +329,19 @@ export default function AdminAdviceGroups() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-slate-800">15 Nov 2025</span>
-                        <span className="text-xs text-slate-500">2 months ago</span>
+                        <span className="text-sm font-medium text-slate-800">
+                          {new Date(group.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                        <span className="text-xs text-slate-500">
+                          {(() => {
+                            const days = Math.floor((new Date() - new Date(group.created_date)) / (1000 * 60 * 60 * 24));
+                            if (days === 0) return 'Today';
+                            if (days === 1) return 'Yesterday';
+                            if (days < 30) return `${days} days ago`;
+                            if (days < 60) return '1 month ago';
+                            return `${Math.floor(days / 30)} months ago`;
+                          })()}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
