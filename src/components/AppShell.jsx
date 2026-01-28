@@ -49,8 +49,8 @@ export default function AppShell({ children }) {
     console.log('renderSidebar called');
     console.log('currentLevel:', currentLevel);
     console.log('originalRole:', originalRole);
-    console.log('originalUser:', originalUser);
-    console.log('user:', user);
+    console.log('originalUser email:', originalUser?.email);
+    console.log('user email:', user?.email);
     
     // If viewing as a different level, show that level's sidebar
     if (currentLevel === 'adviser') {
