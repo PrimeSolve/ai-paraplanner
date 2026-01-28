@@ -99,7 +99,6 @@ import FactFindSuperannuation from './pages/FactFindSuperannuation';
 import FactFindTrusts from './pages/FactFindTrusts';
 import FactFindWelcome from './pages/FactFindWelcome';
 import Home from './pages/Home';
-import MyProfile from './pages/MyProfile';
 import PublicAbout from './pages/PublicAbout';
 import PublicContact from './pages/PublicContact';
 import PublicHome from './pages/PublicHome';
@@ -182,7 +181,6 @@ export const PAGES = {
     "FactFindTrusts": FactFindTrusts,
     "FactFindWelcome": FactFindWelcome,
     "Home": Home,
-    "MyProfile": MyProfile,
     "PublicAbout": PublicAbout,
     "PublicContact": PublicContact,
     "PublicHome": PublicHome,
