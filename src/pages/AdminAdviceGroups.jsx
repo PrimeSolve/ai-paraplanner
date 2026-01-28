@@ -23,6 +23,7 @@ export default function AdminAdviceGroups() {
   const [templateFilter, setTemplateFilter] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [adviserCounts, setAdviserCounts] = useState({});
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -41,8 +42,20 @@ export default function AdminAdviceGroups() {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
-      const data = await base44.entities.AdviceGroup.list('-created_date');
+      const [data, users] = await Promise.all([
+        base44.entities.AdviceGroup.list('-created_date'),
+        base44.entities.User.list()
+      ]);
       setGroups(data);
+      
+      // Count advisers per group
+      const counts = {};
+      users.forEach(u => {
+        if (u.user_type === 'adviser' && u.advice_group_id) {
+          counts[u.advice_group_id] = (counts[u.advice_group_id] || 0) + 1;
+        }
+      });
+      setAdviserCounts(counts);
     } catch (error) {
       console.error('Failed to load groups:', error);
     } finally {
@@ -295,14 +308,18 @@ export default function AdminAdviceGroups() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <div className="flex -space-x-2">
-                          {[1, 2, 3].map(i => (
-                            <div key={i} className={`w-8 h-8 rounded-full ${getColorClass(i)} flex items-center justify-center text-white text-xs font-bold border-2 border-white`}>
-                              {String.fromCharCode(64 + i)}
-                            </div>
-                          ))}
-                        </div>
-                        <span className="text-sm text-slate-700 font-medium">5 advisers</span>
+                        {adviserCounts[group.id] > 0 && (
+                          <div className="flex -space-x-2">
+                            {[...Array(Math.min(adviserCounts[group.id], 3))].map((_, i) => (
+                              <div key={i} className={`w-8 h-8 rounded-full ${getColorClass(i)} flex items-center justify-center text-white text-xs font-bold border-2 border-white`}>
+                                {String.fromCharCode(65 + i)}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <span className="text-sm text-slate-700 font-medium">
+                          {adviserCounts[group.id] || 0} adviser{adviserCounts[group.id] === 1 ? '' : 's'}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
