@@ -37,7 +37,6 @@ export default function AppHeader() {
   const [showRefreshWarning, setShowRefreshWarning] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [showAssumptions, setShowAssumptions] = useState(false);
   
   const isFactFindPage = location.pathname.includes('FactFind');
   const factFindId = new URLSearchParams(window.location.search).get('id');
@@ -248,26 +247,7 @@ export default function AppHeader() {
             🔄
           </button>
 
-          {/* Info Button */}
-          <button
-            onClick={() => setShowAssumptions(true)}
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              background: '#3b82f6',
-              color: 'white',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s',
-            }}
-            title="Key Assumptions"
-          >
-            ℹ️
-          </button>
+
         </div>
       )}
 
@@ -407,17 +387,7 @@ export default function AppHeader() {
         </DialogContent>
       </Dialog>
 
-      {/* Key Assumptions Dialog - Simplified */}
-      <Dialog open={showAssumptions} onOpenChange={setShowAssumptions}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Key Assumptions</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <p className="text-sm text-slate-600">Fact Find Information</p>
-          </div>
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 }
