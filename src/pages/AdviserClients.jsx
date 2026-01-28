@@ -275,6 +275,7 @@ export default function AdviserClients() {
               </div>
             </div>
             </div>
+            </div>
 
             {/* Add Client Modal */}
       <AddClientModal 
