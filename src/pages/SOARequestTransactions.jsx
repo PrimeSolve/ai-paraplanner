@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import SOARequestHeader from '../components/soa/SOARequestHeader';
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -100,13 +99,18 @@ export default function SOARequestTransactions() {
 
   return (
     <SOARequestLayout currentSection="transactions" soaRequest={soaRequest}>
-      <SOARequestHeader 
-        title="Transactions"
-        description="Specify assets you want to buy or sell, or any new debts required to support"
-      />
-      
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
         <div className="w-full space-y-6">
+          {/* Info Banner */}
+          <Card className="border-blue-200 bg-blue-50">
+            <CardContent className="pt-6">
+              <h3 className="font-bold text-slate-800 mb-2">Transactions</h3>
+              <p className="text-sm text-slate-700">
+                Specify assets you want to buy or sell, or any new debts required to support
+              </p>
+            </CardContent>
+          </Card>
+          
           {/* Buy Transactions */}
           <Card>
             <CardHeader>

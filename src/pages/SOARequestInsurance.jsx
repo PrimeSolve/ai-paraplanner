@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import SOARequestHeader from '../components/soa/SOARequestHeader';
 import { Plus, Trash2, Calculator } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -95,13 +94,18 @@ export default function SOARequestInsurance() {
 
   return (
     <SOARequestLayout currentSection="insurance" soaRequest={soaRequest}>
-      <SOARequestHeader 
-        title="Insurance"
-        description="Use the calculators to build insurance needs and define recommendations"
-      />
-      
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
         <div className="w-full space-y-6">
+          {/* Info Banner */}
+          <Card className="border-blue-200 bg-blue-50">
+            <CardContent className="pt-6">
+              <h3 className="font-bold text-slate-800 mb-2">Insurance</h3>
+              <p className="text-sm text-slate-700">
+                Use the calculators to build insurance needs and define recommendations
+              </p>
+            </CardContent>
+          </Card>
+          
           <Tabs defaultValue="needs" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="needs">Needs Analysis</TabsTrigger>
