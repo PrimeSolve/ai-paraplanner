@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useRole } from '../components/RoleContext';
@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Label } from '@/components/ui/label';
 
 export default function AdviceGroupAdvisers() {
-    const { switchedToId } = useRole();
+    const { switchedToId, switchRole } = useRole();
+    const navigate = useNavigate();
     const [advisers, setAdvisers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
@@ -358,18 +359,22 @@ export default function AdviceGroupAdvisers() {
                       fontSize: '14px',
                     }}>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <Link to={createPageUrl(`AdviserDashboard?adviser_email=${adviser.email}`)}>
-                           <Button size="sm" style={{
-                             background: colors.accent.blue,
-                             color: colors.core.white,
-                             height: '32px',
-                             padding: '4px 12px',
-                             fontSize: '13px',
-                             border: 'none',
-                             borderRadius: '6px',
-                             cursor: 'pointer',
-                           }}>View</Button>
-                         </Link>
+                        <Button 
+                          size="sm" 
+                          onClick={() => {
+                            switchRole('adviser', adviser.id, user);
+                            navigate(createPageUrl(`AdviserDashboard?adviser_email=${adviser.email}`));
+                          }}
+                          style={{
+                            background: colors.accent.blue,
+                            color: colors.core.white,
+                            height: '32px',
+                            padding: '4px 12px',
+                            fontSize: '13px',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                          }}>View</Button>
                         <Button 
                           size="sm" 
                           variant="outline" 
