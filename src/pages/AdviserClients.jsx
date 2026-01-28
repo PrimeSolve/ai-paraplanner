@@ -275,6 +275,7 @@ export default function AdviserClients() {
               </div>
               </div>
               </div>
+              </div>
               <AddClientModal 
               isOpen={showAddModal} 
               onClose={() => setShowAddModal(false)}
@@ -283,3 +284,4 @@ export default function AdviserClients() {
               />
               </div>
               );
+              }
