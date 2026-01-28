@@ -27,11 +27,13 @@ export default function AdviserDashboard() {
     try {
       // Always fetch the actual logged-in user
       const currentUser = await base44.auth.me();
+      console.log('Current logged-in user:', currentUser);
       setLoggedInUser(currentUser);
 
       // Check if viewing a specific adviser
       const urlParams = new URLSearchParams(window.location.search);
       const adviserEmail = urlParams.get('adviser_email');
+      console.log('Adviser email from URL:', adviserEmail);
       const emailToLoad = adviserEmail || currentUser.email;
 
       const [clientsList, soas, factFinds] = await Promise.all([
