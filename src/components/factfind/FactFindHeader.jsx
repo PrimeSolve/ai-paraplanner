@@ -60,50 +60,6 @@ export default function FactFindHeader({ title, description, tabs, activeTab, on
 
   return (
     <div className="bg-white border-b border-slate-200 px-8 py-5 flex-shrink-0">
-      <div className="flex items-center justify-end">
-        {/* Action Buttons */}
-        <div className="flex items-center gap-3">
-          {/* Talk to Assistant - Green Banner */}
-          <Link to={createPageUrl('FactFindAssistant') + (factFind?.id ? `?id=${factFind.id}` : '')}>
-            <div className="flex items-center gap-2.5 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 rounded-full px-4 py-2 shadow-md hover:shadow-lg transition-all cursor-pointer">
-              <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-                <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
-              </div>
-              <div className="flex flex-col items-start">
-                <div className="flex items-center gap-2">
-                  <span className="text-white font-semibold text-sm">Talk to our assistant</span>
-                  <span className="bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Live</span>
-                </div>
-                <span className="text-teal-50 text-xs leading-tight">Get help completing your fact find</span>
-              </div>
-            </div>
-          </Link>
-
-          {/* Refresh Button */}
-          <button
-            onClick={handleRefreshClick}
-            disabled={refreshing}
-            className="w-11 h-11 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
-          >
-            🔄
-            <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-              Refresh Data
-            </span>
-          </button>
-
-          {/* Info Button */}
-          <button
-            onClick={() => setShowAssumptions(true)}
-            className="w-11 h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-md transition-all flex-shrink-0 relative group"
-          >
-            ℹ️
-            <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-              Key Assumptions
-            </span>
-          </button>
-        </div>
-      </div>
-
       {/* Tabs */}
       {tabs && tabs.length > 0 && (
         <div className="flex gap-2 mt-3">
