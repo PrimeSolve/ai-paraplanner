@@ -5,7 +5,7 @@ import { LayoutDashboard, Users, FileText, CheckCircle, Settings } from 'lucide-
 import { base44 } from '@/api/base44Client';
 import { useRole } from '../RoleContext';
 
-export default function AdviserSidebar({ currentPage }) {
+export default function AdviserSidebar({ currentPage, loggedInUser }) {
   const [adviser, setAdviser] = useState(null);
   const { switchedToId } = useRole();
 
