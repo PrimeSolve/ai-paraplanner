@@ -114,13 +114,17 @@ export default function SOARequestProducts() {
 
   return (
     <SOARequestLayout currentSection="products" soaRequest={soaRequest}>
-      <SOARequestHeader 
-        title="Products & Entities"
-        description="Add the new products or entities you are recommending"
-      />
-      
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
         <div className="w-full space-y-6">
+          {/* Info Banner */}
+          <Card className="border-blue-200 bg-blue-50">
+            <CardContent className="pt-6">
+              <h3 className="font-bold text-slate-800 mb-2">Products & Entities</h3>
+              <p className="text-sm text-slate-700">
+                Add the new products or entities you are recommending
+              </p>
+            </CardContent>
+          </Card>
           {/* Products */}
           <Card>
             <CardHeader>
