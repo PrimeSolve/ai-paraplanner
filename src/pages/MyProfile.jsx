@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
+import { useRole } from '@/components/RoleContext';
 
 export default function MyProfile() {
   const navigate = useNavigate();
+  const { navigationChain } = useRole();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -12,8 +14,15 @@ export default function MyProfile() {
       try {
         const user = await base44.auth.me();
         
-        // Always prioritize admin role - even if advice_group_id is set during mimicking
-        if (user.role === 'admin') {
+        // Check if currently viewing-as something (navigation chain)
+        if (navigationChain.length > 0) {
+          const currentLevel = navigationChain[navigationChain.length - 1];
+          if (currentLevel.type === 'advice_group') {
+            navigate(createPageUrl('AdviceGroupMyProfile'));
+          } else if (currentLevel.type === 'adviser') {
+            navigate(createPageUrl('AdviserProfile'));
+          }
+        } else if (user.role === 'admin') {
           navigate(createPageUrl('AdminProfile'));
         } else if (user.role === 'user') {
           // Check which type of user - adviser, advice group, or client
@@ -33,7 +42,7 @@ export default function MyProfile() {
     };
 
     redirectToProfilePage();
-  }, [navigate]);
+  }, [navigate, navigationChain]);
 
   if (loading) {
     return (
