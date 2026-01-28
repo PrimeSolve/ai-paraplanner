@@ -25,6 +25,7 @@ export default function AdviserDashboard() {
 
   const loadData = async () => {
     try {
+      // Always fetch the actual logged-in user (Tim Hall)
       const currentUser = await base44.auth.me();
       setLoggedInUser(currentUser);
 
