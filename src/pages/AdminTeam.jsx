@@ -136,7 +136,7 @@ export default function AdminTeam() {
              className="bg-[#3b82f6] hover:bg-[#2563eb] text-white shadow-sm"
            >
              <Plus className="w-4 h-4 mr-2" />
-             Invite Member
+             Add Member
            </Button>
          </div>
 
@@ -359,7 +359,7 @@ export default function AdminTeam() {
       <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-[#0f172a]">Invite Team Member</DialogTitle>
+            <DialogTitle className="text-xl font-semibold text-[#0f172a]">Add Team Member</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-5 py-4">
@@ -374,7 +374,7 @@ export default function AdminTeam() {
                 onChange={(e) => setInviteEmail(e.target.value)}
               />
               <p className="text-xs text-[#64748b] mt-1.5">
-                They'll receive an email invitation to join your team
+                The team member will be created and you can send a welcome email separately
               </p>
             </div>
 
