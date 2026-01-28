@@ -252,34 +252,6 @@ export default function ClientProfile() {
             </div>
           </div>
 
-          {/* Security */}
-          <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
-            <h3 className="text-lg font-semibold text-[#0f172a] mb-6">Security</h3>
-            
-            <div className="space-y-6">
-              <div className="flex items-center justify-between pb-6 border-b border-[#e2e8f0]">
-                <div>
-                  <div className="font-medium text-[#0f172a] mb-1">Password</div>
-                  <div className="text-sm text-[#64748b]">Last changed 3 months ago</div>
-                </div>
-                <Button variant="outline" className="border-[#e2e8f0]">
-                  Change Password
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium text-[#0f172a] mb-1">Two-Factor Authentication</div>
-                  <div className="text-sm text-[#64748b]">Add an extra layer of security to your account</div>
-                </div>
-                <Switch
-                  checked={twoFactor}
-                  onCheckedChange={setTwoFactor}
-                />
-              </div>
-            </div>
-          </div>
-
           {/* Notification Preferences */}
           <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
             <h3 className="text-lg font-semibold text-[#0f172a] mb-6">Notification Preferences</h3>
