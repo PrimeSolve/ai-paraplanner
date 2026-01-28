@@ -301,4 +301,5 @@ export default function AdviserSOARequests() {
               adviserEmail={user?.email}
             />
             </div>
+            </div>
             );
