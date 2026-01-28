@@ -7,9 +7,13 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, ChevronDown, Users, CheckCircle, Briefcase, Star, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search, ChevronDown, Users, CheckCircle, Briefcase, Star, MoreHorizontal, Edit, Trash2, Plus, Mail } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useRole } from '../components/RoleContext';
+import { toast } from 'sonner';
 
 export default function AdminAdvisers() {
   const navigate = useNavigate();
