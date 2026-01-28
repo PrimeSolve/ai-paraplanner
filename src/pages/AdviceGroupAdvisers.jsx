@@ -4,19 +4,24 @@ import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, ChevronRight, Download, X } from 'lucide-react';
+import { Plus, Search, ChevronRight, Download, X, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
 import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 export default function AdviceGroupAdvisers() {
   const [advisers, setAdvisers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [inviteEmail, setInviteEmail] = useState('');
   const [showInvite, setShowInvite] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    company: ''
+  });
   const [statusFilter, setStatusFilter] = useState('All Statuses');
   const [sortBy, setSortBy] = useState('Most Active');
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,26 +50,32 @@ export default function AdviceGroupAdvisers() {
     }
   };
 
-  const handleInvite = async () => {
+  const handleCreateAdviser = async (e) => {
+    e.preventDefault();
     try {
-      await base44.users.inviteUser(inviteEmail, 'user');
-      
-      // Update the invited user with adviser-specific fields
-      const users = await base44.entities.User.filter({ email: inviteEmail });
-      if (users.length > 0) {
-        await base44.entities.User.update(users[0].id, {
-          advice_group_id: user.advice_group_id,
-          user_type: 'adviser',
-          status: 'pending'
-        });
-      }
-      
-      toast.success('Adviser invited successfully');
-      setInviteEmail('');
+      await base44.entities.User.create({
+        ...formData,
+        user_type: 'adviser',
+        role: 'user',
+        advice_group_id: user.advice_group_id
+      });
+      toast.success('Adviser created successfully');
       setShowInvite(false);
+      setFormData({ full_name: '', email: '', company: '' });
       loadData();
     } catch (error) {
-      toast.error('Failed to invite adviser');
+      console.error('Failed to create adviser:', error);
+      toast.error('Failed to create adviser');
+    }
+  };
+
+  const handleSendWelcomeEmail = async (adviser) => {
+    try {
+      await base44.users.inviteUser(adviser.email, 'user');
+      toast.success('Welcome email sent');
+    } catch (error) {
+      console.error('Failed to send welcome email:', error);
+      toast.error('Failed to send welcome email');
     }
   };
 
@@ -226,7 +237,7 @@ export default function AdviceGroupAdvisers() {
             whiteSpace: 'nowrap',
           }}>
             <Plus size={16} />
-            Invite Adviser
+            Add Adviser
           </Button>
         </div>
 
@@ -376,42 +387,33 @@ export default function AdviceGroupAdvisers() {
                       fontSize: '14px',
                     }}>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        {isPending ? (
-                          <>
-                            <Button size="sm" variant="outline" style={{
-                              height: '32px',
-                              padding: '4px 12px',
-                              fontSize: '13px',
-                            }}>Resend</Button>
-                            <Button size="sm" style={{
-                              background: colors.accent.error,
-                              color: colors.core.white,
-                              height: '32px',
-                              padding: '4px 12px',
-                              fontSize: '13px',
-                              border: 'none',
-                              borderRadius: '6px',
-                              cursor: 'pointer',
-                            }}>Cancel</Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button size="sm" variant="outline" style={{
-                              height: '32px',
-                              padding: '4px 12px',
-                              fontSize: '13px',
-                            }}>View</Button>
-                            <Button size="sm" style={{
-                              background: colors.accent.blue,
-                              color: colors.core.white,
-                              height: '32px',
-                              padding: '4px 12px',
-                              fontSize: '13px',
-                              border: 'none',
-                              borderRadius: '6px',
-                              cursor: 'pointer',
-                            }}>SOAs</Button>
-                          </>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => handleSendWelcomeEmail(adviser)}
+                          style={{
+                            height: '32px',
+                            padding: '4px 12px',
+                            fontSize: '13px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                          }}
+                        >
+                          <Mail size={14} />
+                          {isPending ? 'Send Welcome' : 'Resend Welcome'}
+                        </Button>
+                        {!isPending && (
+                          <Button size="sm" style={{
+                            background: colors.accent.blue,
+                            color: colors.core.white,
+                            height: '32px',
+                            padding: '4px 12px',
+                            fontSize: '13px',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                          }}>SOAs</Button>
                         )}
                       </div>
                     </td>
@@ -496,36 +498,53 @@ export default function AdviceGroupAdvisers() {
             </div>
             </div>
 
-            {/* Invite Modal */}
+            {/* Add Adviser Modal */}
             <Dialog open={showInvite} onOpenChange={setShowInvite}>
-            <DialogContent>
+            <DialogContent className="max-w-md">
             <DialogHeader>
-            <DialogTitle>Invite New Adviser</DialogTitle>
+            <DialogTitle>Add New Adviser</DialogTitle>
             </DialogHeader>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: colors.core.navy }}>Email Address</label>
+            <form onSubmit={handleCreateAdviser} style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Label>Full Name *</Label>
               <Input
-                type="email"
-                placeholder="adviser@example.com"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                style={{ height: '40px' }}
+                required
+                value={formData.full_name}
+                onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                placeholder="John Smith"
               />
             </div>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <Button variant="outline" onClick={() => { setShowInvite(false); setInviteEmail(''); }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Label>Email *</Label>
+              <Input
+                required
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                placeholder="john@example.com"
+              />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Label>Company</Label>
+              <Input
+                value={formData.company}
+                onChange={(e) => setFormData({...formData, company: e.target.value})}
+                placeholder="Company Name"
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', paddingTop: '8px' }}>
+              <Button type="button" variant="outline" onClick={() => { setShowInvite(false); setFormData({ full_name: '', email: '', company: '' }); }}>
                 Cancel
               </Button>
-              <Button onClick={handleInvite} style={{
+              <Button type="submit" style={{
                 background: colors.accent.blue,
                 color: colors.core.white,
                 border: 'none',
               }}>
-                Send Invite
+                Create Adviser
               </Button>
             </div>
-            </div>
+            </form>
             </DialogContent>
             </Dialog>
             </div>
