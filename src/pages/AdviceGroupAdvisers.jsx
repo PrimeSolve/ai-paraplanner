@@ -36,11 +36,18 @@ export default function AdviceGroupAdvisers() {
       setUser(currentUser);
 
       if (currentUser.advice_group_id) {
-        const data = await base44.entities.User.filter({
-          advice_group_id: currentUser.advice_group_id,
-          user_type: 'adviser'
-        });
-        setAdvisers(data);
+        const [advisersData, groups] = await Promise.all([
+          base44.entities.User.filter({
+            advice_group_id: currentUser.advice_group_id,
+            user_type: 'adviser'
+          }),
+          base44.entities.AdviceGroup.list()
+        ]);
+        setAdvisers(advisersData);
+        const currentGroup = groups.find(g => g.id === currentUser.advice_group_id);
+        if (currentGroup) {
+          window.currentGroupName = currentGroup.name;
+        }
       }
     } catch (error) {
       console.error('Failed to load advisers:', error);
