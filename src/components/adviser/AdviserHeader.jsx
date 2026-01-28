@@ -7,10 +7,10 @@ import { createPageUrl } from '../../utils';
 import { useRole } from '@/components/RoleContext';
 
 export default function AdviserHeader({ user }) {
-  if (!user) return null;
-
   const navigate = useNavigate();
   const { originalUser, resetToOriginal } = useRole();
+
+  if (!user) return null;
 
   const getInitials = (name) => {
     return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
