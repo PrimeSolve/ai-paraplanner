@@ -110,7 +110,7 @@ export default function AdminDashboard() {
   return (
     <div style={{
       flex: 1,
-      padding: '24px 32px',
+      padding: '24px 32px 24px 0',
       display: 'flex',
       flexDirection: 'column',
       gap: '24px',
