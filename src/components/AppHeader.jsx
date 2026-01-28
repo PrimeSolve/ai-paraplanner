@@ -39,6 +39,7 @@ export default function AppHeader() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   
   const isFactFindPage = location.pathname.includes('FactFind');
+  const isSOARequestPage = location.pathname.includes('SOARequest');
   const factFindId = new URLSearchParams(window.location.search).get('id');
 
   // The actual logged-in user (for profile display)
