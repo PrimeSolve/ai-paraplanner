@@ -345,8 +345,7 @@ export default function AdminCompleted() {
               </button>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+          </div>
+          </div>
+          );
+          }
