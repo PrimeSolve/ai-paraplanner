@@ -75,7 +75,7 @@ export default function AppHeader() {
       height: '64px',
       background: '#ffffff',
       borderBottom: '1px solid #e2e8f0',
-      paddingLeft: '292px',
+      paddingLeft: '260px',
       paddingRight: '32px',
       display: 'flex',
       alignItems: 'center',
