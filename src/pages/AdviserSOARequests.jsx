@@ -296,7 +296,6 @@ export default function AdviserSOARequests() {
             </div>
             </div>
             </div>
-            </div>
 
             {/* New SOA Request Modal */}
             <NewSOARequestModal
