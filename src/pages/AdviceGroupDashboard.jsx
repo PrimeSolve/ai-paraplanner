@@ -267,24 +267,30 @@ const PriorityBadge = ({ priority }) => {
 export default function AdviceGroupDashboard() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [groupName, setGroupName] = useState('');
 
   useEffect(() => {
-    const loadUser = async () => {
+    const loadData = async () => {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
+        if (currentUser.advice_group_id) {
+          const group = await base44.entities.AdviceGroup.list();
+          const current = group.find(g => g.id === currentUser.advice_group_id);
+          if (current) setGroupName(current.name);
+        }
       } catch (error) {
         console.error('Failed to load user:', error);
       } finally {
         setLoading(false);
       }
     };
-    loadUser();
+    loadData();
   }, []);
 
   return (
     <div className="flex">
-      <AdviceGroupSidebar currentPage="dashboard" />
+      <AdviceGroupSidebar currentPage="dashboard" groupName={groupName} />
 
       <div style={{
         marginLeft: '260px',
