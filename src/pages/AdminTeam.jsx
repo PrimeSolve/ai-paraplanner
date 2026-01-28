@@ -73,11 +73,7 @@ export default function AdminTeam() {
 
     setInviting(true);
     try {
-      await base44.entities.User.create({
-        full_name: inviteName || inviteEmail.split('@')[0],
-        email: inviteEmail,
-        role: selectedRole
-      });
+      await base44.users.inviteUser(inviteEmail, selectedRole);
       toast.success('Team member added successfully');
       setInviteEmail('');
       setInviteName('');
@@ -85,6 +81,7 @@ export default function AdminTeam() {
       setShowInviteModal(false);
       loadTeam();
     } catch (error) {
+      console.error(error);
       toast.error('Failed to add team member');
     } finally {
       setInviting(false);
