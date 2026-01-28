@@ -1,9 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { User, HelpCircle, LogOut } from 'lucide-react';
+import { User, HelpCircle, LogOut, Home } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useRole } from '@/components/RoleContext';
 
 const colors = {
   core: {
