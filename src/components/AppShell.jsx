@@ -46,8 +46,10 @@ export default function AppShell({ children }) {
 
   // Determine which sidebar to render based on navigation chain
   const renderSidebar = () => {
-    // Don't render sidebar for Fact Find and SOA Request pages
-    const isSpecialLayout = location.pathname.includes('FactFind') || location.pathname.includes('SOARequest');
+    // Don't render sidebar for Fact Find, SOA Request, and Client pages (they have their own sidebars)
+    const isSpecialLayout = location.pathname.includes('FactFind') || 
+                           location.pathname.includes('SOARequest') ||
+                           location.pathname.includes('Client');
     if (isSpecialLayout) {
       return null;
     }
@@ -109,7 +111,7 @@ export default function AppShell({ children }) {
   return (
     <div className="flex min-h-screen bg-[#f8fafc]">
       {renderSidebar()}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: location.pathname.includes('FactFind') || location.pathname.includes('SOARequest') ? '0' : '64px', marginLeft: location.pathname.includes('FactFind') || location.pathname.includes('SOARequest') ? '0' : '260px' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: location.pathname.includes('FactFind') || location.pathname.includes('SOARequest') || location.pathname.includes('Client') ? '0' : '64px', marginLeft: location.pathname.includes('FactFind') || location.pathname.includes('SOARequest') || location.pathname.includes('Client') ? '0' : '260px' }}>
         <AppHeader />
         <main className="flex-1">
           {children}

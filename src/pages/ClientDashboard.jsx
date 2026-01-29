@@ -94,7 +94,7 @@ export default function ClientDashboard() {
 
   return (
     <ClientLayout currentPage="ClientDashboard">
-      <div style={{ padding: '32px' }}>
+      <div style={{ padding: '24px 32px' }}>
         {/* Welcome Card - Different for first time vs returning */}
         {dashboardState === 'first_time' ? (
           <div style={{ 
