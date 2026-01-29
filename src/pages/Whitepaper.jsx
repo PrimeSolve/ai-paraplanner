@@ -62,25 +62,6 @@ export default function Whitepaper() {
         }
       `}</style>
 
-      {/* Table of Contents */}
-      <div className="hidden lg:flex fixed top-1/2 left-6 -translate-y-1/2 z-50 flex-col gap-3">
-        {sections.map((section, index) => (
-          <button
-            key={index}
-            onClick={() => scrollToSection(index)}
-            className="group relative w-3 h-3 rounded-full border-2 transition-all duration-300 hover:scale-125"
-            style={{
-              background: activeSection === index ? 'var(--blue-electric)' : 'var(--grey-light)',
-              borderColor: activeSection === index ? 'var(--blue-electric)' : 'var(--grey)',
-            }}
-          >
-            <span className="absolute left-6 top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-semibold text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-              {section}
-            </span>
-          </button>
-        ))}
-      </div>
-
       {/* Hero Section */}
       <section 
         data-section="0"
