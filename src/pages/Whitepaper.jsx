@@ -176,13 +176,13 @@ export default function Whitepaper() {
           </h2>
           
           <p className="text-lg leading-relaxed mb-12" style={{ color: 'var(--slate)' }}>
-            The financial advice industry has a productivity crisis. According to the FAAA's "Mapping FinTech to the Financial Planning Process" report, preparing a single piece of advice takes an average of 26 hours. That's over three full working days — for one client.
+            The financial advice industry has a productivity crisis. According to the FAAA&apos;s &quot;Mapping FinTech to the Financial Planning Process&quot; report, preparing a single piece of advice takes an average of 26 hours. That&apos;s over three full working days — for one client.
           </p>
           
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             {[
               { icon: '⏰', title: 'Time-Starved Advisers', desc: 'With 26 hours per client, advisers are drowning in paperwork instead of building relationships and growing their practice.', color: 'rgba(239, 68, 68, 0.1)' },
-              { icon: '💰', title: 'Rising Costs', desc: 'SOA preparation alone accounts for 10 hours. At typical paraplanner rates, that's a significant cost that gets passed to clients or eats into margins.', color: 'rgba(245, 158, 11, 0.1)' },
+              { icon: '💰', title: 'Rising Costs', desc: 'SOA preparation alone accounts for 10 hours. At typical paraplanner rates, that is a significant cost that gets passed to clients or eats into margins.', color: 'rgba(245, 158, 11, 0.1)' },
               { icon: '📉', title: 'Scalability Ceiling', desc: 'Practices hit a wall. You can only serve so many clients when each one requires this level of time investment.', color: 'rgba(139, 92, 246, 0.1)' },
               { icon: '🔄', title: 'Manual Processes', desc: 'Despite advances in technology, most of the process remains manual — data entry, document preparation, compliance checks.', color: 'rgba(148, 163, 184, 0.15)' }
             ].map((card, i) => (
@@ -260,7 +260,7 @@ export default function Whitepaper() {
           </h2>
           
           <p className="text-lg leading-relaxed mb-12" style={{ color: 'var(--slate)' }}>
-            We've reimagined every stage of the advice process. Here's our 8-step AI-powered workflow that delivers better outcomes in a fraction of the time.
+            We&apos;ve reimagined every stage of the advice process. Here&apos;s our 8-step AI-powered workflow that delivers better outcomes in a fraction of the time.
           </p>
           
           <div className="space-y-12">
@@ -276,7 +276,7 @@ export default function Whitepaper() {
                 step: 2,
                 icon: '🤖',
                 title: 'Client Completes with AI Help',
-                desc: 'Clients don\'t struggle with forms. AI pre-fills data from uploaded documents, guides them through objectives, and captures everything accurately. Your AI avatar can assist them through the process.',
+                desc: 'Clients do not struggle with forms. AI pre-fills data from uploaded documents, guides them through objectives, and captures everything accurately. Your AI avatar can assist them through the process.',
                 badges: ['Smart Pre-fill', 'AI Assistant', 'Guided Objectives']
               },
               {
@@ -290,7 +290,7 @@ export default function Whitepaper() {
                 step: 4,
                 icon: '⚡',
                 title: 'AI Prepares Your Plan',
-                desc: 'Powered by PrimeSolve\'s optimised modelling engine, AI generates a compliant, comprehensive Statement of Advice.\n\nTraditional paraplanning charges by scope — the more strategies considered, the higher the cost. And building alternative models takes time, so corners get cut. The client misses out.\n\nWe flip that. Our AI explores more strategies, models more scenarios, and considers more alternatives than traditional planning ever could — with no price penalty for being thorough. Our LLM Council (multiple AI models cross-checking each other) ensures accuracy and compliance. Then a qualified paraplanner reviews the final document.\n\nBetter advice. No compromises.',
+                desc: 'Powered by PrimeSolve optimised modelling engine, AI generates a compliant, comprehensive Statement of Advice.\n\nTraditional paraplanning charges by scope — the more strategies considered, the higher the cost. And building alternative models takes time, so corners get cut. The client misses out.\n\nWe flip that. Our AI explores more strategies, models more scenarios, and considers more alternatives than traditional planning ever could — with no price penalty for being thorough. Our LLM Council (multiple AI models cross-checking each other) ensures accuracy and compliance. Then a qualified paraplanner reviews the final document.\n\nBetter advice. No compromises.',
                 badges: ['PrimeSolve Engine', 'LLM Council', 'No Scope Penalty', 'Human Reviewed']
               },
               {
@@ -311,7 +311,7 @@ export default function Whitepaper() {
                 step: 7,
                 icon: '📊',
                 title: 'Stress Test Report',
-                desc: 'This is where advice becomes a story. Leveraging PrimeSolve\'s modelling engine, we analyse 50+ alternative strategy models and translate them into clear, client-focused narratives.\n\nWhat if you retire at 60 instead of 65? What if you keep the investment property vs sell it? What happens if school fees increase?\n\nEach scenario shows real lifestyle trade-offs — not just numbers on a spreadsheet. Clients see exactly how different pathways affect their life, making the \'why\' behind your recommendation crystal clear.',
+                desc: 'This is where advice becomes a story. Leveraging PrimeSolve modelling engine, we analyse 50+ alternative strategy models and translate them into clear, client-focused narratives.\n\nWhat if you retire at 60 instead of 65? What if you keep the investment property vs sell it? What happens if school fees increase?\n\nEach scenario shows real lifestyle trade-offs — not just numbers on a spreadsheet. Clients see exactly how different pathways affect their life, making the why behind your recommendation crystal clear.',
                 badges: ['Client-Focused Stories', '50+ Scenarios', 'Lifestyle Trade-offs', 'Clear Comparisons']
               },
               {
@@ -376,7 +376,7 @@ export default function Whitepaper() {
           </h2>
           
           <p className="text-lg leading-relaxed mb-12" style={{ color: 'var(--slate)' }}>
-            Here's a stage-by-stage breakdown of adviser time — comparing the current industry standard (based on FAAA research) with the PrimeSolve approach.
+            Here is a stage-by-stage breakdown of adviser time — comparing the current industry standard (based on FAAA research) with the PrimeSolve approach.
           </p>
           
           <div className="bg-white border rounded-2xl overflow-hidden mb-12" style={{ borderColor: 'var(--grey-light)' }}>
@@ -443,7 +443,7 @@ export default function Whitepaper() {
               We Beat the FAAA's Target
             </h3>
             <p className="mb-8" style={{ color: 'var(--slate)' }}>
-              The FAAA report suggested that FinTech could potentially reduce the advice process from 26 hours to 8 hours. We've gone further.
+              The FAAA report suggested that FinTech could potentially reduce the advice process from 26 hours to 8 hours. We have gone further.
             </p>
             <div className="flex items-center justify-center gap-12">
               <div className="text-center">
@@ -472,7 +472,7 @@ export default function Whitepaper() {
           </h2>
           
           <p className="text-lg leading-relaxed mb-12" style={{ color: 'var(--slate)' }}>
-            This isn't just automation — it's intelligent augmentation. Here are the key technologies that make it possible.
+            This is not just automation — it is intelligent augmentation. Here are the key technologies that make it possible.
           </p>
           
           <div className="grid md:grid-cols-2 gap-6 mb-12">
@@ -481,8 +481,8 @@ export default function Whitepaper() {
               { icon: '💬', title: 'Conversational Strategy Building', desc: 'No more clicking through complex interfaces. Simply have a conversation with your AI paraplanner to build strategies, generate models, and refine recommendations.' },
               { icon: '🎥', title: 'AI Avatar Presentation', desc: 'Your digital twin, trained on your advice philosophy, walks clients through their SOA. Answers questions, explains concepts, and builds understanding — 24/7.' },
               { icon: '🛡️', title: 'AI Audit Assistant', desc: 'Automated compliance checks, stress test analysis, and final review. Works alongside human paraplanners to catch issues before they become problems.' },
-              { icon: '⚙️', title: 'Commercial-Grade Modelling Engine', desc: 'At the heart of AI Paraplanner is PrimeSolve\'s commercial-grade optimised modelling engine. While others rely on basic calculations, we run sophisticated scenario analysis across hundreds of variables.\n\nThe result? The best pathway of strategies is discovered — not guessed. Every recommendation is backed by comprehensive modelling that would take a human team days to replicate.' },
-              { icon: '✍️', title: 'Custom SOA Language Generation', desc: 'No more generic fluff. Our AI assistants generate custom SOA language that\'s specific to your client\'s situation — powered by the huge dataset from all that modelling.\n\nThe numbers tell the story. Every strategy, every projection, every trade-off flows naturally into compliant, compelling text. You can also tailor base templates for your advice firm\'s voice and style.' }
+              { icon: '⚙️', title: 'Commercial-Grade Modelling Engine', desc: 'At the heart of AI Paraplanner is PrimeSolve commercial-grade optimised modelling engine. While others rely on basic calculations, we run sophisticated scenario analysis across hundreds of variables.\n\nThe result? The best pathway of strategies is discovered — not guessed. Every recommendation is backed by comprehensive modelling that would take a human team days to replicate.' },
+              { icon: '✍️', title: 'Custom SOA Language Generation', desc: 'No more generic fluff. Our AI assistants generate custom SOA language that is specific to your client situation — powered by the huge dataset from all that modelling.\n\nThe numbers tell the story. Every strategy, every projection, every trade-off flows naturally into compliant, compelling text. You can also tailor base templates for your advice firm voice and style.' }
             ].map((tech, i) => (
               <div key={i} className="bg-gray-50 border rounded-2xl p-6" style={{ borderColor: 'var(--grey-light)' }}>
                 <div className="text-3xl mb-4">{tech.icon}</div>
@@ -512,7 +512,7 @@ export default function Whitepaper() {
               The LLM Council
             </h3>
             <p className="text-lg mb-8" style={{ color: 'var(--slate)' }}>
-              Our proprietary multi-model architecture brings the world's leading AI models together to debate, critique, and refine every output — ensuring accuracy and eliminating single points of failure.
+              Our proprietary multi-model architecture brings the world&apos;s leading AI models together to debate, critique, and refine every output — ensuring accuracy and eliminating single points of failure.
             </p>
             
             <div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -558,7 +558,7 @@ export default function Whitepaper() {
             </div>
             
             <p className="text-sm text-center italic" style={{ color: 'var(--slate-light)' }}>
-              Models are surprisingly willing to select another's response as superior to their own — ensuring the best insights always rise to the top.
+              Models are surprisingly willing to select another response as superior to their own — ensuring the best insights always rise to the top.
             </p>
           </div>
         </div>
