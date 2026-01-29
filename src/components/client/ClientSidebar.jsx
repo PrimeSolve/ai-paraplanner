@@ -67,29 +67,43 @@ export default function ClientSidebar({ currentPage }) {
   };
 
   return (
-    <div className="w-72 bg-white border-r border-slate-200 flex flex-col fixed left-0 top-0 bottom-0 z-50">
+    <div className="w-72 bg-[#0f172a] flex flex-col fixed left-0 top-0 bottom-0 z-50">
+      {/* Brand Header */}
+      <div className="p-6 border-b border-white/10">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center font-bold text-white text-sm">
+            AI
+          </div>
+          <div className="flex flex-col">
+            <span className="text-lg font-bold text-white">
+              {adviceGroup?.name || 'AI Paraplanner'}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* User Card */}
-      <div className="p-4 mx-4 mt-4 bg-slate-50 rounded-xl">
+      <div className="p-4 mx-4 mt-4 bg-white/5 rounded-xl border border-white/10">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
             {getInitials(user?.full_name)}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="font-semibold text-slate-800 truncate">{user?.full_name || 'Client'}</div>
-            <div className="text-xs text-slate-500 truncate">{user?.email}</div>
+            <div className="font-semibold text-white truncate">{user?.full_name || 'Client'}</div>
+            <div className="text-xs text-slate-400 truncate">{user?.email}</div>
           </div>
         </div>
 
         {/* Adviser Info */}
         {adviser && (
-          <div className="pt-4 border-t border-slate-200">
+          <div className="pt-4 border-t border-white/10">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-500 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
                 {getInitials(`${adviser.first_name} ${adviser.last_name}`)}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-xs text-slate-500 uppercase tracking-wide">Your Adviser</div>
-                <div className="text-sm font-semibold text-slate-800 truncate">
+                <div className="text-xs text-slate-400 uppercase tracking-wide">Your Adviser</div>
+                <div className="text-sm font-semibold text-white truncate">
                   {adviser.first_name} {adviser.last_name}
                 </div>
               </div>
@@ -99,7 +113,7 @@ export default function ClientSidebar({ currentPage }) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-4">
+      <nav className="flex-1 py-6 px-3">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentPage === item.path;
@@ -108,39 +122,45 @@ export default function ClientSidebar({ currentPage }) {
               key={item.path}
               to={createPageUrl(item.path)}
               className={cn(
-                "flex items-center gap-3 px-6 py-3 text-sm font-medium transition-all border-l-4",
+                "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all mb-1 relative",
                 isActive
-                  ? "bg-slate-50 text-slate-900 border-slate-800"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent"
+                  ? "bg-blue-600/15 text-white"
+                  : "text-slate-400 hover:bg-white/5 hover:text-white"
               )}
             >
+              {isActive && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-blue-600 rounded-r-md" />
+              )}
               <Icon className="w-5 h-5" />
               {item.label}
             </Link>
           );
         })}
 
-        <div className="h-px bg-slate-200 mx-6 my-4" />
+        <div className="h-px bg-white/10 mx-3 my-4" />
 
         <Link
           to={createPageUrl('ClientSettings')}
           className={cn(
-            "flex items-center gap-3 px-6 py-3 text-sm font-medium transition-all border-l-4",
+            "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all relative",
             currentPage === 'ClientSettings'
-              ? "bg-slate-50 text-slate-900 border-slate-800"
-              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent"
+              ? "bg-blue-600/15 text-white"
+              : "text-slate-400 hover:bg-white/5 hover:text-white"
           )}
         >
+          {currentPage === 'ClientSettings' && (
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-blue-600 rounded-r-md" />
+          )}
           <Settings className="w-5 h-5" />
           Settings
         </Link>
       </nav>
 
       {/* Help Link */}
-      <div className="p-4 border-t border-slate-200">
+      <div className="p-4 border-t border-white/10">
         <Link
           to={createPageUrl('ClientHelp')}
-          className="flex items-center gap-3 px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-lg text-sm font-medium text-slate-700 transition-all"
+          className="flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-medium text-slate-300 hover:text-white transition-all"
         >
           <HelpCircle className="w-5 h-5" />
           Help & Support
