@@ -10,7 +10,8 @@ import {
   FileCheck, 
   Settings, 
   HelpCircle,
-  User
+  User,
+  Sparkles
 } from 'lucide-react';
 
 export default function ClientSidebar({ currentPage }) {
@@ -132,18 +133,21 @@ export default function ClientSidebar({ currentPage }) {
         </Link>
       </nav>
 
-      {/* Help & Support Button */}
+      {/* AI Assistant Button */}
       <div className="p-4 border-t border-white/10">
-        <Link to={createPageUrl('ClientHelp')}>
-          <button className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-lg text-white font-semibold transition-all hover:shadow-lg">
-            <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
-              <span className="text-sm">✨</span>
+        <Link to={createPageUrl('ClientHelp')} className="no-underline">
+          <div className="flex items-center gap-3 px-3 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl cursor-pointer transition-all shadow-lg shadow-purple-900/30">
+            <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <div className="flex-1 text-left">
-              <div className="text-sm font-semibold">Help & Support</div>
-              <div className="text-xs opacity-80">Chat with AI</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-white font-semibold text-sm">AI Assistant</div>
+              <div className="text-white/80 text-xs">Ask for help</div>
             </div>
-          </button>
+            <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-bold">?</span>
+            </div>
+          </div>
         </Link>
       </div>
     </div>
