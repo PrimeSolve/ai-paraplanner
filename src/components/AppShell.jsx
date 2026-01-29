@@ -46,11 +46,19 @@ export default function AppShell({ children }) {
 
   // Determine which sidebar to render based on navigation chain
   const renderSidebar = () => {
+    console.log('=== renderSidebar ===');
+    console.log('pathname:', location.pathname);
+    console.log('navigationChain:', navigationChain);
+    console.log('currentLevel:', currentLevel);
+    console.log('originalRole:', originalRole);
+    
     // Don't render sidebar for Fact Find, SOA Request, and Client pages (they have their own sidebars)
     const isSpecialLayout = location.pathname.includes('FactFind') || 
                            location.pathname.includes('SOARequest') ||
                            location.pathname.includes('Client');
+    console.log('isSpecialLayout:', isSpecialLayout);
     if (isSpecialLayout) {
+      console.log('Returning null due to special layout');
       return null;
     }
 
