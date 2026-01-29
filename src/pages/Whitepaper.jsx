@@ -37,7 +37,7 @@ export default function Whitepaper() {
     <div className="bg-white">
       {/* Close Button */}
       <Link
-        to={createPageUrl('Home')}
+        to={createPageUrl('PublicHome')}
         className="fixed top-6 right-6 z-50 w-10 h-10 rounded-full bg-white border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-slate-400 transition-all shadow-lg"
       >
         <X className="w-5 h-5 text-slate-700" />
