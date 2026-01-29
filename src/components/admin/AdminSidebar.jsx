@@ -89,12 +89,12 @@ export default function AdminSidebar({ currentPage }) {
                   to={createPageUrl(item.path)}
                   className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium no-underline transition-all mb-1 relative ${
                     isActive 
-                      ? 'bg-[#3b82f6]/15 text-[#3b82f6]' 
-                      : 'text-[#94a3b8] hover:bg-white/[0.05] hover:text-[#3b82f6]'
+                      ? 'bg-[#6366f1]/15 text-[#6366f1]' 
+                      : 'text-[#94a3b8] hover:bg-white/[0.05] hover:text-[#6366f1]'
                   }`}
                 >
                   {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#3b82f6] rounded-r-md" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#6366f1] rounded-r-md" />
                   )}
                   <Icon className="w-5 h-5" />
                   <span>{item.label}</span>
