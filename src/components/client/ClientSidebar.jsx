@@ -72,12 +72,17 @@ export default function ClientSidebar({ currentPage }) {
       <div className="p-6 border-b border-white/10">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center font-bold text-white text-sm">
-            AI
+            {adviser ? getInitials(`${adviser.first_name} ${adviser.last_name}`) : 'AI'}
           </div>
           <div className="flex flex-col">
             <span className="text-lg font-bold text-white">
-              {adviceGroup?.name || 'AI Paraplanner'}
+              {adviser?.company || adviceGroup?.name || 'Portal'}
             </span>
+            {adviser && (
+              <span className="text-xs text-slate-400">
+                Adviser: {adviser.first_name} {adviser.last_name}
+              </span>
+            )}
           </div>
         </div>
       </div>
