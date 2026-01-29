@@ -215,12 +215,22 @@ export default function Whitepaper() {
           
           {/* FAAA Breakdown */}
           <div className="bg-white border rounded-2xl p-8" style={{ borderColor: 'var(--grey-light)' }}>
-            <h3 className="text-2xl font-bold mb-2" style={{ color: 'var(--navy)' }}>
-              FAAA Advice Process Breakdown
-            </h3>
-            <p className="text-sm mb-8" style={{ color: 'var(--slate)' }}>
-              Time allocation across the six stages of advice
-            </p>
+            <div className="flex items-center gap-4 mb-2">
+              <div 
+                className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
+                style={{ background: 'var(--blue-electric)' }}
+              >
+                📊
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold" style={{ color: 'var(--navy)' }}>
+                  FAAA Advice Process Breakdown
+                </h3>
+                <p className="text-sm" style={{ color: 'var(--slate)' }}>
+                  Time allocation across the six stages of advice
+                </p>
+              </div>
+            </div>
             
             <div className="space-y-4">
               {[
