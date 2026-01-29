@@ -70,16 +70,9 @@ export default function ClientSidebar({ currentPage }) {
     <div className="w-72 bg-white border-r border-slate-200 flex flex-col fixed left-0 top-0 bottom-0 z-50">
       {/* Brand Header */}
       <div className="p-6 border-b border-slate-200">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 bg-gradient-to-br from-slate-800 to-slate-600 rounded-xl flex items-center justify-center">
-            <span className="text-amber-400 font-bold text-sm">AI</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-lg font-bold text-slate-800" style={{ fontFamily: 'Fraunces' }}>
-              {adviceGroup?.name || 'AI Paraplanner'}
-            </span>
-          </div>
-        </div>
+        <h1 className="text-xl font-bold text-slate-800" style={{ fontFamily: 'Fraunces' }}>
+          {adviceGroup?.name || 'My Portal'}
+        </h1>
       </div>
 
       {/* User Card */}
