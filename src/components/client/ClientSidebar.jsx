@@ -57,7 +57,7 @@ export default function ClientSidebar({ currentPage }) {
   const navItems = [
     { path: 'ClientDashboard', label: 'Dashboard', icon: Home },
     { path: 'FactFindWelcome', label: 'My Fact Find', icon: FileText },
-    { path: 'ClientDocuments', label: 'History', icon: FileCheck },
+    { path: 'ClientDocuments', label: 'Documents', icon: FileCheck },
     { path: 'ClientMessages', label: 'Messages', icon: MessageSquare, badge: 3 },
   ];
 

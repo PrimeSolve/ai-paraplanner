@@ -13,7 +13,7 @@ import {
   Play,
   Sparkles,
   ArrowRight,
-  History as HistoryIcon
+  FileCheck
 } from 'lucide-react';
 
 export default function ClientDashboard() {
@@ -861,9 +861,9 @@ export default function ClientDashboard() {
                   onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
                   onMouseLeave={(e) => e.currentTarget.style.background = '#f8fafc'}
                   >
-                    <HistoryIcon className="w-4 h-4 text-slate-500" />
+                    <FileCheck className="w-4 h-4 text-slate-500" />
                     <div>
-                      <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '13px' }}>History</div>
+                      <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '13px' }}>Documents</div>
                       <div style={{ fontSize: '11px', color: '#94a3b8' }}>View past documents</div>
                     </div>
                   </div>
