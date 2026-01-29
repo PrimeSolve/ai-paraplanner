@@ -142,7 +142,10 @@ export default function AdviceGroupSidebar({ currentPage, groupName }) {
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
     }}>
       <div style={{
-        padding: '24px 20px',
+        height: '64px',
+        padding: '0 20px',
+        display: 'flex',
+        alignItems: 'center',
         borderBottom: `1px solid rgba(255, 255, 255, 0.1)`,
       }}>
         <div style={{

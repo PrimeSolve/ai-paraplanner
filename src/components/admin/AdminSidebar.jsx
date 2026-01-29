@@ -56,7 +56,7 @@ export default function AdminSidebar({ currentPage }) {
       `}</style>
 
       {/* Logo */}
-      <div className="p-6 border-b border-white/[0.08]">
+      <div className="h-16 px-6 flex items-center border-b border-white/[0.08]">
         <Link to={createPageUrl('AdminDashboard')} className="flex items-center gap-3 text-white no-underline">
           <div className="w-10 h-10 bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] rounded-xl flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-900/30">
             AI

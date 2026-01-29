@@ -49,7 +49,10 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
     }}>
       {/* Logo Section */}
       <div style={{
-        padding: '24px 20px',
+        height: '64px',
+        padding: '0 20px',
+        display: 'flex',
+        alignItems: 'center',
         borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
       }}>
         <Link to={createPageUrl('AdviserDashboard')} style={{ display: 'flex', alignItems: 'center', gap: '14px', textDecoration: 'none' }}>
