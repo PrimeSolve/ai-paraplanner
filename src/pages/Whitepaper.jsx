@@ -269,21 +269,23 @@ export default function Whitepaper() {
       </section>
 
       {/* Section 2: The Approach */}
-      <section data-section="2" className="py-24 px-6 bg-white">
+      <section data-section="2" className="py-24 px-6" style={{ background: 'var(--navy)' }}>
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--blue-electric)' }}>
             Section 2
           </span>
           
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-5" style={{ color: 'var(--navy)' }}>
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-5 text-white">
             The PrimeSolve Approach
           </h2>
           
-          <p className="text-lg leading-relaxed mb-12" style={{ color: 'var(--slate)' }}>
+          <p className="text-lg leading-relaxed mb-12 text-slate-300">
             We&apos;ve reimagined every stage of the advice process. Here&apos;s our 8-step AI-powered workflow that delivers better outcomes in a fraction of the time.
           </p>
           
-          <div className="space-y-12">
+          <div className="relative space-y-12">
+            {/* Vertical Timeline Line */}
+            <div className="absolute left-[27px] top-12 bottom-12 w-0.5" style={{ background: 'var(--blue-electric)' }}></div>
             {[
               {
                 step: 1,
@@ -342,21 +344,28 @@ export default function Whitepaper() {
                 badges: ['Final Audit', 'Compliance Checks', 'Human + AI']
               }
             ].map((item) => (
-              <div key={item.step} className="flex gap-6">
-                <div className="flex-shrink-0">
+              <div key={item.step} className="relative flex gap-6">
+                <div className="flex-shrink-0 relative z-10">
                   <div 
-                    className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold text-white"
-                    style={{ background: 'linear-gradient(135deg, var(--blue-electric), var(--cyan-glow))' }}
+                    className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold"
+                    style={{ background: 'var(--blue-electric)', color: 'var(--navy)' }}
                   >
                     {item.step}
                   </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-2xl font-bold mb-3 flex items-center gap-2" style={{ color: 'var(--navy)' }}>
-                    <span>{item.icon}</span>
-                    {item.title}
-                  </h3>
-                  <p className="leading-relaxed mb-4 whitespace-pre-line" style={{ color: 'var(--slate)' }}>
+                <div className="flex-1 border rounded-2xl p-6" style={{ borderColor: '#374155', background: 'rgba(255, 255, 255, 0.05)' }}>
+                  <div className="flex items-start gap-4 mb-4">
+                    <div 
+                      className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
+                      style={{ background: 'rgba(56, 189, 248, 0.1)' }}
+                    >
+                      {item.icon}
+                    </div>
+                    <h3 className="text-2xl font-bold text-white flex-1">
+                      {item.title}
+                    </h3>
+                  </div>
+                  <p className="leading-relaxed mb-4 whitespace-pre-line text-slate-300">
                     {item.desc}
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -365,7 +374,7 @@ export default function Whitepaper() {
                         key={i}
                         className="px-3 py-1 rounded-full text-xs font-semibold"
                         style={{ 
-                          background: 'rgba(59, 130, 246, 0.1)',
+                          background: 'rgba(56, 189, 248, 0.15)',
                           color: 'var(--blue-electric)'
                         }}
                       >
