@@ -69,18 +69,16 @@ export default function ClientSidebar({ currentPage }) {
   return (
     <div className="w-72 bg-[#0f172a] flex flex-col fixed left-0 top-0 bottom-0 z-50">
       {/* Adviser Info Header */}
-      <div className="p-6 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
-            {adviser ? getInitials(`${adviser.first_name} ${adviser.last_name}`) : 'SH'}
+      <div className="h-16 px-4 flex items-center gap-3 border-b border-white/10">
+        <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
+          {adviser ? getInitials(`${adviser.first_name} ${adviser.last_name}`) : 'SH'}
+        </div>
+        <div>
+          <div className="text-white font-semibold">
+            {adviser?.company || 'ABS Wealth'}
           </div>
-          <div>
-            <div className="text-white font-semibold text-base">
-              {adviser?.company || 'ABS Wealth'}
-            </div>
-            <div className="text-slate-400 text-sm">
-              Adviser: {adviser ? `${adviser.first_name} ${adviser.last_name}` : 'Stephen Hawke'}
-            </div>
+          <div className="text-slate-400 text-sm">
+            Adviser: {adviser ? `${adviser.first_name} ${adviser.last_name}` : 'Stephen Hawke'}
           </div>
         </div>
       </div>
