@@ -467,22 +467,21 @@ export default function Whitepaper() {
           </div>
           
           {/* Beat FAAA Target */}
-          <div className="bg-white border rounded-2xl p-8" style={{ borderColor: 'var(--grey-light)' }}>
-            <h3 className="text-2xl font-bold mb-4" style={{ color: 'var(--navy)' }}>
+          <div className="rounded-2xl p-10 text-center" style={{ background: '#10b981' }}>
+            <h3 className="text-3xl font-bold mb-6 text-white">
               We Beat the FAAA's Target
             </h3>
-            <p className="mb-8" style={{ color: 'var(--slate)' }}>
-              The FAAA report suggested that FinTech could potentially reduce the advice process from 26 hours to 8 hours. We have gone further.
+            <p className="mb-10 text-white text-lg max-w-2xl mx-auto">
+              The FAAA report suggested that FinTech could potentially reduce the advice process from 26 hours to 8 hours. We've gone further.
             </p>
-            <div className="flex items-center justify-center gap-12">
+            <div className="flex items-center justify-center gap-16">
               <div className="text-center">
-                <div className="text-4xl font-extrabold mb-2" style={{ color: 'var(--coral)' }}>8 hrs</div>
-                <div className="text-sm font-semibold" style={{ color: 'var(--slate)' }}>FAAA FinTech Target</div>
+                <div className="text-5xl font-extrabold mb-3 text-white">8 hrs</div>
+                <div className="text-base font-medium text-white opacity-90">FAAA FinTech Target</div>
               </div>
-              <div className="text-5xl font-bold" style={{ color: 'var(--grey)' }}>{'>'}</div>
               <div className="text-center">
-                <div className="text-4xl font-extrabold mb-2" style={{ color: 'var(--blue-electric)' }}>5 hrs</div>
-                <div className="text-sm font-semibold" style={{ color: 'var(--slate)' }}>PrimeSolve Reality</div>
+                <div className="text-5xl font-extrabold mb-3 text-white">5 hrs</div>
+                <div className="text-base font-medium text-white opacity-90">PrimeSolve Reality</div>
               </div>
             </div>
           </div>
