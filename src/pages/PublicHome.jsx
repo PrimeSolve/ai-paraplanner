@@ -1,33 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Download, ChevronDown, X } from 'lucide-react';
-import { toast } from 'sonner';
+import { Download, ChevronDown } from 'lucide-react';
 
 export default function PublicHome() {
   const [scrolled, setScrolled] = useState(false);
-  const [showWhitepaper, setShowWhitepaper] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const handleWhitepaperSubmit = (e) => {
-    e.preventDefault();
-    toast.success('Whitepaper sent to your email!');
-    setShowWhitepaper(false);
-    setFirstName('');
-    setLastName('');
-    setEmail('');
-  };
 
   return (
     <div className="font-['Poppins']">
@@ -100,13 +83,13 @@ export default function PublicHome() {
         <div className="absolute inset-0 bg-gradient-to-br from-[#f0f4f8]/85 via-[#e8eef5]/80 to-[#dce5f0]/85" />
         <div className="max-w-[1400px] mx-auto grid grid-cols-2 gap-20 items-center relative z-10">
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <button 
-              onClick={() => setShowWhitepaper(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-sm font-semibold text-[#1d4ed8] mb-6 shadow-md hover:bg-[#1d4ed8] hover:text-white hover:-translate-y-0.5 hover:shadow-lg transition-all"
+            <a 
+              href={createPageUrl('Whitepaper')}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-sm font-semibold text-[#1d4ed8] mb-6 shadow-md hover:bg-[#1d4ed8] hover:text-white hover:-translate-y-0.5 hover:shadow-lg transition-all no-underline"
             >
               <Download className="w-4 h-4" />
-              Download: The Future of Paraplanning
-            </button>
+              Read: The Future of Paraplanning
+            </a>
 
             <h1 className="font-['Playfair_Display'] text-[60px] leading-[1.15] font-semibold mb-6">
               <span className="text-[#0f172a]">Paraplanning that </span>
@@ -688,64 +671,7 @@ export default function PublicHome() {
         </div>
       </footer>
 
-      {/* Whitepaper Modal */}
-      <Dialog open={showWhitepaper} onOpenChange={setShowWhitepaper}>
-        <DialogContent className="max-w-md p-10">
-          <button 
-            onClick={() => setShowWhitepaper(false)}
-            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
-          >
-            <X className="w-5 h-5 text-slate-600" />
-          </button>
-          <h3 className="font-['Playfair_Display'] text-2xl font-semibold text-slate-900 mb-2">
-            Download Whitepaper
-          </h3>
-          <p className="text-[15px] text-slate-600 mb-7">
-            Enter your email to receive "The Future of Paraplanning" whitepaper
-          </p>
-          <form onSubmit={handleWhitepaperSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">First Name</label>
-              <Input 
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="John"
-                required
-                className="px-4 py-3 border-2 border-slate-200 rounded-[10px] focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">Last Name</label>
-              <Input 
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Smith"
-                required
-                className="px-4 py-3 border-2 border-slate-200 rounded-[10px] focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">Email Address</label>
-              <Input 
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="john@example.com"
-                required
-                className="px-4 py-3 border-2 border-slate-200 rounded-[10px] focus:border-blue-500"
-              />
-            </div>
-            <button 
-              type="submit"
-              className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all"
-            >
-              Send Whitepaper
-            </button>
-          </form>
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 }
