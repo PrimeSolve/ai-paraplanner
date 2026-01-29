@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
-import { LayoutDashboard, Users, FileText, CheckCircle, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, CheckCircle, Settings, Sparkles } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useRole } from '../RoleContext';
 
@@ -103,7 +103,7 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
                   fontWeight: '500',
                   transition: 'all 0.2s ease',
                   marginBottom: '4px',
-                  background: isActive ? 'rgba(59, 130, 246, 0.15)' : 'transparent'
+                  background: isActive ? 'rgba(99, 102, 241, 0.15)' : 'transparent'
                 }}
               >
                 {isActive && (
@@ -112,7 +112,7 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
                     left: 0,
                     width: '3px',
                     height: '24px',
-                    background: '#3b82f6',
+                    background: '#6366f1',
                     borderRadius: '0 4px 4px 0'
                   }} />
                 )}
@@ -121,7 +121,7 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
                 {item.badge && (
                   <span style={{
                     padding: '2px 8px',
-                    background: '#3b82f6',
+                    background: '#6366f1',
                     color: 'white',
                     fontSize: '10px',
                     fontWeight: '700',
@@ -159,7 +159,7 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
                   fontWeight: '500',
                   transition: 'all 0.2s ease',
                   marginBottom: '4px',
-                  background: isActive ? 'rgba(59, 130, 246, 0.15)' : 'transparent'
+                  background: isActive ? 'rgba(99, 102, 241, 0.15)' : 'transparent'
                 }}
               >
                 <Icon size={20} />
@@ -170,32 +170,59 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
         </div>
       </nav>
 
-      {/* User Profile - Always show logged-in user */}
+      {/* AI Assistant Button */}
       <div style={{ padding: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '12px', cursor: 'pointer' }}>
+        <Link to={createPageUrl('AdviserHelp')} style={{ textDecoration: 'none' }}>
           <div style={{
-            width: '40px',
-            height: '40px',
-            background: 'linear-gradient(135deg, #f97316, #ec4899)',
-            borderRadius: '10px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: '700',
-            color: 'white',
-            fontSize: '14px'
-          }}>
-            {loggedInUser ? `${loggedInUser.full_name?.[0]}${loggedInUser.full_name?.split(' ')[1]?.[0]}`.toUpperCase() : 'TH'}
-          </div>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: '600', color: 'white' }}>
-              {loggedInUser?.full_name || 'Tim Hall'}
+            gap: '12px',
+            padding: '12px',
+            background: 'linear-gradient(to right, #6366f1, #8b5cf6)',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'linear-gradient(to right, #4f46e5, #7c3aed)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'linear-gradient(to right, #6366f1, #8b5cf6)';
+          }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Sparkles size={20} style={{ color: 'white' }} />
             </div>
-            <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-              Your Account
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ color: 'white', fontWeight: 600, fontSize: '14px' }}>
+                AI Assistant
+              </div>
+              <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '12px' }}>
+                Ask for help
+              </div>
+            </div>
+            <div style={{
+              width: '24px',
+              height: '24px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <span style={{ color: 'white', fontSize: '12px', fontWeight: 700 }}>?</span>
             </div>
           </div>
-        </div>
+        </Link>
       </div>
     </div>
   );
