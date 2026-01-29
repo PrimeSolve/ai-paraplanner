@@ -526,66 +526,75 @@ export default function Whitepaper() {
           
           {/* LLM Council Feature */}
           <div 
-            className="border rounded-2xl p-10 relative overflow-hidden"
+            className="rounded-2xl p-10 relative overflow-hidden"
             style={{ 
-              borderColor: 'var(--blue-electric)',
-              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(34, 211, 238, 0.05))'
+              background: 'var(--navy-light)'
             }}
           >
-            <div className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold" style={{ background: 'var(--blue-electric)', color: 'white' }}>
-              ✨ Featured Technology
+            <div className="flex justify-center mb-6">
+              <div className="px-4 py-1.5 rounded-full text-xs font-bold" style={{ background: 'var(--blue-electric)', color: 'white' }}>
+                ✨ Featured Technology
+              </div>
             </div>
             
-            <h3 className="text-3xl font-extrabold mb-4" style={{ color: 'var(--navy)' }}>
+            <h3 className="text-3xl font-extrabold mb-4 text-white text-center">
               The LLM Council
             </h3>
-            <p className="text-lg mb-8" style={{ color: 'var(--slate)' }}>
+            <p className="text-lg mb-10 text-center text-slate-300 max-w-2xl mx-auto">
               Our proprietary multi-model architecture brings the world&apos;s leading AI models together to debate, critique, and refine every output — ensuring accuracy and eliminating single points of failure.
             </p>
             
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="grid md:grid-cols-3 gap-6 mb-10">
               {[
                 { num: 1, title: 'First Opinions', desc: 'Each council member responds to the query independently, bringing their unique strengths and reasoning patterns.' },
                 { num: 2, title: 'Peer Review', desc: 'Models anonymously critique and rank each other\'s responses. No favourites — just honest evaluation of accuracy and insight.' },
                 { num: 3, title: 'Chairman Synthesis', desc: 'The Chairman model reviews all responses and rankings, then synthesises the collective wisdom into one authoritative answer.' }
               ].map((step) => (
-                <div key={step.num} className="bg-white rounded-xl p-6 border" style={{ borderColor: 'var(--grey-light)' }}>
+                <div key={step.num} className="rounded-xl p-6" style={{ background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(51, 65, 85, 0.5)' }}>
                   <div 
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mb-4"
+                    className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold mb-4 text-lg"
                     style={{ background: 'var(--blue-electric)' }}
                   >
                     {step.num}
                   </div>
-                  <h4 className="font-bold mb-2" style={{ color: 'var(--navy)' }}>
+                  <h4 className="font-bold mb-2 text-white">
                     {step.title}
                   </h4>
-                  <p className="text-sm" style={{ color: 'var(--slate)' }}>
+                  <p className="text-sm text-slate-400 leading-relaxed">
                     {step.desc}
                   </p>
                 </div>
               ))}
             </div>
             
-            <div className="flex items-center justify-center gap-4 flex-wrap mb-6">
-              {['🧠GPT', '🧠Gemini', '🧠Claude', '🧠Grok'].map((model, i) => (
+            <div className="flex items-center justify-center gap-4 flex-wrap mb-8">
+              {[
+                { emoji: '🧠', label: 'GPT' },
+                { emoji: '🧠', label: 'Gemini' },
+                { emoji: '🧠', label: 'Claude' },
+                { emoji: '🧠', label: 'Grok' }
+              ].map((model, i) => (
                 <div 
                   key={i}
-                  className="px-4 py-2 rounded-lg text-sm font-semibold"
-                  style={{ background: 'white', color: 'var(--navy)' }}
+                  className="rounded-xl p-4 flex flex-col items-center justify-center gap-2"
+                  style={{ background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(51, 65, 85, 0.5)', minWidth: '100px' }}
                 >
-                  {model}
+                  <div className="text-2xl">{model.emoji}</div>
+                  <div className="text-sm font-semibold text-white">{model.label}</div>
                 </div>
               ))}
-              <span className="text-2xl" style={{ color: 'var(--slate)' }}>→</span>
+              <span className="text-2xl text-slate-400">→</span>
               <div 
-                className="px-6 py-3 rounded-lg text-sm font-bold"
-                style={{ background: 'var(--coral)', color: 'white' }}
+                className="px-6 py-4 rounded-xl text-center"
+                style={{ background: 'var(--blue-electric)' }}
               >
-                👑 Chairman<br />Final Synthesis
+                <div className="text-2xl mb-1">👑</div>
+                <div className="text-sm font-bold text-white">Chairman</div>
+                <div className="text-xs text-white opacity-90">Final Synthesis</div>
               </div>
             </div>
             
-            <p className="text-sm text-center italic" style={{ color: 'var(--slate-light)' }}>
+            <p className="text-sm text-center italic text-slate-400">
               Models are surprisingly willing to select another response as superior to their own — ensuring the best insights always rise to the top.
             </p>
           </div>
