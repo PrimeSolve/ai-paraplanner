@@ -205,29 +205,59 @@ export default function AdviceGroupSidebar({ currentPage, groupName }) {
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            padding: '12px 16px',
-            background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+            gap: '12px',
+            padding: '12px',
+            background: 'linear-gradient(to right, #6366f1, #8b5cf6)',
             borderRadius: '12px',
             color: 'white',
-            fontSize: '14px',
-            fontWeight: 600,
             textDecoration: 'none',
             transition: 'all 0.2s ease',
             boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 6px 16px rgba(139, 92, 246, 0.4)';
+            e.currentTarget.style.background = 'linear-gradient(to right, #4f46e5, #7c3aed)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.3)';
+            e.currentTarget.style.background = 'linear-gradient(to right, #6366f1, #8b5cf6)';
           }}
         >
-          <Sparkles size={18} />
-          AI Assistant
+          <div style={{
+            width: '36px',
+            height: '36px',
+            background: 'rgba(255, 255, 255, 0.2)',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <Sparkles size={20} style={{ color: 'white' }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              color: 'white',
+              fontWeight: 600,
+              fontSize: '14px',
+            }}>
+              AI Assistant
+            </div>
+            <div style={{
+              color: 'rgba(255, 255, 255, 0.8)',
+              fontSize: '12px',
+            }}>
+              Ask for help
+            </div>
+          </div>
+          <div style={{
+            width: '24px',
+            height: '24px',
+            background: 'rgba(255, 255, 255, 0.2)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <span style={{ color: 'white', fontSize: '12px', fontWeight: 700 }}>?</span>
+          </div>
         </Link>
       </div>
     </div>
