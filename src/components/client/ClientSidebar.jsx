@@ -68,53 +68,21 @@ export default function ClientSidebar({ currentPage }) {
 
   return (
     <div className="w-72 bg-[#0f172a] flex flex-col fixed left-0 top-0 bottom-0 z-50">
-      {/* Brand Header */}
+      {/* Adviser Info Header */}
       <div className="p-6 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center font-bold text-white text-sm">
-            {adviser ? getInitials(`${adviser.first_name} ${adviser.last_name}`) : 'AI'}
+          <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
+            {adviser ? getInitials(`${adviser.first_name} ${adviser.last_name}`) : 'SH'}
           </div>
-          <div className="flex flex-col">
-            <span className="text-lg font-bold text-white">
-              {adviser?.company || adviceGroup?.name || 'Portal'}
-            </span>
-            {adviser && (
-              <span className="text-xs text-slate-400">
-                Adviser: {adviser.first_name} {adviser.last_name}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* User Card */}
-      <div className="p-4 mx-4 mt-4 bg-white/5 rounded-xl border border-white/10">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
-            {getInitials(user?.full_name)}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="font-semibold text-white truncate">{user?.full_name || 'Client'}</div>
-            <div className="text-xs text-slate-400 truncate">{user?.email}</div>
-          </div>
-        </div>
-
-        {/* Adviser Info */}
-        {adviser && (
-          <div className="pt-4 border-t border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
-                {getInitials(`${adviser.first_name} ${adviser.last_name}`)}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs text-slate-400 uppercase tracking-wide">Your Adviser</div>
-                <div className="text-sm font-semibold text-white truncate">
-                  {adviser.first_name} {adviser.last_name}
-                </div>
-              </div>
+          <div>
+            <div className="text-white font-semibold text-base">
+              {adviser?.company || 'ABS Wealth'}
+            </div>
+            <div className="text-slate-400 text-sm">
+              Adviser: {adviser ? `${adviser.first_name} ${adviser.last_name}` : 'Stephen Hawke'}
             </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Navigation */}
