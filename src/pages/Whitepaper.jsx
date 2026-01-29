@@ -412,7 +412,7 @@ export default function Whitepaper() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr style={{ background: 'var(--navy)', color: 'white' }}>
+                  <tr style={{ background: 'var(--blue-electric)', color: 'white' }}>
                     <th className="text-left p-4 font-bold">Stage</th>
                     <th className="text-center p-4 font-bold">Current</th>
                     <th className="text-center p-4 font-bold">PrimeSolve</th>
