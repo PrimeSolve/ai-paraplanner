@@ -55,7 +55,7 @@ export default function Whitepaper() {
           --grey: #94a3b8;
           --grey-light: #e2e8f0;
           --off-white: #f8fafc;
-          --blue-electric: #3b82f6;
+          --blue-electric: #38bdf8;
           --cyan-glow: #22d3ee;
           --coral: #f97316;
           --success: #10b981;
