@@ -90,7 +90,7 @@ export default function AdminSidebar({ currentPage }) {
                   className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium no-underline transition-all mb-1 relative ${
                     isActive 
                       ? 'bg-[#3b82f6]/15 text-white' 
-                      : 'text-[#94a3b8] hover:bg-white/[0.05] hover:text-white'
+                      : 'text-[#94a3b8] hover:bg-white/[0.05] hover:text-[#3b82f6]'
                   }`}
                 >
                   {isActive && (
