@@ -28,6 +28,10 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
+  // Pages that should not have the AppShell navigation
+  const noNavPages = ['Whitepaper'];
+  const hideNav = noNavPages.includes(currentPageName);
+
   return (
     <RoleProvider>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -39,9 +43,7 @@ export default function Layout({ children, currentPageName }) {
             --accent-dark: #d97706;
           }
         `}</style>
-        <AppShell>
-          {children}
-        </AppShell>
+        {hideNav ? children : <AppShell>{children}</AppShell>}
       </div>
     </RoleProvider>
   );
