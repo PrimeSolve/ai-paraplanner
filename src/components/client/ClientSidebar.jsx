@@ -56,9 +56,9 @@ export default function ClientSidebar({ currentPage }) {
 
   const navItems = [
     { path: 'ClientDashboard', label: 'Dashboard', icon: Home },
-    { path: 'Home', label: 'My Fact Find', icon: FileText },
-    { path: 'ClientDocuments', label: 'Documents', icon: FileCheck },
-    { path: 'ClientMessages', label: 'Messages', icon: MessageSquare },
+    { path: 'FactFindWelcome', label: 'My Fact Find', icon: FileText },
+    { path: 'ClientDocuments', label: 'History', icon: FileCheck },
+    { path: 'ClientMessages', label: 'Messages', icon: MessageSquare, badge: 3 },
   ];
 
   const getInitials = (name) => {
@@ -104,6 +104,11 @@ export default function ClientSidebar({ currentPage }) {
               )}
               <Icon className="w-5 h-5" />
               {item.label}
+              {item.badge && (
+                <span className="ml-auto bg-orange-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           );
         })}
@@ -127,14 +132,18 @@ export default function ClientSidebar({ currentPage }) {
         </Link>
       </nav>
 
-      {/* Help Link */}
+      {/* Help & Support Button */}
       <div className="p-4 border-t border-white/10">
-        <Link
-          to={createPageUrl('ClientHelp')}
-          className="flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-medium text-slate-300 hover:text-white transition-all"
-        >
-          <HelpCircle className="w-5 h-5" />
-          Help & Support
+        <Link to={createPageUrl('ClientHelp')}>
+          <button className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-lg text-white font-semibold transition-all hover:shadow-lg">
+            <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
+              <span className="text-sm">✨</span>
+            </div>
+            <div className="flex-1 text-left">
+              <div className="text-sm font-semibold">Help & Support</div>
+              <div className="text-xs opacity-80">Chat with AI</div>
+            </div>
+          </button>
         </Link>
       </div>
     </div>
