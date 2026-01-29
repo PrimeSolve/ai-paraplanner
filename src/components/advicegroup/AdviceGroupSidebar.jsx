@@ -8,7 +8,8 @@ import {
   Users, 
   Tag, 
   PlusCircle, 
-  Settings 
+  Settings,
+  Sparkles
 } from 'lucide-react';
 
 const colors = {
@@ -67,8 +68,8 @@ const NavItem = ({ item, isActive }) => {
         gap: '12px',
         padding: '12px 14px',
         borderRadius: '10px',
-        color: isActive ? colors.sidebar.accent : colors.sidebar.text,
-        backgroundColor: isActive ? colors.sidebar.active : 'transparent',
+        color: isActive ? '#6366f1' : colors.sidebar.text,
+        backgroundColor: isActive ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
         textDecoration: 'none',
         fontSize: '14px',
         fontWeight: 500,
@@ -78,7 +79,7 @@ const NavItem = ({ item, isActive }) => {
       onMouseEnter={(e) => {
         if (!isActive) {
           e.currentTarget.style.backgroundColor = colors.sidebar.hover;
-          e.currentTarget.style.color = colors.sidebar.textActive;
+          e.currentTarget.style.color = '#6366f1';
         }
       }}
       onMouseLeave={(e) => {
@@ -93,7 +94,7 @@ const NavItem = ({ item, isActive }) => {
       {item.badge && (
         <span style={{
           padding: '2px 8px',
-          backgroundColor: colors.sidebar.accent,
+          backgroundColor: '#6366f1',
           color: 'white',
           fontSize: '11px',
           fontWeight: 700,
@@ -199,45 +200,35 @@ export default function AdviceGroupSidebar({ currentPage, groupName }) {
         padding: '16px',
         borderTop: `1px solid rgba(255, 255, 255, 0.1)`,
       }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '12px',
-          borderRadius: '12px',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-        }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            background: `linear-gradient(135deg, ${colors.accent.coral}, ${colors.accent.pink})`,
-            borderRadius: '10px',
+        <Link
+          to={createPageUrl('AdviceGroupHelp')}
+          style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontWeight: 700,
+            gap: '8px',
+            padding: '12px 16px',
+            background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+            borderRadius: '12px',
             color: 'white',
             fontSize: '14px',
-          }}>
-            PS
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{
-              fontSize: '14px',
-              fontWeight: 600,
-              color: 'white',
-            }}>
-              PrimeSolve Group
-            </div>
-            <div style={{
-              fontSize: '12px',
-              color: colors.sidebar.text,
-            }}>
-              Group Admin
-            </div>
-          </div>
-        </div>
+            fontWeight: 600,
+            textDecoration: 'none',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(139, 92, 246, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.3)';
+          }}
+        >
+          <Sparkles size={18} />
+          AI Assistant
+        </Link>
       </div>
     </div>
   );
