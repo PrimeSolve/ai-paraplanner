@@ -73,111 +73,249 @@ export default function ClientDashboard() {
   }
 
   const currentFactFind = factFinds.find(ff => ff.status !== 'submitted') || factFinds[0];
+  const completedSOAs = soaRequests.filter(s => s.status === 'completed').length;
   const getInitials = (name) => {
     if (!name) return 'SH';
     return name.split(' ').map(n => n[0]).toUpperCase().join('');
   };
 
+  // Determine dashboard state
+  const getDashboardState = () => {
+    if (!currentFactFind) return 'first_time';
+    if (currentFactFind.status === 'in_progress' && currentFactFind.completion_percentage > 0) return 'in_progress';
+    if (currentFactFind.status === 'submitted' && completedSOAs === 0) return 'waiting_for_soa';
+    if (currentFactFind.status === 'submitted' && completedSOAs > 0) return 'soa_ready';
+    return 'first_time';
+  };
+
+  const dashboardState = getDashboardState();
+  const sectionsCompleted = currentFactFind?.sections_completed?.length || 0;
+  const totalSections = 11;
+
   return (
     <ClientLayout currentPage="ClientDashboard">
       <div style={{ padding: '32px' }}>
-        {/* Welcome Card */}
-        <div style={{ 
-          background: 'white', 
-          borderRadius: '16px', 
-          padding: '24px', 
-          marginBottom: '24px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          border: '1px solid #e5e7eb',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
+        {/* Welcome Card - Different for first time vs returning */}
+        {dashboardState === 'first_time' ? (
           <div style={{ 
-            position: 'absolute', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            height: '4px',
-            background: 'linear-gradient(90deg, #0f4c5c 0%, #1a6b7c 100%)'
-          }} />
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #e76f51 0%, #f4a261 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '24px',
-              fontWeight: '700',
-              color: 'white',
-              flexShrink: 0
-            }}>
-              {adviser ? getInitials(`${adviser.first_name} ${adviser.last_name}`) : 'SH'}
+            background: 'white', 
+            borderRadius: '16px', 
+            padding: '24px', 
+            marginBottom: '24px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            border: '1px solid #e5e7eb',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{ 
+              position: 'absolute', 
+              top: 0, 
+              left: 0, 
+              right: 0, 
+              height: '4px',
+              background: 'linear-gradient(90deg, #0f4c5c 0%, #1a6b7c 100%)'
+            }} />
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #e76f51 0%, #f4a261 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px',
+                fontWeight: '700',
+                color: 'white',
+                flexShrink: 0
+              }}>
+                {adviser ? getInitials(`${adviser.first_name} ${adviser.last_name}`) : 'SH'}
+              </div>
+              <div style={{ flex: 1 }}>
+                <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+                  Welcome, {user?.full_name?.split(' ')[0] || 'Tim'}! 👋
+                </h2>
+                <p style={{ color: '#64748b', marginBottom: '16px', lineHeight: '1.6' }}>
+                  I'm excited to help you with your financial planning journey. To get started, please complete your Fact Find below — it takes about 15-20 minutes and helps me understand your current situation, goals, and what you'd like to achieve.
+                </p>
+                <p style={{ fontSize: '13px', color: '#94a3b8', fontStyle: 'italic' }}>
+                  — {adviser ? `${adviser.first_name} ${adviser.last_name}` : 'Stephen Hawke'}, {adviser?.company || 'ABS Wealth'}
+                </p>
+              </div>
             </div>
-            <div style={{ flex: 1 }}>
-              <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
-                Welcome, {user?.full_name?.split(' ')[0] || 'Tim'}! 👋
-              </h2>
-              <p style={{ color: '#64748b', marginBottom: '16px', lineHeight: '1.6' }}>
-                I'm excited to help you with your financial planning journey. To get started, please complete your Fact Find below — it takes about 15-20 minutes and helps me understand your current situation, goals, and what you'd like to achieve.
-              </p>
-              <p style={{ fontSize: '13px', color: '#94a3b8', fontStyle: 'italic' }}>
-                — {adviser ? `${adviser.first_name} ${adviser.last_name}` : 'Stephen Hawke'}, {adviser?.company || 'ABS Wealth'}
-              </p>
+            <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #f1f5f9' }}>
+              <button style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 20px',
+                background: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                color: '#475569',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = '#cbd5e1';
+                e.currentTarget.style.background = '#f8fafc';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#e5e7eb';
+                e.currentTarget.style.background = 'white';
+              }}
+              >
+                <Play className="w-4 h-4" />
+                Watch Welcome Video
+              </button>
             </div>
           </div>
-          <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #f1f5f9' }}>
-            <button style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 20px',
-              background: 'white',
-              border: '1px solid #e5e7eb',
-              borderRadius: '8px',
-              color: '#475569',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#cbd5e1';
-              e.currentTarget.style.background = '#f8fafc';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#e5e7eb';
-              e.currentTarget.style.background = 'white';
-            }}
-            >
-              <Play className="w-4 h-4" />
-              Watch Welcome Video
-            </button>
+        ) : (
+          <div style={{ 
+            background: 'white', 
+            borderRadius: '16px', 
+            padding: '20px 24px', 
+            marginBottom: '24px',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+            border: '1px solid #e5e7eb',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '10px',
+                background: 'linear-gradient(135deg, #0f4c5c 0%, #1a6b7c 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px',
+                fontWeight: '700',
+                color: 'white',
+                flexShrink: 0
+              }}>
+                {user?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'TH'}
+              </div>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1e293b', marginBottom: '2px' }}>
+                  Welcome back, {user?.full_name?.split(' ')[0] || 'Tim'}! 👋
+                </h3>
+                <p style={{ fontSize: '14px', color: '#64748b' }}>
+                  Continue where you left off with your financial planning journey.
+                </p>
+              </div>
+            </div>
+            <Link to={createPageUrl('ClientMessages')} style={{ textDecoration: 'none' }}>
+              <button style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 20px',
+                background: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                color: '#475569',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = '#cbd5e1';
+                e.currentTarget.style.background = '#f8fafc';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#e5e7eb';
+                e.currentTarget.style.background = 'white';
+              }}
+              >
+                <MessageSquare className="w-4 h-4" />
+                Message {adviser?.first_name || 'Stephen'}
+              </button>
+            </Link>
           </div>
-        </div>
+        )}
 
         {/* Stats Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '32px' }}>
+          {/* Fact Find Status */}
+          <div style={{ 
+            background: 'white', 
+            borderRadius: '16px', 
+            border: '1px solid #e5e7eb', 
+            padding: '20px',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+          }}>
+            <div style={{ 
+              width: '44px', 
+              height: '44px', 
+              borderRadius: '10px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              marginBottom: '12px', 
+              fontSize: '20px', 
+              background: dashboardState === 'soa_ready' || dashboardState === 'waiting_for_soa' ? '#d1fae5' : '#fef3c7'
+            }}>
+              {dashboardState === 'soa_ready' || dashboardState === 'waiting_for_soa' ? '✅' : '📋'}
+            </div>
+            <div style={{ fontSize: '28px', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+              {dashboardState === 'soa_ready' || dashboardState === 'waiting_for_soa' ? 'Complete' : 
+               dashboardState === 'in_progress' ? `${currentFactFind?.completion_percentage || 0}%` : 'Not Started'}
+            </div>
+            <div style={{ fontSize: '14px', color: '#64748b', fontWeight: '500' }}>
+              {dashboardState === 'in_progress' && (
+                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                  {sectionsCompleted} of {totalSections} sections complete
+                </div>
+              )}
+              {dashboardState === 'soa_ready' || dashboardState === 'waiting_for_soa' ? 'Fact Find Status' : 'Fact Find Progress'}
+            </div>
+            {dashboardState === 'soa_ready' || dashboardState === 'waiting_for_soa' ? (
+              <div style={{ marginTop: '8px', fontSize: '12px', color: '#10b981', fontWeight: '500' }}>
+                All sections complete ✓
+              </div>
+            ) : null}
+          </div>
+
+          {/* SOA Documents */}
+          <div style={{ 
+            background: 'white', 
+            borderRadius: '16px', 
+            border: '1px solid #e5e7eb', 
+            padding: '20px',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+          }}>
+            <div style={{ 
+              width: '44px', 
+              height: '44px', 
+              borderRadius: '10px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              marginBottom: '12px', 
+              fontSize: '20px', 
+              background: '#d1fae5'
+            }}>
+              ✅
+            </div>
+            <div style={{ fontSize: '28px', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+              {completedSOAs}
+            </div>
+            <div style={{ fontSize: '14px', color: '#64748b', fontWeight: '500' }}>
+              SOA Documents
+            </div>
+          </div>
+
+          {/* Messages */}
           {[
             { 
-              label: 'Fact Find Status', 
-              value: currentFactFind?.status === 'submitted' ? 'Complete' : currentFactFind ? `${currentFactFind.completion_percentage || 0}%` : 'Not Started',
-              icon: '📋', 
-              color: '#f59e0b',
-              bgColor: '#fef3c7'
-            },
-            { 
-              label: 'SOA Documents', 
-              value: soaRequests.filter(s => s.status === 'completed').length, 
-              icon: '✅', 
-              color: '#10b981',
-              bgColor: '#d1fae5'
-            },
-            { 
               label: 'Messages', 
-              value: '2', 
+              value: '1', 
               icon: '💬', 
               color: '#3b82f6',
               bgColor: '#dbeafe'
@@ -217,8 +355,8 @@ export default function ClientDashboard() {
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
           {/* Main Content */}
           <div>
-            {/* Get Started CTA */}
-            {!currentFactFind || currentFactFind.status !== 'submitted' ? (
+            {/* Dynamic CTA based on state */}
+            {dashboardState === 'first_time' && (
               <div style={{ 
                 background: 'linear-gradient(135deg, #0f4c5c 0%, #1a6b7c 100%)', 
                 borderRadius: '16px', 
@@ -274,7 +412,181 @@ export default function ClientDashboard() {
                   </div>
                 </div>
               </div>
-            ) : null}
+            )}
+
+            {dashboardState === 'in_progress' && (
+              <div style={{ 
+                background: 'linear-gradient(135deg, #ea580c 0%, #f97316 100%)', 
+                borderRadius: '16px', 
+                padding: '32px', 
+                marginBottom: '24px',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                color: 'white'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
+                  <div style={{
+                    width: '56px',
+                    height: '56px',
+                    background: 'rgba(255,255,255,0.2)',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '28px',
+                    flexShrink: 0
+                  }}>
+                    📋
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '8px' }}>
+                      Continue Your Fact Find
+                    </h3>
+                    <p style={{ opacity: 0.95, marginBottom: '20px', fontSize: '15px', lineHeight: '1.6' }}>
+                      You're {currentFactFind.completion_percentage}% complete! Just a few more sections to go. Pick up where you left off — next up is <strong>{currentFactFind.current_section || 'Employment & Income'}</strong>.
+                    </p>
+                    <Link to={createPageUrl('FactFindWelcome') + `?id=${currentFactFind.id}`} style={{ textDecoration: 'none' }}>
+                      <button style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '14px 28px',
+                        background: 'white',
+                        color: '#ea580c',
+                        border: 'none',
+                        borderRadius: '10px',
+                        fontWeight: '700',
+                        fontSize: '15px',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                        transition: 'transform 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        Continue
+                        <ArrowRight className="w-5 h-5" />
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {dashboardState === 'waiting_for_soa' && (
+              <div style={{ 
+                background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)', 
+                borderRadius: '16px', 
+                padding: '32px', 
+                marginBottom: '24px',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                color: 'white'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
+                  <div style={{
+                    width: '56px',
+                    height: '56px',
+                    background: 'rgba(255,255,255,0.2)',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '28px',
+                    flexShrink: 0
+                  }}>
+                    ⏳
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '8px' }}>
+                      Your Plan is Being Prepared
+                    </h3>
+                    <p style={{ opacity: 0.95, marginBottom: '20px', fontSize: '15px', lineHeight: '1.6' }}>
+                      Great work completing your Fact Find! {adviser?.first_name || 'Stephen'} is now preparing your personalised Statement of Advice. We'll notify you as soon as it's ready.
+                    </p>
+                    <Link to={createPageUrl('FactFindWelcome') + `?id=${currentFactFind.id}`} style={{ textDecoration: 'none' }}>
+                      <button style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '14px 28px',
+                        background: 'white',
+                        color: '#0d9488',
+                        border: 'none',
+                        borderRadius: '10px',
+                        fontWeight: '700',
+                        fontSize: '15px',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                        transition: 'transform 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        View Fact Find
+                        <ArrowRight className="w-5 h-5" />
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {dashboardState === 'soa_ready' && (
+              <div style={{ 
+                background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', 
+                borderRadius: '16px', 
+                padding: '32px', 
+                marginBottom: '24px',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                color: 'white'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
+                  <div style={{
+                    width: '56px',
+                    height: '56px',
+                    background: 'rgba(255,255,255,0.2)',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '28px',
+                    flexShrink: 0
+                  }}>
+                    🎉
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '8px' }}>
+                      Your Plan is Ready! 🎉
+                    </h3>
+                    <p style={{ opacity: 0.95, marginBottom: '20px', fontSize: '15px', lineHeight: '1.6' }}>
+                      {adviser?.first_name || 'Stephen'} has completed your personalised Statement of Advice. Click below to review your comprehensive financial plan and next steps.
+                    </p>
+                    <Link to={createPageUrl('ClientDocuments')} style={{ textDecoration: 'none' }}>
+                      <button style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '14px 28px',
+                        background: 'white',
+                        color: '#059669',
+                        border: 'none',
+                        borderRadius: '10px',
+                        fontWeight: '700',
+                        fontSize: '15px',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                        transition: 'transform 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        View Your Plan
+                        <ArrowRight className="w-5 h-5" />
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Recent Activity */}
             <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
@@ -287,7 +599,128 @@ export default function ClientDashboard() {
                 </Link>
               </div>
               <div style={{ padding: '16px 24px' }}>
-                {soaRequests.length > 0 ? (
+                {dashboardState === 'in_progress' ? (
+                  <>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start', 
+                      gap: '12px',
+                      padding: '12px',
+                      borderRadius: '10px',
+                      marginBottom: '8px',
+                      background: '#fef3c7',
+                      border: '1px solid #fde047'
+                    }}>
+                      <div style={{ 
+                        width: '36px', 
+                        height: '36px', 
+                        borderRadius: '8px', 
+                        background: 'white', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <FileText className="w-4 h-4 text-orange-600" />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: '600', color: '#78350f', fontSize: '13px' }}>Fact Find – Assets section saved</div>
+                        <div style={{ fontSize: '12px', color: '#92400e' }}>
+                          Today 2:34 PM
+                        </div>
+                      </div>
+                      <span style={{
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        background: '#fef3c7',
+                        color: '#78350f',
+                        flexShrink: 0
+                      }}>
+                        in progress
+                      </span>
+                    </div>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start', 
+                      gap: '12px',
+                      padding: '12px',
+                      borderRadius: '10px',
+                      marginBottom: '8px',
+                      background: '#d1fae5',
+                      border: '1px solid #86efac'
+                    }}>
+                      <div style={{ 
+                        width: '36px', 
+                        height: '36px', 
+                        borderRadius: '8px', 
+                        background: 'white', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: '600', color: '#166534', fontSize: '13px' }}>Fact Find – Personal Details completed</div>
+                        <div style={{ fontSize: '12px', color: '#15803d' }}>
+                          Yesterday 9:15 AM
+                        </div>
+                      </div>
+                      <span style={{
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        background: '#d1fae5',
+                        color: '#166534',
+                        flexShrink: 0
+                      }}>
+                        complete
+                      </span>
+                    </div>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '12px',
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: '1px solid #f1f5f9'
+                    }}>
+                      <div style={{ 
+                        width: '36px', 
+                        height: '36px', 
+                        borderRadius: '8px', 
+                        background: '#f8fafc', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <MessageSquare className="w-4 h-4 text-slate-500" />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '13px' }}>Message from {adviser?.first_name || 'Stephen'} {adviser?.last_name || 'Hawke'}</div>
+                        <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+                          25/01/2026
+                        </div>
+                      </div>
+                      <span style={{
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        background: '#dbeafe',
+                        color: '#0c4a6e',
+                        flexShrink: 0
+                      }}>
+                        new
+                      </span>
+                    </div>
+                  </>
+                ) : soaRequests.length > 0 ? (
                   soaRequests.slice(0, 3).map((soa) => (
                     <div key={soa.id} style={{ 
                       display: 'flex', 
