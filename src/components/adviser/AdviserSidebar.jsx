@@ -4,6 +4,7 @@ import { createPageUrl } from '../../utils';
 import { LayoutDashboard, Users, FileText, CheckCircle, Settings, Sparkles } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useRole } from '../RoleContext';
+import { UserCheck, UsersRound, Database } from 'lucide-react';
 
 export default function AdviserSidebar({ currentPage, loggedInUser }) {
   const [adviser, setAdviser] = useState(null);
@@ -90,51 +91,25 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
   ];
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '260px',
-      height: '100vh',
-      background: '#0f172a',
-      display: 'flex',
-      flexDirection: 'column',
-      zIndex: 100,
-      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
-    }}>
-      {/* Logo Section */}
-      <div style={{
-        height: '64px',
-        padding: '0 20px',
-        display: 'flex',
-        alignItems: 'center',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
-      }}>
-        <Link to={createPageUrl('AdviserDashboard')} style={{ display: 'flex', alignItems: 'center', gap: '14px', textDecoration: 'none' }}>
-          <div style={{
-            width: '44px',
-            height: '44px',
-            background: logo ? '#1e293b' : 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: '700',
-            color: 'white',
-            fontSize: '16px',
-            overflow: 'hidden'
-          }}>
+    <div className="w-[260px] bg-[#0f172a] fixed top-0 left-0 bottom-0 flex flex-col z-50">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+      `}</style>
+      {/* Logo */}
+      <div className="h-16 px-6 flex items-center border-b border-white/[0.08]">
+        <Link to={createPageUrl('AdviserDashboard')} className="flex items-center gap-3 text-white no-underline">
+          <div className="w-10 h-10 bg-[#1e293b] rounded-xl flex items-center justify-center font-bold text-sm shadow-lg overflow-hidden">
             {logo ? (
-              <img src={logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={logo} alt="Logo" className="w-full h-full object-cover" />
             ) : (
               'AI'
             )}
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: 'white', fontWeight: 600 }}>
+            <div className="text-white text-sm font-bold">
               {getCompanyName()}
             </div>
-            <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '2px' }}>
+            <div className="text-[#94a3b8] text-xs font-medium uppercase tracking-wide">
               {getSubtitle()}
             </div>
           </div>
@@ -142,88 +117,56 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
       </div>
 
       {/* Navigation */}
-      <nav style={{ flex: 1, padding: '20px 12px', overflowY: 'auto' }}>
-        <div style={{ marginBottom: '24px' }}>
-          {navItems.map(item => {
+      <nav className="flex-1 py-6 px-4 overflow-y-auto">
+        <div className="mb-7">
+          <div className="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
+            NAVIGATION
+          </div>
+          {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.id;
             return (
               <Link
-                key={item.id}
+                key={item.path}
                 to={createPageUrl(item.path)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '12px 14px',
-                  borderRadius: '10px',
-                  color: isActive ? '#6366f1' : '#94a3b8',
-                  textDecoration: 'none',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s ease',
-                  marginBottom: '4px',
-                  background: isActive ? 'rgba(99, 102, 241, 0.15)' : 'transparent'
-                }}
+                className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium no-underline transition-all mb-1 relative ${
+                  isActive 
+                    ? 'bg-white/10 text-white' 
+                    : 'text-[#94a3b8] hover:bg-white/[0.05] hover:text-white'
+                }`}
               >
                 {isActive && (
-                  <div style={{
-                    position: 'absolute',
-                    left: 0,
-                    width: '3px',
-                    height: '24px',
-                    background: '#6366f1',
-                    borderRadius: '0 4px 4px 0'
-                  }} />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-white rounded-r-md" />
                 )}
-                <Icon size={20} />
-                <span style={{ flex: 1 }}>{item.label}</span>
-                {item.badge && (
-                  <span style={{
-                    padding: '2px 8px',
-                    background: '#6366f1',
-                    color: 'white',
-                    fontSize: '10px',
-                    fontWeight: '700',
-                    borderRadius: '6px'
-                  }}>
-                    {item.badge}
-                  </span>
-                )}
+                <Icon className="w-5 h-5" />
+                <span>{item.label}</span>
               </Link>
             );
           })}
         </div>
 
-        {/* Account Section */}
-        <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '20px' }}>
-          <div style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '0 12px', marginBottom: '8px' }}>
+        <div className="mb-7 border-t border-white/[0.08] pt-6">
+          <div className="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
             ACCOUNT
           </div>
-          {accountItems.map(item => {
+          {accountItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.id;
             return (
               <Link
-                key={item.id}
+                key={item.path}
                 to={createPageUrl(item.path)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '12px 14px',
-                  borderRadius: '10px',
-                  color: isActive ? '#6366f1' : '#94a3b8',
-                  textDecoration: 'none',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s ease',
-                  marginBottom: '4px',
-                  background: isActive ? 'rgba(99, 102, 241, 0.15)' : 'transparent'
-                }}
+                className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium no-underline transition-all mb-1 relative ${
+                  isActive 
+                    ? 'bg-white/10 text-white' 
+                    : 'text-[#94a3b8] hover:bg-white/[0.05] hover:text-white'
+                }`}
               >
-                <Icon size={20} />
-                {item.label}
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-white rounded-r-md" />
+                )}
+                <Icon className="w-5 h-5" />
+                <span>{item.label}</span>
               </Link>
             );
           })}
@@ -231,55 +174,22 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
       </nav>
 
       {/* AI Assistant Button */}
-      <div style={{ padding: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-        <Link to={createPageUrl('AdviserHelp')} style={{ textDecoration: 'none' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '12px',
-            background: 'linear-gradient(to right, #6366f1, #8b5cf6)',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(to right, #4f46e5, #7c3aed)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(to right, #6366f1, #8b5cf6)';
-          }}
-          >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              background: 'rgba(255, 255, 255, 0.2)',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Sparkles size={20} style={{ color: 'white' }} />
+      <div className="p-4">
+        <Link to={createPageUrl('AdviserHelp')} className="no-underline">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] hover:from-[#4f46e5] hover:to-[#7c3aed] cursor-pointer transition-all shadow-lg shadow-purple-900/30">
+            <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ color: 'white', fontWeight: 600, fontSize: '14px' }}>
+            <div className="flex-1 min-w-0">
+              <div className="text-white font-semibold text-sm">
                 AI Assistant
               </div>
-              <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '12px' }}>
+              <div className="text-white/80 text-xs">
                 Ask for help
               </div>
             </div>
-            <div style={{
-              width: '24px',
-              height: '24px',
-              background: 'rgba(255, 255, 255, 0.2)',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span style={{ color: 'white', fontSize: '12px', fontWeight: 700 }}>?</span>
+            <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-bold">?</span>
             </div>
           </div>
         </Link>
