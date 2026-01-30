@@ -8,40 +8,67 @@ import { useRole } from '../RoleContext';
 export default function AdviserSidebar({ currentPage, loggedInUser }) {
   const [adviser, setAdviser] = useState(null);
   const [logo, setLogo] = useState(null);
-  const { switchedToId, navigationChain } = useRole();
+  const [businessDetails, setBusinessDetails] = useState(null);
+  const { switchedToId, navigationChain, originalUser } = useRole();
 
   useEffect(() => {
     const loadAdviserAndLogo = async () => {
-      if (switchedToId) {
-        try {
+      try {
+        let logoUrl = null;
+        
+        // Determine whose logo to show based on originalUser
+        if (originalUser?.role === 'admin') {
+          const details = localStorage.getItem('businessDetails');
+          if (details) {
+            const parsed = JSON.parse(details);
+            setBusinessDetails(parsed);
+            if (parsed?.logo_url) {
+              logoUrl = parsed.logo_url;
+            }
+          }
+        } else if (switchedToId) {
+          // If viewing as adviser, get their details
           const adviserData = await base44.entities.Adviser.list();
           const selectedAdviser = adviserData.find(a => a.id === switchedToId);
           setAdviser(selectedAdviser);
+          setBusinessDetails(selectedAdviser);
 
-          // Try to get advice group's logo
           if (selectedAdviser?.advice_group_id) {
             const groups = await base44.entities.AdviceGroup.filter({ id: selectedAdviser.advice_group_id });
             if (groups?.[0]?.logo_url) {
-              setLogo(groups[0].logo_url);
-              return;
+              logoUrl = groups[0].logo_url;
             }
           }
-
-          // Fallback to admin's logo from localStorage
-          const businessDetails = localStorage.getItem('businessDetails');
-          if (businessDetails) {
-            const parsed = JSON.parse(businessDetails);
-            if (parsed?.logo_url) {
-              setLogo(parsed.logo_url);
+        } else if (originalUser?.role === 'adviser') {
+          // If logged in as adviser
+          const advisers = await base44.entities.Adviser.filter({ user_id: originalUser.id });
+          if (advisers.length > 0) {
+            setAdviser(advisers[0]);
+            setBusinessDetails(advisers[0]);
+            
+            if (advisers[0]?.advice_group_id) {
+              const groups = await base44.entities.AdviceGroup.filter({ id: advisers[0].advice_group_id });
+              if (groups?.[0]?.logo_url) {
+                logoUrl = groups[0].logo_url;
+              }
             }
           }
-        } catch (error) {
-          console.error('Failed to load adviser:', error);
         }
+        
+        if (logoUrl) setLogo(logoUrl);
+      } catch (error) {
+        console.error('Failed to load adviser:', error);
       }
     };
     loadAdviserAndLogo();
-  }, [switchedToId]);
+  }, [switchedToId, originalUser]);
+
+  const getCompanyName = () => {
+    if (originalUser?.role === 'admin') {
+      return businessDetails?.company_name || 'AI Paraplanner';
+    }
+    return businessDetails?.company || adviser?.company || 'Adviser';
+  };
 
   const getSubtitle = () => {
     if (navigationChain.length === 0) {
@@ -104,7 +131,10 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
             )}
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+              {getCompanyName()}
+            </div>
+            <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '2px' }}>
               {getSubtitle()}
             </div>
           </div>
