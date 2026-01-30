@@ -73,19 +73,16 @@ export default function AppShell({ children }) {
     console.log('originalRole:', originalRole);
     console.log('user:', user);
 
-    // Check for test mode user type
-    if (user?.userType) {
-      console.log('Test mode user type:', user.userType);
-      if (user.userType === 'admin') {
-        return <AdminSidebar currentPage={getCurrentPage()} />;
-      }
-      if (user.userType === 'advice_group') {
+    // Check for test mode entity type
+    if (user?.entityType) {
+      console.log('Test mode entity type:', user.entityType);
+      if (user.entityType === 'advice_group') {
         return <AdviceGroupSidebar currentPage={getCurrentPage()} />;
       }
-      if (user.userType === 'adviser') {
+      if (user.entityType === 'adviser') {
         return <AdviserSidebar currentPage={getCurrentPage()} />;
       }
-      if (user.userType === 'client') {
+      if (user.entityType === 'client') {
         return null; // Client portal has its own sidebar
       }
     }

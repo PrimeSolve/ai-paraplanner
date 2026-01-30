@@ -12,25 +12,23 @@ export function RoleProvider({ children }) {
 
   const loadUserData = async (userData) => {
     // Check if in test mode - this takes precedence
-    const testModeUser = localStorage.getItem('test_mode_user');
-    if (testModeUser) {
-      const testUser = JSON.parse(testModeUser);
-      console.log('Test mode active, loading test user:', testUser);
+    const testModeEntity = localStorage.getItem('test_mode_entity');
+    if (testModeEntity) {
+      const entity = JSON.parse(testModeEntity);
+      console.log('Test mode active, impersonating entity:', entity);
       
-      // Use the test user's data
+      // Create mock user data based on entity
       userData = {
-        id: testUser.id,
-        email: testUser.email,
-        full_name: testUser.full_name,
-        role: testUser.role,
-        userType: testUser.userType,
-        linkedEntity: testUser.linkedEntity ? {
-          type: testUser.userType,
-          data: testUser.linkedEntity
-        } : null
+        id: entity.id,
+        email: entity.email,
+        full_name: entity.displayInfo,
+        role: 'user', // All entities are 'user' role except admin
+        entityType: entity.type, // 'adviser', 'client', 'advice_group'
+        entity: entity.entity, // The full entity data
+        isTestMode: true
       };
 
-      console.log('Test user loaded:', userData);
+      console.log('Test entity loaded as user:', userData);
       
       setUser(userData);
       if (!originalUser) {
