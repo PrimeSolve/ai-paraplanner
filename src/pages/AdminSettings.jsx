@@ -44,7 +44,12 @@ export default function AdminSettings() {
       }
     };
     loadUser();
-  }, []);
+    
+    // Load logo preview from saved business details
+    if (businessDetails.logo_url) {
+      setLogoPreview(businessDetails.logo_url);
+    }
+  }, [businessDetails.logo_url]);
   
   const [businessDetails, setBusinessDetails] = useState(() => {
     const saved = localStorage.getItem('businessDetails');
@@ -54,7 +59,8 @@ export default function AdminSettings() {
       businessEmail: 'hello@aiparaplanner.com.au',
       supportEmail: 'support@aiparaplanner.com.au',
       address: 'Level 10, 123 Collins Street\nMelbourne VIC 3000',
-      role: 'admin'
+      role: 'admin',
+      logo_url: null
     };
   });
 
@@ -105,14 +111,18 @@ export default function AdminSettings() {
   const [apiKey, setApiKey] = useState('sk_live_51234567890abcdefghijklmnopqrstuvwxyz');
   const [showApiKey, setShowApiKey] = useState(false);
 
-  const handleLogoUpload = (e) => {
+  const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      try {
+        toast.loading('Uploading logo...', { id: 'logo-upload' });
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        setLogoPreview(file_url);
+        setBusinessDetails({...businessDetails, logo_url: file_url});
+        toast.success('Logo uploaded successfully', { id: 'logo-upload' });
+      } catch (error) {
+        toast.error('Failed to upload logo', { id: 'logo-upload' });
+      }
     }
   };
 
@@ -187,7 +197,10 @@ export default function AdminSettings() {
                         {logoPreview && (
                           <Button 
                             variant="outline" 
-                            onClick={() => setLogoPreview(null)}
+                            onClick={() => {
+                              setLogoPreview(null);
+                              setBusinessDetails({...businessDetails, logo_url: null});
+                            }}
                           >
                             Remove
                           </Button>
