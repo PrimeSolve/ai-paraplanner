@@ -101,7 +101,7 @@ export default function AdviceGroupLayout({ children, currentPage }) {
                     to={createPageUrl(item.path)}
                     className={`flex items-center gap-3 px-6 py-3 text-white/70 no-underline transition-all border-l-3 ${
                       isActive 
-                        ? 'bg-white/10 !text-white border-l-cyan-400' 
+                        ? 'bg-white/10 !text-white border-l-white' 
                         : 'border-l-transparent hover:bg-white/5 hover:text-white'
                     }`}
                   >
