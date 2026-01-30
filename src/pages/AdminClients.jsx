@@ -239,7 +239,10 @@ export default function AdminClients() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+                          <button 
+                            onClick={() => navigate(createPageUrl('ClientDashboard') + `?id=${client.id}`)}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+                          >
                             View
                           </button>
                           <DropdownMenu>
