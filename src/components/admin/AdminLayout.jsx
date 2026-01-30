@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { base44 } from '@/api/base44Client';
+import { useRole } from '../RoleContext';
 import { 
   LayoutDashboard, 
   Layers, 
@@ -21,6 +22,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function AdminLayout({ children, currentPage }) {
+  const { navigationChain } = useRole();
   const [user, setUser] = useState(null);
   const [businessDetails, setBusinessDetails] = useState(null);
 
@@ -50,6 +52,14 @@ export default function AdminLayout({ children, currentPage }) {
       window.removeEventListener('userProfileUpdated', loadUser);
     };
     }, []);
+
+  const getSubtitle = () => {
+    if (navigationChain.length === 0) {
+      return 'ADMIN PORTAL';
+    }
+    const current = navigationChain[navigationChain.length - 1];
+    return `VIEWING ${current.type.toUpperCase()}`;
+  };
 
   const navItems = [
     { section: 'OVERVIEW', items: [
@@ -86,8 +96,8 @@ export default function AdminLayout({ children, currentPage }) {
               <div className="font-['Playfair_Display'] text-xl font-semibold">
                 AI <span className="text-[#22d3ee]">Paraplanner</span>
               </div>
-              <div className="text-[#64748b] text-xs font-medium">
-                Admin portal
+              <div className="text-[#64748b] text-xs font-medium uppercase tracking-wider">
+                {getSubtitle()}
               </div>
             </div>
           </Link>
