@@ -120,19 +120,44 @@ export default function AdminAdviceGroups() {
   };
 
   return (
-    <>
-      <PageTitle>Advice Groups</PageTitle>
-      <PageActions>
-        <Button 
+    <div className="p-8">
+      {/* Page Header */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: '24px'
+      }}>
+        <h1 style={{
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontWeight: 700,
+          fontSize: '24px',
+          color: '#111827',
+          margin: 0
+        }}>
+          Advice Groups
+        </h1>
+
+        <button 
           onClick={() => setDialogOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 18px',
+            background: '#2563eb',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer'
+          }}
         >
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-4 h-4" />
           Add Advice Group
-        </Button>
-      </PageActions>
-      
-      <div className="p-8">
+        </button>
+      </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <button style={{ display: 'none' }} />
@@ -406,7 +431,6 @@ export default function AdminAdviceGroups() {
             </div>
           </div>
           </div>
-      </div>
-    </>
+    </div>
   );
 }
