@@ -131,30 +131,41 @@ const NavSection = ({ title, items, currentPage }) => (
 );
 
 export default function AdviceGroupSidebar({ currentPage, groupName }) {
-  const { navigationChain } = useRole();
+  const { navigationChain, originalUser } = useRole();
   const [logo, setLogo] = useState(null);
+  const [businessDetails, setBusinessDetails] = useState(null);
 
   useEffect(() => {
     const loadLogo = async () => {
       try {
-        // First, try to get advice group's own logo
-        const user = await base44.auth.me();
-        if (user?.advice_group_id) {
-          const groups = await base44.entities.AdviceGroup.filter({ id: user.advice_group_id });
-          if (groups?.[0]?.logo_url) {
-            setLogo(groups[0].logo_url);
-            return;
+        // Determine whose logo to show based on originalUser
+        let logoUrl = null;
+        
+        // If original user is admin, use admin's logo from localStorage
+        if (originalUser?.role === 'admin') {
+          const details = localStorage.getItem('businessDetails');
+          if (details) {
+            const parsed = JSON.parse(details);
+            setBusinessDetails(parsed);
+            if (parsed?.logo_url) {
+              logoUrl = parsed.logo_url;
+            }
+          }
+        } else {
+          // If original user is advice group, use their group's logo
+          const user = await base44.auth.me();
+          if (user?.advice_group_id) {
+            const groups = await base44.entities.AdviceGroup.filter({ id: user.advice_group_id });
+            if (groups?.[0]) {
+              setBusinessDetails(groups[0]);
+              if (groups[0]?.logo_url) {
+                logoUrl = groups[0].logo_url;
+              }
+            }
           }
         }
         
-        // Fallback to admin's logo from localStorage
-        const businessDetails = localStorage.getItem('businessDetails');
-        if (businessDetails) {
-          const parsed = JSON.parse(businessDetails);
-          if (parsed?.logo_url) {
-            setLogo(parsed.logo_url);
-          }
-        }
+        if (logoUrl) setLogo(logoUrl);
       } catch (error) {
         console.error('Failed to load logo:', error);
       }
@@ -162,11 +173,17 @@ export default function AdviceGroupSidebar({ currentPage, groupName }) {
 
     loadLogo();
 
-    // Listen for updates to business details or advice group
     const handleUpdate = () => loadLogo();
     window.addEventListener('businessDetailsUpdated', handleUpdate);
     return () => window.removeEventListener('businessDetailsUpdated', handleUpdate);
-  }, []);
+  }, [originalUser]);
+
+  const getCompanyName = () => {
+    if (originalUser?.role === 'admin') {
+      return businessDetails?.company_name || 'AI Paraplanner';
+    }
+    return groupName || businessDetails?.name || 'Advice Group Portal';
+  };
 
   const getSubtitle = () => {
     if (navigationChain.length === 0) {
@@ -225,7 +242,7 @@ export default function AdviceGroupSidebar({ currentPage, groupName }) {
               fontSize: '12px',
               color: colors.sidebar.text,
             }}>
-              {groupName || 'Advice Group Portal'}
+              {getCompanyName()}
             </div>
             <div style={{
               fontSize: '11px',
