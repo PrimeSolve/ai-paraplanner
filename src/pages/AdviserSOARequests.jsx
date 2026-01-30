@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, MoreHorizontal, Eye, Download } from 'lucide-react';
+import { Search, MoreHorizontal, CheckCircle2, Clock } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -22,6 +21,11 @@ export default function AdviserSOARequests() {
 
   useEffect(() => {
     loadRequests();
+
+    // Listen for custom event from header button
+    const handleOpenDialog = () => setShowNewModal(true);
+    window.addEventListener('openAddSOAQueueDialog', handleOpenDialog);
+    return () => window.removeEventListener('openAddSOAQueueDialog', handleOpenDialog);
   }, []);
 
   const loadRequests = async () => {
@@ -91,209 +95,200 @@ export default function AdviserSOARequests() {
   }
 
   return (
-    <div style={{ padding: '24px 32px' }}>
-      {/* Page Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: '24px' }}>
-        <button onClick={() => setShowNewModal(true)} style={{ padding: '10px 18px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          + New SOA Request
-        </button>
-      </div>
+    <div className="py-6 px-8">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-4 gap-6 mb-8">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+          <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4">
+            <Clock className="w-6 h-6" />
+          </div>
+          <div className="text-4xl font-bold mb-1">{stats.total}</div>
+          <div className="text-sm opacity-90">Total Requests</div>
+        </div>
 
-      {/* Stats Bar */}
-      <div style={{ display: 'flex', gap: '16px', padding: '20px 24px', background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(59, 130, 246, 0.1)' }}>
-            📋
+        <div className="bg-white rounded-2xl p-6 border border-slate-200">
+          <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center mb-4">
+            <Clock className="w-6 h-6 text-purple-600" />
           </div>
-          <div>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{stats.total}</div>
-            <div style={{ fontSize: '13px', color: '#64748b' }}>Total Requests</div>
-          </div>
+          <div className="text-4xl font-bold text-slate-800 mb-1">{stats.ready}</div>
+          <div className="text-sm text-slate-600">Ready to Review</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(139, 92, 246, 0.1)' }}>
-            ✎
+
+        <div className="bg-white rounded-2xl p-6 border border-slate-200">
+          <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center mb-4">
+            <Clock className="w-6 h-6 text-orange-600" />
           </div>
-          <div>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{stats.ready}</div>
-            <div style={{ fontSize: '13px', color: '#64748b' }}>Ready to Review</div>
-          </div>
+          <div className="text-4xl font-bold text-slate-800 mb-1">{stats.inProgress}</div>
+          <div className="text-sm text-slate-600">In Progress</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(245, 158, 11, 0.1)' }}>
-            ⟳
+
+        <div className="bg-white rounded-2xl p-6 border border-slate-200">
+          <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
+            <CheckCircle2 className="w-6 h-6 text-green-600" />
           </div>
-          <div>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{stats.inProgress}</div>
-            <div style={{ fontSize: '13px', color: '#64748b' }}>In Progress</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(16, 185, 129, 0.1)' }}>
-            ✓
-          </div>
-          <div>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{stats.complete}</div>
-            <div style={{ fontSize: '13px', color: '#64748b' }}>Complete</div>
-          </div>
+          <div className="text-4xl font-bold text-slate-800 mb-1">{stats.complete}</div>
+          <div className="text-sm text-slate-600">Complete</div>
         </div>
       </div>
 
       {/* Filters */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', width: '280px' }}>
-          <Search style={{ width: '18px', height: '18px', color: '#94a3b8', flexShrink: 0 }} />
-          <input
-            type="text"
-            placeholder="Search requests..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ border: 'none', background: 'transparent', fontSize: '14px', color: '#1e293b', width: '100%', outline: 'none', fontFamily: 'Inter, sans-serif' }}
-          />
+      <div className="bg-white rounded-2xl border border-slate-200 mb-6">
+        <div className="p-6 flex items-end gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Input
+              placeholder="Search requests..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 h-11 border-slate-200"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Status</span>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+              <option value="all">All Statuses</option>
+              <option value="draft">Draft</option>
+              <option value="in_progress">In Progress</option>
+              <option value="submitted">Submitted</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Priority</span>
+            <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)} className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+              <option value="all">All Priorities</option>
+              <option value="high">High</option>
+              <option value="normal">Normal</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger style={{ width: '180px', height: '40px', padding: '10px 14px' }}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="in_progress">In Progress</SelectItem>
-            <SelectItem value="submitted">Submitted</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-          <SelectTrigger style={{ width: '160px', height: '40px', padding: '10px 14px' }}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Priorities</SelectItem>
-            <SelectItem value="high">High</SelectItem>
-            <SelectItem value="normal">Normal</SelectItem>
-            <SelectItem value="low">Low</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       {/* Table */}
-      <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%' }}>
-                <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                  <tr>
-                    <th style={{ textAlign: 'left', padding: '16px 24px', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Client</th>
-                    <th style={{ textAlign: 'left', padding: '16px 24px', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Type</th>
-                    <th style={{ textAlign: 'left', padding: '16px 24px', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</th>
-                    <th style={{ textAlign: 'left', padding: '16px 24px', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Priority</th>
-                    <th style={{ textAlign: 'left', padding: '16px 24px', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Submitted</th>
-                    <th style={{ textAlign: 'left', padding: '16px 24px', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Due</th>
-                    <th style={{ textAlign: 'left', padding: '16px 24px', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Actions</th>
+      <div className="bg-white rounded-2xl border border-slate-200">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Client</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Type</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Priority</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Submitted</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Due</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedRequests.length > 0 ? paginatedRequests.map((req, idx) => {
+                const statusColor = getStatusColor(req.status);
+                const priorityColor = getPriorityColor(req.priority || 'normal');
+                return (
+                  <tr key={req.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-bold text-sm`}>
+                          {req.client_name?.charAt(0) || 'C'}
+                        </div>
+                        <span className="font-semibold text-sm text-slate-800">{req.client_name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-slate-800 font-medium">{req.type || 'Comprehensive'}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold`} style={{ background: statusColor.bg, color: statusColor.color }}>
+                        {statusColor.label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold`} style={{ background: priorityColor.bg, color: priorityColor.color }}>
+                        <span className="w-2 h-2 rounded-full" style={{ background: priorityColor.color }}></span>
+                        {priorityColor.label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-slate-800">
+                        {req.submitted_date ? new Date(req.submitted_date).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className={`text-sm font-medium ${req.status === 'completed' ? 'text-green-600' : 'text-red-600'}`}>
+                        {req.completed_date ? new Date(req.completed_date).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Link to={createPageUrl(`SOARequestWelcome?id=${req.id}`)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+                          View
+                        </Link>
+                        {req.status === 'completed' && (
+                          <button className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
+                            Download
+                          </button>
+                        )}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="p-1.5 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600">
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {paginatedRequests.map((req, idx) => {
-                    const statusColor = getStatusColor(req.status);
-                    const priorityColor = getPriorityColor(req.priority || 'normal');
-                    return (
-                      <tr key={req.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: getClientColor(idx), display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '12px', flexShrink: 0 }}>
-                              {req.client_name?.charAt(0) || 'C'}
-                            </div>
-                            <span style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b' }}>{req.client_name}</span>
-                          </div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '14px', fontWeight: '500', color: '#1e293b' }}>{req.type || 'Comprehensive'}</div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', background: statusColor.bg, color: statusColor.color }}>
-                            {statusColor.label}
-                          </span>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', background: priorityColor.bg, color: priorityColor.color }}>
-                            <span style={{ fontSize: '8px' }}>⬤</span>
-                            {priorityColor.label}
-                          </span>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '14px', fontWeight: '500', color: '#1e293b' }}>
-                            {req.submitted_date ? new Date(req.submitted_date).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
-                          </div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '14px', fontWeight: '500', color: req.status === 'completed' ? '#16a34a' : '#dc2626' }}>
-                            {req.completed_date ? new Date(req.completed_date).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
-                          </div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Link to={createPageUrl(`SOARequestWelcome?id=${req.id}`)} style={{ padding: '4px 8px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '13px', color: '#3b82f6', fontWeight: '500', textDecoration: 'none' }}>
-                              View
-                            </Link>
-                            {req.status === 'completed' && (
-                              <button style={{ padding: '4px 8px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '13px', color: '#10b981', fontWeight: '500' }}>
-                                Download
-                              </button>
-                            )}
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <button style={{ padding: '4px 8px', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                                  <MoreHorizontal style={{ width: '18px', height: '18px', color: '#64748b' }} />
-                                </button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', color: '#3b82f6', cursor: 'pointer' }}>
-                                  <Eye style={{ width: '14px', height: '14px' }} />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', color: '#ef4444', cursor: 'pointer' }}>
-                                  Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                );
+              }) : (
+                <tr>
+                  <td colSpan="7" className="px-6 py-8 text-center text-slate-600">
+                    No requests found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-            {/* Pagination */}
-            <div style={{ padding: '16px 24px', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '13px', color: '#64748b' }}>Showing {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, filteredRequests.length)} of {filteredRequests.length} requests</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button 
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  style={{ padding: '6px 12px', fontSize: '13px', fontWeight: '500', background: currentPage === 1 ? '#f1f5f9' : 'white', color: '#64748b', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
-                >
-                  ← Prev
-                </button>
-                {Array.from({ length: Math.min(3, totalPages) }, (_, i) => (currentPage - 1) + i + 1).filter(p => p > 0 && p <= totalPages).map(page => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    style={{ padding: '6px 12px', fontSize: '13px', fontWeight: '600', background: currentPage === page ? '#3b82f6' : 'white', color: currentPage === page ? 'white' : '#64748b', border: currentPage === page ? 'none' : '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}
-                  >
-                    {page}
-                  </button>
-                ))}
-                {totalPages > 3 && <span style={{ color: '#64748b' }}>...</span>}
-                <button 
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  style={{ padding: '6px 12px', fontSize: '13px', fontWeight: '500', background: currentPage === totalPages ? '#f1f5f9' : 'white', color: '#64748b', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1 }}
-                >
-                  Next →
-                </button>
-              </div>
-       </div>
+        {/* Pagination */}
+        <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+          <span className="text-sm text-slate-600">Showing {filteredRequests.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}-{Math.min(currentPage * itemsPerPage, filteredRequests.length)} of {filteredRequests.length} requests</span>
+          <div className="flex items-center gap-2">
+            <button 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-50">
+              ← Prev
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  currentPage === page
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-50">
+              Next →
+            </button>
+          </div>
+        </div>
        </div>
        <NewSOARequestModal
        isOpen={showNewModal}
