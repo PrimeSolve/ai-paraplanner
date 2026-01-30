@@ -104,23 +104,49 @@ export default function AdviceGroupLayout({ children, currentPage }) {
                 {section.section}
               </div>
               {section.items.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentPage === item.label.toLowerCase().replace(/\s+/g, '-') || currentPage === item.path;
-                return (
-                  <Link
-                    key={item.path}
-                    to={createPageUrl(item.path)}
-                    className={`flex items-center gap-3 px-6 py-3 text-white/70 no-underline transition-all border-l-3 ${
-                      isActive 
-                        ? 'bg-white/10 !text-white border-l-white' 
-                        : 'border-l-transparent hover:bg-white/5 hover:text-white'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{item.label}</span>
-                  </Link>
-                );
-              })}
+                 const Icon = item.icon;
+                 const isActive = currentPage === item.label.toLowerCase().replace(/\s+/g, '-') || currentPage === item.path;
+                 const hasSubmenu = item.submenu && item.submenu.length > 0;
+                 const [expandedMenu, setExpandedMenu] = React.useState(null);
+
+                 return (
+                   <div key={item.path}>
+                     <Link
+                       to={createPageUrl(item.path)}
+                       className={`flex items-center gap-3 px-6 py-3 text-white/70 no-underline transition-all border-l-3 ${
+                         isActive 
+                           ? 'bg-white/10 !text-white border-l-white' 
+                           : 'border-l-transparent hover:bg-white/5 hover:text-white'
+                       }`}
+                     >
+                       <Icon className="w-5 h-5" />
+                       <span className="font-medium">{item.label}</span>
+                     </Link>
+                     {hasSubmenu && (
+                       <div className="pl-6">
+                         {item.submenu.map((subitem) => {
+                           const SubIcon = subitem.icon;
+                           const isSubActive = currentPage === subitem.path;
+                           return (
+                             <Link
+                               key={subitem.path}
+                               to={createPageUrl(subitem.path)}
+                               className={`flex items-center gap-3 px-6 py-2 text-white/60 no-underline transition-all border-l-3 text-sm ${
+                                 isSubActive 
+                                   ? 'bg-white/5 !text-white border-l-white' 
+                                   : 'border-l-transparent hover:bg-white/5 hover:text-white'
+                               }`}
+                             >
+                               <SubIcon className="w-4 h-4" />
+                               <span className="font-medium">{subitem.label}</span>
+                             </Link>
+                           );
+                         })}
+                       </div>
+                     )}
+                   </div>
+                 );
+               })}
             </div>
           ))}
         </nav>
