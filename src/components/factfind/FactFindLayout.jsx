@@ -103,38 +103,73 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
         </Link>
 
         {/* Navigation Links */}
-        <div className="flex-1 overflow-y-auto px-3 py-4">
-          {sectionGroups.map((group, groupIndex) => (
-              <div key={groupIndex} className="mb-5">
-                <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 ml-2">
-                  {group.title}
-                </div>
-                {group.sections.map((section) => {
-                  const completion = getCompletionForSection(section.id);
-                  const isActive = currentSection === section.id;
+         <div className="flex-1 overflow-y-auto px-3 py-4">
+           {sectionGroups.map((group, groupIndex) => (
+               <div key={groupIndex} className="mb-5">
+                 <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 ml-2">
+                   {group.title}
+                 </div>
+                 {group.sections.map((section) => {
+                   const completion = getCompletionForSection(section.id);
+                   const isActive = currentSection === section.id;
 
-                  return (
-                    <Link
-                      key={section.id}
-                      to={createPageUrl(section.path) + (factFind?.id ? `?id=${factFind.id}` : '')}
-                      className={cn(
-                        "flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all text-sm",
-                        isActive 
-                          ? "bg-slate-700 text-white font-medium" 
-                          : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
-                      )}
-                    >
-                      <span>{section.label}</span>
-                      {completion > 0 && (
-                        <span className="text-xs text-slate-400 font-semibold">{completion}%</span>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-      </div>
+                   return (
+                     <Link
+                       key={section.id}
+                       to={createPageUrl(section.path) + (factFind?.id ? `?id=${factFind.id}` : '')}
+                       className={cn(
+                         "flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all text-sm",
+                         isActive 
+                           ? "bg-slate-700 text-white font-medium" 
+                           : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
+                       )}
+                     >
+                       <span>{section.label}</span>
+                       {completion > 0 && (
+                         <span className="text-xs text-slate-400 font-semibold">{completion}%</span>
+                       )}
+                     </Link>
+                   );
+                 })}
+               </div>
+             ))}
+           </div>
+
+         {/* Save & Close Button */}
+         <div style={{
+           padding: '16px',
+           borderTop: '1px solid rgba(255,255,255,0.1)',
+           marginTop: 'auto'
+         }}>
+           <button
+             onClick={() => navigate(createPageUrl('ClientDashboard'))}
+             style={{
+               width: '100%',
+               padding: '14px 16px',
+               borderRadius: '10px',
+               border: 'none',
+               background: 'linear-gradient(135deg, #0F4C5C 0%, #1A6B7C 100%)',
+               color: '#fff',
+               fontSize: '14px',
+               fontWeight: 600,
+               cursor: 'pointer',
+               textAlign: 'center',
+               boxShadow: '0 2px 8px rgba(15, 76, 92, 0.3)',
+               transition: 'all 0.2s',
+             }}
+             onMouseOver={(e) => {
+               e.currentTarget.style.boxShadow = '0 4px 12px rgba(15, 76, 92, 0.5)';
+               e.currentTarget.style.transform = 'translateY(-1px)';
+             }}
+             onMouseOut={(e) => {
+               e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 76, 92, 0.3)';
+               e.currentTarget.style.transform = 'translateY(0)';
+             }}
+           >
+             Save & Close
+           </button>
+         </div>
+        </div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden ml-80 pt-16">
