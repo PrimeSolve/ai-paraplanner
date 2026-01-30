@@ -82,7 +82,7 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: 'AdviserDashboard', id: 'dashboard' },
     { label: 'Clients', icon: Users, path: 'AdviserClients', id: 'clients' },
-    { label: 'SOA Requests', icon: FileText, path: 'AdviserSOARequests', id: 'soa-requests' },
+    { label: 'SOA Queue', icon: FileText, path: 'AdviserSOARequests', id: 'soa-requests' },
     { label: 'Completed SOAs', icon: CheckCircle, path: 'AdviserCompletions', id: 'completed' }
   ];
 
