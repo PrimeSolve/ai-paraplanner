@@ -44,12 +44,18 @@ export default function AdminSettings() {
       }
     };
     loadUser();
-    
+  }, []);
+
+  useEffect(() => {
     // Load logo preview from saved business details
-    if (businessDetails.logo_url) {
-      setLogoPreview(businessDetails.logo_url);
+    const saved = localStorage.getItem('businessDetails');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.logo_url) {
+        setLogoPreview(parsed.logo_url);
+      }
     }
-  }, [businessDetails.logo_url]);
+  }, []);
   
   const [businessDetails, setBusinessDetails] = useState(() => {
     const saved = localStorage.getItem('businessDetails');
