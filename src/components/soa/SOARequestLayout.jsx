@@ -182,10 +182,10 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
             onClick={() => navigate(createPageUrl('AdviserSOARequests'))}
             style={{
               width: '100%',
-              padding: '12px 16px',
-              borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.2)',
-              background: 'transparent',
+              padding: '14px 16px',
+              borderRadius: '10px',
+              border: 'none',
+              background: 'linear-gradient(135deg, #0F4C5C 0%, #1A6B7C 100%)',
               color: '#fff',
               fontSize: '14px',
               fontWeight: 600,
@@ -194,16 +194,22 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
+              boxShadow: '0 2px 8px rgba(15, 76, 92, 0.3)',
               transition: 'all 0.2s',
             }}
             onMouseOver={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(15, 76, 92, 0.5)';
+              e.currentTarget.style.transform = 'translateY(-1px)';
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 76, 92, 0.3)';
+              e.currentTarget.style.transform = 'translateY(0)';
             }}
           >
-            <span>←</span> Save & Close
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Save & Close
           </button>
         </div>
       </div>
