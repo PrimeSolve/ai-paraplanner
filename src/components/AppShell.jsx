@@ -135,15 +135,21 @@ export default function AppShell({ children, pageActions, pageTitle }) {
     );
   }
 
+  console.log('AppShell rendering');
+  console.log('isSpecialLayout:', isSpecialLayout);
+  console.log('location.pathname:', location.pathname);
+  console.log('currentLevel:', currentLevel);
+  console.log('originalRole:', originalRole);
+
   return (
-    <div className="flex min-h-screen bg-[#f8fafc]">
-      {renderSidebar()}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: isSpecialLayout ? '0' : '64px', marginLeft: isSpecialLayout ? '0' : '260px' }}>
-        <AppHeader pageActions={pageActions} pageTitle={pageTitle} />
-        <main className="flex-1">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
+     <div className="flex min-h-screen bg-[#f8fafc]">
+       {renderSidebar()}
+       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: isSpecialLayout ? '0' : '64px', marginLeft: isSpecialLayout ? '0' : '260px' }}>
+         <AppHeader pageActions={pageActions} pageTitle={pageTitle} />
+         <main className="flex-1">
+           {children}
+         </main>
+       </div>
+     </div>
+   );
 }
