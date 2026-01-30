@@ -5,10 +5,11 @@ import { base44 } from '@/api/base44Client';
 import { useRole } from '../components/RoleContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, ChevronRight, Download, X, Mail } from 'lucide-react';
+import { Plus, Search, Mail, MoreHorizontal, Edit, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function AdviceGroupAdvisers() {
     const { switchedToId, switchRole } = useRole();
@@ -149,301 +150,199 @@ export default function AdviceGroupAdvisers() {
     }
   };
 
+  const getColorClass = (index) => {
+    const colors = [
+      'bg-blue-600',
+      'bg-orange-600',
+      'bg-pink-600',
+      'bg-purple-600',
+      'bg-green-600',
+      'bg-cyan-600',
+      'bg-teal-600',
+      'bg-indigo-600'
+    ];
+    return colors[index % colors.length];
+  };
+
   return (
-    <div style={{
-      padding: '24px 32px',
-    }}>
-        
-        {/* Stats Pills */}
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          marginBottom: '24px',
-          flexWrap: 'wrap',
-        }}>
-          {stats.map((stat, idx) => (
-            <div key={idx} style={{
-              background: colors.core.white,
-              border: `1px solid ${colors.core.greyLight}`,
-              borderRadius: '20px',
-              padding: '8px 16px',
-              fontSize: '13px',
-              color: colors.core.navy,
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}>
-              <span style={{ fontSize: '16px', fontWeight: 700 }}>{stat.value}</span>
-              {stat.label}
+    <div className="py-6 px-8">
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-3 gap-6 mb-8">
+          <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+            <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4">
+              <Users className="w-6 h-6" />
             </div>
-          ))}
+            <div className="text-4xl font-bold mb-1">{advisers.length}</div>
+            <div className="text-sm opacity-90">Total Advisers</div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
+              <Users className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.status === 'active').length}</div>
+            <div className="text-sm text-slate-600">Active Advisers</div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center mb-4">
+              <Users className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.status === 'pending').length}</div>
+            <div className="text-sm text-slate-600">Pending</div>
+          </div>
         </div>
 
-        {/* Search and Filters - Above Table */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          marginBottom: '16px',
-          justifyContent: 'space-between',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ position: 'relative', width: '200px' }}>
-              <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: colors.core.slateLight }} />
+        {/* Filters */}
+        <div className="bg-white rounded-2xl border border-slate-200 mb-6">
+          <div className="p-6 flex items-end gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <Input
                 placeholder="Search advisers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ paddingLeft: '36px', height: '36px' }}
+                className="pl-10 h-11 border-slate-200"
               />
             </div>
-
-            <select style={{
-              height: '36px',
-              padding: '8px 12px',
-              border: `1px solid ${colors.core.greyLight}`,
-              borderRadius: '6px',
-              fontSize: '14px',
-              color: colors.core.navy,
-              background: colors.core.white,
-              cursor: 'pointer',
-            }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-              <option>All Statuses</option>
-              <option>Active</option>
-              <option>Pending</option>
-            </select>
-
-            <select style={{
-              height: '36px',
-              padding: '8px 12px',
-              border: `1px solid ${colors.core.greyLight}`,
-              borderRadius: '6px',
-              fontSize: '14px',
-              color: colors.core.navy,
-              background: colors.core.white,
-              cursor: 'pointer',
-            }} value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option>Most Active</option>
-              <option>Least Active</option>
-              <option>Name A-Z</option>
-            </select>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Status</span>
+              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                <option>All Statuses</option>
+                <option>Active</option>
+                <option>Pending</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sort by</span>
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                <option>Most Active</option>
+                <option>Least Active</option>
+                <option>Name A-Z</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Advisers Table Card */}
-        <div style={{
-          background: colors.core.white,
-          borderRadius: '16px',
-          border: `1px solid ${colors.core.greyLight}`,
-          overflow: 'hidden',
-        }}>
+        {/* Table */}
+        <div className="bg-white rounded-2xl border border-slate-200">
 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-          }}>
-            <thead>
-              <tr style={{
-                borderBottom: `1px solid ${colors.core.greyLight}`,
-                background: colors.core.offWhite,
-              }}>
-                {['ADVISER', 'STATUS', 'ACTIVE SOAs', 'ACTIONS'].map(header => (
-                  <th key={header} style={{
-                    padding: '12px 16px',
-                    textAlign: header !== 'ADVISER' && header !== 'STATUS' && header !== 'ACTIONS' ? 'center' : 'left',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    color: colors.core.slateLight,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}>
-                    {header}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Adviser
                   </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedAdvisers.map((adviser, idx) => {
-                return (
-                  <tr key={adviser.id} style={{
-                    borderBottom: `1px solid ${colors.core.greyLight}`,
-                    transition: 'background-color 0.2s ease',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = colors.core.offWhite)}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    <td style={{
-                      padding: '16px',
-                      fontSize: '14px',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '8px',
-                          background: getAvatarGradient(idx),
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: colors.core.white,
-                          fontWeight: 600,
-                          fontSize: '14px',
-                        }}>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Active SOAs
+                  </th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedAdvisers.length > 0 ? paginatedAdvisers.map((adviser, idx) => (
+                  <tr key={adviser.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg ${getColorClass(idx)} flex items-center justify-center text-white font-bold text-sm`}>
                           {`${adviser.first_name?.[0]}${adviser.last_name?.[0]}`.toUpperCase()}
                         </div>
                         <div>
-                           <div style={{ fontWeight: 600, color: colors.core.navy }}>{`${adviser.first_name} ${adviser.last_name}` || adviser.email}</div>
-                           <div style={{ fontSize: '12px', color: colors.core.slateLight }}>{adviser.email}</div>
-                         </div>
+                          <div className="font-semibold text-sm text-slate-800">{`${adviser.first_name} ${adviser.last_name}` || adviser.email}</div>
+                          <div className="text-xs text-slate-600">{adviser.email}</div>
+                        </div>
                       </div>
                     </td>
-                    <td style={{
-                       padding: '16px',
-                       fontSize: '14px',
-                     }}>
-                       <span style={{
-                         display: 'inline-flex',
-                         alignItems: 'center',
-                         gap: '6px',
-                         padding: '4px 10px',
-                         borderRadius: '4px',
-                         background: adviser.status === 'pending' ? 'rgba(249, 115, 22, 0.1)' : 'rgba(16, 185, 129, 0.1)',
-                         color: adviser.status === 'pending' ? colors.accent.warning : colors.accent.success,
-                         fontSize: '12px',
-                         fontWeight: 600,
-                       }}>
-                         <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: adviser.status === 'pending' ? colors.accent.warning : colors.accent.success }}></span>
-                         {adviser.status?.charAt(0).toUpperCase() + adviser.status?.slice(1) || 'Active'}
-                       </span>
-                     </td>
-                    <td style={{
-                      padding: '16px',
-                      fontSize: '14px',
-                      color: colors.core.navy,
-                      fontWeight: 500,
-                      textAlign: 'center',
-                    }}>
-                      5
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${adviser.status === 'pending' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
+                        {adviser.status?.charAt(0).toUpperCase() + adviser.status?.slice(1) || 'Active'}
+                      </span>
                     </td>
-                    <td style={{
-                      padding: '16px',
-                      fontSize: '14px',
-                    }}>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <Button 
-                          size="sm" 
-                          onClick={() => {
-                            switchRole('adviser', adviser.id, `${adviser.first_name} ${adviser.last_name}`);
-                            navigate(createPageUrl(`AdviserDashboard?adviser_email=${adviser.email}`));
-                          }}
-                          style={{
-                            background: colors.accent.blue,
-                            color: colors.core.white,
-                            height: '32px',
-                            padding: '4px 12px',
-                            fontSize: '13px',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                          }}>View</Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => handleSendWelcomeEmail(adviser)}
-                          style={{
-                            height: '32px',
-                            padding: '4px 12px',
-                            fontSize: '13px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                          }}
-                        >
-                          <Mail size={14} />
-                          Send Welcome
-                        </Button>
-                      </div>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-slate-800">5</div>
+                    </td>
+                    <td className="px-6 py-4">
+                       <div className="flex items-center gap-2">
+                         <button onClick={() => {
+                           switchRole('adviser', adviser.id, `${adviser.first_name} ${adviser.last_name}`);
+                           navigate(createPageUrl(`AdviserDashboard?adviser_email=${adviser.email}`));
+                         }} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+                           View As
+                         </button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="p-1.5 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleSendWelcomeEmail(adviser)}>
+                              <Mail className="w-4 h-4 mr-2" />
+                              Send Welcome Email
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit Adviser
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600">
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete Adviser
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                       </div>
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        <div style={{
-          padding: '16px 24px',
-          borderTop: `1px solid ${colors.core.greyLight}`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          fontSize: '13px',
-          color: colors.core.slateLight,
-        }}>
-          <div>
-            Showing {filteredAdvisers.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredAdvisers.length)} of {filteredAdvisers.length} advisers
+                )) : (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-8 text-center text-slate-600">
+                      No advisers found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-            <button 
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              style={{
-                padding: '6px 10px',
-                border: `1px solid ${colors.core.greyLight}`,
-                borderRadius: '4px',
-                background: colors.core.white,
-                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                opacity: currentPage === 1 ? 0.5 : 1,
-                fontSize: '12px',
-              }}
-            >
-              ← Prev
-            </button>
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-              if (totalPages <= 5) return i + 1;
-              if (currentPage <= 3) return i + 1;
-              if (currentPage >= totalPages - 2) return totalPages - 4 + i;
-              return currentPage - 2 + i;
-            }).map(page => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                style={{
-                  padding: '6px 10px',
-                  minWidth: '32px',
-                  border: page === currentPage ? 'none' : `1px solid ${colors.core.greyLight}`,
-                  borderRadius: '4px',
-                  background: page === currentPage ? colors.accent.blue : colors.core.white,
-                  color: page === currentPage ? colors.core.white : colors.core.navy,
-                  fontWeight: page === currentPage ? 600 : 500,
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                }}
-              >
-                {page}
+
+          {/* Pagination */}
+          <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+            <span className="text-sm text-slate-600">Showing {filteredAdvisers.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}-{Math.min(currentPage * itemsPerPage, filteredAdvisers.length)} of {filteredAdvisers.length} advisers</span>
+            <div className="flex items-center gap-2">
+              <button 
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-50">
+                ← Prev
               </button>
-            ))}
-            <button
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              style={{
-                padding: '6px 10px',
-                border: `1px solid ${colors.core.greyLight}`,
-                borderRadius: '4px',
-                background: colors.core.white,
-                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                opacity: currentPage === totalPages ? 0.5 : 1,
-                fontSize: '12px',
-              }}
-            >
-              Next →
-            </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    currentPage === page
+                      ? 'bg-blue-600 text-white'
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-50">
+                Next →
+              </button>
             </div>
-            </div>
-            </div>
+          </div>
+        </div>
 
             {/* Add Adviser Modal */}
             <Dialog open={showInvite} onOpenChange={setShowInvite}>
