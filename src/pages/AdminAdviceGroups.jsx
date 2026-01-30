@@ -109,6 +109,11 @@ export default function AdminAdviceGroups() {
 
   return (
     <div className="p-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-800">Advice Groups</h1>
+        </div>
+
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <button style={{ display: 'none' }} />
