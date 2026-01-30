@@ -76,9 +76,9 @@ export default function ClientSidebar({ currentPage }) {
         </div>
         <div>
           <div className="text-white font-semibold">
-            {adviser?.company || 'ABS Wealth'}
+            {adviceGroup?.name || adviser?.company || 'ABS Wealth'}
           </div>
-          <div className="text-slate-400 text-sm">
+          <div className="text-slate-400 text-sm uppercase tracking-wider text-xs">
             Adviser: {adviser ? `${adviser.first_name} ${adviser.last_name}` : 'Stephen Hawke'}
           </div>
         </div>
