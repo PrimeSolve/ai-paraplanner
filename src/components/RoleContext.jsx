@@ -11,6 +11,18 @@ export function RoleProvider({ children }) {
   const [navigationChain, setNavigationChain] = useState([]);
 
   const loadUserData = async (userData) => {
+    // Check if in mock test mode first
+    const mockRole = localStorage.getItem('mock_test_role');
+    if (mockRole) {
+      console.log('Mock test mode active:', mockRole);
+      userData = {
+        ...userData,
+        role: mockRole === 'admin' ? 'admin' : 'user',
+        mockRole: mockRole,
+        full_name: `Mock ${mockRole.charAt(0).toUpperCase() + mockRole.slice(1)} User`
+      };
+    }
+    
     // Check if in test mode
     const testModeUser = localStorage.getItem('test_mode_user');
     if (testModeUser) {

@@ -33,7 +33,7 @@ export default function Layout({ children, currentPageName }) {
   const hideNav = noNavPages.includes(currentPageName);
 
   // Check if in test mode for top padding
-  const isInTestMode = typeof window !== 'undefined' && !!localStorage.getItem('test_mode_user');
+  const isInTestMode = typeof window !== 'undefined' && (!!localStorage.getItem('test_mode_user') || !!localStorage.getItem('mock_test_role'));
 
   return (
     <RoleProvider>

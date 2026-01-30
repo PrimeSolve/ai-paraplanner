@@ -4,6 +4,7 @@ import { Building2, Users, UserCheck, Clock, Clock3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import TestModeSwitcher from '../components/admin/TestModeSwitcher';
+import MockTestMode from '../components/admin/MockTestMode';
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
@@ -122,7 +123,9 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-bold text-slate-800">Admin Dashboard</h1>
           <p className="text-slate-600 text-sm mt-1">Welcome back! Here's an overview of your platform.</p>
         </div>
-        <TestModeSwitcher />
+        <div className="flex items-center gap-3">
+          <MockTestMode />
+        </div>
       </div>
 
          {/* Stats Grid */}
