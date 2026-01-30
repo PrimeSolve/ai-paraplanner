@@ -116,6 +116,15 @@ export default function AdminDashboard() {
       flexDirection: 'column',
       gap: '24px',
     }}>
+      {/* Header with Test Mode */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800">Admin Dashboard</h1>
+          <p className="text-slate-600 text-sm mt-1">Welcome back! Here's an overview of your platform.</p>
+        </div>
+        <TestModeSwitcher />
+      </div>
+
          {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           {/* Total Advice Groups */}
