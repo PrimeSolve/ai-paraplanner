@@ -173,34 +173,38 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
           ))}
         </div>
 
-        {/* Existing Position Toggle */}
-        <div className="px-4 py-4 border-t border-gray-700 mt-auto">
+        {/* Save & Close Button */}
+        <div style={{
+          padding: '16px',
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          marginTop: 'auto'
+        }}>
           <button
-            onClick={() => setExistingPosition(!existingPosition)}
-            className={cn(
-              "w-full flex items-center justify-between px-3 py-3 rounded-lg transition-all",
-              existingPosition ? "bg-blue-600/20" : "bg-white/5 hover:bg-white/10"
-            )}
+            onClick={() => navigate(createPageUrl('AdviserSOARequests'))}
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.2)',
+              background: 'transparent',
+              color: '#fff',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.2s',
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
           >
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-200 to-blue-300 flex items-center justify-center text-blue-700 text-sm">
-                📊
-              </div>
-              <div className="flex flex-col items-start gap-0.5">
-                <div className="text-xs font-bold text-gray-200">Existing Position</div>
-                <div className="text-xs text-gray-500">View cashflow model</div>
-              </div>
-            </div>
-            <div className="relative w-11 h-6">
-              <div className={cn(
-                "absolute inset-0 rounded-full transition-colors",
-                existingPosition ? "bg-blue-600" : "bg-gray-600"
-              )}></div>
-              <div className={cn(
-                "absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform",
-                existingPosition ? "left-5" : "left-0.5"
-              )}></div>
-            </div>
+            <span>←</span> Save & Close
           </button>
         </div>
       </div>
