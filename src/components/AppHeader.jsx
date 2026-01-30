@@ -127,75 +127,47 @@ export default function AppHeader({ pageActions, pageTitle }) {
       justifyContent: 'space-between',
       zIndex: 40,
     }}>
-      {/* Left side: Home button + Breadcrumbs OR Page Title */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        {pageTitle && !isViewingAs && (
-          <h1 style={{
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-            fontWeight: 700,
-            fontSize: '20px',
-            color: '#111827',
-            margin: 0
-          }}>
-            {pageTitle}
-          </h1>
-        )}
-        {isViewingAs && (
-          <>
-            <button
-              onClick={handleGoHome}
-              style={{
-                marginLeft: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 12px',
-                background: '#eff6ff',
-                border: '1px solid #bfdbfe',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                color: '#3b82f6',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#dbeafe';
-                e.currentTarget.style.borderColor = '#93c5fd';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#eff6ff';
-                e.currentTarget.style.borderColor = '#bfdbfe';
-              }}
-              title="Return to my dashboard"
-            >
-              <Home size={18} />
-            </button>
-
-            {/* Breadcrumb trail */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-              <span style={{ color: '#64748b' }}>Viewing:</span>
-              {navigationChain.map((level, index) => (
-                <React.Fragment key={index}>
-                  {index > 0 && <ChevronRight size={14} style={{ color: '#94a3b8' }} />}
-                  <button
-                    onClick={() => handleBreadcrumbClick(index)}
-                    style={{
-                      background: index === navigationChain.length - 1 ? '#eff6ff' : 'transparent',
-                      border: 'none',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      color: index === navigationChain.length - 1 ? '#3b82f6' : '#64748b',
-                      fontWeight: index === navigationChain.length - 1 ? 600 : 400,
-                    }}
-                  >
-                    {level.name}
-                  </button>
-                </React.Fragment>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+      {/* Left side: Breadcrumbs OR Page Title */}
+       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+         {pageTitle && !isViewingAs && (
+           <h1 style={{
+             fontFamily: "'Plus Jakarta Sans', sans-serif",
+             fontWeight: 700,
+             fontSize: '20px',
+             color: '#111827',
+             margin: 0
+           }}>
+             {pageTitle}
+           </h1>
+         )}
+         {isViewingAs && (
+           <>
+             {/* Breadcrumb trail */}
+             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+               <span style={{ color: '#64748b' }}>Viewing:</span>
+               {navigationChain.map((level, index) => (
+                 <React.Fragment key={index}>
+                   {index > 0 && <ChevronRight size={14} style={{ color: '#94a3b8' }} />}
+                   <button
+                     onClick={() => handleBreadcrumbClick(index)}
+                     style={{
+                       background: index === navigationChain.length - 1 ? '#eff6ff' : 'transparent',
+                       border: 'none',
+                       padding: '4px 8px',
+                       borderRadius: '4px',
+                       cursor: 'pointer',
+                       color: index === navigationChain.length - 1 ? '#3b82f6' : '#64748b',
+                       fontWeight: index === navigationChain.length - 1 ? 600 : 400,
+                     }}
+                   >
+                     {level.name}
+                   </button>
+                 </React.Fragment>
+               ))}
+             </div>
+           </>
+         )}
+       </div>
 
       {/* Right side: Page Actions + Fact Find / SOA Request Buttons + User menu */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
