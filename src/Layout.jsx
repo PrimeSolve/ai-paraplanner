@@ -35,18 +35,35 @@ export default function Layout({ children, currentPageName }) {
   // Check if in test mode for top padding
   const isInTestMode = typeof window !== 'undefined' && !!localStorage.getItem('test_mode_entity');
 
-  // Extract page actions and title if provided by the page component
-  const pageActions = React.Children.toArray(children).find(
-    child => child?.type?.displayName === 'PageActions'
-  )?.props?.children;
+  // For AdminAdviceGroups page specifically, pass the button directly
+  let pageActions = null;
+  if (currentPageName === 'AdminAdviceGroups') {
+    pageActions = (
+      <button
+        onClick={() => {
+          // This is a workaround - we'll use a custom event
+          window.dispatchEvent(new CustomEvent('openAddAdviceGroupDialog'));
+        }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '10px 18px',
+          background: '#2563eb',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '14px',
+          fontWeight: 600,
+          cursor: 'pointer',
+        }}
+      >
+        + Add Advice Group
+      </button>
+    );
+  }
 
-  const pageTitle = React.Children.toArray(children).find(
-    child => child?.type?.displayName === 'PageTitle'
-  )?.props?.children;
-
-  const pageContent = React.Children.toArray(children).filter(
-    child => child?.type?.displayName !== 'PageActions' && child?.type?.displayName !== 'PageTitle'
-  );
+  const pageContent = children;
 
   return (
     <RoleProvider>

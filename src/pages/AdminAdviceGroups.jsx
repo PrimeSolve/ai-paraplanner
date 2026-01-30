@@ -13,18 +13,6 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { useRole } from '../components/RoleContext';
 
-// Special component to pass actions to the header
-function PageActions({ children }) {
-  return null;  // Don't render in page body, only in header
-}
-PageActions.displayName = 'PageActions';
-
-// Special component to pass title to the header
-function PageTitle({ children }) {
-  return <>{children}</>;
-}
-PageTitle.displayName = 'PageTitle';
-
 export default function AdminAdviceGroups() {
   const navigate = useNavigate();
   const { switchRole } = useRole();
@@ -47,6 +35,11 @@ export default function AdminAdviceGroups() {
 
   useEffect(() => {
     loadData();
+    
+    // Listen for custom event from header button
+    const handleOpenDialog = () => setDialogOpen(true);
+    window.addEventListener('openAddAdviceGroupDialog', handleOpenDialog);
+    return () => window.removeEventListener('openAddAdviceGroupDialog', handleOpenDialog);
   }, []);
 
   const loadData = async () => {
@@ -120,18 +113,7 @@ export default function AdminAdviceGroups() {
   };
 
   return (
-    <>
-      <PageActions>
-        <Button 
-          onClick={() => setDialogOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Advice Group
-        </Button>
-      </PageActions>
-      
-      <div className="p-8">
+    <div className="p-8">
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <button style={{ display: 'none' }} />
@@ -406,6 +388,6 @@ export default function AdminAdviceGroups() {
           </div>
           </div>
       </div>
-    </>
+    </div>
   );
 }
