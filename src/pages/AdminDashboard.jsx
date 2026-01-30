@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Building2, Users, UserCheck, Clock, Clock3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import TestModeSwitcher from '../components/admin/TestModeSwitcher';
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
