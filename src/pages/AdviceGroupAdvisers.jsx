@@ -33,6 +33,11 @@ export default function AdviceGroupAdvisers() {
 
     useEffect(() => {
       loadData();
+
+      // Listen for custom event from header button
+      const handleOpenDialog = () => setShowInvite(true);
+      window.addEventListener('openAddAdviserDialog', handleOpenDialog);
+      return () => window.removeEventListener('openAddAdviserDialog', handleOpenDialog);
     }, [switchedToId]);
 
     const loadData = async () => {
@@ -193,7 +198,7 @@ export default function AdviceGroupAdvisers() {
                 style={{ paddingLeft: '36px', height: '36px' }}
               />
             </div>
-            
+
             <select style={{
               height: '36px',
               padding: '8px 12px',
@@ -224,24 +229,6 @@ export default function AdviceGroupAdvisers() {
               <option>Name A-Z</option>
             </select>
           </div>
-
-          <Button onClick={() => setShowInvite(true)} style={{
-            background: colors.accent.blue,
-            color: colors.core.white,
-            padding: '8px 16px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 500,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            whiteSpace: 'nowrap',
-          }}>
-            <Plus size={16} />
-            Add Adviser
-          </Button>
         </div>
 
         {/* Advisers Table Card */}
