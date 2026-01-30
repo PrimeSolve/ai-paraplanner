@@ -119,12 +119,16 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
       <div className="w-80 bg-gray-800 text-gray-200 flex flex-col border-r border-gray-900 fixed left-0 top-0 bottom-0 z-50">
         {/* Header */}
         <div className="h-16 px-4 flex items-center gap-3 border-b border-gray-700 flex-shrink-0">
+          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+            <FileText className="w-5 h-5 text-white" />
+          </div>
+          <div className="text-sm font-extrabold text-slate-50">SOA Request</div>
           <button
             onClick={() => navigate(createPageUrl('AdviserSOARequests'))}
             style={{
               width: '32px',
               height: '32px',
-              borderRadius: '8px',
+              borderRadius: '6px',
               border: '1px solid #4b5563',
               background: '#374151',
               display: 'flex',
@@ -133,7 +137,6 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
               cursor: 'pointer',
               color: '#9ca3af',
               transition: 'all 0.2s',
-              fontSize: '18px',
               flexShrink: 0,
             }}
             onMouseEnter={(e) => {
@@ -146,12 +149,11 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
             }}
             title="Exit SOA Request"
           >
-            ✕
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-            <FileText className="w-5 h-5 text-white" />
-          </div>
-          <div className="text-sm font-extrabold text-slate-50">SOA Request</div>
         </div>
 
         {/* Navigation Links */}
