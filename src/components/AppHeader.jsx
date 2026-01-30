@@ -197,8 +197,8 @@ export default function AppHeader({ pageActions, pageTitle }) {
       </div>
 
       {/* Right side: Page Actions + Fact Find / SOA Request Buttons + User menu */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        {pageActions}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {pageActions && <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>{pageActions}</div>}
         {isFactFindPage && (
           <>
             {/* Talk to Assistant */}
