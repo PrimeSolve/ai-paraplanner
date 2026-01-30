@@ -51,7 +51,7 @@ export default function Layout({ children, currentPageName }) {
           alignItems: 'center',
           gap: '8px',
           padding: '10px 18px',
-          background: '#2563eb',
+          background: '#0F4C5C',
           color: 'white',
           border: 'none',
           borderRadius: '8px',
