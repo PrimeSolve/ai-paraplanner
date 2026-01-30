@@ -130,6 +130,42 @@ const NavSection = ({ title, items, currentPage }) => (
 );
 
 export default function AdviceGroupSidebar({ currentPage, groupName }) {
+  const [logo, setLogo] = useState(null);
+
+  useEffect(() => {
+    const loadLogo = async () => {
+      try {
+        // First, try to get advice group's own logo
+        const user = await base44.auth.me();
+        if (user?.advice_group_id) {
+          const groups = await base44.entities.AdviceGroup.filter({ id: user.advice_group_id });
+          if (groups?.[0]?.logo_url) {
+            setLogo(groups[0].logo_url);
+            return;
+          }
+        }
+        
+        // Fallback to admin's logo from localStorage
+        const businessDetails = localStorage.getItem('businessDetails');
+        if (businessDetails) {
+          const parsed = JSON.parse(businessDetails);
+          if (parsed?.logo_url) {
+            setLogo(parsed.logo_url);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load logo:', error);
+      }
+    };
+
+    loadLogo();
+
+    // Listen for updates to business details or advice group
+    const handleUpdate = () => loadLogo();
+    window.addEventListener('businessDetailsUpdated', handleUpdate);
+    return () => window.removeEventListener('businessDetailsUpdated', handleUpdate);
+  }, []);
+
   return (
     <div style={{
       position: 'fixed',
@@ -158,7 +194,7 @@ export default function AdviceGroupSidebar({ currentPage, groupName }) {
           <div style={{
             width: '44px',
             height: '44px',
-            background: `linear-gradient(135deg, ${colors.accent.blue}, ${colors.accent.blueDeep})`,
+            background: logo ? '#1e293b' : `linear-gradient(135deg, ${colors.accent.blue}, ${colors.accent.blueDeep})`,
             borderRadius: '12px',
             display: 'flex',
             alignItems: 'center',
@@ -166,17 +202,15 @@ export default function AdviceGroupSidebar({ currentPage, groupName }) {
             fontWeight: 700,
             color: 'white',
             fontSize: '16px',
+            overflow: 'hidden',
           }}>
-            AI
+            {logo ? (
+              <img src={logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              'AI'
+            )}
           </div>
           <div>
-            <div style={{
-              fontWeight: 700,
-              fontSize: '16px',
-              color: 'white',
-            }}>
-              AI Paraplanner
-            </div>
             <div style={{
               fontSize: '12px',
               color: colors.sidebar.text,
