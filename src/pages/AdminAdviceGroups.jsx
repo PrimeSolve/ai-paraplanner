@@ -386,8 +386,7 @@ export default function AdminAdviceGroups() {
               </button>
             </div>
           </div>
-          </div>
+        </div>
       </div>
-    </div>
   );
 }
