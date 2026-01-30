@@ -3,8 +3,7 @@ import { base44 } from '@/api/base44Client';
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Users, CheckCircle, Clock, MoreHorizontal, Eye, Edit2, Trash2 } from 'lucide-react';
+import { Search, Users, CheckCircle, Clock, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -22,6 +21,11 @@ export default function AdviserClients() {
 
   useEffect(() => {
     loadData();
+
+    // Listen for custom event from header button
+    const handleOpenDialog = () => setShowAddModal(true);
+    window.addEventListener('openAddClientDialog', handleOpenDialog);
+    return () => window.removeEventListener('openAddClientDialog', handleOpenDialog);
   }, []);
 
   const loadData = async () => {
@@ -80,200 +84,202 @@ export default function AdviserClients() {
   const ffSent = clients.filter(c => c.fact_find === 'sent').length;
   const ffNotStarted = clients.filter(c => c.fact_find === 'not_started').length;
 
+  const getColorClass = (index) => {
+    const colors = [
+      'bg-blue-600',
+      'bg-orange-600',
+      'bg-pink-600',
+      'bg-purple-600',
+      'bg-green-600',
+      'bg-cyan-600',
+      'bg-teal-600',
+      'bg-indigo-600'
+    ];
+    return colors[index % colors.length];
+  };
+
   return (
-    <div style={{ padding: '24px 32px' }}>
-      {/* Page Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: '24px' }}>
-        <button onClick={() => setShowAddModal(true)} style={{ padding: '10px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          + Add Client
-        </button>
-      </div>
-      
-      {/* Stats Bar */}
-      <div style={{ display: 'flex', gap: '32px', padding: '20px 24px', background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(59, 130, 246, 0.1)' }}>
-            👤
+    <div className="py-6 px-8">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-4 gap-6 mb-8">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+          <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4">
+            <Users className="w-6 h-6" />
           </div>
-          <div>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{clients.length}</div>
-            <div style={{ fontSize: '13px', color: '#64748b' }}>Total Clients</div>
-          </div>
+          <div className="text-4xl font-bold mb-1">{clients.length}</div>
+          <div className="text-sm opacity-90">Total Clients</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(16, 185, 129, 0.1)' }}>
-            ✓
+
+        <div className="bg-white rounded-2xl p-6 border border-slate-200">
+          <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
+            <CheckCircle className="w-6 h-6 text-green-600" />
           </div>
-          <div>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{ffComplete}</div>
-            <div style={{ fontSize: '13px', color: '#64748b' }}>FF Complete</div>
-          </div>
+          <div className="text-4xl font-bold text-slate-800 mb-1">{ffComplete}</div>
+          <div className="text-sm text-slate-600">FF Complete</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(245, 158, 11, 0.1)' }}>
-            ⟳
+
+        <div className="bg-white rounded-2xl p-6 border border-slate-200">
+          <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center mb-4">
+            <Clock className="w-6 h-6 text-orange-600" />
           </div>
-          <div>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{ffInProgress}</div>
-            <div style={{ fontSize: '13px', color: '#64748b' }}>FF In Progress</div>
-          </div>
+          <div className="text-4xl font-bold text-slate-800 mb-1">{ffInProgress}</div>
+          <div className="text-sm text-slate-600">FF In Progress</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', background: 'rgba(148, 163, 184, 0.1)' }}>
-            ✉
+
+        <div className="bg-white rounded-2xl p-6 border border-slate-200">
+          <div className="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center mb-4">
+            <Users className="w-6 h-6 text-yellow-600" />
           </div>
-          <div>
-            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>{ffNotStarted}</div>
-            <div style={{ fontSize: '13px', color: '#64748b' }}>FF Not Sent</div>
-          </div>
+          <div className="text-4xl font-bold text-slate-800 mb-1">{ffNotStarted}</div>
+          <div className="text-sm text-slate-600">FF Not Sent</div>
         </div>
       </div>
 
       {/* Filters */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', width: '280px' }}>
-          <Search style={{ width: '18px', height: '18px', color: '#94a3b8', flexShrink: 0 }} />
-          <input
-            type="text"
-            placeholder="Search clients..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ border: 'none', background: 'transparent', fontSize: '14px', color: '#1e293b', width: '100%', outline: 'none', fontFamily: 'Inter, sans-serif' }}
-          />
+      <div className="bg-white rounded-2xl border border-slate-200 mb-6">
+        <div className="p-6 flex items-end gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Input
+              placeholder="Search clients..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 h-11 border-slate-200"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fact Find Status</span>
+            <select value={factFindFilter} onChange={(e) => setFactFindFilter(e.target.value)} className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+              <option value="all">All Fact Find Status</option>
+              <option value="complete">Complete</option>
+              <option value="in_progress">In Progress</option>
+              <option value="sent">Sent</option>
+              <option value="not_started">Not Started</option>
+            </select>
+          </div>
         </div>
-        <Select value={factFindFilter} onValueChange={setFactFindFilter}>
-          <SelectTrigger style={{ width: '180px', height: '40px', padding: '10px 14px' }}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Fact Find Status</SelectItem>
-            <SelectItem value="complete">Complete</SelectItem>
-            <SelectItem value="in_progress">In Progress</SelectItem>
-            <SelectItem value="sent">Sent</SelectItem>
-            <SelectItem value="not_started">Not Started</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       {/* Table */}
-      <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%' }}>
-                <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                  <tr>
-                    <th style={{ textAlign: 'left', padding: '16px 24px', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Client</th>
-                    <th style={{ textAlign: 'left', padding: '16px 24px', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Fact Find</th>
-                    <th style={{ textAlign: 'left', padding: '16px 24px', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>SOA Summary</th>
-                    <th style={{ textAlign: 'left', padding: '16px 24px', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Added</th>
-                    <th style={{ textAlign: 'left', padding: '16px 24px', fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Actions</th>
+      <div className="bg-white rounded-2xl border border-slate-200">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Client</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Fact Find</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">SOA Summary</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Added</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedClients.length > 0 ? paginatedClients.map((client, idx) => {
+                const factFindBadge = getFactFindBadge(client.fact_find);
+                return (
+                  <tr key={client.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg ${getColorClass(idx)} flex items-center justify-center text-white font-bold text-sm`}>
+                          {client.first_name?.charAt(0)}{client.last_name?.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm text-slate-800">{client.first_name} {client.last_name}</div>
+                          <div className="text-xs text-slate-600">{client.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${(() => {
+                        const mapping = {
+                          'complete': 'bg-green-100 text-green-700',
+                          'in_progress': 'bg-orange-100 text-orange-700',
+                          'sent': 'bg-blue-100 text-blue-700',
+                          'not_started': 'bg-slate-100 text-slate-700'
+                        };
+                        return mapping[client.fact_find] || mapping['not_started'];
+                      })()}`}>
+                        {factFindBadge.label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-blue-600">{client.soas || 0} SOA{client.soas !== 1 ? 's' : ''}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-slate-800">{new Date(client.created_date).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Link to={createPageUrl(`ClientDashboard?client_email=${client.email}`)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+                          View
+                        </Link>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="p-1.5 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <span className="mr-2">📧</span>
+                              Send Fact Find
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Edit2 className="w-4 h-4 mr-2" />
+                              Edit Client
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600">
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {paginatedClients.map((client, idx) => {
-                    const factFindBadge = getFactFindBadge(client.fact_find);
-                    return (
-                      <tr key={client.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: getColorValue(idx), display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '13px', flexShrink: 0 }}>
-                              {client.first_name?.charAt(0)}{client.last_name?.charAt(0)}
-                            </div>
-                            <div>
-                              <div style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b' }}>{client.first_name} {client.last_name}</div>
-                              <div style={{ fontSize: '12px', color: '#64748b' }}>{client.email}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', ...(() => {
-                            const colors = {
-                              'bg-green-100 text-green-700': { background: '#dcfce7', color: '#166534' },
-                              'bg-orange-100 text-orange-700': { background: '#ffedd5', color: '#92400e' },
-                              'bg-blue-100 text-blue-700': { background: '#dbeafe', color: '#0c4a6e' },
-                              'bg-slate-100 text-slate-700': { background: '#f1f5f9', color: '#334155' }
-                            };
-                            const mapping = {
-                              'complete': colors['bg-green-100 text-green-700'],
-                              'in_progress': colors['bg-orange-100 text-orange-700'],
-                              'sent': colors['bg-blue-100 text-blue-700'],
-                              'not_started': colors['bg-slate-100 text-slate-700']
-                            };
-                            return mapping[client.fact_find] || mapping['not_started'];
-                          })() }}>
-                            {factFindBadge.label}
-                          </span>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#3b82f6' }}>{client.soas || 0} SOA{client.soas !== 1 ? 's' : ''}</div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '14px', fontWeight: '500', color: '#1e293b' }}>{new Date(client.created_date).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Link to={createPageUrl(`ClientDashboard?client_email=${client.email}`)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #e2e8f0', color: '#3b82f6', fontSize: '13px', fontWeight: '500', cursor: 'pointer', borderRadius: '8px', textDecoration: 'none', display: 'inline-block' }}>
-                              View
-                            </Link>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <button style={{ padding: '4px 8px', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                                  <MoreHorizontal style={{ width: '18px', height: '18px', color: '#64748b' }} />
-                                </button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', color: '#3b82f6', cursor: 'pointer' }}>
-                                  <div style={{ fontSize: '14px' }}>📧</div>
-                                  Send Fact Find
-                                </DropdownMenuItem>
-                                <DropdownMenuItem style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', color: '#3b82f6', cursor: 'pointer' }}>
-                                  <Edit2 style={{ width: '14px', height: '14px' }} />
-                                  Edit Client
-                                </DropdownMenuItem>
-                                <DropdownMenuItem style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', color: '#ef4444', cursor: 'pointer' }}>
-                                  <Trash2 style={{ width: '14px', height: '14px' }} />
-                                  Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                );
+              }) : (
+                <tr>
+                  <td colSpan="5" className="px-6 py-8 text-center text-slate-600">
+                    No clients found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-            {/* Pagination */}
-            <div style={{ padding: '16px 24px', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '13px', color: '#64748b' }}>Showing {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, filteredClients.length)} of {filteredClients.length} clients</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button 
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  style={{ padding: '6px 12px', fontSize: '13px', fontWeight: '500', background: currentPage === 1 ? '#f1f5f9' : 'white', color: '#64748b', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
-                >
-                  ← Prev
-                </button>
-                {Array.from({ length: Math.min(3, totalPages) }, (_, i) => (currentPage - 1) + i + 1).filter(p => p > 0 && p <= totalPages).map(page => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    style={{ padding: '6px 12px', fontSize: '13px', fontWeight: '600', background: currentPage === page ? '#3b82f6' : 'white', color: currentPage === page ? 'white' : '#64748b', border: currentPage === page ? 'none' : '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}
-                  >
-                    {page}
-                  </button>
-                ))}
-                {totalPages > 3 && <span style={{ color: '#64748b' }}>...</span>}
-                <button 
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  style={{ padding: '6px 12px', fontSize: '13px', fontWeight: '500', background: currentPage === totalPages ? '#f1f5f9' : 'white', color: '#64748b', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1 }}
-                >
-                  Next →
-                </button>
-              </div>
-       </div>
+        {/* Pagination */}
+        <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+          <span className="text-sm text-slate-600">Showing {filteredClients.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}-{Math.min(currentPage * itemsPerPage, filteredClients.length)} of {filteredClients.length} clients</span>
+          <div className="flex items-center gap-2">
+            <button 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-50">
+              ← Prev
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  currentPage === page
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-50">
+              Next →
+            </button>
+          </div>
+        </div>
        </div>
        <AddClientModal 
        isOpen={showAddModal} 
