@@ -69,10 +69,7 @@ export default function AdminSidebar({ currentPage }) {
             )}
           </div>
           <div>
-            <div className="font-['Playfair_Display'] text-xl font-semibold">
-              AI <span className="text-[#22d3ee]">Paraplanner</span>
-            </div>
-            <div className="text-[#64748b] text-xs font-medium">
+            <div className="text-[#94a3b8] text-sm font-medium">
               Admin portal
             </div>
           </div>
