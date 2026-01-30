@@ -108,7 +108,6 @@ export default function AdviceGroupLayout({ children, currentPage }) {
                  const Icon = item.icon;
                  const isActive = currentPage === item.label.toLowerCase().replace(/\s+/g, '-') || currentPage === item.path;
                  const hasSubmenu = item.submenu && item.submenu.length > 0;
-                 const [expandedMenu, setExpandedMenu] = React.useState(null);
 
                  return (
                    <div key={item.path}>
