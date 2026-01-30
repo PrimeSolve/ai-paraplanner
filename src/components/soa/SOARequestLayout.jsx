@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
 import {
-  Upload, FileText, TrendingUp, Shield, PieChart,
+  Upload, Home, FileText, TrendingUp, Shield, PieChart,
   DollarSign, Building2, CheckCircle2, MessageSquare
 } from 'lucide-react';
 
@@ -12,12 +12,12 @@ const sectionGroups = [
     title: 'GETTING STARTED',
     sections: [
       { 
-        id: 'welcome', 
-        label: 'Welcome', 
-        description: 'Learn how to build and submit your SOA request',
-        path: 'SOARequestWelcome', 
-        icon: Home 
-      },
+         id: 'welcome', 
+         label: 'Welcome', 
+         description: 'Learn how to build and submit your SOA request',
+         path: 'SOARequestWelcome', 
+         icon: MessageSquare 
+       },
       { 
         id: 'prefill', 
         label: 'Prefill', 
