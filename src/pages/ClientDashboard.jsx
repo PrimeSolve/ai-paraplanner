@@ -30,14 +30,27 @@ export default function ClientDashboard() {
         const userData = await base44.auth.me();
         setUser(userData);
 
-        // Load client record
-        const clients = await base44.entities.Client.filter({ user_email: userData.email });
-        if (clients.length > 0) {
-          setClient(clients[0]);
+        // Check if viewing from admin (id parameter)
+        const params = new URLSearchParams(window.location.search);
+        const clientId = params.get('id');
+        
+        let clientData;
+        if (clientId) {
+          // Load specific client from admin view
+          const clients = await base44.entities.Client.filter({ id: clientId });
+          clientData = clients[0];
+        } else {
+          // Load logged-in user's client record
+          const clients = await base44.entities.Client.filter({ user_email: userData.email });
+          clientData = clients[0];
+        }
+        
+        if (clientData) {
+          setClient(clientData);
           
           // Load adviser
-          if (clients[0].adviser_email) {
-            const advisers = await base44.entities.Adviser.filter({ email: clients[0].adviser_email });
+          if (clientData.adviser_email) {
+            const advisers = await base44.entities.Adviser.filter({ email: clientData.adviser_email });
             if (advisers.length > 0) {
               setAdviser(advisers[0]);
             }
