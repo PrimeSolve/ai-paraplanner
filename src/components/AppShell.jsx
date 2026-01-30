@@ -44,6 +44,16 @@ export default function AppShell({ children }) {
   // Get the original user's role (who is actually logged in)
   const originalRole = originalUser?.role || user?.role;
 
+  // Don't render sidebar for Fact Find, SOA Request, and Client portal pages (they have their own sidebars)
+  const isSpecialLayout = location.pathname.includes('FactFind') || 
+                         location.pathname.includes('SOARequest') ||
+                         location.pathname.includes('ClientDashboard') ||
+                         location.pathname.includes('ClientDocuments') ||
+                         location.pathname.includes('ClientMessages') ||
+                         location.pathname.includes('ClientSettings') ||
+                         location.pathname.includes('ClientHelp') ||
+                         location.pathname.includes('ClientProfile');
+
   // Determine which sidebar to render based on navigation chain
   const renderSidebar = () => {
     console.log('=== renderSidebar ===');
@@ -51,12 +61,8 @@ export default function AppShell({ children }) {
     console.log('navigationChain:', navigationChain);
     console.log('currentLevel:', currentLevel);
     console.log('originalRole:', originalRole);
-    
-    // Don't render sidebar for Fact Find, SOA Request, and Client pages (they have their own sidebars)
-    const isSpecialLayout = location.pathname.includes('FactFind') || 
-                           location.pathname.includes('SOARequest') ||
-                           location.pathname.includes('Client');
     console.log('isSpecialLayout:', isSpecialLayout);
+    
     if (isSpecialLayout) {
       console.log('Returning null due to special layout');
       return null;
@@ -119,7 +125,7 @@ export default function AppShell({ children }) {
   return (
     <div className="flex min-h-screen bg-[#f8fafc]">
       {renderSidebar()}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: location.pathname.includes('FactFind') || location.pathname.includes('SOARequest') || location.pathname.includes('Client') ? '0' : '64px', marginLeft: location.pathname.includes('FactFind') || location.pathname.includes('SOARequest') || location.pathname.includes('Client') ? '0' : '260px' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: isSpecialLayout ? '0' : '64px', marginLeft: isSpecialLayout ? '0' : '260px' }}>
         <AppHeader />
         <main className="flex-1">
           {children}
