@@ -11,49 +11,46 @@ export function RoleProvider({ children }) {
   const [navigationChain, setNavigationChain] = useState([]);
 
   const loadUserData = async (userData) => {
-    // Check if in mock test mode first
-    const mockRole = localStorage.getItem('mock_test_role');
-    if (mockRole) {
-      console.log('Mock test mode active:', mockRole);
-      userData = {
-        ...userData,
-        role: mockRole === 'admin' ? 'admin' : 'user',
-        mockRole: mockRole,
-        full_name: `Mock ${mockRole.charAt(0).toUpperCase() + mockRole.slice(1)} User`
-      };
-    }
-    
-    // Check if in test mode
+    // Check if in test mode - this takes precedence
     const testModeUser = localStorage.getItem('test_mode_user');
     if (testModeUser) {
       const testUser = JSON.parse(testModeUser);
       console.log('Test mode active, loading test user:', testUser);
       
-      // Override userData with test user
+      // Use the test user's data
       userData = {
-        ...userData,
         id: testUser.id,
         email: testUser.email,
         full_name: testUser.full_name,
-        role: testUser.role
+        role: testUser.role,
+        userType: testUser.userType,
+        linkedEntity: testUser.linkedEntity ? {
+          type: testUser.userType,
+          data: testUser.linkedEntity
+        } : null
       };
+
+      console.log('Test user loaded:', userData);
+      
+      setUser(userData);
+      if (!originalUser) {
+        setOriginalUser(userData);
+      }
+      return;
     }
 
-    // Check if user is linked to an Adviser, Client, or AdviceGroup
+    // Normal user loading - check if linked to an entity
     let linkedEntity = null;
     if (userData.role === 'user') {
       try {
-        // Check if linked to Adviser
         const advisers = await base44.entities.Adviser.filter({ user_id: userData.id });
         if (advisers.length > 0) {
           linkedEntity = { type: 'adviser', data: advisers[0] };
         } else {
-          // Check if linked to Client
           const clients = await base44.entities.Client.filter({ user_id: userData.id });
           if (clients.length > 0) {
             linkedEntity = { type: 'client', data: clients[0] };
           } else {
-            // Check if linked to AdviceGroup
             const groups = await base44.entities.AdviceGroup.filter({ user_id: userData.id });
             if (groups.length > 0) {
               linkedEntity = { type: 'advice_group', data: groups[0] };

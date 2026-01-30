@@ -71,23 +71,21 @@ export default function AppShell({ children }) {
     console.log('renderSidebar called');
     console.log('currentLevel:', currentLevel);
     console.log('originalRole:', originalRole);
-    console.log('originalUser email:', originalUser?.email);
-    console.log('user email:', user?.email);
+    console.log('user:', user);
 
-    // Check for mock test mode
-    const mockRole = typeof window !== 'undefined' ? localStorage.getItem('mock_test_role') : null;
-    if (mockRole) {
-      console.log('Mock role active:', mockRole);
-      if (mockRole === 'admin') {
+    // Check for test mode user type
+    if (user?.userType) {
+      console.log('Test mode user type:', user.userType);
+      if (user.userType === 'admin') {
         return <AdminSidebar currentPage={getCurrentPage()} />;
       }
-      if (mockRole === 'advice_group') {
+      if (user.userType === 'advice_group') {
         return <AdviceGroupSidebar currentPage={getCurrentPage()} />;
       }
-      if (mockRole === 'adviser') {
+      if (user.userType === 'adviser') {
         return <AdviserSidebar currentPage={getCurrentPage()} />;
       }
-      if (mockRole === 'client') {
+      if (user.userType === 'client') {
         return null; // Client portal has its own sidebar
       }
     }
