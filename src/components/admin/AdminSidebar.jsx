@@ -72,7 +72,7 @@ export default function AdminSidebar({ currentPage }) {
             <div className="text-white text-sm font-bold">
               {businessDetails?.company_name || 'AI Paraplanner'}
             </div>
-            <div className="text-white text-xs font-medium uppercase tracking-wide">
+            <div className="text-[#94a3b8] text-xs font-medium uppercase tracking-wide">
               Admin Portal
             </div>
           </div>
