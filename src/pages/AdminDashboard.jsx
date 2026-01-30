@@ -73,13 +73,11 @@ export default function AdminDashboard() {
 
   const loadStats = async () => {
     try {
-      const [groups, clients] = await Promise.all([
+      const [groups, clients, advisers] = await Promise.all([
         base44.entities.AdviceGroup.list(),
-        base44.entities.Client.list()
+        base44.entities.Client.list(),
+        base44.entities.Adviser.list()
       ]);
-
-      const users = await base44.entities.User.list();
-      const advisers = users.filter(u => u.user_type === 'adviser');
       
       setStats({
         totalGroups: groups.length,
