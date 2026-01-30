@@ -8,7 +8,7 @@ import { useRole } from '../RoleContext';
 export default function AdviserSidebar({ currentPage, loggedInUser }) {
   const [adviser, setAdviser] = useState(null);
   const [logo, setLogo] = useState(null);
-  const { switchedToId } = useRole();
+  const { switchedToId, navigationChain } = useRole();
 
   useEffect(() => {
     const loadAdviserAndLogo = async () => {
@@ -42,6 +42,15 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
     };
     loadAdviserAndLogo();
   }, [switchedToId]);
+
+  const getSubtitle = () => {
+    if (navigationChain.length === 0) {
+      return 'ADVISER PORTAL';
+    }
+    const current = navigationChain[navigationChain.length - 1];
+    return `VIEWING ${current.type.replace('_', ' ').toUpperCase()}`;
+  };
+
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: 'AdviserDashboard', id: 'dashboard' },
     { label: 'Clients', icon: Users, path: 'AdviserClients', id: 'clients' },
@@ -95,8 +104,8 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
             )}
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-              Adviser portal
+            <div style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {getSubtitle()}
             </div>
           </div>
         </Link>

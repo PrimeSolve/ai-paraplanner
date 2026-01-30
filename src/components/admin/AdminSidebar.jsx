@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { base44 } from '@/api/base44Client';
+import { useRole } from '../RoleContext';
 import { 
   LayoutDashboard, 
   Layers, 
@@ -16,6 +17,7 @@ import {
 } from 'lucide-react';
 
 export default function AdminSidebar({ currentPage }) {
+  const { navigationChain } = useRole();
   const [businessDetails, setBusinessDetails] = useState(null);
 
   useEffect(() => {
@@ -32,6 +34,14 @@ export default function AdminSidebar({ currentPage }) {
       window.removeEventListener('businessDetailsUpdated', loadBusinessDetails);
     };
   }, []);
+
+  const getSubtitle = () => {
+    if (navigationChain.length === 0) {
+      return 'ADMIN PORTAL';
+    }
+    const current = navigationChain[navigationChain.length - 1];
+    return `VIEWING ${current.type.replace('_', ' ').toUpperCase()}`;
+  };
 
   const navItems = [
     { section: 'OVERVIEW', items: [
@@ -73,7 +83,7 @@ export default function AdminSidebar({ currentPage }) {
               {businessDetails?.company_name || 'AI Paraplanner'}
             </div>
             <div className="text-[#94a3b8] text-xs font-medium uppercase tracking-wide">
-              Admin Portal
+              {getSubtitle()}
             </div>
           </div>
         </Link>

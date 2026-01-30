@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { base44 } from '@/api/base44Client';
+import { useRole } from '../RoleContext';
 import { 
   LayoutGrid, 
   FileText, 
@@ -130,6 +131,7 @@ const NavSection = ({ title, items, currentPage }) => (
 );
 
 export default function AdviceGroupSidebar({ currentPage, groupName }) {
+  const { navigationChain } = useRole();
   const [logo, setLogo] = useState(null);
 
   useEffect(() => {
@@ -165,6 +167,14 @@ export default function AdviceGroupSidebar({ currentPage, groupName }) {
     window.addEventListener('businessDetailsUpdated', handleUpdate);
     return () => window.removeEventListener('businessDetailsUpdated', handleUpdate);
   }, []);
+
+  const getSubtitle = () => {
+    if (navigationChain.length === 0) {
+      return 'ADVICE GROUP PORTAL';
+    }
+    const current = navigationChain[navigationChain.length - 1];
+    return `VIEWING ${current.type.replace('_', ' ').toUpperCase()}`;
+  };
 
   return (
     <div style={{
@@ -216,6 +226,15 @@ export default function AdviceGroupSidebar({ currentPage, groupName }) {
               color: colors.sidebar.text,
             }}>
               {groupName || 'Advice Group Portal'}
+            </div>
+            <div style={{
+              fontSize: '11px',
+              color: colors.sidebar.text,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              marginTop: '2px'
+            }}>
+              {getSubtitle()}
             </div>
           </div>
         </div>
