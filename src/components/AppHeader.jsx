@@ -128,7 +128,7 @@ export default function AppHeader({ pageActions, pageTitle }) {
       zIndex: 40,
     }}>
       {/* Left side: Home button (if viewing as) + Breadcrumbs OR Page Title */}
-       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '16px' }}>
          {isViewingAs && (
            <button
              onClick={handleGoHome}
