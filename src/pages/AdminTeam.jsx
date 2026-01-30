@@ -44,6 +44,11 @@ export default function AdminTeam() {
 
   useEffect(() => {
     loadTeam();
+
+    // Listen for custom event from header button
+    const handleOpenDialog = () => setShowInviteModal(true);
+    window.addEventListener('openAddMemberDialog', handleOpenDialog);
+    return () => window.removeEventListener('openAddMemberDialog', handleOpenDialog);
   }, []);
 
   const loadTeam = async () => {
@@ -128,16 +133,6 @@ export default function AdminTeam() {
 
   return (
     <div className="py-6 px-8">
-        {/* Header */}
-         <div className="mb-8 flex justify-end">
-           <Button 
-             onClick={() => setShowInviteModal(true)}
-             className="bg-[#3b82f6] hover:bg-[#2563eb] text-white shadow-sm"
-           >
-             <Plus className="w-4 h-4 mr-2" />
-             Add Member
-           </Button>
-         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-4 gap-6 mb-8">

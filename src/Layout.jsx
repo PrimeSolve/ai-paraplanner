@@ -65,6 +65,32 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
+  if (currentPageName === 'AdminTeam') {
+    pageActions = (
+      <button
+        onClick={() => {
+          // This is a workaround - we'll use a custom event
+          window.dispatchEvent(new CustomEvent('openAddMemberDialog'));
+        }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '10px 18px',
+          background: '#0F4C5C',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '14px',
+          fontWeight: 600,
+          cursor: 'pointer',
+        }}
+      >
+        + Add Member
+      </button>
+    );
+  }
+
   const pageContent = children;
 
   return (
