@@ -15,13 +15,13 @@ import { useRole } from '../components/RoleContext';
 
 // Special component to pass actions to the header
 function PageActions({ children }) {
-  return null;
+  return <>{children}</>;
 }
 PageActions.displayName = 'PageActions';
 
 // Special component to pass title to the header
 function PageTitle({ children }) {
-  return null;
+  return <>{children}</>;
 }
 PageTitle.displayName = 'PageTitle';
 
