@@ -44,9 +44,9 @@ export default function AppShell({ children, pageActions, pageTitle }) {
   // Get the original user's role (who is actually logged in)
   const originalRole = originalUser?.role || user?.role;
 
-  // Don't render sidebar for Fact Find, SOA Request, and Client portal pages (they have their own sidebars)
+  // Don't render sidebar for Fact Find, SOA Request detail, and Client portal pages (they have their own sidebars)
   const isSpecialLayout = location.pathname.includes('FactFind') || 
-                         location.pathname.includes('SOARequest') ||
+                         location.pathname.includes('SOARequestDetails') ||
                          location.pathname.includes('ClientDashboard') ||
                          location.pathname.includes('ClientDocuments') ||
                          location.pathname.includes('ClientMessages') ||
