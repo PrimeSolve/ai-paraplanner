@@ -193,12 +193,12 @@ export default function AdminSettings() {
                         )}
                       </div>
                       <div className="flex gap-3">
-                        <label>
+                        <label className="cursor-pointer">
                           <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                          <Button type="button" className="bg-[#3b82f6] hover:bg-[#2563eb] text-white cursor-pointer">
+                          <span className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors bg-[#3b82f6] hover:bg-[#2563eb] text-white h-9 px-4 py-2">
                             <Upload className="w-4 h-4 mr-2" />
                             Upload New Logo
-                          </Button>
+                          </span>
                         </label>
                         {logoPreview && (
                           <Button 
