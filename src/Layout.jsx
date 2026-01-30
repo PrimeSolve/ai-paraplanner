@@ -37,7 +37,7 @@ export default function Layout({ children, currentPageName }) {
 
   // For AdminAdviceGroups page specifically, pass the button directly
   let pageActions = null;
-  let pageTitle = 'Advice Groups';
+  let pageTitle = null;
   
   if (currentPageName === 'AdminAdviceGroups') {
     pageActions = (
@@ -63,8 +63,6 @@ export default function Layout({ children, currentPageName }) {
         + Add Advice Group
       </button>
     );
-  } else {
-    pageTitle = null;
   }
 
   const pageContent = children;
