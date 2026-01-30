@@ -95,8 +95,8 @@ export default function AdminSidebar({ currentPage }) {
                   to={createPageUrl(item.path)}
                   className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium no-underline transition-all mb-1 relative ${
                     isActive 
-                      ? 'bg-[#6366f1]/15 text-[#6366f1]' 
-                      : 'text-[#94a3b8] hover:bg-white/[0.05] hover:text-[#6366f1]'
+                      ? 'bg-white/10 text-white' 
+                      : 'text-[#94a3b8] hover:bg-white/[0.05] hover:text-white'
                   }`}
                 >
                   {isActive && (
