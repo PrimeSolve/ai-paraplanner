@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { base44 } from '@/api/base44Client';
+import { useRole } from '../RoleContext';
 import { 
         LayoutDashboard, 
         Users, 
@@ -13,19 +14,37 @@ import {
       } from 'lucide-react';
 
 export default function AdviserLayout({ children, currentPage }) {
+  const { navigationChain } = useRole();
   const [user, setUser] = useState(null);
+  const [adviser, setAdviser] = useState(null);
 
   useEffect(() => {
     const loadUser = async () => {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
+        
+        // Load adviser data
+        if (currentUser.id) {
+          const advisers = await base44.entities.Adviser.filter({ user_id: currentUser.id });
+          if (advisers.length > 0) {
+            setAdviser(advisers[0]);
+          }
+        }
       } catch (error) {
         console.error('Failed to load user:', error);
       }
     };
     loadUser();
   }, []);
+
+  const getSubtitle = () => {
+    if (navigationChain.length === 0) {
+      return 'ADVISER PORTAL';
+    }
+    const current = navigationChain[navigationChain.length - 1];
+    return `VIEWING ${current.type.toUpperCase()}`;
+  };
 
   const navItems = [
     { label: 'Dashboard', path: 'AdviserDashboard', icon: LayoutDashboard },
@@ -46,9 +65,9 @@ export default function AdviserLayout({ children, currentPage }) {
             </div>
             <div>
               <div className="font-['Fraunces'] text-xl font-semibold">
-                Adviser Portal
+                {adviser?.company || user?.full_name || 'Adviser'}
               </div>
-              <div className="text-xs text-white/70">{user?.full_name || 'Adviser'}</div>
+              <div className="text-xs text-white/70 uppercase tracking-wider">{getSubtitle()}</div>
             </div>
           </Link>
         </div>
