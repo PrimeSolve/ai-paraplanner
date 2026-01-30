@@ -70,14 +70,18 @@ export default function AdviceGroupLayout({ children, currentPage }) {
       <div className="w-64 bg-gradient-to-b from-[#0f172a] to-[#1e293b] fixed top-0 left-0 bottom-0 flex flex-col z-50">
         <div className="p-6 border-b border-white/10">
           <Link to={createPageUrl('AdviceGroupDashboard')} className="flex items-center gap-3 text-white no-underline">
-            <div className="w-10 h-10 bg-white/15 rounded-lg flex items-center justify-center font-bold">
-              {group?.name?.charAt(0) || 'AG'}
-            </div>
-            <div>
-              <div className="font-['Fraunces'] text-xl font-semibold">
-                {group?.name || 'Advice Group'}
+            {group?.logo_url ? (
+              <img src={group.logo_url} alt="Logo" className="w-10 h-10 rounded-lg object-cover" />
+            ) : (
+              <div className="w-10 h-10 bg-white/15 rounded-lg flex items-center justify-center font-bold">
+                {group?.name?.charAt(0) || 'AG'}
               </div>
-              <div className="text-xs text-white/50">Licensee Portal</div>
+            )}
+            <div>
+              <div className="text-xs text-white/50 font-medium">ADVICE GROUP PORTAL</div>
+              <div className="text-lg font-semibold">
+                {group?.settings?.business_name || group?.name || 'Advice Group'}
+              </div>
             </div>
           </Link>
         </div>
