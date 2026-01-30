@@ -109,11 +109,6 @@ export default function AdminAdviceGroups() {
 
   return (
     <div className="p-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-800">Advice Groups</h1>
-        </div>
-
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <button style={{ display: 'none' }} />
@@ -203,16 +198,7 @@ export default function AdminAdviceGroups() {
             </form>
           </DialogContent>
         </Dialog>
-        {/* Header */}
-         <div className="mb-8 flex justify-end">
-           <Button 
-             onClick={() => setDialogOpen(true)}
-             className="bg-blue-600 hover:bg-blue-700"
-           >
-             <Plus className="w-4 h-4 mr-2" />
-             Add Advice Group
-           </Button>
-         </div>
+
 
          {/* Stats Grid */}
          <div className="grid grid-cols-4 gap-6 mb-8">
