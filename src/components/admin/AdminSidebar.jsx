@@ -61,7 +61,7 @@ export default function AdminSidebar({ currentPage }) {
       {/* Logo */}
       <div className="h-16 px-6 flex items-center border-b border-white/[0.08]">
         <Link to={createPageUrl('AdminDashboard')} className="flex items-center gap-3 text-white no-underline">
-          <div className="w-10 h-10 bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] rounded-xl flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-900/30 overflow-hidden">
+          <div className="w-10 h-10 bg-[#1e293b] rounded-xl flex items-center justify-center font-bold text-sm shadow-lg overflow-hidden">
             {businessDetails?.logo_url ? (
               <img src={businessDetails.logo_url} alt="Logo" className="w-full h-full object-cover" />
             ) : (
