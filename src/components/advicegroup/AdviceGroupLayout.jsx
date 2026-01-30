@@ -60,8 +60,9 @@ export default function AdviceGroupLayout({ children, currentPage }) {
       { label: 'Completed SOAs', path: 'AdviceGroupCompleted', icon: FileText }
     ]},
     { section: 'TEAM', items: [
-      { label: 'Advisers', path: 'AdviceGroupAdvisers', icon: Users },
-      { label: 'Clients', path: 'AdviceGroupClients', icon: Users }
+      { label: 'Advisers', path: 'AdviceGroupAdvisers', icon: Users, submenu: [
+        { label: 'Clients', path: 'AdviceGroupClients', icon: Users }
+      ]}
     ]},
     { section: 'SOA MANAGEMENT', items: [
       { label: 'SOA Requests', path: 'AdviceGroupSOARequests', icon: FileText }
