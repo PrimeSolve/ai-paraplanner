@@ -71,11 +71,37 @@ export default function Layout({ children, currentPageName }) {
     <RoleProvider>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100" style={{ paddingTop: isInTestMode ? '40px' : '0' }}>
         <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
           :root {
             --primary: #1e293b;
             --primary-light: #334155;
             --accent: #f59e0b;
             --accent-dark: #d97706;
+          }
+
+          body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+          }
+
+          h1, h2, .page-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+          }
+
+          .stat-value {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+          }
+
+          .brand-name {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+          }
+
+          .card-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
           }
         `}</style>
         {hideNav ? children : <AppShell pageActions={pageActions} pageTitle={pageTitle}>{pageContent}</AppShell>}
