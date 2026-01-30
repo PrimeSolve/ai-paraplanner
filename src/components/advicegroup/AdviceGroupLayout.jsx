@@ -78,10 +78,10 @@ export default function AdviceGroupLayout({ children, currentPage }) {
               </div>
             )}
             <div>
-              <div className="text-xs text-white/50 font-medium">ADVICE GROUP PORTAL</div>
-              <div className="text-lg font-semibold">
+              <div className="text-sm font-semibold text-white">
                 {group?.name || 'Advice Group'}
               </div>
+              <div className="text-xs text-white/50 font-medium">ADVICE GROUP PORTAL</div>
             </div>
           </Link>
         </div>
