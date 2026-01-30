@@ -21,6 +21,7 @@ export default function AdviceGroupLayout({ children, currentPage }) {
   const { navigationChain } = useRole();
   const [user, setUser] = useState(null);
   const [group, setGroup] = useState(null);
+  const [expandedMenu, setExpandedMenu] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
