@@ -118,41 +118,51 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
       {/* Sidebar Navigation */}
       <div className="w-80 bg-gray-800 text-gray-200 flex flex-col border-r border-gray-900 fixed left-0 top-0 bottom-0 z-50">
         {/* Header */}
-        <div className="h-16 px-4 flex items-center gap-3 border-b border-gray-700 flex-shrink-0">
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-            <FileText className="w-5 h-5 text-white" />
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 16px',
+          borderBottom: '1px solid #374151',
+          height: '64px',
+          flexShrink: 0,
+        }}>
+          {/* Left: Icon + Title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <FileText className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-sm font-extrabold text-slate-50">SOA Request</div>
           </div>
-          <div className="text-sm font-extrabold text-slate-50">SOA Request</div>
+
+          {/* Right: Close button */}
           <button
             onClick={() => navigate(createPageUrl('AdviserSOARequests'))}
             style={{
-              width: '32px',
-              height: '32px',
+              width: '28px',
+              height: '28px',
               borderRadius: '6px',
-              border: '1px solid #4b5563',
-              background: '#374151',
+              border: '1px solid rgba(255,255,255,0.2)',
+              background: 'rgba(255,255,255,0.1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              color: '#9ca3af',
+              color: 'rgba(255,255,255,0.7)',
               transition: 'all 0.2s',
               flexShrink: 0,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#4b5563';
-              e.currentTarget.style.color = '#d1d5db';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+              e.currentTarget.style.color = 'rgba(255,255,255,0.9)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#374151';
-              e.currentTarget.style.color = '#9ca3af';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
             }}
             title="Exit SOA Request"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
+            ✕
           </button>
         </div>
 
