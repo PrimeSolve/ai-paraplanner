@@ -15,7 +15,7 @@ import { useRole } from '../components/RoleContext';
 
 // Special component to pass actions to the header
 function PageActions({ children }) {
-  return <>{children}</>;
+  return null;  // Don't render in page body, only in header
 }
 PageActions.displayName = 'PageActions';
 
