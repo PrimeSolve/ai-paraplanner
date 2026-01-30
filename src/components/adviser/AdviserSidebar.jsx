@@ -7,21 +7,40 @@ import { useRole } from '../RoleContext';
 
 export default function AdviserSidebar({ currentPage, loggedInUser }) {
   const [adviser, setAdviser] = useState(null);
+  const [logo, setLogo] = useState(null);
   const { switchedToId } = useRole();
 
   useEffect(() => {
-    const loadAdviser = async () => {
+    const loadAdviserAndLogo = async () => {
       if (switchedToId) {
         try {
           const adviserData = await base44.entities.Adviser.list();
           const selectedAdviser = adviserData.find(a => a.id === switchedToId);
           setAdviser(selectedAdviser);
+
+          // Try to get advice group's logo
+          if (selectedAdviser?.advice_group_id) {
+            const groups = await base44.entities.AdviceGroup.filter({ id: selectedAdviser.advice_group_id });
+            if (groups?.[0]?.logo_url) {
+              setLogo(groups[0].logo_url);
+              return;
+            }
+          }
+
+          // Fallback to admin's logo from localStorage
+          const businessDetails = localStorage.getItem('businessDetails');
+          if (businessDetails) {
+            const parsed = JSON.parse(businessDetails);
+            if (parsed?.logo_url) {
+              setLogo(parsed.logo_url);
+            }
+          }
         } catch (error) {
           console.error('Failed to load adviser:', error);
         }
       }
     };
-    loadAdviser();
+    loadAdviserAndLogo();
   }, [switchedToId]);
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: 'AdviserDashboard', id: 'dashboard' },
