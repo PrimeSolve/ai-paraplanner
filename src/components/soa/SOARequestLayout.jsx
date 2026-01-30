@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
 import {
@@ -103,6 +103,7 @@ const sectionGroups = [
 ];
 
 export default function SOARequestLayout({ children, currentSection, soaRequest }) {
+  const navigate = useNavigate();
   const [existingPosition, setExistingPosition] = useState(false);
 
   const getCompletionForSection = (sectionId) => {
@@ -118,6 +119,35 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
       <div className="w-80 bg-gray-800 text-gray-200 flex flex-col border-r border-gray-900 fixed left-0 top-0 bottom-0 z-50">
         {/* Header */}
         <div className="h-16 px-4 flex items-center gap-3 border-b border-gray-700 flex-shrink-0">
+          <button
+            onClick={() => navigate(createPageUrl('AdviserSOARequests'))}
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              border: '1px solid #4b5563',
+              background: '#374151',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: '#9ca3af',
+              transition: 'all 0.2s',
+              fontSize: '18px',
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#4b5563';
+              e.currentTarget.style.color = '#d1d5db';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#374151';
+              e.currentTarget.style.color = '#9ca3af';
+            }}
+            title="Exit SOA Request"
+          >
+            ✕
+          </button>
           <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
             <FileText className="w-5 h-5 text-white" />
           </div>
