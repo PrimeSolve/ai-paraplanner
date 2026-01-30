@@ -39,8 +39,8 @@ export default function AppHeader({ pageActions, pageTitle }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   
   const isFactFindPage = location.pathname.includes('FactFind');
-  const isSOARequestPage = location.pathname.includes('SOARequest');
-  const isSpecialLayout = isFactFindPage || isSOARequestPage;
+  const isSOARequestPage = location.pathname.includes('SOARequestDetails');
+  const isSpecialLayoutSidebar = location.pathname.includes('FactFind') || location.pathname.includes('SOARequest');
   const factFindId = new URLSearchParams(window.location.search).get('id');
 
   // The actual logged-in user (for profile display)
@@ -142,7 +142,7 @@ export default function AppHeader({ pageActions, pageTitle }) {
         )}
         {isViewingAs && (
           <>
-            {!isSpecialLayout && (
+            {!isSpecialLayoutSidebar && (
               <button
                 onClick={handleGoHome}
                 style={{
