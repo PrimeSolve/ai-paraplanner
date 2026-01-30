@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext } from 'react';
+import { base44 } from '@/api/base44Client';
 
 const RoleContext = createContext();
 
@@ -9,10 +10,53 @@ export function RoleProvider({ children }) {
   // Navigation chain: [{ type: 'advice_group', id: 123, name: 'PrimeSolve' }, { type: 'adviser', id: 456, name: 'Sarah Johnson' }]
   const [navigationChain, setNavigationChain] = useState([]);
 
-  const loadUserData = (userData) => {
-    setUser(userData);
+  const loadUserData = async (userData) => {
+    // Check if in test mode
+    const testModeUser = localStorage.getItem('test_mode_user');
+    if (testModeUser) {
+      const testUser = JSON.parse(testModeUser);
+      console.log('Test mode active, loading test user:', testUser);
+      
+      // Override userData with test user
+      userData = {
+        ...userData,
+        id: testUser.id,
+        email: testUser.email,
+        full_name: testUser.full_name,
+        role: testUser.role
+      };
+    }
+
+    // Check if user is linked to an Adviser, Client, or AdviceGroup
+    let linkedEntity = null;
+    if (userData.role === 'user') {
+      try {
+        // Check if linked to Adviser
+        const advisers = await base44.entities.Adviser.filter({ user_id: userData.id });
+        if (advisers.length > 0) {
+          linkedEntity = { type: 'adviser', data: advisers[0] };
+        } else {
+          // Check if linked to Client
+          const clients = await base44.entities.Client.filter({ user_id: userData.id });
+          if (clients.length > 0) {
+            linkedEntity = { type: 'client', data: clients[0] };
+          } else {
+            // Check if linked to AdviceGroup
+            const groups = await base44.entities.AdviceGroup.filter({ user_id: userData.id });
+            if (groups.length > 0) {
+              linkedEntity = { type: 'advice_group', data: groups[0] };
+            }
+          }
+        }
+        console.log('Linked entity:', linkedEntity);
+      } catch (error) {
+        console.error('Error loading linked entity:', error);
+      }
+    }
+    
+    setUser({ ...userData, linkedEntity });
     if (!originalUser) {
-      setOriginalUser(userData);
+      setOriginalUser({ ...userData, linkedEntity });
     }
   };
 

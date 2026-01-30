@@ -11,7 +11,8 @@ import {
   FileText, 
   Settings, 
   UsersRound,
-  Sparkles
+  Sparkles,
+  Database
 } from 'lucide-react';
 
 export default function AdminSidebar({ currentPage }) {
@@ -46,7 +47,8 @@ export default function AdminSidebar({ currentPage }) {
     { section: 'CONFIGURATION', items: [
       { label: 'SOA Template', path: 'AdminTemplate', icon: FileText },
       { label: 'Team', path: 'AdminTeam', icon: UsersRound },
-      { label: 'Settings', path: 'AdminSettings', icon: Settings }
+      { label: 'Settings', path: 'AdminSettings', icon: Settings },
+      { label: 'Test Setup', path: 'AdminTestSetup', icon: Database }
     ]}
   ];
 
