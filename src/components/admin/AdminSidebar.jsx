@@ -100,7 +100,7 @@ export default function AdminSidebar({ currentPage }) {
                   }`}
                 >
                   {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#6366f1] rounded-r-md" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-white rounded-r-md" />
                   )}
                   <Icon className="w-5 h-5" />
                   <span>{item.label}</span>
