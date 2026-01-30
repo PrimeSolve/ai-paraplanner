@@ -196,7 +196,7 @@ export default function AdminAdviceGroups() {
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                <Button type="submit" style={{ backgroundColor: '#0F4C5C' }} className="hover:opacity-90">
                   Create Advice Group
                 </Button>
               </div>
