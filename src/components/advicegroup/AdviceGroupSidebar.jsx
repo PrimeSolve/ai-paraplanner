@@ -247,5 +247,6 @@ export default function AdviceGroupSidebar({ currentPage, groupName }) {
         </Link>
       </div>
       </div>
-  );
-}
+      </div>
+      );
+      }
