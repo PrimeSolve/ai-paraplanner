@@ -40,7 +40,6 @@ export default function AppHeader({ pageActions, pageTitle }) {
   
   const isFactFindPage = location.pathname.includes('FactFind');
   const isSOARequestPage = location.pathname.includes('SOARequestDetails');
-  const isSpecialLayoutSidebar = location.pathname.includes('FactFind') || location.pathname.includes('SOARequest');
   const factFindId = new URLSearchParams(window.location.search).get('id');
 
   // The actual logged-in user (for profile display)
@@ -142,35 +141,33 @@ export default function AppHeader({ pageActions, pageTitle }) {
         )}
         {isViewingAs && (
           <>
-            {!isSpecialLayoutSidebar && (
-              <button
-                onClick={handleGoHome}
-                style={{
-                  marginLeft: '16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 12px',
-                  background: '#eff6ff',
-                  border: '1px solid #bfdbfe',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  color: '#3b82f6',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#dbeafe';
-                  e.currentTarget.style.borderColor = '#93c5fd';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#eff6ff';
-                  e.currentTarget.style.borderColor = '#bfdbfe';
-                }}
-                title="Return to my dashboard"
-              >
-                <Home size={18} />
-              </button>
-            )}
+            <button
+              onClick={handleGoHome}
+              style={{
+                marginLeft: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                background: '#eff6ff',
+                border: '1px solid #bfdbfe',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                color: '#3b82f6',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#dbeafe';
+                e.currentTarget.style.borderColor = '#93c5fd';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#eff6ff';
+                e.currentTarget.style.borderColor = '#bfdbfe';
+              }}
+              title="Return to my dashboard"
+            >
+              <Home size={18} />
+            </button>
 
             {/* Breadcrumb trail */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
