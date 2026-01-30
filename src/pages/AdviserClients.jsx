@@ -211,7 +211,7 @@ export default function AdviserClients() {
                         </td>
                         <td style={{ padding: '16px 24px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Link to={createPageUrl(`AdviserClientDetail?id=${client.id}`)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #e2e8f0', color: '#3b82f6', fontSize: '13px', fontWeight: '500', cursor: 'pointer', borderRadius: '8px', textDecoration: 'none', display: 'inline-block' }}>
+                            <Link to={createPageUrl(`ClientDashboard?client_email=${client.email}`)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #e2e8f0', color: '#3b82f6', fontSize: '13px', fontWeight: '500', cursor: 'pointer', borderRadius: '8px', textDecoration: 'none', display: 'inline-block' }}>
                               View
                             </Link>
                             <DropdownMenu>
