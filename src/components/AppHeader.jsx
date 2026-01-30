@@ -40,6 +40,7 @@ export default function AppHeader({ pageActions, pageTitle }) {
   
   const isFactFindPage = location.pathname.includes('FactFind');
   const isSOARequestPage = location.pathname.includes('SOARequestDetails');
+  const isSOARequestAnyPage = location.pathname.includes('SOARequest');
   const factFindId = new URLSearchParams(window.location.search).get('id');
 
   // The actual logged-in user (for profile display)
@@ -119,7 +120,7 @@ export default function AppHeader({ pageActions, pageTitle }) {
       height: '64px',
       background: '#ffffff',
       borderBottom: '1px solid #e2e8f0',
-      paddingLeft: location.pathname.includes('FactFind') || location.pathname.includes('SOARequest') || location.pathname.includes('Client') ? '288px' : '260px',
+      paddingLeft: isSOARequestAnyPage ? '320px' : (location.pathname.includes('FactFind') || location.pathname.includes('Client') ? '288px' : '260px'),
       paddingRight: '32px',
       display: 'flex',
       alignItems: 'center',
