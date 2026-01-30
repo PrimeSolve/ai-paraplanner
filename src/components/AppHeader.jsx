@@ -119,7 +119,7 @@ export default function AppHeader() {
       height: '64px',
       background: '#ffffff',
       borderBottom: '1px solid #e2e8f0',
-      paddingLeft: location.pathname.includes('FactFind') || location.pathname.includes('SOARequest') ? '32px' : '260px',
+      paddingLeft: location.pathname.includes('FactFind') || location.pathname.includes('SOARequest') || location.pathname.includes('Client') ? '288px' : '260px',
       paddingRight: '32px',
       display: 'flex',
       alignItems: 'center',
