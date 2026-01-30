@@ -28,11 +28,19 @@ export default function MockTestMode() {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const [advisers, clients, adviceGroups] = await Promise.all([
-        base44.entities.Adviser.list(),
-        base44.entities.Client.list(),
-        base44.entities.AdviceGroup.list()
+      // Fetch from both dev and prod databases
+      const [advisersDev, clientsDev, adviceGroupsDev, advisersProd, clientsProd, adviceGroupsProd] = await Promise.all([
+        base44.entities.Adviser.list('dev'),
+        base44.entities.Client.list('dev'),
+        base44.entities.AdviceGroup.list('dev'),
+        base44.entities.Adviser.list('prod'),
+        base44.entities.Client.list('prod'),
+        base44.entities.AdviceGroup.list('prod')
       ]);
+
+      const advisers = [...advisersDev, ...advisersProd];
+      const clients = [...clientsDev, ...clientsProd];
+      const adviceGroups = [...adviceGroupsDev, ...adviceGroupsProd];
 
       const allEntities = [
         ...adviceGroups.map(ag => ({
