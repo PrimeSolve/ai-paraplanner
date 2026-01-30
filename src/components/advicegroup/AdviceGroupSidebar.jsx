@@ -64,44 +64,19 @@ const NavItem = ({ item, isActive }) => {
   return (
     <Link
       to={createPageUrl(pageMap[item.id])}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '12px 14px',
-        borderRadius: '10px',
-        color: isActive ? '#6366f1' : colors.sidebar.text,
-        backgroundColor: isActive ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
-        textDecoration: 'none',
-        fontSize: '14px',
-        fontWeight: 500,
-        transition: 'all 0.2s ease',
-        marginBottom: '4px',
-      }}
-      onMouseEnter={(e) => {
-        if (!isActive) {
-          e.currentTarget.style.backgroundColor = colors.sidebar.hover;
-          e.currentTarget.style.color = '#6366f1';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isActive) {
-          e.currentTarget.style.backgroundColor = 'transparent';
-          e.currentTarget.style.color = colors.sidebar.text;
-        }
-      }}
+      className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium no-underline transition-all mb-1 relative ${
+        isActive 
+          ? 'bg-white/10 text-white' 
+          : 'text-[#94a3b8] hover:bg-white/[0.05] hover:text-white'
+      }`}
     >
-      <Icon size={20} />
-      <span style={{ flex: 1 }}>{item.label}</span>
+      {isActive && (
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-white rounded-r-md" />
+      )}
+      <Icon className="w-5 h-5" />
+      <span>{item.label}</span>
       {item.badge && (
-        <span style={{
-          padding: '2px 8px',
-          backgroundColor: '#6366f1',
-          color: 'white',
-          fontSize: '11px',
-          fontWeight: 700,
-          borderRadius: '10px',
-        }}>
+        <span className="ml-auto bg-[#f97316] text-white text-[11px] font-bold px-2 py-0.5 rounded-xl">
           {item.badge}
         </span>
       )}
@@ -110,17 +85,9 @@ const NavItem = ({ item, isActive }) => {
 };
 
 const NavSection = ({ title, items, currentPage }) => (
-  <div style={{ marginBottom: '24px' }}>
+  <div className="mb-7">
     {title && (
-      <div style={{
-        fontSize: '11px',
-        fontWeight: 700,
-        color: colors.sidebar.text,
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-        padding: '0 12px',
-        marginBottom: '8px',
-      }}>
+      <div className="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
         {title}
       </div>
     )}
@@ -178,6 +145,27 @@ export default function AdviceGroupSidebar({ currentPage, groupName }) {
     return () => window.removeEventListener('businessDetailsUpdated', handleUpdate);
   }, [originalUser]);
 
+  const getPageId = () => {
+    const pageMap = {
+      'dashboard': 'dashboard',
+      'soa-requests': 'soa-requests',
+      'completed': 'completed',
+      'advisers': 'advisers',
+      'template': 'template',
+      'risk-profiles': 'risk-profiles',
+      'portfolios': 'portfolios',
+      'settings': 'settings',
+    };
+    
+    // Match currentPage with nav item IDs
+    for (const [key, value] of Object.entries(pageMap)) {
+      if (currentPage === value || currentPage === navConfig.overview.find(i => i.id === key)?.label.toLowerCase().replace(/\s+/g, '-')) {
+        return key;
+      }
+    }
+    return currentPage;
+  };
+
   const getCompanyName = () => {
     if (originalUser?.role === 'admin') {
       return businessDetails?.company_name || 'AI Paraplanner';
@@ -204,134 +192,60 @@ export default function AdviceGroupSidebar({ currentPage, groupName }) {
       display: 'flex',
       flexDirection: 'column',
       zIndex: 100,
-      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
     }}>
-      <div style={{
-        height: '64px',
-        padding: '0 20px',
-        display: 'flex',
-        alignItems: 'center',
-        borderBottom: `1px solid rgba(255, 255, 255, 0.1)`,
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '14px',
-        }}>
-          <div style={{
-            width: '44px',
-            height: '44px',
-            background: logo ? '#1e293b' : `linear-gradient(135deg, ${colors.accent.blue}, ${colors.accent.blueDeep})`,
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 700,
-            color: 'white',
-            fontSize: '16px',
-            overflow: 'hidden',
-          }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+        #advice-group-sidebar {
+          font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+      `}</style>
+      <div id="advice-group-sidebar" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div className="h-16 px-6 flex items-center border-b border-white/[0.08]">
+        <Link to={createPageUrl('AdviceGroupDashboard')} className="flex items-center gap-3 text-white no-underline">
+          <div className="w-10 h-10 bg-[#1e293b] rounded-xl flex items-center justify-center font-bold text-sm shadow-lg overflow-hidden">
             {logo ? (
-              <img src={logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={logo} alt="Logo" className="w-full h-full object-cover" />
             ) : (
               'AI'
             )}
           </div>
           <div>
-            <div style={{
-              fontSize: '12px',
-              color: 'white',
-              fontWeight: 600,
-            }}>
+            <div className="text-white text-sm font-bold">
               {getCompanyName()}
             </div>
-            <div style={{
-              fontSize: '11px',
-              color: colors.sidebar.text,
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              marginTop: '2px'
-            }}>
+            <div className="text-[#94a3b8] text-xs font-medium uppercase tracking-wide">
               {getSubtitle()}
             </div>
           </div>
-        </div>
+        </Link>
       </div>
 
-      <nav style={{
-        flex: 1,
-        padding: '20px 12px',
-        overflowY: 'auto',
-      }}>
+      <nav className="flex-1 py-6 px-4 overflow-y-auto">
         <NavSection title="OVERVIEW" items={navConfig.overview} currentPage={currentPage} />
         <NavSection title="TEAM" items={navConfig.team} currentPage={currentPage} />
         <NavSection title="CONFIGURATION" items={navConfig.config} currentPage={currentPage} />
       </nav>
 
-      <div style={{
-        padding: '16px',
-        borderTop: `1px solid rgba(255, 255, 255, 0.1)`,
-      }}>
-        <Link
-          to={createPageUrl('AdviceGroupHelp')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '12px',
-            background: 'linear-gradient(to right, #6366f1, #8b5cf6)',
-            borderRadius: '12px',
-            color: 'white',
-            textDecoration: 'none',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(to right, #4f46e5, #7c3aed)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(to right, #6366f1, #8b5cf6)';
-          }}
-        >
-          <div style={{
-            width: '36px',
-            height: '36px',
-            background: 'rgba(255, 255, 255, 0.2)',
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <Sparkles size={20} style={{ color: 'white' }} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              color: 'white',
-              fontWeight: 600,
-              fontSize: '14px',
-            }}>
-              AI Assistant
+      <div className="p-4">
+        <Link to={createPageUrl('AdviceGroupHelp')} className="no-underline">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] hover:from-[#4f46e5] hover:to-[#7c3aed] cursor-pointer transition-all shadow-lg shadow-purple-900/30">
+            <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <div style={{
-              color: 'rgba(255, 255, 255, 0.8)',
-              fontSize: '12px',
-            }}>
-              Ask for help
+            <div className="flex-1 min-w-0">
+              <div className="text-white font-semibold text-sm">
+                AI Assistant
+              </div>
+              <div className="text-white/80 text-xs">
+                Ask for help
+              </div>
             </div>
-          </div>
-          <div style={{
-            width: '24px',
-            height: '24px',
-            background: 'rgba(255, 255, 255, 0.2)',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <span style={{ color: 'white', fontSize: '12px', fontWeight: 700 }}>?</span>
+            <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-bold">?</span>
+            </div>
           </div>
         </Link>
       </div>
-    </div>
+      </div>
   );
 }
