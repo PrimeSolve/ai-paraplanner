@@ -372,8 +372,8 @@ export default function AdminAdviceGroups() {
           </div>
 
           {/* Pagination */}
-          <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
-            <span className="text-sm text-slate-600">Showing 1-8 of 8 advice groups</span>
+           <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+             <span className="text-sm text-slate-600">Showing 1-{Math.min(filteredGroups.length, 8)} of {filteredGroups.length} advice groups</span>
             <div className="flex items-center gap-2">
               <button className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
                 ← Prev
