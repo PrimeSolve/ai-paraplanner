@@ -13,6 +13,12 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { useRole } from '../components/RoleContext';
 
+// Special component to pass actions to the header
+function PageActions({ children }) {
+  return null;
+}
+PageActions.displayName = 'PageActions';
+
 export default function AdminAdviceGroups() {
   const navigate = useNavigate();
   const { switchRole } = useRole();
@@ -108,7 +114,18 @@ export default function AdminAdviceGroups() {
   };
 
   return (
-    <div className="p-8">
+    <>
+      <PageActions>
+        <Button 
+          onClick={() => setDialogOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Advice Group
+        </Button>
+      </PageActions>
+      
+      <div className="p-8">
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <button style={{ display: 'none' }} />
@@ -382,6 +399,7 @@ export default function AdminAdviceGroups() {
             </div>
           </div>
           </div>
-          </div>
-          );
-          }
+      </div>
+    </>
+  );
+}

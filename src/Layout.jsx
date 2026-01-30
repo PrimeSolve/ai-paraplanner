@@ -35,6 +35,15 @@ export default function Layout({ children, currentPageName }) {
   // Check if in test mode for top padding
   const isInTestMode = typeof window !== 'undefined' && !!localStorage.getItem('test_mode_entity');
 
+  // Extract page actions if provided by the page component
+  const pageActions = React.Children.toArray(children).find(
+    child => child?.type?.displayName === 'PageActions'
+  )?.props?.children;
+
+  const pageContent = React.Children.toArray(children).filter(
+    child => child?.type?.displayName !== 'PageActions'
+  );
+
   return (
     <RoleProvider>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100" style={{ paddingTop: isInTestMode ? '40px' : '0' }}>
@@ -46,7 +55,7 @@ export default function Layout({ children, currentPageName }) {
             --accent-dark: #d97706;
           }
         `}</style>
-        {hideNav ? children : <AppShell>{children}</AppShell>}
+        {hideNav ? children : <AppShell pageActions={pageActions}>{pageContent}</AppShell>}
       </div>
     </RoleProvider>
   );

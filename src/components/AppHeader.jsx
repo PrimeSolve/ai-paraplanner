@@ -22,7 +22,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-export default function AppHeader() {
+export default function AppHeader({ pageActions }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { 
@@ -185,8 +185,9 @@ export default function AppHeader() {
         )}
       </div>
 
-      {/* Right side: Fact Find / SOA Request Buttons + User menu */}
+      {/* Right side: Page Actions + Fact Find / SOA Request Buttons + User menu */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {pageActions}
         {isFactFindPage && (
           <>
             {/* Talk to Assistant */}
