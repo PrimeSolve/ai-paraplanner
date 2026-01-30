@@ -78,21 +78,23 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
           <div style={{
             width: '44px',
             height: '44px',
-            background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+            background: logo ? '#1e293b' : 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
             borderRadius: '12px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontWeight: '700',
             color: 'white',
-            fontSize: '16px'
+            fontSize: '16px',
+            overflow: 'hidden'
           }}>
-            AI
+            {logo ? (
+              <img src={logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              'AI'
+            )}
           </div>
           <div>
-            <div style={{ fontWeight: '700', fontSize: '16px', color: 'white' }}>
-              AI Paraplanner
-            </div>
             <div style={{ fontSize: '12px', color: '#94a3b8' }}>
               {adviser ? `${adviser.first_name} ${adviser.last_name}` : 'Adviser Portal'}
             </div>
