@@ -96,7 +96,7 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
           </div>
           <div>
             <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-              {adviser ? `${adviser.first_name} ${adviser.last_name}` : 'Adviser Portal'}
+              Adviser portal
             </div>
           </div>
         </Link>
