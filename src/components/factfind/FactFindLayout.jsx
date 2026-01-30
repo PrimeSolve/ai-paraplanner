@@ -68,6 +68,7 @@ const sectionGroups = [
 ];
 
 export default function FactFindLayout({ children, currentSection, factFind }) {
+  const navigate = useNavigate();
   const [showDashboard, setShowDashboard] = useState(false);
 
   const getCompletionForSection = (sectionId) => {
