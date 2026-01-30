@@ -11,7 +11,7 @@ import AdviserSidebar from './adviser/AdviserSidebar';
 // Import unified header
 import AppHeader from './AppHeader';
 
-export default function AppShell({ children, pageActions }) {
+export default function AppShell({ children, pageActions, pageTitle }) {
   const { navigationChain, originalUser, user, isViewingAs, loadUserData } = useRole();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
@@ -139,7 +139,7 @@ export default function AppShell({ children, pageActions }) {
     <div className="flex min-h-screen bg-[#f8fafc]">
       {renderSidebar()}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: isSpecialLayout ? '0' : '64px', marginLeft: isSpecialLayout ? '0' : '260px' }}>
-        <AppHeader pageActions={pageActions} />
+        <AppHeader pageActions={pageActions} pageTitle={pageTitle} />
         <main className="flex-1">
           {children}
         </main>

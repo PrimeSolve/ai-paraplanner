@@ -22,7 +22,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-export default function AppHeader({ pageActions }) {
+export default function AppHeader({ pageActions, pageTitle }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { 
@@ -126,8 +126,19 @@ export default function AppHeader({ pageActions }) {
       justifyContent: 'space-between',
       zIndex: 40,
     }}>
-      {/* Left side: Home button + Breadcrumbs */}
+      {/* Left side: Home button + Breadcrumbs OR Page Title */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {pageTitle && !isViewingAs && (
+          <h1 style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontWeight: 700,
+            fontSize: '20px',
+            color: '#111827',
+            margin: 0
+          }}>
+            {pageTitle}
+          </h1>
+        )}
         {isViewingAs && (
           <>
             <button

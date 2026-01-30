@@ -19,6 +19,12 @@ function PageActions({ children }) {
 }
 PageActions.displayName = 'PageActions';
 
+// Special component to pass title to the header
+function PageTitle({ children }) {
+  return <>{children}</>;
+}
+PageTitle.displayName = 'PageTitle';
+
 export default function AdminAdviceGroups() {
   const navigate = useNavigate();
   const { switchRole } = useRole();
@@ -115,6 +121,7 @@ export default function AdminAdviceGroups() {
 
   return (
     <>
+      <PageTitle>Advice Groups</PageTitle>
       <PageActions>
         <Button 
           onClick={() => setDialogOpen(true)}
