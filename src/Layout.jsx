@@ -32,9 +32,12 @@ export default function Layout({ children, currentPageName }) {
   const noNavPages = ['Whitepaper', 'PublicHome', 'PublicAbout', 'PublicPricing', 'PublicContact', 'Register', 'SignIn'];
   const hideNav = noNavPages.includes(currentPageName);
 
+  // Check if in test mode for top padding
+  const isInTestMode = typeof window !== 'undefined' && !!localStorage.getItem('test_mode_user');
+
   return (
     <RoleProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100" style={{ paddingTop: isInTestMode ? '40px' : '0' }}>
         <style>{`
           :root {
             --primary: #1e293b;

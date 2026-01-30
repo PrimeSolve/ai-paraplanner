@@ -90,22 +90,39 @@ export default function TestModeSwitcher() {
 
   const handleSwitchUser = async (user) => {
     try {
-      toast.loading('Switching user...');
+      // Store the test user in localStorage
+      localStorage.setItem('test_mode_user', JSON.stringify({
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+        userType: user.userType
+      }));
       
-      // In a real implementation, you'd call a backend endpoint to switch users
-      // For now, we'll show a message that this requires backend support
-      toast.dismiss();
-      toast.info(`Test mode: Would switch to ${user.email}. This requires backend support to fully implement.`);
+      toast.success(`Switched to ${user.displayName}`);
       
-      // For demo purposes, you could reload with a query param
-      // window.location.href = `?test_user=${user.email}`;
+      // Reload the page to apply the test mode
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
       
       setOpen(false);
     } catch (error) {
-      toast.dismiss();
       toast.error('Failed to switch user');
     }
   };
+
+  const handleExitTestMode = () => {
+    localStorage.removeItem('test_mode_user');
+    toast.success('Exited test mode');
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
+  };
+
+  // Check if currently in test mode
+  const testModeUser = localStorage.getItem('test_mode_user');
+  const isInTestMode = !!testModeUser;
 
   const getUserIcon = (userType) => {
     switch(userType) {
@@ -133,13 +150,34 @@ export default function TestModeSwitcher() {
   const isCurrentUser = (user) => currentUser?.email === user.email;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Users className="w-4 h-4" />
-          Test Mode
-        </Button>
-      </DialogTrigger>
+    <>
+      {isInTestMode && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 flex items-center justify-between shadow-lg">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Users className="w-4 h-4" />
+            Test Mode Active: {JSON.parse(testModeUser).full_name || JSON.parse(testModeUser).email}
+          </div>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={handleExitTestMode}
+            className="h-7 text-xs"
+          >
+            Exit Test Mode
+          </Button>
+        </div>
+      )}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button 
+            variant={isInTestMode ? "default" : "outline"} 
+            size="sm" 
+            className={`gap-2 ${isInTestMode ? 'bg-orange-500 hover:bg-orange-600 text-white' : ''}`}
+          >
+            <Users className="w-4 h-4" />
+            Test Mode
+          </Button>
+        </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -224,16 +262,30 @@ export default function TestModeSwitcher() {
           )}
         </div>
 
-        <div className="pt-3 border-t text-sm text-gray-600">
-          <div className="flex items-start gap-2">
+        <div className="pt-3 border-t">
+          {isInTestMode && (
+            <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-start gap-2 text-sm">
+                <span className="text-orange-600">⚠️</span>
+                <div>
+                  <p className="font-medium text-orange-900 mb-1">Currently in Test Mode</p>
+                  <p className="text-orange-700 text-xs">
+                    You're viewing the app as: <strong>{JSON.parse(testModeUser).full_name || JSON.parse(testModeUser).email}</strong>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="flex items-start gap-2 text-sm text-gray-600">
             <span className="text-blue-600">ℹ️</span>
             <p>
-              <strong>Note:</strong> Full user switching requires backend authentication support. 
-              Currently showing available test users. To fully implement, connect this to your auth system.
+              <strong>Test Mode:</strong> Click "Switch" to impersonate any user and test the application from their perspective. 
+              The app will reload with the selected user's session.
             </p>
           </div>
         </div>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+    </>
   );
 }
