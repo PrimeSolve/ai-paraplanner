@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { base44 } from '@/api/base44Client';
+import { useRole } from '../RoleContext';
 import { 
   LayoutDashboard, 
   Users, 
@@ -17,6 +18,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function AdviceGroupLayout({ children, currentPage }) {
+  const { navigationChain } = useRole();
   const [user, setUser] = useState(null);
   const [group, setGroup] = useState(null);
 
@@ -43,6 +45,14 @@ export default function AdviceGroupLayout({ children, currentPage }) {
     window.addEventListener('userProfileUpdated', handleProfileUpdate);
     return () => window.removeEventListener('userProfileUpdated', handleProfileUpdate);
   }, []);
+
+  const getSubtitle = () => {
+    if (navigationChain.length === 0) {
+      return 'ADVICE GROUP PORTAL';
+    }
+    const current = navigationChain[navigationChain.length - 1];
+    return `VIEWING ${current.type.toUpperCase()}`;
+  };
 
   const navItems = [
     { section: 'OVERVIEW', items: [
@@ -81,7 +91,7 @@ export default function AdviceGroupLayout({ children, currentPage }) {
               <div className="text-sm font-semibold text-white">
                 {group?.name || 'Advice Group'}
               </div>
-              <div className="text-xs text-white/50 font-medium">ADVICE GROUP PORTAL</div>
+              <div className="text-xs text-white/50 font-medium uppercase tracking-wider">{getSubtitle()}</div>
             </div>
           </Link>
         </div>
