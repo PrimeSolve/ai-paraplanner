@@ -131,7 +131,7 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
             )}
           </div>
           <div>
-            <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+            <div style={{ fontSize: '12px', color: 'white', fontWeight: 600 }}>
               {getCompanyName()}
             </div>
             <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '2px' }}>

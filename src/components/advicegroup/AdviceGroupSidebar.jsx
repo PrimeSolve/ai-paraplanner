@@ -240,7 +240,8 @@ export default function AdviceGroupSidebar({ currentPage, groupName }) {
           <div>
             <div style={{
               fontSize: '12px',
-              color: colors.sidebar.text,
+              color: 'white',
+              fontWeight: 600,
             }}>
               {getCompanyName()}
             </div>
