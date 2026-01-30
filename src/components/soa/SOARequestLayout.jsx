@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
 import {
-  Upload, Home, FileText, TrendingUp, Shield, PieChart,
+  Upload, FileText, TrendingUp, Shield, PieChart,
   DollarSign, Building2, CheckCircle2, MessageSquare
 } from 'lucide-react';
 
@@ -104,7 +104,6 @@ const sectionGroups = [
 
 export default function SOARequestLayout({ children, currentSection, soaRequest }) {
   const [existingPosition, setExistingPosition] = useState(false);
-  const navigate = useNavigate();
 
   const getCompletionForSection = (sectionId) => {
     // TODO: Implement completion tracking
@@ -117,18 +116,10 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
     <div className="flex h-screen bg-slate-50 overflow-hidden">
       {/* Sidebar Navigation */}
       <div className="w-80 bg-gray-800 text-gray-200 flex flex-col border-r border-gray-900 fixed left-0 top-0 bottom-0 z-50">
-        {/* Header with Home Button */}
+        {/* Header */}
         <div className="h-16 px-4 flex items-center gap-3 border-b border-gray-700 flex-shrink-0">
-          <button 
-            onClick={() => navigate(-1)}
-            className="p-1.5 rounded-lg hover:bg-gray-700 transition-colors flex-shrink-0"
-          >
-            <Home className="w-5 h-5 text-gray-300 hover:text-white" />
-          </button>
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-600 flex flex-col justify-center px-2 py-1.5 gap-1 shadow-lg flex-shrink-0">
-            <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '70%'}}></div>
-            <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '55%'}}></div>
-            <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '80%'}}></div>
+          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+            <FileText className="w-5 h-5 text-white" />
           </div>
           <div className="text-sm font-extrabold text-slate-50">SOA Request</div>
         </div>
