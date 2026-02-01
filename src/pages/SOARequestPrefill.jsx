@@ -126,15 +126,19 @@ export default function SOARequestPrefill() {
 
   return (
     <SOARequestLayout currentSection="prefill" soaRequest={soaRequest}>
-      {/* Dark Banner */}
-      <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderBottom: '1px solid #334155' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>Prefill</h1>
-        <p style={{ fontSize: '14px', color: '#CBD5E1', lineHeight: '1.5' }}>
-          Upload documents such as file notes, insurance quotes, cashflow modelling to build the form faster
-        </p>
-      </div>
-
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
+        {/* Dark Banner */}
+        <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderRadius: '16px 16px 0 0', marginBottom: '0' }}>
+          <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#FFFFFF', margin: '0 0 4px 0', letterSpacing: '-0.01em' }}>
+            Prefill
+          </h1>
+          <p style={{ fontSize: '14px', fontWeight: 400, color: '#94A3B8', margin: 0 }}>
+            Upload documents such as file notes, insurance quotes, cashflow modelling to build the form faster
+          </p>
+        </div>
+
+        {/* White Content Card */}
+        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none', padding: '24px 32px' }}>
         <div className="w-full space-y-6">
           {/* Info Card */}
           <Card className="border-blue-200 bg-blue-50">
