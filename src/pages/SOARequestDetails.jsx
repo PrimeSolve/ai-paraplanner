@@ -265,18 +265,21 @@ export default function SOARequestDetails() {
 
   return (
     <SOARequestLayout currentSection="details" soaRequest={soaRequest}>
-      <div className="flex-1 overflow-auto bg-slate-50">
-        {/* Header */}
-        <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderRadius: '16px 16px 0 0' }}>
-          <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#FFFFFF', margin: '0 0 4px 0', letterSpacing: '-0.01em' }}>
-            SOA Details
-          </h1>
-          <p style={{ fontSize: '14px', fontWeight: 400, color: '#94A3B8', margin: 0 }}>
-            Configure sections, reorder, and provide tips for generating the SOA.
-          </p>
-        </div>
+      <div className="flex-1 overflow-auto bg-slate-50 p-6">
+        <div className="w-full">
+          {/* Dark Banner */}
+          <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderRadius: '16px 16px 0 0' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#FFFFFF', margin: '0 0 4px 0', letterSpacing: '-0.01em' }}>
+              SOA Details
+            </h1>
+            <p style={{ fontSize: '14px', fontWeight: 400, color: '#94A3B8', margin: 0 }}>
+              Configure sections, reorder, and provide tips for generating the SOA.
+            </p>
+          </div>
 
-        <div className="p-6 space-y-6">
+          {/* White Content Card */}
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>
+            <div className="p-6 space-y-6">
           {/* Scope Notice */}
           <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
             <span className="text-xl">💡</span>
