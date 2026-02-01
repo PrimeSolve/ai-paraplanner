@@ -231,6 +231,7 @@ export default function SOARequestPrefill() {
             </Button>
           </div>
         </div>
+        </div>
       </div>
     </SOARequestLayout>
   );
