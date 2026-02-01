@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -282,8 +281,6 @@ export default function SOARequestTransactions() {
     if (!confirm('Delete this purchase?')) return;
     setBuyTransactions(buyTransactions.filter(b => b.id !== id));
     if (editingBuyId === id) setEditingBuyId(null);
-    
-    // Update asset options to remove deleted buy transaction
     setAssetOptions(assetOptions.filter(a => a.value !== id));
   };
 
@@ -483,42 +480,46 @@ export default function SOARequestTransactions() {
 
             {/* Tab Content */}
             <div style={{ padding: '24px 32px' }}>
-
-              {/* Tab Content */}
-              <div className="p-6">
-                {/* ================================================================ */}
-                {/* BUY TAB */}
-                {/* ================================================================ */}
-                {activeTab === 'buy' && (
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-lg font-bold text-slate-800">Asset Purchases</h3>
-                      <Button onClick={addBuyTransaction} className="bg-green-600 hover:bg-green-700">
+              {/* ================================================================ */}
+              {/* BUY TAB */}
+              {/* ================================================================ */}
+              {activeTab === 'buy' && (
+                <div>
+                  {buyTransactions.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16">
+                      <div className="text-5xl mb-6">🛒</div>
+                      <h3 className="text-2xl font-bold text-slate-900 mb-2">Do you have any purchases?</h3>
+                      <p className="text-slate-600 text-center mb-8 max-w-md">
+                        Add assets you want to buy as part of this advice
+                      </p>
+                      <Button onClick={addBuyTransaction} style={{ backgroundColor: '#7C3AED', color: '#FFFFFF' }} className="hover:opacity-90 shadow-lg">
                         <Plus className="w-4 h-4 mr-2" />
                         Add Purchase
                       </Button>
                     </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-bold text-slate-800">Asset Purchases</h3>
+                        <Button onClick={addBuyTransaction} style={{ backgroundColor: '#7C3AED', color: '#FFFFFF' }} className="hover:opacity-90">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Purchase
+                        </Button>
+                      </div>
 
-                    {/* Summary Table */}
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Asset Type</TableHead>
-                          <TableHead>Owner</TableHead>
-                          <TableHead className="text-right">Amount</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {buyTransactions.length === 0 ? (
+                      {/* Summary Table */}
+                      <Table>
+                        <TableHeader>
                           <TableRow>
-                            <TableCell colSpan={5} className="text-center text-slate-500 py-8">
-                              No purchases added yet. Click "Add Purchase" to get started.
-                            </TableCell>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Asset Type</TableHead>
+                            <TableHead>Owner</TableHead>
+                            <TableHead className="text-right">Amount</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        ) : (
-                          buyTransactions.map(buy => (
+                        </TableHeader>
+                        <TableBody>
+                          {buyTransactions.map(buy => (
                             <TableRow key={buy.id} className="cursor-pointer hover:bg-slate-50">
                               <TableCell>{buy.description || '(No description)'}</TableCell>
                               <TableCell>{getAssetTypeLabel(buy.asset_type)}</TableCell>
@@ -543,57 +544,65 @@ export default function SOARequestTransactions() {
                                 </Button>
                               </TableCell>
                             </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
+                          ))}
+                        </TableBody>
+                      </Table>
 
-                    {/* Detail Panel */}
-                    {editingBuyId && (
-                      <BuyDetailPanel
-                        buy={buyTransactions.find(b => b.id === editingBuyId)}
-                        ownerOptions={ownerOptions}
-                        modelOptions={modelOptions}
-                        debtOptions={debtOptions}
-                        onUpdate={(field, value) => updateBuyTransaction(editingBuyId, field, value)}
-                        onClose={() => setEditingBuyId(null)}
-                      />
-                    )}
-                  </div>
-                )}
+                      {/* Detail Panel */}
+                      {editingBuyId && (
+                        <BuyDetailPanel
+                          buy={buyTransactions.find(b => b.id === editingBuyId)}
+                          ownerOptions={ownerOptions}
+                          modelOptions={modelOptions}
+                          debtOptions={debtOptions}
+                          onUpdate={(field, value) => updateBuyTransaction(editingBuyId, field, value)}
+                          onClose={() => setEditingBuyId(null)}
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
 
-                {/* ================================================================ */}
-                {/* SELL TAB */}
-                {/* ================================================================ */}
-                {activeTab === 'sell' && (
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-lg font-bold text-slate-800">Asset Sales</h3>
-                      <Button onClick={addSellTransaction} className="bg-red-600 hover:bg-red-700">
+              {/* ================================================================ */}
+              {/* SELL TAB */}
+              {/* ================================================================ */}
+              {activeTab === 'sell' && (
+                <div>
+                  {sellTransactions.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16">
+                      <div className="text-5xl mb-6">📤</div>
+                      <h3 className="text-2xl font-bold text-slate-900 mb-2">Do you have any sales?</h3>
+                      <p className="text-slate-600 text-center mb-8 max-w-md">
+                        Add assets you want to sell as part of this advice
+                      </p>
+                      <Button onClick={addSellTransaction} style={{ backgroundColor: '#7C3AED', color: '#FFFFFF' }} className="hover:opacity-90 shadow-lg">
                         <Plus className="w-4 h-4 mr-2" />
                         Add Sale
                       </Button>
                     </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-bold text-slate-800">Asset Sales</h3>
+                        <Button onClick={addSellTransaction} style={{ backgroundColor: '#7C3AED', color: '#FFFFFF' }} className="hover:opacity-90">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Sale
+                        </Button>
+                      </div>
 
-                    {/* Summary Table */}
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Asset</TableHead>
-                          <TableHead>Sell Entire?</TableHead>
-                          <TableHead className="text-right">Amount</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {sellTransactions.length === 0 ? (
+                      {/* Summary Table */}
+                      <Table>
+                        <TableHeader>
                           <TableRow>
-                            <TableCell colSpan={4} className="text-center text-slate-500 py-8">
-                              No sales added yet. Click "Add Sale" to get started.
-                            </TableCell>
+                            <TableHead>Asset</TableHead>
+                            <TableHead>Sell Entire?</TableHead>
+                            <TableHead className="text-right">Amount</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        ) : (
-                          sellTransactions.map(sell => (
+                        </TableHeader>
+                        <TableBody>
+                          {sellTransactions.map(sell => (
                             <TableRow key={sell.id} className="cursor-pointer hover:bg-slate-50">
                               <TableCell>{getAssetLabel(sell.asset_id)}</TableCell>
                               <TableCell>{sell.sell_entire_amount ? 'Yes' : 'No'}</TableCell>
@@ -619,60 +628,68 @@ export default function SOARequestTransactions() {
                                 </Button>
                               </TableCell>
                             </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
+                          ))}
+                        </TableBody>
+                      </Table>
 
-                    {/* Detail Panel */}
-                    {editingSellId && (
-                      <SellDetailPanel
-                        sell={sellTransactions.find(s => s.id === editingSellId)}
-                        assetOptions={[...assetOptions, ...buyTransactions.filter(b => b.asset_type).map(b => ({
-                          value: b.id,
-                          label: `${getAssetTypeLabel(b.asset_type)} (New Purchase)`
-                        }))]}
-                        modelOptions={modelOptions}
-                        onUpdate={(field, value) => updateSellTransaction(editingSellId, field, value)}
-                        onClose={() => setEditingSellId(null)}
-                      />
-                    )}
-                  </div>
-                )}
+                      {/* Detail Panel */}
+                      {editingSellId && (
+                        <SellDetailPanel
+                          sell={sellTransactions.find(s => s.id === editingSellId)}
+                          assetOptions={[...assetOptions, ...buyTransactions.filter(b => b.asset_type).map(b => ({
+                            value: b.id,
+                            label: `${getAssetTypeLabel(b.asset_type)} (New Purchase)`
+                          }))]}
+                          modelOptions={modelOptions}
+                          onUpdate={(field, value) => updateSellTransaction(editingSellId, field, value)}
+                          onClose={() => setEditingSellId(null)}
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
 
-                {/* ================================================================ */}
-                {/* DEBTS TAB */}
-                {/* ================================================================ */}
-                {activeTab === 'debts' && (
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-lg font-bold text-slate-800">New Debts</h3>
-                      <Button onClick={addDebtTransaction} className="bg-blue-600 hover:bg-blue-700">
+              {/* ================================================================ */}
+              {/* DEBTS TAB */}
+              {/* ================================================================ */}
+              {activeTab === 'debts' && (
+                <div>
+                  {debtTransactions.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16">
+                      <div className="text-5xl mb-6">🏦</div>
+                      <h3 className="text-2xl font-bold text-slate-900 mb-2">Do you have any new debts?</h3>
+                      <p className="text-slate-600 text-center mb-8 max-w-md">
+                        Add new debts required to support your recommendations
+                      </p>
+                      <Button onClick={addDebtTransaction} style={{ backgroundColor: '#7C3AED', color: '#FFFFFF' }} className="hover:opacity-90 shadow-lg">
                         <Plus className="w-4 h-4 mr-2" />
                         Add Debt
                       </Button>
                     </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-bold text-slate-800">New Debts</h3>
+                        <Button onClick={addDebtTransaction} style={{ backgroundColor: '#7C3AED', color: '#FFFFFF' }} className="hover:opacity-90">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Debt
+                        </Button>
+                      </div>
 
-                    {/* Summary Table */}
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Debt Type</TableHead>
-                          <TableHead>Owner</TableHead>
-                          <TableHead className="text-right">Loan Amount</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {debtTransactions.length === 0 ? (
+                      {/* Summary Table */}
+                      <Table>
+                        <TableHeader>
                           <TableRow>
-                            <TableCell colSpan={5} className="text-center text-slate-500 py-8">
-                              No debts added yet. Click "Add Debt" to get started.
-                            </TableCell>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Debt Type</TableHead>
+                            <TableHead>Owner</TableHead>
+                            <TableHead className="text-right">Loan Amount</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        ) : (
-                          debtTransactions.map(debt => (
+                        </TableHeader>
+                        <TableBody>
+                          {debtTransactions.map(debt => (
                             <TableRow key={debt.id} className="cursor-pointer hover:bg-slate-50">
                               <TableCell>{debt.description || '(No description)'}</TableCell>
                               <TableCell>{getDebtTypeLabel(debt.debt_type)}</TableCell>
@@ -697,44 +714,45 @@ export default function SOARequestTransactions() {
                                 </Button>
                               </TableCell>
                             </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
+                          ))}
+                        </TableBody>
+                      </Table>
 
-                    {/* Detail Panel */}
-                    {editingDebtId && (
-                      <DebtDetailPanel
-                        debt={debtTransactions.find(d => d.id === editingDebtId)}
-                        ownerOptions={ownerOptions}
-                        smsfOptions={smsfOptions}
-                        modelOptions={modelOptions}
-                        buyTransactions={buyTransactions}
-                        onUpdate={(field, value) => updateDebtTransaction(editingDebtId, field, value)}
-                        onClose={() => setEditingDebtId(null)}
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                      {/* Detail Panel */}
+                      {editingDebtId && (
+                        <DebtDetailPanel
+                          debt={debtTransactions.find(d => d.id === editingDebtId)}
+                          ownerOptions={ownerOptions}
+                          smsfOptions={smsfOptions}
+                          modelOptions={modelOptions}
+                          buyTransactions={buyTransactions}
+                          onUpdate={(field, value) => updateDebtTransaction(editingDebtId, field, value)}
+                          onClose={() => setEditingDebtId(null)}
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
 
-          {/* Footer */}
-          <div className="flex justify-end gap-3 pt-6">
-            <Button 
-              variant="outline"
-              onClick={() => navigate(createPageUrl('SOARequestInsurance') + `?id=${soaRequest?.id}`)}
-            >
-              ◀ Back
-            </Button>
-            <Button 
-              onClick={handleSave}
-              disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {saving ? 'Saving...' : 'Save & Next ▶'}
-            </Button>
+            {/* Navigation */}
+            <div className="flex justify-end gap-3" style={{ padding: '24px 32px', borderTop: '1px solid #E2E8F0' }}>
+              <Button 
+                variant="outline"
+                onClick={() => navigate(createPageUrl('SOARequestInsurance') + `?id=${soaRequest?.id}`)}
+              >
+                ◀ Back
+              </Button>
+              <Button 
+                onClick={handleSave}
+                disabled={saving}
+                style={{ backgroundColor: '#7C3AED', color: '#FFFFFF' }}
+                className="hover:opacity-90"
+              >
+                {saving ? 'Saving...' : 'Save & Next ▶'}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -752,8 +770,8 @@ function BuyDetailPanel({ buy, ownerOptions, modelOptions, debtOptions, onUpdate
   const showPropertyFields = isPropertyType(buy.asset_type);
 
   return (
-    <div className="mt-6 p-6 bg-green-50 border border-green-200 rounded-lg">
-      <div className="flex justify-between items-center mb-6 pb-4 border-b border-green-200">
+    <div className="mt-6 p-6 bg-white border border-slate-200 rounded-xl">
+      <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
         <h3 className="text-lg font-bold flex items-center gap-2">
           🛒 <span>Purchase Details</span>
         </h3>
@@ -869,7 +887,7 @@ function BuyDetailPanel({ buy, ownerOptions, modelOptions, debtOptions, onUpdate
 
         {/* Property Fields (Conditional) */}
         {showPropertyFields && (
-          <div className="pt-4 border-t border-green-200">
+          <div className="pt-4 border-t border-slate-200">
             <h4 className="font-semibold text-slate-700 mb-4">Property Details</h4>
             <div className="grid grid-cols-3 gap-4">
               <div>
@@ -912,32 +930,42 @@ function BuyDetailPanel({ buy, ownerOptions, modelOptions, debtOptions, onUpdate
           </div>
         )}
 
-        {/* Today's Dollars & Models */}
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-green-200">
-          <div>
-            <Label>Is the purchase price in today's dollars?</Label>
-            <RadioGroup
-              value={buy.is_today_dollars ? 'yes' : 'no'}
-              onValueChange={(v) => onUpdate('is_today_dollars', v === 'yes')}
-              className="flex gap-4 mt-2"
+        {/* Today's Dollars - Pill Tabs */}
+        <div className="pt-4 border-t border-slate-200">
+          <Label>Is the purchase price in today's dollars?</Label>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+            <button
+              onClick={() => onUpdate('is_today_dollars', true)}
+              style={{
+                padding: '8px 20px',
+                borderRadius: '9999px',
+                border: 'none',
+                backgroundColor: buy.is_today_dollars ? '#7C3AED' : 'transparent',
+                color: buy.is_today_dollars ? '#FFFFFF' : '#7C3AED',
+                fontWeight: 600,
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
             >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="yes" id="today-yes" />
-                <Label htmlFor="today-yes">Yes</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="no" id="today-no" />
-                <Label htmlFor="today-no">No</Label>
-              </div>
-            </RadioGroup>
-          </div>
-          <div>
-            <Label>Apply to models</Label>
-            <p className="text-xs text-slate-500 mt-1">
-              {modelOptions.length === 0 
-                ? 'No models defined yet' 
-                : `${buy.model_ids?.length || 0} models selected`}
-            </p>
+              Yes
+            </button>
+            <button
+              onClick={() => onUpdate('is_today_dollars', false)}
+              style={{
+                padding: '8px 20px',
+                borderRadius: '9999px',
+                border: 'none',
+                backgroundColor: !buy.is_today_dollars ? '#7C3AED' : 'transparent',
+                color: !buy.is_today_dollars ? '#FFFFFF' : '#7C3AED',
+                fontWeight: 600,
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              No
+            </button>
           </div>
         </div>
       </div>
@@ -953,10 +981,10 @@ function SellDetailPanel({ sell, assetOptions, modelOptions, onUpdate, onClose }
   if (!sell) return null;
 
   return (
-    <div className="mt-6 p-6 bg-red-50 border border-red-200 rounded-lg">
-      <div className="flex justify-between items-center mb-6 pb-4 border-b border-red-200">
+    <div className="mt-6 p-6 bg-white border border-slate-200 rounded-xl">
+      <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
         <h3 className="text-lg font-bold flex items-center gap-2">
-          💰 <span>Sale Details</span>
+          📤 <span>Sale Details</span>
         </h3>
         <Button variant="ghost" size="sm" onClick={onClose}>
           <X className="w-4 h-4" />
@@ -1046,10 +1074,10 @@ function DebtDetailPanel({ debt, ownerOptions, smsfOptions, modelOptions, buyTra
   if (!debt) return null;
 
   return (
-    <div className="mt-6 p-6 bg-blue-50 border border-blue-200 rounded-lg">
-      <div className="flex justify-between items-center mb-6 pb-4 border-b border-blue-200">
+    <div className="mt-6 p-6 bg-white border border-slate-200 rounded-xl">
+      <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
         <h3 className="text-lg font-bold flex items-center gap-2">
-          📋 <span>New Debt Details</span>
+          🏦 <span>New Debt Details</span>
         </h3>
         <Button variant="ghost" size="sm" onClick={onClose}>
           <X className="w-4 h-4" />
@@ -1253,7 +1281,7 @@ function DebtDetailPanel({ debt, ownerOptions, smsfOptions, modelOptions, buyTra
         </div>
 
         {/* Row 5: Purchase Security */}
-        <div className="pt-4 border-t border-blue-200">
+        <div className="pt-4 border-t border-slate-200">
           <Label>Use purchase as security for this loan?</Label>
           <div className="flex items-center space-x-2 mt-2">
             <Checkbox
