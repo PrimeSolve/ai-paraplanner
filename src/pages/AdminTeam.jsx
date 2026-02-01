@@ -79,22 +79,22 @@ export default function AdminTeam() {
 
     setInviting(true);
     try {
-      // Step 1: Create Admin record in the database
+      // Step 1: Send invite via auth first (creates the user)
+      console.log('About to call base44.auth.inviteUser');
+      const newUser = await base44.auth.inviteUser(inviteEmail, selectedRole);
+      console.log('Invite sent, new user:', newUser);
+      toast.success('Team member invited');
+
+      // Step 2: Create Admin record with the new user_id
       console.log('Creating Admin record for:', inviteEmail);
       const adminRecord = await base44.entities.Admin.create({
+        user_id: newUser?.id,
         email: inviteEmail,
         status: 'active'
       });
       console.log('Admin record created:', adminRecord);
-      toast.success('Team member saved');
-
-      // Step 2: Send invite via auth
-      console.log('About to call base44.auth.inviteUser');
-      await base44.auth.inviteUser(inviteEmail, selectedRole);
-      console.log('Invite sent successfully');
       
       setInviteSuccess(true);
-      toast.success('Invite sent successfully');
       await new Promise(resolve => setTimeout(resolve, 2000));
       setInviteEmail('');
       setInviteName('');
@@ -103,8 +103,8 @@ export default function AdminTeam() {
       setShowInviteModal(false);
       await loadTeam();
     } catch (error) {
-      console.error('Error saving member or sending invite:', error);
-      toast.error(error?.message || 'Failed to save team member');
+      console.error('Error inviting or saving admin record:', error);
+      toast.error(error?.message || 'Failed to invite team member');
     } finally {
       setInviting(false);
     }
