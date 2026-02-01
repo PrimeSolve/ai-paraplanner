@@ -374,105 +374,106 @@ export default function AdminTeam() {
               </p>
             </div>
           ) : (
-            <div className="space-y-5 py-4">
-            <div>
-              <label className="text-sm font-medium text-[#0f172a] mb-2 block">
-                Email Address
-              </label>
-              <Input
-                type="email"
-                placeholder="colleague@company.com"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-              />
-              <p className="text-xs text-[#64748b] mt-1.5">
-                The team member will be created and you can send a welcome email separately
-              </p>
-            </div>
+            <>
+              <div className="space-y-5 py-4">
+                <div>
+                  <label className="text-sm font-medium text-[#0f172a] mb-2 block">
+                    Email Address
+                  </label>
+                  <Input
+                    type="email"
+                    placeholder="colleague@company.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                  />
+                  <p className="text-xs text-[#64748b] mt-1.5">
+                    The team member will be created and you can send a welcome email separately
+                  </p>
+                </div>
 
-            <div>
-              <label className="text-sm font-medium text-[#0f172a] mb-2 block">
-                Full Name
-              </label>
-              <Input
-                type="text"
-                placeholder="Enter their full name"
-                value={inviteName}
-                onChange={(e) => setInviteName(e.target.value)}
-              />
-            </div>
+                <div>
+                  <label className="text-sm font-medium text-[#0f172a] mb-2 block">
+                    Full Name
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Enter their full name"
+                    value={inviteName}
+                    onChange={(e) => setInviteName(e.target.value)}
+                  />
+                </div>
 
-            <div>
-              <label className="text-sm font-medium text-[#0f172a] mb-3 block">
-                Role
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setSelectedRole('user')}
-                  className={`p-4 rounded-xl border-2 transition-all ${
-                    selectedRole === 'user'
-                      ? 'border-[#3b82f6] bg-[#3b82f6]/5'
-                      : 'border-[#e2e8f0] hover:border-[#cbd5e1]'
-                  }`}
-                >
-                  <div className="flex flex-col items-center gap-2 text-center">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                      selectedRole === 'user' ? 'bg-[#3b82f6]/10' : 'bg-[#f1f5f9]'
-                    }`}>
-                      <FileText className={`w-6 h-6 ${
-                        selectedRole === 'user' ? 'text-[#3b82f6]' : 'text-[#64748b]'
-                      }`} />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-[#0f172a] text-sm">Paraplanner</div>
-                      <div className="text-xs text-[#64748b] mt-0.5">Can create and manage SOAs</div>
-                    </div>
+                <div>
+                  <label className="text-sm font-medium text-[#0f172a] mb-3 block">
+                    Role
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setSelectedRole('user')}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        selectedRole === 'user'
+                          ? 'border-[#3b82f6] bg-[#3b82f6]/5'
+                          : 'border-[#e2e8f0] hover:border-[#cbd5e1]'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-2 text-center">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                          selectedRole === 'user' ? 'bg-[#3b82f6]/10' : 'bg-[#f1f5f9]'
+                        }`}>
+                          <FileText className={`w-6 h-6 ${
+                            selectedRole === 'user' ? 'text-[#3b82f6]' : 'text-[#64748b]'
+                          }`} />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-[#0f172a] text-sm">Paraplanner</div>
+                          <div className="text-xs text-[#64748b] mt-0.5">Can create and manage SOAs</div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => setSelectedRole('admin')}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        selectedRole === 'admin'
+                          ? 'border-[#8b5cf6] bg-[#8b5cf6]/5'
+                          : 'border-[#e2e8f0] hover:border-[#cbd5e1]'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-2 text-center">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                          selectedRole === 'admin' ? 'bg-[#8b5cf6]/10' : 'bg-[#f1f5f9]'
+                        }`}>
+                          <Shield className={`w-6 h-6 ${
+                            selectedRole === 'admin' ? 'text-[#8b5cf6]' : 'text-[#64748b]'
+                          }`} />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-[#0f172a] text-sm">Admin</div>
+                          <div className="text-xs text-[#64748b] mt-0.5">Full access to all settings</div>
+                        </div>
+                      </div>
+                    </button>
                   </div>
-                </button>
-
-                <button
-                  onClick={() => setSelectedRole('admin')}
-                  className={`p-4 rounded-xl border-2 transition-all ${
-                    selectedRole === 'admin'
-                      ? 'border-[#8b5cf6] bg-[#8b5cf6]/5'
-                      : 'border-[#e2e8f0] hover:border-[#cbd5e1]'
-                  }`}
-                >
-                  <div className="flex flex-col items-center gap-2 text-center">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                      selectedRole === 'admin' ? 'bg-[#8b5cf6]/10' : 'bg-[#f1f5f9]'
-                    }`}>
-                      <Shield className={`w-6 h-6 ${
-                        selectedRole === 'admin' ? 'text-[#8b5cf6]' : 'text-[#64748b]'
-                      }`} />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-[#0f172a] text-sm">Admin</div>
-                      <div className="text-xs text-[#64748b] mt-0.5">Full access to all settings</div>
-                    </div>
-                  </div>
-                </button>
+                </div>
               </div>
-            </div>
-          </div>
 
-            <div className="flex justify-end gap-3 pt-4">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowInviteModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleSaveMember} 
-                disabled={inviting || !inviteEmail}
-                className="bg-[#3b82f6] hover:bg-[#2563eb]"
-              >
-                <Send className="w-4 h-4 mr-2" />
-                {inviting ? 'Sending...' : 'Send Invite'}
-              </Button>
-            </div>
-            </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowInviteModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSaveMember} 
+                  disabled={inviting || !inviteEmail}
+                  className="bg-[#3b82f6] hover:bg-[#2563eb]"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  {inviting ? 'Sending...' : 'Send Invite'}
+                </Button>
+              </div>
+            </>
           )}
         </DialogContent>
       </Dialog>
