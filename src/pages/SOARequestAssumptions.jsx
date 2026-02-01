@@ -808,13 +808,14 @@ export default function SOARequestAssumptions() {
  </TabsContent>
  </Tabs>
 
- <div className="flex justify-between items-center py-4">
+ <div className="flex justify-between items-center py-4 border-t">
  <Button variant="outline" onClick={() => navigate(createPageUrl('SOARequestStrategy') + `?id=${soaRequest?.id}`)}>
  ◀ Back
  </Button>
  <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 min-w-[140px]">
  {saving ? 'Saving...' : 'Save & Next ▶'}
  </Button>
+ </div>
  </div>
  </div>
  </div>
