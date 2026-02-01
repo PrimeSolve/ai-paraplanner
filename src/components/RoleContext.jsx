@@ -74,7 +74,8 @@ export function RoleProvider({ children }) {
     if (!originalUser) {
       setOriginalUser({ ...userData, linkedEntity });
     }
-  };
+    hasLoadedRef.current = true;
+  }, [originalUser]);
 
   const clearUserData = () => {
     setUser(null);
