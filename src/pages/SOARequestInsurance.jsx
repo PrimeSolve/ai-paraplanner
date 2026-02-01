@@ -1135,14 +1135,11 @@ export default function SOARequestInsurance() {
                   }`}>
                     <div className="flex justify-between items-center mb-4">
                       <span className="font-semibold text-slate-700">TPD cover</span>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox 
-                          checked={policyForm.include_tpd}
-                          onCheckedChange={(checked) => updatePolicyForm('include_tpd', checked)}
-                          className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                        />
-                        <span className="text-sm text-slate-600">Include TPD on this policy</span>
-                      </label>
+                      <Checkbox 
+                        checked={policyForm.include_tpd}
+                        onCheckedChange={(checked) => updatePolicyForm('include_tpd', checked)}
+                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -1201,14 +1198,11 @@ export default function SOARequestInsurance() {
                   }`}>
                     <div className="flex justify-between items-center mb-4">
                       <span className="font-semibold text-slate-700">Trauma cover</span>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox 
-                          checked={policyForm.include_trauma}
-                          onCheckedChange={(checked) => updatePolicyForm('include_trauma', checked)}
-                          className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                        />
-                        <span className="text-sm text-slate-600">Include Trauma on this policy</span>
-                      </label>
+                      <Checkbox 
+                        checked={policyForm.include_trauma}
+                        onCheckedChange={(checked) => updatePolicyForm('include_trauma', checked)}
+                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -1251,14 +1245,11 @@ export default function SOARequestInsurance() {
                   }`}>
                     <div className="flex justify-between items-center mb-4">
                       <span className="font-semibold text-slate-700">Income Protection</span>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox 
-                          checked={policyForm.include_ip}
-                          onCheckedChange={(checked) => updatePolicyForm('include_ip', checked)}
-                          className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                        />
-                        <span className="text-sm text-slate-600">Include IP on this policy</span>
-                      </label>
+                      <Checkbox 
+                        checked={policyForm.include_ip}
+                        onCheckedChange={(checked) => updatePolicyForm('include_ip', checked)}
+                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
