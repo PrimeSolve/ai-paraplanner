@@ -268,9 +268,9 @@ export default function SOARequestProducts() {
 
           {/* White Content Card */}
           <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>
-            {/* Contained Tabs */}
-            <div style={{ padding: '24px 32px', borderBottom: '1px solid #E2E8F0' }}>
-              <Tabs defaultValue="entities" className="w-full">
+            <Tabs defaultValue="entities" className="w-full">
+              {/* Contained Tabs */}
+              <div style={{ padding: '24px 32px', borderBottom: '1px solid #E2E8F0' }}>
                 <TabsList style={{ display: 'inline-flex', padding: '4px', backgroundColor: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
                   <TabsTrigger value="entities" style={{ padding: '12px 24px', borderRadius: '8px' }}>
                     <span style={{ marginRight: '8px' }}>🏛️</span>
@@ -281,6 +281,7 @@ export default function SOARequestProducts() {
                     Products
                   </TabsTrigger>
                 </TabsList>
+              </div>
 
               <TabsContent value="entities" style={{ padding: '24px 32px 0' }}>
                 <Card>
@@ -590,8 +591,7 @@ export default function SOARequestProducts() {
                   )}
                 </CardContent>
               </Card>
-            </TabsContent>
-              </Tabs>
+              </TabsContent>
 
               {/* Navigation */}
               <div className="flex justify-end gap-3" style={{ padding: '24px 32px', borderTop: '1px solid #E2E8F0' }}>
@@ -608,11 +608,12 @@ export default function SOARequestProducts() {
                   className="hover:opacity-90"
                 >
                   {saving ? 'Saving...' : 'Save & Continue'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </SOARequestLayout>
+                  </Button>
+                  </div>
+                  </Tabs>
+                  </div>
+                  </div>
+                  </div>
+                  </SOARequestLayout>
   );
 }
