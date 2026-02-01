@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useCallback, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 
 const RoleContext = createContext();
