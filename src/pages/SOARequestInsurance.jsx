@@ -983,26 +983,34 @@ export default function SOARequestInsurance() {
             {currentPersonData.income_rows.map((row, index) => (
               <div key={row.id} className="grid grid-cols-7 gap-2 py-2 items-center border-b border-slate-100">
                 <div>
-                  <Input 
-                    placeholder="e.g. Living expenses"
-                    value={row.item}
-                    onChange={(e) => updateIncomeRow(index, 'item', e.target.value)}
-                  />
+                  <Select value={row.item} onValueChange={(v) => updateIncomeRow(index, 'item', v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select item..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Living expenses">Living expenses</SelectItem>
+                      <SelectItem value="Education costs">Education costs</SelectItem>
+                      <SelectItem value="Mortgage repayments">Mortgage repayments</SelectItem>
+                      <SelectItem value="Ongoing care costs">Ongoing care costs</SelectItem>
+                      <SelectItem value="Partner income replacement">Partner income replacement</SelectItem>
+                      <SelectItem value="Other income needs">Other income needs</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex gap-3 p-2 bg-slate-50 border border-slate-200 rounded-md">
-                  <label className="flex items-center gap-1 text-sm cursor-pointer">
+                  <label className="flex items-center gap-1 text-sm cursor-pointer text-slate-900">
                     <Checkbox 
                       checked={row.life}
                       onCheckedChange={(checked) => updateIncomeRow(index, 'life', checked)}
                     />
-                    Life
+                    <span className="text-slate-900">Life</span>
                   </label>
-                  <label className="flex items-center gap-1 text-sm cursor-pointer">
+                  <label className="flex items-center gap-1 text-sm cursor-pointer text-slate-900">
                     <Checkbox 
                       checked={row.tpd}
                       onCheckedChange={(checked) => updateIncomeRow(index, 'tpd', checked)}
                     />
-                    TPD
+                    <span className="text-slate-900">TPD</span>
                   </label>
                 </div>
                 <div>
@@ -1106,19 +1114,19 @@ export default function SOARequestInsurance() {
                   />
                 </div>
                 <div className="flex gap-3 p-2 bg-slate-50 border border-slate-200 rounded-md">
-                  <label className="flex items-center gap-1 text-sm cursor-pointer">
+                  <label className="flex items-center gap-1 text-sm cursor-pointer text-slate-900">
                     <Checkbox 
                       checked={row.life}
                       onCheckedChange={(checked) => updateAssetRow(index, 'life', checked)}
                     />
-                    Life
+                    <span className="text-slate-900">Life</span>
                   </label>
-                  <label className="flex items-center gap-1 text-sm cursor-pointer">
+                  <label className="flex items-center gap-1 text-sm cursor-pointer text-slate-900">
                     <Checkbox 
                       checked={row.tpd}
                       onCheckedChange={(checked) => updateAssetRow(index, 'tpd', checked)}
                     />
-                    TPD
+                    <span className="text-slate-900">TPD</span>
                   </label>
                 </div>
                 <div>
