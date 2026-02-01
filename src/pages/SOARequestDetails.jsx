@@ -387,6 +387,18 @@ export default function SOARequestDetails() {
             </CardContent>
             </Card>
 
+            {/* Scope Notice */}
+            <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <span className="text-xl">💡</span>
+            <div>
+              <h4 className="font-bold text-amber-900">Intelligent Section Inclusion</h4>
+              <p className="text-sm text-amber-800 mt-1">
+                Sections are automatically included or excluded based on your <strong>Scope of Advice</strong> selections.
+                You can manually override these defaults below.
+              </p>
+            </div>
+            </div>
+
             {/* SOA Sections */}
             <Card>
             <CardHeader>
