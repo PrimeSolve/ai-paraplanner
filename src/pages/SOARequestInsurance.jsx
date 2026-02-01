@@ -1396,6 +1396,7 @@ export default function SOARequestInsurance() {
               </TabsContent>
               </Tabs>
               </div>
+              </div>
 
               {/* Navigation */}
               <div className="flex justify-end gap-3" style={{ padding: '24px 32px', borderTop: '1px solid #E2E8F0' }}>
