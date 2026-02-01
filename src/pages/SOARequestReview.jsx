@@ -362,89 +362,89 @@ export default function SOARequestReview() {
         <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>
           <div className="p-8 space-y-6">
             {/* Progress Overview */}
-          <Card className="border-blue-200">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-slate-800">Overall Completion</h3>
-                <div className="text-right">
-                  <span className="text-3xl font-bold text-slate-900">{progress.pct}%</span>
-                  <span className="text-sm text-slate-500 ml-2">Complete</span>
-                </div>
-              </div>
-              <Progress value={progress.pct} className="h-3" />
-              <p className="text-sm text-slate-500 mt-2">
-                {progress.completed} of {progress.total} sections complete
-              </p>
-            </CardContent>
-          </Card>
-          
-          {/* Scope Tip */}
-          <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <span className="text-xl">💡</span>
-            <div className="text-sm text-green-800">
-              <strong className="block mb-1">Some sections may not be required</strong>
-              Sections marked "Not required" are excluded based on your Scope of Advice selections.
-            </div>
-          </div>
-          
-          {/* Sections Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {SECTIONS.map(section => {
-              const status = getSectionStatus(section);
-              
-              return (
-                <SectionCard
-                  key={section.key}
-                  section={section}
-                  status={status}
-                  onNavigate={() => navigate(createPageUrl(section.page) + `?id=${soaRequest.id}`)}
-                  onToggleMark={() => toggleMarkComplete(section.key)}
-                />
-              );
-            })}
-          </div>
-          
-          {/* Submit Section */}
-          <Card className="border-slate-200">
-            <CardContent className="py-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center text-3xl">
-                🤖
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Ready to Submit?</h3>
-              <p className="text-slate-600 mb-6 max-w-md mx-auto">
-                Mark each section as complete to confirm you've entered all required information.
-              </p>
-              
-              {!progress.allComplete && (
-                <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6 max-w-md mx-auto">
-                  <span className="text-2xl">📋</span>
-                  <div>
-                    <strong className="text-slate-900 block">
-                      {progress.total - progress.completed} section{progress.total - progress.completed !== 1 ? 's' : ''} remaining
-                    </strong>
-                    <span className="text-sm text-slate-600">
-                      Mark each section as complete when finished.
-                    </span>
+            <Card className="border-blue-200">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-bold text-slate-800">Overall Completion</h3>
+                  <div className="text-right">
+                    <span className="text-3xl font-bold text-slate-900">{progress.pct}%</span>
+                    <span className="text-sm text-slate-500 ml-2">Complete</span>
                   </div>
                 </div>
-              )}
-              
-              <Button
-                onClick={handleSubmit}
-                disabled={!progress.allComplete || submitting}
-                className="bg-blue-600 hover:bg-blue-700 min-w-[280px]"
-                size="lg"
-              >
-                {submitting 
-                  ? 'Submitting...'
-                  : progress.allComplete
-                  ? 'Submit to AI Paraplanner →'
-                  : 'Mark all sections complete to submit'
-                }
-              </Button>
-            </CardContent>
-          </Card>
-          
+                <Progress value={progress.pct} className="h-3" />
+                <p className="text-sm text-slate-500 mt-2">
+                  {progress.completed} of {progress.total} sections complete
+                </p>
+              </CardContent>
+            </Card>
+            
+            {/* Scope Tip */}
+            <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <span className="text-xl">💡</span>
+              <div className="text-sm text-green-800">
+                <strong className="block mb-1">Some sections may not be required</strong>
+                Sections marked "Not required" are excluded based on your Scope of Advice selections.
+              </div>
+            </div>
+            
+            {/* Sections Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {SECTIONS.map(section => {
+                const status = getSectionStatus(section);
+                
+                return (
+                  <SectionCard
+                    key={section.key}
+                    section={section}
+                    status={status}
+                    onNavigate={() => navigate(createPageUrl(section.page) + `?id=${soaRequest.id}`)}
+                    onToggleMark={() => toggleMarkComplete(section.key)}
+                  />
+                );
+              })}
+            </div>
+            
+            {/* Submit Section */}
+            <Card className="border-slate-200">
+              <CardContent className="py-8 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center text-3xl">
+                  🤖
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Ready to Submit?</h3>
+                <p className="text-slate-600 mb-6 max-w-md mx-auto">
+                  Mark each section as complete to confirm you've entered all required information.
+                </p>
+                
+                {!progress.allComplete && (
+                  <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6 max-w-md mx-auto">
+                    <span className="text-2xl">📋</span>
+                    <div>
+                      <strong className="text-slate-900 block">
+                        {progress.total - progress.completed} section{progress.total - progress.completed !== 1 ? 's' : ''} remaining
+                      </strong>
+                      <span className="text-sm text-slate-600">
+                        Mark each section as complete when finished.
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!progress.allComplete || submitting}
+                  className="bg-blue-600 hover:bg-blue-700 min-w-[280px]"
+                  size="lg"
+                >
+                  {submitting 
+                    ? 'Submitting...'
+                    : progress.allComplete
+                    ? 'Submit to AI Paraplanner →'
+                    : 'Mark all sections complete to submit'
+                  }
+                </Button>
+              </CardContent>
+            </Card>
+            
             {/* Footer */}
             <div className="flex justify-start py-4 border-t">
               <Button variant="outline" onClick={() => navigate(createPageUrl('SOARequestDetails') + `?id=${soaRequest?.id}`)}>
