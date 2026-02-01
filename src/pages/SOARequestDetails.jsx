@@ -290,10 +290,10 @@ export default function SOARequestDetails() {
                 You can manually override these defaults below.
               </p>
             </div>
-          </div>
+            </div>
 
-          {/* Stats Bar */}
-          <div className="grid grid-cols-2 gap-4">
+            {/* Stats Bar */}
+            <div className="grid grid-cols-2 gap-4">
             <Card className="border-blue-200 bg-blue-50">
               <CardContent className="pt-6 text-center">
                 <div className="text-3xl font-bold text-blue-700">{stats.includedCount}</div>
