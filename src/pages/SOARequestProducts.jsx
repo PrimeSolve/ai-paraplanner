@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -15,8 +17,11 @@ export default function SOARequestProducts() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [soaRequest, setSOARequest] = useState(null);
+  const [factFind, setFactFind] = useState(null);
   const [products, setProducts] = useState([]);
   const [entities, setEntities] = useState([]);
+  const [principals, setPrincipals] = useState([]);
+  const [dependants, setDependants] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,6 +37,22 @@ export default function SOARequestProducts() {
             const productsEntities = requests[0].products_entities || {};
             setProducts(productsEntities.products || []);
             setEntities(productsEntities.entities || []);
+
+            // Load fact find data for principals and dependants
+            if (requests[0].fact_find_id) {
+              const factFinds = await base44.entities.FactFind.filter({ id: requests[0].fact_find_id });
+              if (factFinds[0]) {
+                setFactFind(factFinds[0]);
+                const personal = factFinds[0].personal || {};
+                setPrincipals([
+                  { id: 'principal_1', name: `${personal.first_name || ''} ${personal.last_name || ''}`.trim() || 'Principal 1' }
+                ]);
+                setDependants((factFinds[0].dependants?.dependants_list || []).map((d, i) => ({
+                  id: `dependant_${i}`,
+                  name: d.name || `Dependant ${i + 1}`
+                })));
+              }
+            }
           }
         }
       } catch (error) {
@@ -47,10 +68,21 @@ export default function SOARequestProducts() {
     setProducts([...products, { 
       product_type: '', 
       provider: '', 
-      product_name: '', 
-      owner: '', 
-      initial_investment: '',
-      notes: ''
+      description: '',
+      owner_id: '',
+      // Pension fields
+      pension_type: '',
+      // Annuity fields
+      annuity_tax_env: '',
+      annuity_joint: '',
+      annuity_lifetime: false,
+      annuity_term: '',
+      annuity_purchase_price: '',
+      annuity_purchase_date: '',
+      annuity_income: '',
+      annuity_index_rate: '',
+      annuity_residual_value: '',
+      annuity_deductible_income: ''
     }]);
   };
 
@@ -58,8 +90,8 @@ export default function SOARequestProducts() {
     setEntities([...entities, { 
       entity_type: '', 
       entity_name: '', 
+      holders: [],
       abn_acn: '',
-      trustees: '',
       notes: ''
     }]);
   };
@@ -111,6 +143,17 @@ export default function SOARequestProducts() {
     );
   }
 
+  const availableHolders = [
+    ...principals,
+    ...dependants,
+    ...entities.map((e, i) => ({ id: `entity_${i}`, name: e.entity_name || '(Unnamed entity)' }))
+  ];
+
+  const availableOwners = [
+    ...principals,
+    ...entities.map((e, i) => ({ id: `entity_${i}`, name: e.entity_name || '(Unnamed entity)' }))
+  ];
+
   return (
     <SOARequestLayout currentSection="products" soaRequest={soaRequest}>
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
@@ -124,7 +167,16 @@ export default function SOARequestProducts() {
               </p>
             </CardContent>
           </Card>
-          {/* Products */}
+
+          {/* Tabs */}
+          <Tabs defaultValue="entities" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="entities">Entities</TabsTrigger>
+              <TabsTrigger value="products">Products</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="entities">
+              {/* Entities */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -218,89 +270,315 @@ export default function SOARequestProducts() {
             </CardContent>
           </Card>
 
-          {/* Entities */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Entities</CardTitle>
-                <Button onClick={addEntity} size="sm" className="bg-blue-600 hover:bg-blue-700">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Entity
-                </Button>
-              </div>
-              <p className="text-sm text-slate-600">Trusts, companies, SMSFs</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {entities.length === 0 ? (
-                <p className="text-sm text-slate-500 text-center py-4">No entities added yet</p>
-              ) : (
-                entities.map((entity, index) => (
-                  <div key={index} className="border border-slate-200 rounded-lg p-4 space-y-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-semibold text-slate-700">Entity #{index + 1}</h4>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => removeEntity(index)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 mb-1 block">Entity Type</label>
-                        <Select value={entity.entity_type} onValueChange={(v) => updateEntity(index, 'entity_type', v)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select type..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="trust">Trust</SelectItem>
-                            <SelectItem value="company">Company</SelectItem>
-                            <SelectItem value="smsf">SMSF</SelectItem>
-                            <SelectItem value="partnership">Partnership</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 mb-1 block">Entity Name</label>
-                        <Input 
-                          value={entity.entity_name}
-                          onChange={(e) => updateEntity(index, 'entity_name', e.target.value)}
-                          placeholder="Enter entity name"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 mb-1 block">ABN/ACN</label>
-                        <Input 
-                          value={entity.abn_acn}
-                          onChange={(e) => updateEntity(index, 'abn_acn', e.target.value)}
-                          placeholder="Enter ABN or ACN"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 mb-1 block">Trustees/Directors</label>
-                        <Input 
-                          value={entity.trustees}
-                          onChange={(e) => updateEntity(index, 'trustees', e.target.value)}
-                          placeholder="Names of trustees or directors"
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <label className="text-xs font-semibold text-slate-600 mb-1 block">Notes</label>
-                        <Textarea 
-                          value={entity.notes}
-                          onChange={(e) => updateEntity(index, 'notes', e.target.value)}
-                          placeholder="Additional notes..."
-                          rows={2}
-                        />
-                      </div>
-                    </div>
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Entities</CardTitle>
+                    <Button onClick={addEntity} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Entity
+                    </Button>
                   </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
+                  <p className="text-sm text-slate-600">Trusts, companies, SMSFs</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {entities.length === 0 ? (
+                    <p className="text-sm text-slate-500 text-center py-4">No entities added yet</p>
+                  ) : (
+                    entities.map((entity, index) => (
+                      <div key={index} className="border border-slate-200 rounded-lg p-4 space-y-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-semibold text-slate-700">Entity #{index + 1}</h4>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => removeEntity(index)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Entity Type</label>
+                            <Select value={entity.entity_type} onValueChange={(v) => updateEntity(index, 'entity_type', v)}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select type..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="discretionary_trust">Discretionary trust</SelectItem>
+                                <SelectItem value="unit_trust">Unit trust</SelectItem>
+                                <SelectItem value="company">Company</SelectItem>
+                                <SelectItem value="smsf">SMSF</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Entity Name</label>
+                            <Input 
+                              value={entity.entity_name}
+                              onChange={(e) => updateEntity(index, 'entity_name', e.target.value)}
+                              placeholder="Enter entity name"
+                            />
+                          </div>
+                          <div className="col-span-2">
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Shareholders / Beneficiaries</label>
+                            <Select 
+                              value={entity.holders?.[0] || ''} 
+                              onValueChange={(v) => {
+                                const current = entity.holders || [];
+                                if (v && !current.includes(v)) {
+                                  updateEntity(index, 'holders', [...current, v]);
+                                }
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select shareholders/beneficiaries..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {availableHolders.map(h => (
+                                  <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {entity.holders && entity.holders.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {entity.holders.map(holderId => {
+                                  const holder = availableHolders.find(h => h.id === holderId);
+                                  return holder ? (
+                                    <span key={holderId} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded">
+                                      {holder.name}
+                                      <button
+                                        onClick={() => updateEntity(index, 'holders', entity.holders.filter(id => id !== holderId))}
+                                        className="hover:text-blue-900"
+                                      >
+                                        ×
+                                      </button>
+                                    </span>
+                                  ) : null;
+                                })}
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">ABN/ACN</label>
+                            <Input 
+                              value={entity.abn_acn}
+                              onChange={(e) => updateEntity(index, 'abn_acn', e.target.value)}
+                              placeholder="Enter ABN or ACN"
+                            />
+                          </div>
+                          <div className="col-span-2">
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Notes</label>
+                            <Textarea 
+                              value={entity.notes}
+                              onChange={(e) => updateEntity(index, 'notes', e.target.value)}
+                              placeholder="Additional notes..."
+                              rows={2}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="products">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Products</CardTitle>
+                    <Button onClick={addProduct} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Product
+                    </Button>
+                  </div>
+                  <p className="text-sm text-slate-600">Retirement products and investment platforms</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {products.length === 0 ? (
+                    <p className="text-sm text-slate-500 text-center py-4">No products added yet</p>
+                  ) : (
+                    products.map((product, index) => (
+                      <div key={index} className="border border-slate-200 rounded-lg p-4 space-y-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-semibold text-slate-700">Product #{index + 1}</h4>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => removeProduct(index)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Retirement product type</label>
+                            <Select value={product.product_type} onValueChange={(v) => updateProduct(index, 'product_type', v)}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select type..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="superannuation">Superannuation</SelectItem>
+                                <SelectItem value="pension">Pension</SelectItem>
+                                <SelectItem value="investment_bond">Investment bond</SelectItem>
+                                <SelectItem value="wrap">Wrap</SelectItem>
+                                <SelectItem value="annuity">Annuity</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Product provider</label>
+                            <Input 
+                              value={product.provider}
+                              onChange={(e) => updateProduct(index, 'provider', e.target.value)}
+                              placeholder="e.g., AMP, Colonial First State"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Description</label>
+                            <Input 
+                              value={product.description}
+                              onChange={(e) => updateProduct(index, 'description', e.target.value)}
+                              placeholder="Enter description"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Owner</label>
+                            <Select value={product.owner_id} onValueChange={(v) => updateProduct(index, 'owner_id', v)}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {availableOwners.map(o => (
+                                  <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {product.product_type === 'pension' && (
+                            <div>
+                              <label className="text-xs font-semibold text-slate-600 mb-1 block">Type of pension</label>
+                              <Select value={product.pension_type} onValueChange={(v) => updateProduct(index, 'pension_type', v)}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="account_based">Account based</SelectItem>
+                                  <SelectItem value="term_allocated">Term allocated</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+
+                          {product.product_type === 'annuity' && (
+                            <>
+                              <div>
+                                <label className="text-xs font-semibold text-slate-600 mb-1 block">Annuity tax environment</label>
+                                <Select value={product.annuity_tax_env} onValueChange={(v) => updateProduct(index, 'annuity_tax_env', v)}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select..." />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="superannuation">Superannuation</SelectItem>
+                                    <SelectItem value="non_superannuation">Non-superannuation</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <label className="text-xs font-semibold text-slate-600 mb-1 block">Joint</label>
+                                <Input 
+                                  value={product.annuity_joint}
+                                  onChange={(e) => updateProduct(index, 'annuity_joint', e.target.value)}
+                                  placeholder="e.g., Joint with spouse"
+                                />
+                              </div>
+                              <div className="flex items-center gap-2 col-span-2">
+                                <Checkbox
+                                  id={`lifetime_${index}`}
+                                  checked={product.annuity_lifetime || false}
+                                  onCheckedChange={(checked) => updateProduct(index, 'annuity_lifetime', checked)}
+                                />
+                                <label htmlFor={`lifetime_${index}`} className="text-sm text-slate-600">
+                                  Lifetime annuity
+                                </label>
+                              </div>
+                              {!product.annuity_lifetime && (
+                                <div>
+                                  <label className="text-xs font-semibold text-slate-600 mb-1 block">Term of annuity (years)</label>
+                                  <Input 
+                                    value={product.annuity_term}
+                                    onChange={(e) => updateProduct(index, 'annuity_term', e.target.value)}
+                                    placeholder="e.g., 10"
+                                  />
+                                </div>
+                              )}
+                              <div>
+                                <label className="text-xs font-semibold text-slate-600 mb-1 block">Purchase price</label>
+                                <Input 
+                                  type="number"
+                                  value={product.annuity_purchase_price}
+                                  onChange={(e) => updateProduct(index, 'annuity_purchase_price', e.target.value)}
+                                  placeholder="0.00"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-semibold text-slate-600 mb-1 block">Purchase date</label>
+                                <Input 
+                                  value={product.annuity_purchase_date}
+                                  onChange={(e) => updateProduct(index, 'annuity_purchase_date', e.target.value)}
+                                  placeholder="dd-mm-yyyy"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-semibold text-slate-600 mb-1 block">Annuity income (per period)</label>
+                                <Input 
+                                  type="number"
+                                  value={product.annuity_income}
+                                  onChange={(e) => updateProduct(index, 'annuity_income', e.target.value)}
+                                  placeholder="0.00"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-semibold text-slate-600 mb-1 block">Annuity index rate (%)</label>
+                                <Input 
+                                  value={product.annuity_index_rate}
+                                  onChange={(e) => updateProduct(index, 'annuity_index_rate', e.target.value)}
+                                  placeholder="e.g., 2.5"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-semibold text-slate-600 mb-1 block">Residual value</label>
+                                <Input 
+                                  type="number"
+                                  value={product.annuity_residual_value}
+                                  onChange={(e) => updateProduct(index, 'annuity_residual_value', e.target.value)}
+                                  placeholder="0.00"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-semibold text-slate-600 mb-1 block">Deductible income</label>
+                                <Input 
+                                  type="number"
+                                  value={product.annuity_deductible_income}
+                                  onChange={(e) => updateProduct(index, 'annuity_deductible_income', e.target.value)}
+                                  placeholder="0.00"
+                                />
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
 
           <div className="flex justify-end gap-3 py-6">
             <Button 
