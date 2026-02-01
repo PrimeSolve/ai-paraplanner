@@ -281,7 +281,7 @@ export default function SOARequestDetails() {
           <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>
             <div className="p-6 space-y-6">
             {/* Scope Notice */}
-          <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
             <span className="text-xl">💡</span>
             <div>
               <h4 className="font-bold text-amber-900">Intelligent Section Inclusion</h4>
