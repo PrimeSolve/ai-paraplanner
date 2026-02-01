@@ -399,20 +399,27 @@ export default function SOARequestAssumptions() {
  // =========================================================================
  return (
  <SOARequestLayout currentSection="assumptions" soaRequest={soaRequest}>
- <div className="flex-1 overflow-auto bg-slate-50">
- <div className="bg-slate-800 px-8 py-6 border-b border-slate-700">
- <h1 className="text-2xl font-bold text-white">Assumptions</h1>
- <p className="text-slate-300 mt-1">Set global assumptions and targeted overrides used by your models.</p>
+ <div className="flex-1 overflow-auto bg-slate-50 px-8 py-6">
+ {/* Dark Banner */}
+ <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderRadius: '16px 16px 0 0' }}>
+ <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#FFFFFF', margin: '0 0 4px 0', letterSpacing: '-0.01em' }}>
+ Assumptions
+ </h1>
+ <p style={{ fontSize: '14px', fontWeight: 400, color: '#94A3B8', margin: 0 }}>
+ Set global assumptions and targeted overrides used by your models.
+ </p>
  </div>
 
- <div className="p-6 space-y-6">
+ {/* White Content Card */}
+ <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>
+ <div className="p-8">
  <Tabs value={activeTab} onValueChange={setActiveTab}>
  <TabsList className="mb-6">
- <TabsTrigger value="basic">Basic</TabsTrigger>
- <TabsTrigger value="returns-entity">Returns (Entity)</TabsTrigger>
- <TabsTrigger value="returns-asset">Returns (Asset)</TabsTrigger>
- <TabsTrigger value="rates">Interest Rates</TabsTrigger>
- <TabsTrigger value="fees">Advice Fees</TabsTrigger>
+ <TabsTrigger value="basic"><Settings className="w-4 h-4 mr-2" />Basic</TabsTrigger>
+ <TabsTrigger value="returns-entity"><Building2 className="w-4 h-4 mr-2" />Returns (Entity)</TabsTrigger>
+ <TabsTrigger value="returns-asset"><TrendingUp className="w-4 h-4 mr-2" />Returns (Asset)</TabsTrigger>
+ <TabsTrigger value="rates"><Zap className="w-4 h-4 mr-2" />Interest Rates</TabsTrigger>
+ <TabsTrigger value="fees"><Receipt className="w-4 h-4 mr-2" />Advice Fees</TabsTrigger>
  </TabsList>
 
  {/* TAB 1: BASIC */}
