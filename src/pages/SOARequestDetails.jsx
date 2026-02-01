@@ -338,10 +338,10 @@ export default function SOARequestDetails() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+            </Card>
 
-          {/* Adviser Details */}
-          <Card>
+            {/* Adviser Details */}
+            <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <span className="w-8 h-8 rounded-lg bg-pink-100 flex items-center justify-center">👤</span>
