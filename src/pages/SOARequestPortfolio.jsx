@@ -101,40 +101,63 @@ export default function SOARequestPortfolio() {
 
   return (
     <SOARequestLayout currentSection="portfolio" soaRequest={soaRequest}>
-      {/* Dark Banner */}
-      <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderBottom: '1px solid #334155' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>Portfolio</h1>
-        <p style={{ fontSize: '14px', color: '#CBD5E1', lineHeight: '1.5' }}>
-          Build portfolios for each product
-        </p>
-      </div>
-
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
-        <div className="w-full space-y-6">
-          <Card className="border-blue-200 bg-blue-50">
-            <CardContent className="pt-6">
-              <h3 className="font-bold text-slate-800 mb-2">Portfolio Asset Allocation</h3>
-              <p className="text-sm text-slate-700">
-                Define the asset allocation for each recommended product. Ensure total allocation equals 100%.
-              </p>
-            </CardContent>
-          </Card>
-
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold text-slate-800">Portfolios</h3>
-            <Button onClick={addPortfolio} size="sm" className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Portfolio
-            </Button>
+        <div className="w-full">
+          {/* Dark Banner */}
+          <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderRadius: '16px 16px 0 0' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#FFFFFF', margin: '0 0 4px 0', letterSpacing: '-0.01em' }}>
+              Portfolio
+            </h1>
+            <p style={{ fontSize: '14px', fontWeight: 400, color: '#94A3B8', margin: 0 }}>
+              Build portfolios for each product
+            </p>
           </div>
 
-          {portfolios.length === 0 ? (
-            <Card>
-              <CardContent className="py-12">
-                <p className="text-sm text-slate-500 text-center">No portfolios added yet. Click "Add Portfolio" to get started.</p>
+          {/* White Content Card */}
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none', padding: '24px 32px' }}>
+            {/* Info Card */}
+            <Card style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', marginBottom: '24px' }}>
+              <CardContent style={{ padding: '16px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#1E293B', marginBottom: '8px' }}>Portfolio Asset Allocation</h3>
+                <p style={{ fontSize: '14px', color: '#64748B', margin: 0 }}>
+                  Define the asset allocation for each recommended product. Ensure total allocation equals 100%.
+                </p>
               </CardContent>
             </Card>
-          ) : (
+
+            {portfolios.length === 0 ? (
+              <Card style={{ border: '1px solid #E2E8F0', borderRadius: '12px' }}>
+                <CardContent style={{ padding: '48px', textAlign: 'center' }}>
+                  <div style={{ width: '64px', height: '64px', borderRadius: '16px', backgroundColor: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '32px' }}>
+                    📊
+                  </div>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1E293B', margin: '0 0 8px 0' }}>
+                    Do you have any portfolios?
+                  </h3>
+                  <p style={{ fontSize: '14px', color: '#64748B', margin: '0 auto 20px', maxWidth: '320px' }}>
+                    Build portfolios for each product
+                  </p>
+                  <button 
+                    onClick={addPortfolio}
+                    style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: '#14B8A6', color: '#FFFFFF', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
+                  >
+                    Add Portfolio
+                  </button>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#1E293B', margin: 0 }}>Portfolios</h3>
+                  <Button 
+                    onClick={addPortfolio} 
+                    size="sm" 
+                    style={{ backgroundColor: '#14B8A6', color: '#FFFFFF' }}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Portfolio
+                  </Button>
+                </div>
             portfolios.map((portfolio, portfolioIndex) => {
               const totalAllocation = getTotalAllocation(portfolio);
               const isValid = Math.abs(totalAllocation - 100) < 0.01;
