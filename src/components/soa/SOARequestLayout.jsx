@@ -209,7 +209,7 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden ml-80 pt-16">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden ml-80">
         {children}
       </div>
     </div>
