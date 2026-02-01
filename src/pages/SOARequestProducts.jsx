@@ -255,30 +255,39 @@ export default function SOARequestProducts() {
   return (
     <SOARequestLayout currentSection="products" soaRequest={soaRequest}>
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
-        <div className="w-full space-y-6">
-          {/* Info Banner */}
-          <Card className="border-blue-200 bg-blue-50">
-            <CardContent className="pt-6">
-              <h3 className="font-bold text-slate-800 mb-2">Products & Entities</h3>
-              <p className="text-sm text-slate-700">
-                Add the new products or entities you are recommending
-              </p>
-            </CardContent>
-          </Card>
+        <div className="w-full max-w-6xl mx-auto">
+          {/* Dark Banner */}
+          <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderRadius: '16px 16px 0 0' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#FFFFFF', margin: '0 0 4px 0', letterSpacing: '-0.01em' }}>
+              Products & Entities
+            </h1>
+            <p style={{ fontSize: '14px', fontWeight: 400, color: '#94A3B8', margin: 0 }}>
+              Add the new products or entities you are recommending
+            </p>
+          </div>
 
-          {/* Tabs */}
-          <Tabs defaultValue="entities" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="entities">Entities</TabsTrigger>
-              <TabsTrigger value="products">Products</TabsTrigger>
-            </TabsList>
+          {/* White Content Card */}
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>
+            {/* Contained Tabs */}
+            <div style={{ padding: '24px 32px', borderBottom: '1px solid #E2E8F0' }}>
+              <Tabs defaultValue="entities" className="w-full">
+                <TabsList style={{ display: 'inline-flex', padding: '4px', backgroundColor: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                  <TabsTrigger value="entities" style={{ padding: '12px 24px', borderRadius: '8px' }}>
+                    <span style={{ marginRight: '8px' }}>🏛️</span>
+                    Entities
+                  </TabsTrigger>
+                  <TabsTrigger value="products" style={{ padding: '12px 24px', borderRadius: '8px' }}>
+                    <span style={{ marginRight: '8px' }}>📦</span>
+                    Products
+                  </TabsTrigger>
+                </TabsList>
 
-            <TabsContent value="entities">
-              <Card>
+              <TabsContent value="entities" style={{ padding: '24px 32px 0' }}>
+                <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>Entities</CardTitle>
-                    <Button onClick={addEntity} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                    <Button onClick={addEntity} size="sm" style={{ backgroundColor: '#14B8A6', color: '#FFFFFF' }} className="hover:opacity-90">
                       <Plus className="w-4 h-4 mr-2" />
                       Add Entity
                     </Button>
@@ -381,12 +390,12 @@ export default function SOARequestProducts() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="products">
-              <Card>
+              <TabsContent value="products" style={{ padding: '24px 32px 0' }}>
+                <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>Products</CardTitle>
-                    <Button onClick={addProduct} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                    <Button onClick={addProduct} size="sm" style={{ backgroundColor: '#14B8A6', color: '#FFFFFF' }} className="hover:opacity-90">
                       <Plus className="w-4 h-4 mr-2" />
                       Add Product
                     </Button>
@@ -582,24 +591,25 @@ export default function SOARequestProducts() {
                 </CardContent>
               </Card>
             </TabsContent>
-          </Tabs>
+            </Tabs>
 
-          <div className="flex justify-end gap-3 py-6">
+            {/* Navigation */}
+            <div className="flex justify-end gap-3" style={{ padding: '24px 32px', borderTop: '1px solid #E2E8F0' }}>
             <Button 
               variant="outline"
               onClick={() => navigate(createPageUrl('SOARequestScope') + `?id=${soaRequest.id}`)}
             >
               Back
             </Button>
-            <Button 
-              onClick={handleSave}
-              disabled={saving}
-              style={{ backgroundColor: '#7C3AED', color: '#FFFFFF' }}
-              className="hover:opacity-90"
-            >
-              {saving ? 'Saving...' : 'Save & Continue'}
-            </Button>
-          </div>
+              <Button 
+                onClick={handleSave}
+                disabled={saving}
+                style={{ backgroundColor: '#7C3AED', color: '#FFFFFF' }}
+                className="hover:opacity-90"
+              >
+                {saving ? 'Saving...' : 'Save & Continue'}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
