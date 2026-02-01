@@ -390,6 +390,7 @@ export default function SOARequestScope() {
             </Button>
           </div>
         </div>
+        </div>
       </div>
     </SOARequestLayout>
   );
