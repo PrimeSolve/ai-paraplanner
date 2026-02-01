@@ -158,11 +158,11 @@ export default function SOARequestPortfolio() {
                     Add Portfolio
                   </Button>
                 </div>
-            {portfolios.map((portfolio, portfolioIndex) => {
-              const totalAllocation = getTotalAllocation(portfolio);
-              const isValid = Math.abs(totalAllocation - 100) < 0.01;
+                {portfolios.map((portfolio, portfolioIndex) => {
+                  const totalAllocation = getTotalAllocation(portfolio);
+                  const isValid = Math.abs(totalAllocation - 100) < 0.01;
 
-              return (
+                  return (
                 <Card key={portfolioIndex} style={{ border: '1px solid #E2E8F0', borderRadius: '12px', marginBottom: '24px' }}>
                   <CardHeader style={{ padding: '24px', borderBottom: '1px solid #E2E8F0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
