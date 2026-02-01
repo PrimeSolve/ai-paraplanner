@@ -16,11 +16,13 @@ export default function AppShell({ children, pageActions, pageTitle }) {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
 
-  // Initialize user on mount
+  // Initialize user on mount (only once)
   useEffect(() => {
+    let mounted = true;
     const initUser = async () => {
       try {
         const currentUser = await base44.auth.me();
+        if (!mounted) return;
         console.log('AppShell loaded user:', currentUser);
         console.log('User role:', currentUser?.role);
         if (currentUser) {
@@ -28,13 +30,19 @@ export default function AppShell({ children, pageActions, pageTitle }) {
           console.log('Called loadUserData');
         }
       } catch (error) {
+        if (!mounted) return;
         console.error('Failed to load user:', error);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
     initUser();
-  }, [loadUserData]);
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Determine current navigation level from the chain
   const currentLevel = navigationChain.length > 0 
