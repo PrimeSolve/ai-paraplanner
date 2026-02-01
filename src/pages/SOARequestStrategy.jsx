@@ -406,7 +406,7 @@ export default function SOARequestStrategy() {
     <SOARequestLayout currentSection="strategy" soaRequest={soaRequest}>
       <div className="flex-1 overflow-auto bg-slate-50">
         {/* Dark Banner */}
-        <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderRadius: '16px 16px 0 0' }}>
+        <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderRadius: '16px 16px 0 0', marginRight: '24px' }}>
           <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#FFFFFF', margin: '0 0 4px 0', letterSpacing: '-0.01em' }}>
             Strategy
           </h1>
@@ -416,8 +416,8 @@ export default function SOARequestStrategy() {
         </div>
 
         {/* White Content Card */}
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>
-          <div className="p-6">
+        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none', marginRight: '24px' }}>
+          <div className="p-8">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="mb-6">
                 <TabsTrigger value="models">Models</TabsTrigger>
