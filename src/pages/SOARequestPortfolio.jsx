@@ -731,9 +731,9 @@ export default function SOARequestPortfolio() {
             >
               {saving ? 'Saving...' : 'Save & Next ▶'}
             </Button>
-          </div>
         </div>
         </div>
+      </div>
     </SOARequestLayout>
   );
 }
