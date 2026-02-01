@@ -78,13 +78,14 @@ export default function AdminTeam() {
 
     setInviting(true);
     try {
-      console.log('Inviting user:', inviteEmail, 'with role:', selectedRole);
       await base44.auth.inviteUser(inviteEmail, selectedRole);
-      console.log('User invited successfully');
+      setInviteSuccess(true);
       toast.success('Team member invited successfully');
+      await new Promise(resolve => setTimeout(resolve, 2000));
       setInviteEmail('');
       setInviteName('');
       setSelectedRole('user');
+      setInviteSuccess(false);
       setShowInviteModal(false);
       await loadTeam();
     } catch (error) {
