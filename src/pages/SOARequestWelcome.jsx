@@ -128,16 +128,6 @@ export default function SOARequestWelcome() {
     <SOARequestLayout currentSection="welcome" soaRequest={soaRequest}>
       <div className="flex-1 overflow-auto bg-slate-50 w-full">
         
-        {/* Welcome Banner - Full Width */}
-        <div className="w-full bg-[#1e3a5f] py-6">
-          <div className="max-w-5xl mx-auto px-6 text-center">
-            <h1 className="text-3xl font-bold text-white mb-2">Welcome to SOA Request</h1>
-            <p className="text-base text-blue-100">
-              Submit your Statement of Advice request to our AI paraplanner for professional SOA preparation.
-            </p>
-          </div>
-        </div>
-
         {/* Main Content */}
         <div className="w-full px-6 py-8">
           <div className="max-w-5xl mx-auto">
