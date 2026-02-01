@@ -42,19 +42,26 @@ export function RoleProvider({ children }) {
     let linkedEntity = null;
     if (userData.role === 'user') {
       try {
-        const advisers = await base44.entities.Adviser.filter({ user_id: userData.id });
-        if (advisers.length > 0) {
-          linkedEntity = { type: 'adviser', data: advisers[0] };
+        // Check cache first to avoid repeat queries
+        const cacheKey = `user_${userData.id}`;
+        if (entityCacheRef.current[cacheKey]) {
+          linkedEntity = entityCacheRef.current[cacheKey];
         } else {
-          const clients = await base44.entities.Client.filter({ user_id: userData.id });
-          if (clients.length > 0) {
-            linkedEntity = { type: 'client', data: clients[0] };
+          const advisers = await base44.entities.Adviser.filter({ user_id: userData.id });
+          if (advisers.length > 0) {
+            linkedEntity = { type: 'adviser', data: advisers[0] };
           } else {
-            const groups = await base44.entities.AdviceGroup.filter({ user_id: userData.id });
-            if (groups.length > 0) {
-              linkedEntity = { type: 'advice_group', data: groups[0] };
+            const clients = await base44.entities.Client.filter({ user_id: userData.id });
+            if (clients.length > 0) {
+              linkedEntity = { type: 'client', data: clients[0] };
+            } else {
+              const groups = await base44.entities.AdviceGroup.filter({ user_id: userData.id });
+              if (groups.length > 0) {
+                linkedEntity = { type: 'advice_group', data: groups[0] };
+              }
             }
           }
+          entityCacheRef.current[cacheKey] = linkedEntity;
         }
         console.log('Linked entity:', linkedEntity);
       } catch (error) {
