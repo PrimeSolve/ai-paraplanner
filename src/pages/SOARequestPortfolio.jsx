@@ -8,42 +8,79 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import { Plus, Trash2, Pencil, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, Pencil, AlertTriangle, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-// ==========================================================================
-// CONSTANTS
-// ==========================================================================
+// ============================================================================
+// RISK PROFILE TARGET ALLOCATIONS
+// ============================================================================
+
 const RISK_PROFILE_ALLOCATIONS = {
   cash: {
-    'Australian Equities': 0, 'International Equities': 0, 'Property & Infrastructure': 0,
-    'Alternatives': 0, 'Growth Exposure': 0, 'Australian Fixed Interest': 0,
-    'International Fixed Interest': 0, 'Cash': 100, 'Defensive Exposure': 100
+    'Australian Equities': 0,
+    'International Equities': 0,
+    'Property & Infrastructure': 0,
+    'Alternatives': 0,
+    'Growth Exposure': 0,
+    'Australian Fixed Interest': 0,
+    'International Fixed Interest': 0,
+    'Cash': 100,
+    'Defensive Exposure': 100
   },
   conservative: {
-    'Australian Equities': 13, 'International Equities': 13, 'Property & Infrastructure': 4,
-    'Alternatives': 0, 'Growth Exposure': 30, 'Australian Fixed Interest': 35,
-    'International Fixed Interest': 15, 'Cash': 20, 'Defensive Exposure': 70
+    'Australian Equities': 13,
+    'International Equities': 13,
+    'Property & Infrastructure': 4,
+    'Alternatives': 0,
+    'Growth Exposure': 30,
+    'Australian Fixed Interest': 35,
+    'International Fixed Interest': 15,
+    'Cash': 20,
+    'Defensive Exposure': 70
   },
   moderately_conservative: {
-    'Australian Equities': 22.5, 'International Equities': 22.5, 'Property & Infrastructure': 5,
-    'Alternatives': 0, 'Growth Exposure': 50, 'Australian Fixed Interest': 25,
-    'International Fixed Interest': 10, 'Cash': 15, 'Defensive Exposure': 50
+    'Australian Equities': 22.5,
+    'International Equities': 22.5,
+    'Property & Infrastructure': 5,
+    'Alternatives': 0,
+    'Growth Exposure': 50,
+    'Australian Fixed Interest': 25,
+    'International Fixed Interest': 10,
+    'Cash': 15,
+    'Defensive Exposure': 50
   },
   balanced: {
-    'Australian Equities': 31.5, 'International Equities': 31.5, 'Property & Infrastructure': 7,
-    'Alternatives': 0, 'Growth Exposure': 70, 'Australian Fixed Interest': 14,
-    'International Fixed Interest': 7, 'Cash': 9, 'Defensive Exposure': 30
+    'Australian Equities': 31.5,
+    'International Equities': 31.5,
+    'Property & Infrastructure': 7,
+    'Alternatives': 0,
+    'Growth Exposure': 70,
+    'Australian Fixed Interest': 14,
+    'International Fixed Interest': 7,
+    'Cash': 9,
+    'Defensive Exposure': 30
   },
   growth: {
-    'Australian Equities': 39, 'International Equities': 39, 'Property & Infrastructure': 7,
-    'Alternatives': 0, 'Growth Exposure': 85, 'Australian Fixed Interest': 7.5,
-    'International Fixed Interest': 4.5, 'Cash': 3, 'Defensive Exposure': 15
+    'Australian Equities': 39,
+    'International Equities': 39,
+    'Property & Infrastructure': 7,
+    'Alternatives': 0,
+    'Growth Exposure': 85,
+    'Australian Fixed Interest': 7.5,
+    'International Fixed Interest': 4.5,
+    'Cash': 3,
+    'Defensive Exposure': 15
   },
   high_growth: {
-    'Australian Equities': 45, 'International Equities': 45, 'Property & Infrastructure': 8,
-    'Alternatives': 0, 'Growth Exposure': 98, 'Australian Fixed Interest': 0,
-    'International Fixed Interest': 0, 'Cash': 2, 'Defensive Exposure': 2
+    'Australian Equities': 45,
+    'International Equities': 45,
+    'Property & Infrastructure': 8,
+    'Alternatives': 0,
+    'Growth Exposure': 98,
+    'Australian Fixed Interest': 0,
+    'International Fixed Interest': 0,
+    'Cash': 2,
+    'Defensive Exposure': 2
   }
 };
 
@@ -56,8 +93,18 @@ const RISK_PROFILE_LABELS = {
   high_growth: 'High Growth'
 };
 
-const GROWTH_ASSETS = ['Australian Equities', 'International Equities', 'Property & Infrastructure', 'Alternatives'];
-const DEFENSIVE_ASSETS = ['Australian Fixed Interest', 'International Fixed Interest', 'Cash'];
+const GROWTH_ASSETS = [
+  'Australian Equities',
+  'International Equities',
+  'Property & Infrastructure',
+  'Alternatives'
+];
+
+const DEFENSIVE_ASSETS = [
+  'Australian Fixed Interest',
+  'International Fixed Interest',
+  'Cash'
+];
 
 const TRANSACTION_TYPES = [
   { value: 'Buy', label: 'Buy' },
@@ -65,33 +112,50 @@ const TRANSACTION_TYPES = [
   { value: 'Switch', label: 'Switch' }
 ];
 
+// ============================================================================
+// HELPERS
+// ============================================================================
+
 const generateId = () => 'ptxn_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 const formatCurrency = (value) => {
   if (!value && value !== 0) return '—';
   const num = parseFloat(value);
   if (isNaN(num)) return '—';
-  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 0 }).format(num);
+  return new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency: 'AUD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(num);
 };
 
-// ==========================================================================
+// ============================================================================
 // MAIN COMPONENT
-// ==========================================================================
+// ============================================================================
+
 export default function SOARequestPortfolio() {
   const navigate = useNavigate();
-  
+
+  // Loading states
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Core data
   const [soaRequest, setSOARequest] = useState(null);
+  const [clientId, setClientId] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [products, setProducts] = useState([]);
   const [clientRiskProfile, setClientRiskProfile] = useState(null);
+
+  // UI state
   const [selectedProductId, setSelectedProductId] = useState('');
   const [editingId, setEditingId] = useState(null);
 
-  // =========================================================================
+  // ============================================================================
   // DATA LOADING
-  // =========================================================================
+  // ============================================================================
+
   useEffect(() => {
     loadData();
   }, []);
@@ -100,29 +164,33 @@ export default function SOARequestPortfolio() {
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const id = urlParams.get('id');
-      
+
       if (!id) {
         toast.error('No SOA Request ID provided');
         setLoading(false);
         return;
       }
 
+      // Load SOA Request
       const requests = await base44.entities.SOARequest.filter({ id });
       if (!requests[0]) {
         toast.error('SOA Request not found');
         setLoading(false);
         return;
       }
-      
+
       const soaReq = requests[0];
       setSOARequest(soaReq);
-      
+      setClientId(soaReq.client_id);
+
+      // Load transactions from portfolio data
       const portfolioData = soaReq.portfolio || {};
       setTransactions(portfolioData.transactions || []);
-      
+
+      // Load products and risk profile
       await loadProducts(soaReq.client_id, soaReq);
       await loadRiskProfile(soaReq.client_id);
-      
+
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Failed to load data');
@@ -134,27 +202,60 @@ export default function SOARequestPortfolio() {
   const loadProducts = async (clientId, soaReq) => {
     try {
       const productList = [];
-      
+
+      // Try to load Super Funds
       try {
-        const superFunds = await base44.entities.SuperFund?.filter({ client_id: clientId }) || [];
-        superFunds.forEach(f => productList.push({ id: f.id, name: f.name, owner_id: f.owner_id, type: 'Super Fund' }));
+        const superFunds = await base44.entities.SuperFund?.filter({ client_id: clientId });
+        if (superFunds) {
+          superFunds.forEach(f => {
+            if (f.name) productList.push({ id: f.id, name: f.name, owner_id: f.owner_id, type: 'Super Fund' });
+          });
+        }
       } catch (e) { /* Entity may not exist */ }
-      
+
+      // Try to load Pensions
       try {
-        const pensions = await base44.entities.Pension?.filter({ client_id: clientId }) || [];
-        pensions.forEach(p => productList.push({ id: p.id, name: p.name, owner_id: p.owner_id, type: 'Pension' }));
+        const pensions = await base44.entities.Pension?.filter({ client_id: clientId });
+        if (pensions) {
+          pensions.forEach(p => {
+            if (p.name) productList.push({ id: p.id, name: p.name, owner_id: p.owner_id, type: 'Pension' });
+          });
+        }
       } catch (e) { /* Entity may not exist */ }
-      
+
+      // Try to load Wraps
       try {
-        const wraps = await base44.entities.Wrap?.filter({ client_id: clientId }) || [];
-        wraps.forEach(w => productList.push({ id: w.id, name: w.name, owner_id: w.owner_id, type: 'Wrap' }));
+        const wraps = await base44.entities.Wrap?.filter({ client_id: clientId });
+        if (wraps) {
+          wraps.forEach(w => {
+            if (w.name) productList.push({ id: w.id, name: w.name, owner_id: w.owner_id, type: 'Wrap' });
+          });
+        }
       } catch (e) { /* Entity may not exist */ }
-      
+
+      // Try to load Investment Bonds
+      try {
+        const bonds = await base44.entities.InvestmentBond?.filter({ client_id: clientId });
+        if (bonds) {
+          bonds.forEach(b => {
+            if (b.name) productList.push({ id: b.id, name: b.name, owner_id: b.owner_id, type: 'Investment Bond' });
+          });
+        }
+      } catch (e) { /* Entity may not exist */ }
+
+      // Load new products from SOA Request products_entities
       const newProducts = soaReq.products_entities?.products || [];
       newProducts.forEach(p => {
-        productList.push({ id: p.id, name: p.name, owner_id: p.owner_id, type: p.type || 'New Product' });
+        if (p.name) {
+          productList.push({
+            id: p.id,
+            name: p.name,
+            owner_id: p.owner_id,
+            type: p.type || 'New Product'
+          });
+        }
       });
-      
+
       setProducts(productList);
     } catch (error) {
       console.error('Error loading products:', error);
@@ -163,18 +264,24 @@ export default function SOARequestPortfolio() {
 
   const loadRiskProfile = async (clientId) => {
     try {
+      // Try to load from Client entity
       const clients = await base44.entities.Client.filter({ id: clientId });
       if (clients[0]?.risk_profile) {
         setClientRiskProfile(clients[0].risk_profile);
+        return;
       }
+
+      // Future: Load from linked Fact Find
+      // For now, leave as null to show warning
     } catch (error) {
       console.error('Error loading risk profile:', error);
     }
   };
 
-  // =========================================================================
-  // TRANSACTION HANDLERS
-  // =========================================================================
+  // ============================================================================
+  // TRANSACTION CRUD
+  // ============================================================================
+
   const addTransaction = () => {
     const newTxn = {
       id: generateId(),
@@ -200,23 +307,37 @@ export default function SOARequestPortfolio() {
     if (editingId === id) setEditingId(null);
   };
 
-  // =========================================================================
+  const saveEditing = () => {
+    setEditingId(null);
+  };
+
+  const cancelEditing = (id) => {
+    // If it's a new empty transaction, delete it
+    const txn = transactions.find(t => t.id === id);
+    if (txn && !txn.product_id && !txn.investment_option && !txn.amount) {
+      setTransactions(transactions.filter(t => t.id !== id));
+    }
+    setEditingId(null);
+  };
+
+  // ============================================================================
   // ALLOCATION CALCULATIONS
-  // =========================================================================
+  // ============================================================================
+
   const getProductHoldings = (productId) => {
     if (!productId) return [];
-    
+
     const productTxns = transactions.filter(t => t.product_id === productId);
     const holdings = {};
-    
+
     productTxns.forEach(txn => {
       if (!txn.investment_option) return;
-      
+
       const key = txn.investment_option;
       if (!holdings[key]) {
         holdings[key] = { name: key, amount: 0 };
       }
-      
+
       const amount = parseFloat(txn.amount) || 0;
       if (txn.type === 'Buy') {
         holdings[key].amount += amount;
@@ -224,13 +345,14 @@ export default function SOARequestPortfolio() {
         holdings[key].amount -= amount;
       }
     });
-    
+
     return Object.values(holdings).filter(h => h.amount > 0);
   };
 
-  // =========================================================================
+  // ============================================================================
   // SAVE HANDLER
-  // =========================================================================
+  // ============================================================================
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -249,17 +371,19 @@ export default function SOARequestPortfolio() {
     }
   };
 
-  // =========================================================================
+  // ============================================================================
   // HELPERS
-  // =========================================================================
+  // ============================================================================
+
   const getProductName = (productId) => {
     const product = products.find(p => p.id === productId);
     return product ? `${product.name} (${product.type})` : '—';
   };
 
-  // =========================================================================
+  // ============================================================================
   // LOADING STATE
-  // =========================================================================
+  // ============================================================================
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
@@ -271,9 +395,10 @@ export default function SOARequestPortfolio() {
   const selectedHoldings = getProductHoldings(selectedProductId);
   const totalValue = selectedHoldings.reduce((sum, h) => sum + h.amount, 0);
 
-  // =========================================================================
+  // ============================================================================
   // RENDER
-  // =========================================================================
+  // ============================================================================
+
   return (
     <SOARequestLayout currentSection="portfolio" soaRequest={soaRequest}>
       <div className="flex-1 overflow-auto bg-slate-50">
@@ -302,7 +427,7 @@ export default function SOARequestPortfolio() {
                     <SelectContent>
                       {products.map(p => (
                         <SelectItem key={p.id} value={p.id}>
-                          {p.name} ({p.type})
+                          {p.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -318,8 +443,8 @@ export default function SOARequestPortfolio() {
                 ) : selectedHoldings.length === 0 ? (
                   <div className="text-center py-12 text-slate-500">
                     <div className="text-4xl mb-3">📊</div>
-                    <p>No holdings found for this product</p>
-                    <p className="text-sm mt-1">Add transactions below to build the portfolio</p>
+                    <p>No holdings for this product</p>
+                    <p className="text-sm mt-1">Add transactions below</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -334,9 +459,7 @@ export default function SOARequestPortfolio() {
                               style={{ width: `${pct}%` }}
                             />
                           </div>
-                          <div className="w-20 text-right text-sm">
-                            {pct.toFixed(1)}%
-                          </div>
+                          <div className="w-20 text-right text-sm">{pct.toFixed(1)}%</div>
                           <div className="w-28 text-right text-sm text-slate-600">
                             {formatCurrency(holding.amount)}
                           </div>
@@ -371,72 +494,59 @@ export default function SOARequestPortfolio() {
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center gap-3">
                     <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
                     <span className="text-sm text-amber-800">
-                      Set a risk profile in the Fact Find to see target allocation comparison
+                      Set a risk profile in the Fact Find to see target allocation
                     </span>
                   </div>
                 ) : (
-                  <div className="space-y-1">
-                    {/* Table Header */}
-                    <div className="grid grid-cols-4 gap-2 text-xs font-semibold text-slate-500 uppercase pb-2 border-b">
+                  <div className="space-y-1 text-sm">
+                    <div className="grid grid-cols-4 gap-2 font-semibold text-slate-600 pb-2 border-b uppercase text-xs">
                       <div>Asset Class</div>
                       <div className="text-center">Target %</div>
                       <div className="text-center">Current %</div>
-                      <div className="text-center">Divergence</div>
+                      <div className="text-center">Div</div>
                     </div>
-                    
-                    {/* Growth Assets */}
                     {GROWTH_ASSETS.map(asset => {
                       const target = RISK_PROFILE_ALLOCATIONS[clientRiskProfile]?.[asset] || 0;
                       const current = 0;
                       const div = current - target;
                       return (
-                        <div key={asset} className="grid grid-cols-4 gap-2 py-2 text-sm border-b border-slate-100">
+                        <div key={asset} className="grid grid-cols-4 gap-2 py-1.5 border-b border-slate-100 text-xs">
                           <div>{asset}</div>
                           <div className="text-center">{target.toFixed(1)}%</div>
                           <div className="text-center text-slate-400">—</div>
-                          <div className={`text-center font-semibold ${div > 0 ? 'text-green-600' : div < 0 ? 'text-red-600' : 'text-slate-500'}`}>
+                          <div className={`text-center font-semibold ${div < 0 ? 'text-red-600' : 'text-slate-500'}`}>
                             {div > 0 ? '+' : ''}{div.toFixed(1)}%
                           </div>
                         </div>
                       );
                     })}
-                    
-                    {/* Growth Exposure Row */}
-                    <div className="grid grid-cols-4 gap-2 py-2 text-sm bg-sky-50 font-semibold text-sky-800">
-                      <div>Growth Exposure</div>
+                    <div className="grid grid-cols-4 gap-2 py-1.5 bg-sky-50 font-semibold text-sky-800 text-xs">
+                      <div>Growth Exp</div>
                       <div className="text-center">{RISK_PROFILE_ALLOCATIONS[clientRiskProfile]?.['Growth Exposure']?.toFixed(1)}%</div>
                       <div className="text-center">—</div>
                       <div className="text-center">—</div>
                     </div>
-                    
-                    {/* Defensive Assets */}
                     {DEFENSIVE_ASSETS.map(asset => {
                       const target = RISK_PROFILE_ALLOCATIONS[clientRiskProfile]?.[asset] || 0;
                       const current = 0;
                       const div = current - target;
                       return (
-                        <div key={asset} className="grid grid-cols-4 gap-2 py-2 text-sm border-b border-slate-100">
+                        <div key={asset} className="grid grid-cols-4 gap-2 py-1.5 border-b border-slate-100 text-xs">
                           <div>{asset}</div>
                           <div className="text-center">{target.toFixed(1)}%</div>
                           <div className="text-center text-slate-400">—</div>
-                          <div className={`text-center font-semibold ${div > 0 ? 'text-green-600' : div < 0 ? 'text-red-600' : 'text-slate-500'}`}>
+                          <div className={`text-center font-semibold ${div < 0 ? 'text-red-600' : 'text-slate-500'}`}>
                             {div > 0 ? '+' : ''}{div.toFixed(1)}%
                           </div>
                         </div>
                       );
                     })}
-                    
-                    {/* Defensive Exposure Row */}
-                    <div className="grid grid-cols-4 gap-2 py-2 text-sm bg-sky-50 font-semibold text-sky-800">
-                      <div>Defensive Exposure</div>
+                    <div className="grid grid-cols-4 gap-2 py-1.5 bg-sky-50 font-semibold text-sky-800 text-xs">
+                      <div>Def Exp</div>
                       <div className="text-center">{RISK_PROFILE_ALLOCATIONS[clientRiskProfile]?.['Defensive Exposure']?.toFixed(1)}%</div>
                       <div className="text-center">—</div>
                       <div className="text-center">—</div>
                     </div>
-                    
-                    <p className="text-xs text-slate-400 text-center pt-3">
-                      Note: Map investment options to asset classes to see current allocation
-                    </p>
                   </div>
                 )}
               </CardContent>
@@ -471,8 +581,8 @@ export default function SOARequestPortfolio() {
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-12 text-slate-500">
                         <div className="text-4xl mb-3">📊</div>
-                        <p>No transactions yet.</p>
-                        <p className="text-sm">Click "Add transaction" to get started.</p>
+                        <p>No transactions yet</p>
+                        <p className="text-sm">Click "Add transaction" to get started</p>
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -484,8 +594,8 @@ export default function SOARequestPortfolio() {
                               value={txn.product_id}
                               onValueChange={(v) => updateTransaction(txn.id, 'product_id', v)}
                             >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select product..." />
+                              <SelectTrigger className="text-xs">
+                                <SelectValue placeholder="Select..." />
                               </SelectTrigger>
                               <SelectContent>
                                 {products.map(p => (
@@ -494,7 +604,7 @@ export default function SOARequestPortfolio() {
                               </SelectContent>
                             </Select>
                           ) : (
-                            getProductName(txn.product_id)
+                            <span className="text-sm">{getProductName(txn.product_id)}</span>
                           )}
                         </TableCell>
                         <TableCell>
@@ -503,7 +613,7 @@ export default function SOARequestPortfolio() {
                               value={txn.type}
                               onValueChange={(v) => updateTransaction(txn.id, 'type', v)}
                             >
-                              <SelectTrigger>
+                              <SelectTrigger className="text-xs">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -513,18 +623,20 @@ export default function SOARequestPortfolio() {
                               </SelectContent>
                             </Select>
                           ) : (
-                            txn.type
+                            <span className="text-sm">{txn.type}</span>
                           )}
                         </TableCell>
                         <TableCell>
                           {editingId === txn.id ? (
                             <Input
+                              size="sm"
                               value={txn.investment_option || ''}
                               onChange={(e) => updateTransaction(txn.id, 'investment_option', e.target.value)}
-                              placeholder="e.g. Vanguard Growth Index"
+                              placeholder="e.g. Vanguard Growth"
+                              className="text-xs"
                             />
                           ) : (
-                            txn.investment_option || '—'
+                            <span className="text-sm">{txn.investment_option || '—'}</span>
                           )}
                         </TableCell>
                         <TableCell className="text-right">
@@ -534,10 +646,10 @@ export default function SOARequestPortfolio() {
                               value={txn.amount || ''}
                               onChange={(e) => updateTransaction(txn.id, 'amount', e.target.value)}
                               placeholder="0"
-                              className="text-right"
+                              className="text-xs text-right"
                             />
                           ) : (
-                            formatCurrency(txn.amount)
+                            <span className="text-sm">{formatCurrency(txn.amount)}</span>
                           )}
                         </TableCell>
                         <TableCell className="text-right">
@@ -546,29 +658,51 @@ export default function SOARequestPortfolio() {
                               value={txn.units || ''}
                               onChange={(e) => updateTransaction(txn.id, 'units', e.target.value)}
                               placeholder="—"
-                              className="text-right"
+                              className="text-xs text-right"
                             />
                           ) : (
-                            txn.units || '—'
+                            <span className="text-sm">{txn.units || '—'}</span>
                           )}
                         </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setEditingId(editingId === txn.id ? null : txn.id)}
-                            className="mr-1"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteTransaction(txn.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                        <TableCell className="text-right space-x-1">
+                          {editingId === txn.id ? (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={saveEditing}
+                                className="text-green-600 hover:text-green-700"
+                              >
+                                <Check className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => cancelEditing(txn.id)}
+                                className="text-gray-600 hover:text-gray-700"
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setEditingId(txn.id)}
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteTransaction(txn.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))
