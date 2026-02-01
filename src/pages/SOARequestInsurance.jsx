@@ -1390,22 +1390,23 @@ export default function SOARequestInsurance() {
           </Tabs>
         </div>
 
-        {/* Navigation */}
-        <div className="px-6 pb-6">
-          <div className="flex justify-end gap-3">
-            <Button 
-              variant="outline"
-              onClick={() => navigate(createPageUrl('SOARequestProducts') + `?id=${soaRequest.id}`)}
-            >
-              Back
-            </Button>
-            <Button 
-              onClick={handleSave}
-              disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {saving ? 'Saving...' : 'Save & Continue'}
-            </Button>
+            {/* Navigation */}
+            <div className="flex justify-end gap-3" style={{ padding: '24px 32px', borderTop: '1px solid #E2E8F0' }}>
+              <Button 
+                variant="outline"
+                onClick={() => navigate(createPageUrl('SOARequestProducts') + `?id=${soaRequest.id}`)}
+              >
+                Back
+              </Button>
+              <Button 
+                onClick={handleSave}
+                disabled={saving}
+                style={{ backgroundColor: '#7C3AED', color: '#FFFFFF' }}
+                className="hover:opacity-90"
+              >
+                {saving ? 'Saving...' : 'Save & Continue'}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
