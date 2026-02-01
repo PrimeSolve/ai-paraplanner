@@ -158,42 +158,42 @@ export default function SOARequestPortfolio() {
                     Add Portfolio
                   </Button>
                 </div>
-            portfolios.map((portfolio, portfolioIndex) => {
+            {portfolios.map((portfolio, portfolioIndex) => {
               const totalAllocation = getTotalAllocation(portfolio);
               const isValid = Math.abs(totalAllocation - 100) < 0.01;
-              
+
               return (
-                <Card key={portfolioIndex}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
+                <Card key={portfolioIndex} style={{ border: '1px solid #E2E8F0', borderRadius: '12px', marginBottom: '24px' }}>
+                  <CardHeader style={{ padding: '24px', borderBottom: '1px solid #E2E8F0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                      <div style={{ flex: 1 }}>
                         <Input 
                           value={portfolio.product_name}
                           onChange={(e) => updatePortfolioName(portfolioIndex, e.target.value)}
-                          placeholder="Enter product/portfolio name..."
-                          className="font-semibold text-base"
+                          placeholder="e.g. HUB24 Growth Portfolio"
+                          style={{ padding: '12px 16px', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#FFFFFF', fontSize: '14px', color: '#1E293B', fontWeight: 500 }}
                         />
                       </div>
                       <Button 
                         variant="ghost" 
                         size="sm"
                         onClick={() => removePortfolio(portfolioIndex)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-3"
+                        style={{ color: '#EF4444', marginLeft: '12px' }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
-                    <div className={`text-sm font-semibold ${isValid ? 'text-green-600' : 'text-red-600'}`}>
+                    <div style={{ fontSize: '14px', fontWeight: '600', color: isValid ? '#10B981' : '#EF4444' }}>
                       Total: {totalAllocation.toFixed(1)}% {isValid ? '✓' : '(must equal 100%)'}
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {portfolio.asset_allocation.map((asset, assetIndex) => (
-                      <div key={assetIndex} className="flex items-center gap-3">
-                        <label className="text-sm font-medium text-slate-700 w-64">
+                      <div key={assetIndex} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <label style={{ fontSize: '13px', fontWeight: '600', color: '#1E293B', width: '200px', flexShrink: 0 }}>
                           {asset.asset_class}
                         </label>
-                        <div className="flex items-center gap-2 flex-1">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
                           <Input 
                             type="number"
                             value={asset.allocation}
@@ -202,14 +202,11 @@ export default function SOARequestPortfolio() {
                             min="0"
                             max="100"
                             step="0.1"
-                            className="w-24"
+                            style={{ padding: '12px 16px', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#FFFFFF', fontSize: '14px', color: '#1E293B', width: '100px', textAlign: 'right' }}
                           />
-                          <span className="text-sm text-slate-600">%</span>
-                          <div className="flex-1 bg-slate-200 rounded-full h-2 overflow-hidden">
-                            <div 
-                              className="bg-blue-600 h-full transition-all"
-                              style={{ width: `${Math.min(asset.allocation, 100)}%` }}
-                            />
+                          <span style={{ fontSize: '14px', color: '#64748B', minWidth: '20px' }}>%</span>
+                          <div style={{ flex: 1, backgroundColor: '#E2E8F0', borderRadius: '9999px', height: '8px', overflow: 'hidden' }}>
+                            <div style={{ backgroundColor: '#7C3AED', height: '100%', width: `${Math.min(asset.allocation, 100)}%`, transition: 'width 0.2s ease' }} />
                           </div>
                         </div>
                       </div>
@@ -217,26 +214,29 @@ export default function SOARequestPortfolio() {
                   </CardContent>
                 </Card>
               );
-            })
-          )}
+            })}
 
-          <div className="flex justify-end gap-3 py-6">
-            <Button 
-              variant="outline"
-              onClick={() => navigate(createPageUrl('SOARequestTransactions') + `?id=${soaRequest.id}`)}
-            >
-              Back
-            </Button>
-            <Button 
-              onClick={handleSave}
-              disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {saving ? 'Saving...' : 'Save & Continue'}
-            </Button>
-          </div>
-        </div>
-      </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '24px', borderTop: '1px solid #E2E8F0', marginTop: '24px' }}>
+              <Button 
+                variant="outline"
+                onClick={() => navigate(createPageUrl('SOARequestTransactions') + `?id=${soaRequest.id}`)}
+                style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#FFFFFF', color: '#1E293B', fontSize: '14px', fontWeight: '500' }}
+              >
+                ◀ Back
+              </Button>
+              <Button 
+                onClick={handleSave}
+                disabled={saving}
+                style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: '#7C3AED', color: '#FFFFFF', fontSize: '14px', fontWeight: '600' }}
+              >
+                {saving ? 'Saving...' : 'Save & Next ▶'}
+              </Button>
+            </div>
+            </>
+            )}
+            </div>
+            </div>
+            </div>
     </SOARequestLayout>
   );
 }
