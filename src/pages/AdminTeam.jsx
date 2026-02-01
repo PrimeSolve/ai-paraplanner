@@ -78,8 +78,8 @@ export default function AdminTeam() {
     setInviting(true);
     try {
       console.log('Inviting user:', inviteEmail, 'with role:', selectedRole);
-      const result = await base44.users.inviteUser(inviteEmail, selectedRole);
-      console.log('Invite result:', result);
+      await base44.auth.inviteUser(inviteEmail, selectedRole);
+      console.log('User invited successfully');
       toast.success('Team member invited successfully');
       setInviteEmail('');
       setInviteName('');
