@@ -361,7 +361,7 @@ export default function SOARequestReview() {
         {/* White Content Card */}
         <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>
           <div className="p-8 space-y-6">
-          {/* Progress Overview */}
+            {/* Progress Overview */}
           <Card className="border-blue-200">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-3">
