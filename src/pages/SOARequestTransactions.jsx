@@ -5,70 +5,226 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Pencil, X } from 'lucide-react';
 import { toast } from 'sonner';
 
+// ============================================================================
+// DROPDOWN OPTIONS
+// ============================================================================
+
+const BUY_ASSET_TYPES = [
+  { value: '12', label: 'Australian - Listed' },
+  { value: '13', label: 'International - Listed' },
+  { value: '26', label: 'Managed funds' },
+  { value: '10', label: 'Government bonds - listed' },
+  { value: '9', label: 'Term deposit' },
+  { value: '8', label: 'Cash' },
+  { value: '40', label: 'Related party loan' },
+  { value: '1', label: 'Principal residence' },
+  { value: '18', label: 'Investment property' },
+  { value: '19', label: 'Commercial property' },
+  { value: '27', label: 'Holiday home' }
+];
+
+const OWNERSHIP_TYPES = [
+  { value: '1', label: 'Sole ownership' },
+  { value: '2', label: 'Joint' },
+  { value: '7', label: 'Tenants in common' }
+];
+
+const DEBT_TYPES = [
+  { value: '1', label: 'Home loan' },
+  { value: '2', label: 'Investment loan' },
+  { value: '3', label: 'Margin loan' },
+  { value: '4', label: 'Split loan' },
+  { value: '5', label: 'Credit card' },
+  { value: '6', label: 'Reverse mortgage' },
+  { value: '7', label: 'Car loan' },
+  { value: '9', label: 'Home equity release' },
+  { value: '10', label: 'Related party loan' },
+  { value: '8', label: 'Other' }
+];
+
+const RENT_FREQUENCIES = [
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'fortnightly', label: 'Fortnightly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'quarterly', label: 'Quarterly' },
+  { value: 'annually', label: 'Annually' }
+];
+
+const PROPERTY_ASSET_TYPES = ['1', '18', '19', '27'];
+
+// Helper functions
+const getAssetTypeLabel = (value) => BUY_ASSET_TYPES.find(t => t.value === value)?.label || value || '—';
+const getOwnershipLabel = (value) => OWNERSHIP_TYPES.find(t => t.value === value)?.label || value || '—';
+const getDebtTypeLabel = (value) => DEBT_TYPES.find(t => t.value === value)?.label || value || '—';
+const isPropertyType = (assetType) => PROPERTY_ASSET_TYPES.includes(assetType);
+
+const generateId = () => 'txn_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+const formatCurrency = (value) => {
+  if (!value && value !== 0) return '—';
+  const num = parseFloat(value);
+  if (isNaN(num)) return '—';
+  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 0 }).format(num);
+};
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
 export default function SOARequestTransactions() {
+  const navigate = useNavigate();
+  
+  // Loading states
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
+  // Data
   const [soaRequest, setSOARequest] = useState(null);
+  const [clientId, setClientId] = useState(null);
+  
+  // Entity options for dropdowns
+  const [ownerOptions, setOwnerOptions] = useState([]);
+  const [assetOptions, setAssetOptions] = useState([]);
+  const [smsfOptions, setSmsfOptions] = useState([]);
+  const [modelOptions, setModelOptions] = useState([]);
+  const [debtOptions, setDebtOptions] = useState([]);
+  
+  // Transaction data
   const [buyTransactions, setBuyTransactions] = useState([]);
   const [sellTransactions, setSellTransactions] = useState([]);
-  const navigate = useNavigate();
+  const [debtTransactions, setDebtTransactions] = useState([]);
+  
+  // Active tab and editing state
+  const [activeTab, setActiveTab] = useState('buy');
+  const [editingBuyId, setEditingBuyId] = useState(null);
+  const [editingSellId, setEditingSellId] = useState(null);
+  const [editingDebtId, setEditingDebtId] = useState(null);
+
+  // ============================================================================
+  // DATA LOADING
+  // ============================================================================
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
-        
-        if (id) {
-          const requests = await base44.entities.SOARequest.filter({ id });
-          if (requests[0]) {
-            setSOARequest(requests[0]);
-            const transactions = requests[0].transactions || {};
-            setBuyTransactions(transactions.buy || []);
-            setSellTransactions(transactions.sell || []);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadData();
   }, []);
 
-  const addBuyTransaction = () => {
-    setBuyTransactions([...buyTransactions, { asset_type: '', asset_name: '', amount: '', entity: '' }]);
+  const loadData = async () => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('id');
+      
+      if (!id) {
+        toast.error('No SOA Request ID provided');
+        setLoading(false);
+        return;
+      }
+
+      // Load SOA Request
+      const requests = await base44.entities.SOARequest.filter({ id });
+      if (!requests[0]) {
+        toast.error('SOA Request not found');
+        setLoading(false);
+        return;
+      }
+      
+      const soaReq = requests[0];
+      setSOARequest(soaReq);
+      setClientId(soaReq.client_id);
+      
+      // Load transactions from SOA Request
+      const txns = soaReq.transactions || {};
+      setBuyTransactions(txns.buy || []);
+      setSellTransactions(txns.sell || []);
+      setDebtTransactions(txns.debts || []);
+      
+      // Load related entities for dropdowns
+      await loadEntityOptions(soaReq.client_id, soaReq, txns.buy || []);
+      
+    } catch (error) {
+      console.error('Error loading data:', error);
+      toast.error('Failed to load data');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const addSellTransaction = () => {
-    setSellTransactions([...sellTransactions, { asset_type: '', asset_name: '', amount: '', entity: '' }]);
+  const loadEntityOptions = async (clientId, soaReq, buyTxns) => {
+    try {
+      // Load Principals
+      const principals = await base44.entities.Principal.filter({ client_id: clientId });
+      
+      // Load Trusts
+      const trusts = await base44.entities.Trust.filter({ client_id: clientId });
+      
+      // Load Companies
+      const companies = await base44.entities.Company.filter({ client_id: clientId });
+      
+      // Load SMSFs
+      const smsfs = await base44.entities.SMSF.filter({ client_id: clientId });
+      
+      // Build owner options
+      const owners = [];
+      principals.forEach(p => {
+        const name = `${p.first_name || ''} ${p.last_name || ''}`.trim();
+        owners.push({
+          value: p.id,
+          label: name || (p.role === 'client' ? 'Client' : 'Partner')
+        });
+      });
+      trusts.forEach(t => owners.push({ value: t.id, label: `${t.name} (Trust)` }));
+      companies.forEach(c => owners.push({ value: c.id, label: `${c.name} (Company)` }));
+      smsfs.forEach(s => owners.push({ value: s.id, label: `${s.name} (SMSF)` }));
+      
+      // Add new entities from products_entities if available
+      const newEntities = soaReq.products_entities?.entities || [];
+      newEntities.forEach(e => {
+        owners.push({ value: e.id, label: `${e.name} (${e.type || 'New'})` });
+      });
+      
+      setOwnerOptions(owners);
+      
+      // Build asset options (for sell dropdown)
+      const assetOpts = [];
+      buyTxns.forEach(b => {
+        if (b.asset_type) {
+          assetOpts.push({
+            value: b.id,
+            label: `${getAssetTypeLabel(b.asset_type)} (New Purchase)`,
+            isExisting: false
+          });
+        }
+      });
+      setAssetOptions(assetOpts);
+      
+      // Build SMSF options
+      const smsfOpts = smsfs.map(s => ({ value: s.id, label: s.name }));
+      setSmsfOptions(smsfOpts);
+      
+      // Build debt options (existing debts for offset account, etc.)
+      setDebtOptions([]);
+      
+      // Build model options
+      const models = soaReq.cashflow_models?.models || [];
+      setModelOptions(models.map(m => ({ value: m.id, label: m.name || '(Unnamed)' })));
+      
+    } catch (error) {
+      console.error('Error loading entity options:', error);
+    }
   };
 
-  const removeBuyTransaction = (index) => {
-    setBuyTransactions(buyTransactions.filter((_, i) => i !== index));
-  };
-
-  const removeSellTransaction = (index) => {
-    setSellTransactions(sellTransactions.filter((_, i) => i !== index));
-  };
-
-  const updateBuyTransaction = (index, field, value) => {
-    const updated = [...buyTransactions];
-    updated[index][field] = value;
-    setBuyTransactions(updated);
-  };
-
-  const updateSellTransaction = (index, field, value) => {
-    const updated = [...sellTransactions];
-    updated[index][field] = value;
-    setSellTransactions(updated);
-  };
+  // ============================================================================
+  // SAVE HANDLER
+  // ============================================================================
 
   const handleSave = async () => {
     setSaving(true);
@@ -76,7 +232,8 @@ export default function SOARequestTransactions() {
       await base44.entities.SOARequest.update(soaRequest.id, {
         transactions: {
           buy: buyTransactions,
-          sell: sellTransactions
+          sell: sellTransactions,
+          debts: debtTransactions
         }
       });
       toast.success('Transactions saved');
@@ -89,6 +246,141 @@ export default function SOARequestTransactions() {
     }
   };
 
+  // ============================================================================
+  // BUY TRANSACTION HANDLERS
+  // ============================================================================
+
+  const addBuyTransaction = () => {
+    const newBuy = {
+      id: generateId(),
+      description: '',
+      asset_type: '',
+      ownership_type: '',
+      owner_id: '',
+      asx_code: '',
+      international_code: '',
+      apir_code: '',
+      amount: '',
+      purchase_date: '',
+      is_today_dollars: false,
+      model_ids: [],
+      rental_income: '',
+      rent_frequency: '',
+      debt_security_id: ''
+    };
+    setBuyTransactions([...buyTransactions, newBuy]);
+    setEditingBuyId(newBuy.id);
+  };
+
+  const updateBuyTransaction = (id, field, value) => {
+    setBuyTransactions(buyTransactions.map(b => 
+      b.id === id ? { ...b, [field]: value } : b
+    ));
+  };
+
+  const deleteBuyTransaction = (id) => {
+    if (!confirm('Delete this purchase?')) return;
+    setBuyTransactions(buyTransactions.filter(b => b.id !== id));
+    if (editingBuyId === id) setEditingBuyId(null);
+    
+    // Update asset options to remove deleted buy transaction
+    setAssetOptions(assetOptions.filter(a => a.value !== id));
+  };
+
+  // ============================================================================
+  // SELL TRANSACTION HANDLERS
+  // ============================================================================
+
+  const addSellTransaction = () => {
+    const newSell = {
+      id: generateId(),
+      description: '',
+      asset_id: '',
+      sell_entire_amount: false,
+      amount: '',
+      transaction_costs_pct: '',
+      sell_date: '',
+      model_ids: []
+    };
+    setSellTransactions([...sellTransactions, newSell]);
+    setEditingSellId(newSell.id);
+  };
+
+  const updateSellTransaction = (id, field, value) => {
+    setSellTransactions(sellTransactions.map(s => 
+      s.id === id ? { ...s, [field]: value } : s
+    ));
+  };
+
+  const deleteSellTransaction = (id) => {
+    if (!confirm('Delete this sale?')) return;
+    setSellTransactions(sellTransactions.filter(s => s.id !== id));
+    if (editingSellId === id) setEditingSellId(null);
+  };
+
+  // ============================================================================
+  // DEBT TRANSACTION HANDLERS
+  // ============================================================================
+
+  const addDebtTransaction = () => {
+    const newDebt = {
+      id: generateId(),
+      description: '',
+      start_date: '',
+      ownership_type: '',
+      owner_id: '',
+      other_entity_id: '',
+      smsf_account_id: '',
+      debt_type: '',
+      interest_rate: '',
+      is_interest_only: false,
+      interest_only_end_date: '',
+      loan_amount: '',
+      term_years: '',
+      is_redraw_available: false,
+      redraw_limit: '',
+      establishment_cost: '',
+      is_offset_available: false,
+      offset_account_id: '',
+      property_security_ids: [],
+      related_asset_id: '',
+      is_purchase_security: false,
+      model_ids: []
+    };
+    setDebtTransactions([...debtTransactions, newDebt]);
+    setEditingDebtId(newDebt.id);
+  };
+
+  const updateDebtTransaction = (id, field, value) => {
+    setDebtTransactions(debtTransactions.map(d => 
+      d.id === id ? { ...d, [field]: value } : d
+    ));
+  };
+
+  const deleteDebtTransaction = (id) => {
+    if (!confirm('Delete this debt?')) return;
+    setDebtTransactions(debtTransactions.filter(d => d.id !== id));
+    if (editingDebtId === id) setEditingDebtId(null);
+  };
+
+  // ============================================================================
+  // RENDER HELPERS
+  // ============================================================================
+
+  const getOwnerLabel = (ownerId) => {
+    const owner = ownerOptions.find(o => o.value === ownerId);
+    return owner ? owner.label : '—';
+  };
+
+  const getAssetLabel = (assetId) => {
+    const asset = assetOptions.find(a => a.value === assetId);
+    return asset ? asset.label : '—';
+  };
+
+  // ============================================================================
+  // LOADING STATE
+  // ============================================================================
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
@@ -97,187 +389,851 @@ export default function SOARequestTransactions() {
     );
   }
 
+  // ============================================================================
+  // RENDER
+  // ============================================================================
+
   return (
     <SOARequestLayout currentSection="transactions" soaRequest={soaRequest}>
-      <div className="flex-1 overflow-auto bg-slate-50 p-6">
-        <div className="w-full space-y-6">
-          {/* Info Banner */}
-          <Card className="border-blue-200 bg-blue-50">
-            <CardContent className="pt-6">
-              <h3 className="font-bold text-slate-800 mb-2">Transactions</h3>
-              <p className="text-sm text-slate-700">
-                Specify assets you want to buy or sell, or any new debts required to support
-              </p>
-            </CardContent>
-          </Card>
-          
-          {/* Buy Transactions */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Buy Transactions</CardTitle>
-                <Button onClick={addBuyTransaction} size="sm" className="bg-green-600 hover:bg-green-700">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Buy
-                </Button>
+      <div className="flex-1 overflow-auto bg-slate-50">
+        {/* Dark Banner */}
+        <div style={{
+          background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)',
+          padding: '32px',
+          borderBottom: '3px solid #3b82f6'
+        }}>
+          <h1 style={{
+            fontSize: '28px',
+            fontWeight: 700,
+            color: '#fff',
+            marginBottom: '8px'
+          }}>
+            Transactions
+          </h1>
+          <p style={{
+            fontSize: '15px',
+            color: 'rgba(255, 255, 255, 0.9)',
+            lineHeight: '1.5'
+          }}>
+            Record recommended asset purchases, sales, and new debts within this SOA.
+          </p>
+        </div>
+
+        {/* Main Content */}
+        <div className="p-6">
+          <Card className="shadow-sm">
+            <CardContent className="p-0">
+              {/* Custom Tab Buttons */}
+              <div style={{
+                display: 'flex',
+                borderBottom: '2px solid #e2e8f0',
+                padding: '0',
+                background: '#f8fafc'
+              }}>
+                {['buy', 'sell', 'debts'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    style={{
+                      flex: 1,
+                      padding: '16px 24px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: activeTab === tab ? '#1e40af' : '#64748b',
+                      background: activeTab === tab ? '#fff' : 'transparent',
+                      border: 'none',
+                      borderBottom: activeTab === tab ? '3px solid #3b82f6' : '3px solid transparent',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      marginBottom: '-2px',
+                      textTransform: 'capitalize'
+                    }}
+                  >
+                    {tab}
+                  </button>
+                ))}
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {buyTransactions.length === 0 ? (
-                <p className="text-sm text-slate-500 text-center py-4">No buy transactions added yet</p>
-              ) : (
-                buyTransactions.map((transaction, index) => (
-                  <div key={index} className="border border-slate-200 rounded-lg p-4 space-y-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-semibold text-slate-700">Buy Transaction #{index + 1}</h4>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => removeBuyTransaction(index)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
+
+              {/* Tab Content */}
+              <div className="p-6">
+                {/* ================================================================ */}
+                {/* BUY TAB */}
+                {/* ================================================================ */}
+                {activeTab === 'buy' && (
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-lg font-bold text-slate-800">Asset Purchases</h3>
+                      <Button onClick={addBuyTransaction} className="bg-green-600 hover:bg-green-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Purchase
                       </Button>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 mb-1 block">Asset Type</label>
-                        <Select value={transaction.asset_type} onValueChange={(v) => updateBuyTransaction(index, 'asset_type', v)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select type..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="property">Property</SelectItem>
-                            <SelectItem value="shares">Shares</SelectItem>
-                            <SelectItem value="managed_fund">Managed Fund</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 mb-1 block">Amount ($)</label>
-                        <Input 
-                          type="number"
-                          value={transaction.amount}
-                          onChange={(e) => updateBuyTransaction(index, 'amount', e.target.value)}
-                          placeholder="0"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 mb-1 block">Asset Name</label>
-                        <Input 
-                          value={transaction.asset_name}
-                          onChange={(e) => updateBuyTransaction(index, 'asset_name', e.target.value)}
-                          placeholder="Enter asset name"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 mb-1 block">Entity</label>
-                        <Input 
-                          value={transaction.entity}
-                          onChange={(e) => updateBuyTransaction(index, 'entity', e.target.value)}
-                          placeholder="Client, Trust, etc."
-                        />
-                      </div>
-                    </div>
+
+                    {/* Summary Table */}
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Description</TableHead>
+                          <TableHead>Asset Type</TableHead>
+                          <TableHead>Owner</TableHead>
+                          <TableHead className="text-right">Amount</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {buyTransactions.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center text-slate-500 py-8">
+                              No purchases added yet. Click "Add Purchase" to get started.
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          buyTransactions.map(buy => (
+                            <TableRow key={buy.id} className="cursor-pointer hover:bg-slate-50">
+                              <TableCell>{buy.description || '(No description)'}</TableCell>
+                              <TableCell>{getAssetTypeLabel(buy.asset_type)}</TableCell>
+                              <TableCell>{getOwnerLabel(buy.owner_id)}</TableCell>
+                              <TableCell className="text-right">{formatCurrency(buy.amount)}</TableCell>
+                              <TableCell className="text-right">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => setEditingBuyId(editingBuyId === buy.id ? null : buy.id)}
+                                  className="mr-1"
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => deleteBuyTransaction(buy.id)}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+
+                    {/* Detail Panel */}
+                    {editingBuyId && (
+                      <BuyDetailPanel
+                        buy={buyTransactions.find(b => b.id === editingBuyId)}
+                        ownerOptions={ownerOptions}
+                        modelOptions={modelOptions}
+                        debtOptions={debtOptions}
+                        onUpdate={(field, value) => updateBuyTransaction(editingBuyId, field, value)}
+                        onClose={() => setEditingBuyId(null)}
+                      />
+                    )}
                   </div>
-                ))
-              )}
+                )}
+
+                {/* ================================================================ */}
+                {/* SELL TAB */}
+                {/* ================================================================ */}
+                {activeTab === 'sell' && (
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-lg font-bold text-slate-800">Asset Sales</h3>
+                      <Button onClick={addSellTransaction} className="bg-red-600 hover:bg-red-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Sale
+                      </Button>
+                    </div>
+
+                    {/* Summary Table */}
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Asset</TableHead>
+                          <TableHead>Sell Entire?</TableHead>
+                          <TableHead className="text-right">Amount</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sellTransactions.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={4} className="text-center text-slate-500 py-8">
+                              No sales added yet. Click "Add Sale" to get started.
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          sellTransactions.map(sell => (
+                            <TableRow key={sell.id} className="cursor-pointer hover:bg-slate-50">
+                              <TableCell>{getAssetLabel(sell.asset_id)}</TableCell>
+                              <TableCell>{sell.sell_entire_amount ? 'Yes' : 'No'}</TableCell>
+                              <TableCell className="text-right">
+                                {sell.sell_entire_amount ? 'Full amount' : formatCurrency(sell.amount)}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => setEditingSellId(editingSellId === sell.id ? null : sell.id)}
+                                  className="mr-1"
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => deleteSellTransaction(sell.id)}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+
+                    {/* Detail Panel */}
+                    {editingSellId && (
+                      <SellDetailPanel
+                        sell={sellTransactions.find(s => s.id === editingSellId)}
+                        assetOptions={[...assetOptions, ...buyTransactions.filter(b => b.asset_type).map(b => ({
+                          value: b.id,
+                          label: `${getAssetTypeLabel(b.asset_type)} (New Purchase)`
+                        }))]}
+                        modelOptions={modelOptions}
+                        onUpdate={(field, value) => updateSellTransaction(editingSellId, field, value)}
+                        onClose={() => setEditingSellId(null)}
+                      />
+                    )}
+                  </div>
+                )}
+
+                {/* ================================================================ */}
+                {/* DEBTS TAB */}
+                {/* ================================================================ */}
+                {activeTab === 'debts' && (
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-lg font-bold text-slate-800">New Debts</h3>
+                      <Button onClick={addDebtTransaction} className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Debt
+                      </Button>
+                    </div>
+
+                    {/* Summary Table */}
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Description</TableHead>
+                          <TableHead>Debt Type</TableHead>
+                          <TableHead>Owner</TableHead>
+                          <TableHead className="text-right">Loan Amount</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {debtTransactions.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center text-slate-500 py-8">
+                              No debts added yet. Click "Add Debt" to get started.
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          debtTransactions.map(debt => (
+                            <TableRow key={debt.id} className="cursor-pointer hover:bg-slate-50">
+                              <TableCell>{debt.description || '(No description)'}</TableCell>
+                              <TableCell>{getDebtTypeLabel(debt.debt_type)}</TableCell>
+                              <TableCell>{getOwnerLabel(debt.owner_id)}</TableCell>
+                              <TableCell className="text-right">{formatCurrency(debt.loan_amount)}</TableCell>
+                              <TableCell className="text-right">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => setEditingDebtId(editingDebtId === debt.id ? null : debt.id)}
+                                  className="mr-1"
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => deleteDebtTransaction(debt.id)}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+
+                    {/* Detail Panel */}
+                    {editingDebtId && (
+                      <DebtDetailPanel
+                        debt={debtTransactions.find(d => d.id === editingDebtId)}
+                        ownerOptions={ownerOptions}
+                        smsfOptions={smsfOptions}
+                        modelOptions={modelOptions}
+                        buyTransactions={buyTransactions}
+                        onUpdate={(field, value) => updateDebtTransaction(editingDebtId, field, value)}
+                        onClose={() => setEditingDebtId(null)}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
-          {/* Sell Transactions */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Sell Transactions</CardTitle>
-                <Button onClick={addSellTransaction} size="sm" className="bg-red-600 hover:bg-red-700">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Sell
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {sellTransactions.length === 0 ? (
-                <p className="text-sm text-slate-500 text-center py-4">No sell transactions added yet</p>
-              ) : (
-                sellTransactions.map((transaction, index) => (
-                  <div key={index} className="border border-slate-200 rounded-lg p-4 space-y-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-semibold text-slate-700">Sell Transaction #{index + 1}</h4>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => removeSellTransaction(index)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 mb-1 block">Asset Type</label>
-                        <Select value={transaction.asset_type} onValueChange={(v) => updateSellTransaction(index, 'asset_type', v)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select type..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="property">Property</SelectItem>
-                            <SelectItem value="shares">Shares</SelectItem>
-                            <SelectItem value="managed_fund">Managed Fund</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 mb-1 block">Amount ($)</label>
-                        <Input 
-                          type="number"
-                          value={transaction.amount}
-                          onChange={(e) => updateSellTransaction(index, 'amount', e.target.value)}
-                          placeholder="0"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 mb-1 block">Asset Name</label>
-                        <Input 
-                          value={transaction.asset_name}
-                          onChange={(e) => updateSellTransaction(index, 'asset_name', e.target.value)}
-                          placeholder="Enter asset name"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-slate-600 mb-1 block">Entity</label>
-                        <Input 
-                          value={transaction.entity}
-                          onChange={(e) => updateSellTransaction(index, 'entity', e.target.value)}
-                          placeholder="Client, Trust, etc."
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-
-          <div className="flex justify-end gap-3 py-6">
+          {/* Footer */}
+          <div className="flex justify-end gap-3 pt-6">
             <Button 
               variant="outline"
-              onClick={() => navigate(createPageUrl('SOARequestInsurance') + `?id=${soaRequest.id}`)}
+              onClick={() => navigate(createPageUrl('SOARequestInsurance') + `?id=${soaRequest?.id}`)}
             >
-              Back
+              ◀ Back
             </Button>
             <Button 
               onClick={handleSave}
               disabled={saving}
               className="bg-blue-600 hover:bg-blue-700"
             >
-              {saving ? 'Saving...' : 'Save & Continue'}
+              {saving ? 'Saving...' : 'Save & Next ▶'}
             </Button>
           </div>
         </div>
       </div>
     </SOARequestLayout>
+  );
+}
+
+// ============================================================================
+// BUY DETAIL PANEL COMPONENT
+// ============================================================================
+
+function BuyDetailPanel({ buy, ownerOptions, modelOptions, debtOptions, onUpdate, onClose }) {
+  if (!buy) return null;
+
+  const showPropertyFields = isPropertyType(buy.asset_type);
+
+  return (
+    <div className="mt-6 p-6 bg-green-50 border border-green-200 rounded-lg">
+      <div className="flex justify-between items-center mb-6 pb-4 border-b border-green-200">
+        <h3 className="text-lg font-bold flex items-center gap-2">
+          🛒 <span>Purchase Details</span>
+        </h3>
+        <Button variant="ghost" size="sm" onClick={onClose}>
+          <X className="w-4 h-4" />
+        </Button>
+      </div>
+
+      <div className="space-y-6">
+        {/* Description */}
+        <div>
+          <Label>Description</Label>
+          <Input
+            value={buy.description || ''}
+            onChange={(e) => onUpdate('description', e.target.value)}
+            placeholder="e.g. Purchase BHP shares for growth portfolio"
+            className="mt-1"
+          />
+        </div>
+
+        {/* Row 1: Asset Type, Ownership, Owner, ASX */}
+        <div className="grid grid-cols-4 gap-4">
+          <div>
+            <Label>New asset type</Label>
+            <Select value={buy.asset_type || ''} onValueChange={(v) => onUpdate('asset_type', v)}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
+              <SelectContent>
+                {BUY_ASSET_TYPES.map(t => (
+                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Ownership type</Label>
+            <Select value={buy.ownership_type || ''} onValueChange={(v) => onUpdate('ownership_type', v)}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
+              <SelectContent>
+                {OWNERSHIP_TYPES.map(t => (
+                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Owner</Label>
+            <Select value={buy.owner_id || ''} onValueChange={(v) => onUpdate('owner_id', v)}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select owner..." />
+              </SelectTrigger>
+              <SelectContent>
+                {ownerOptions.map(o => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>ASX holding</Label>
+            <Input
+              value={buy.asx_code || ''}
+              onChange={(e) => onUpdate('asx_code', e.target.value)}
+              placeholder="e.g. BHP"
+              className="mt-1"
+            />
+          </div>
+        </div>
+
+        {/* Row 2: International, APIR, Amount, Date */}
+        <div className="grid grid-cols-4 gap-4">
+          <div>
+            <Label>International stock</Label>
+            <Input
+              value={buy.international_code || ''}
+              onChange={(e) => onUpdate('international_code', e.target.value)}
+              placeholder="e.g. AAPL"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label>APIR code</Label>
+            <Input
+              value={buy.apir_code || ''}
+              onChange={(e) => onUpdate('apir_code', e.target.value)}
+              placeholder="Enter APIR code"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label>Purchase amount</Label>
+            <Input
+              type="number"
+              value={buy.amount || ''}
+              onChange={(e) => onUpdate('amount', e.target.value)}
+              placeholder="$0.00"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label>Purchase date</Label>
+            <Input
+              type="date"
+              value={buy.purchase_date || ''}
+              onChange={(e) => onUpdate('purchase_date', e.target.value)}
+              className="mt-1"
+            />
+          </div>
+        </div>
+
+        {/* Property Fields (Conditional) */}
+        {showPropertyFields && (
+          <div className="pt-4 border-t border-green-200">
+            <h4 className="font-semibold text-slate-700 mb-4">Property Details</h4>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Net rental income</Label>
+                <Input
+                  type="number"
+                  value={buy.rental_income || ''}
+                  onChange={(e) => onUpdate('rental_income', e.target.value)}
+                  placeholder="$0.00"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Rent frequency</Label>
+                <Select value={buy.rent_frequency || ''} onValueChange={(v) => onUpdate('rent_frequency', v)}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {RENT_FREQUENCIES.map(f => (
+                      <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Debt used as security</Label>
+                <Select value={buy.debt_security_id || ''} onValueChange={(v) => onUpdate('debt_security_id', v)}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {debtOptions.map(d => (
+                      <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Today's Dollars & Models */}
+        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-green-200">
+          <div>
+            <Label>Is the purchase price in today's dollars?</Label>
+            <RadioGroup
+              value={buy.is_today_dollars ? 'yes' : 'no'}
+              onValueChange={(v) => onUpdate('is_today_dollars', v === 'yes')}
+              className="flex gap-4 mt-2"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="yes" id="today-yes" />
+                <Label htmlFor="today-yes">Yes</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="no" id="today-no" />
+                <Label htmlFor="today-no">No</Label>
+              </div>
+            </RadioGroup>
+          </div>
+          <div>
+            <Label>Apply to models</Label>
+            <p className="text-xs text-slate-500 mt-1">
+              {modelOptions.length === 0 
+                ? 'No models defined yet' 
+                : `${buy.model_ids?.length || 0} models selected`}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// SELL DETAIL PANEL COMPONENT
+// ============================================================================
+
+function SellDetailPanel({ sell, assetOptions, modelOptions, onUpdate, onClose }) {
+  if (!sell) return null;
+
+  return (
+    <div className="mt-6 p-6 bg-red-50 border border-red-200 rounded-lg">
+      <div className="flex justify-between items-center mb-6 pb-4 border-b border-red-200">
+        <h3 className="text-lg font-bold flex items-center gap-2">
+          💰 <span>Sale Details</span>
+        </h3>
+        <Button variant="ghost" size="sm" onClick={onClose}>
+          <X className="w-4 h-4" />
+        </Button>
+      </div>
+
+      <div className="space-y-6">
+        {/* Row 1 */}
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <Label>Select asset</Label>
+            <Select value={sell.asset_id || ''} onValueChange={(v) => onUpdate('asset_id', v)}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select asset..." />
+              </SelectTrigger>
+              <SelectContent>
+                {assetOptions.map(a => (
+                  <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Sell entire amount</Label>
+            <div className="flex items-center space-x-2 mt-3">
+              <Switch
+                checked={sell.sell_entire_amount || false}
+                onCheckedChange={(checked) => onUpdate('sell_entire_amount', checked)}
+              />
+              <span className="text-sm">{sell.sell_entire_amount ? 'Yes' : 'No'}</span>
+            </div>
+          </div>
+          <div>
+            <Label>Sell amount</Label>
+            <Input
+              type="number"
+              value={sell.amount || ''}
+              onChange={(e) => onUpdate('amount', e.target.value)}
+              placeholder={sell.sell_entire_amount ? 'Full amount will be sold' : '$0.00'}
+              disabled={sell.sell_entire_amount}
+              className="mt-1"
+            />
+          </div>
+        </div>
+
+        {/* Row 2 */}
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <Label>Transaction costs %</Label>
+            <Input
+              type="number"
+              step="0.1"
+              value={sell.transaction_costs_pct || ''}
+              onChange={(e) => onUpdate('transaction_costs_pct', e.target.value)}
+              placeholder="0.5"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label>Sell date</Label>
+            <Input
+              type="date"
+              value={sell.sell_date || ''}
+              onChange={(e) => onUpdate('sell_date', e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label>Apply to models</Label>
+            <p className="text-xs text-slate-500 mt-3">
+              {modelOptions.length === 0 
+                ? 'No models defined yet' 
+                : `${sell.model_ids?.length || 0} models selected`}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// DEBT DETAIL PANEL COMPONENT
+// ============================================================================
+
+function DebtDetailPanel({ debt, ownerOptions, smsfOptions, modelOptions, buyTransactions, onUpdate, onClose }) {
+  if (!debt) return null;
+
+  return (
+    <div className="mt-6 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+      <div className="flex justify-between items-center mb-6 pb-4 border-b border-blue-200">
+        <h3 className="text-lg font-bold flex items-center gap-2">
+          📋 <span>New Debt Details</span>
+        </h3>
+        <Button variant="ghost" size="sm" onClick={onClose}>
+          <X className="w-4 h-4" />
+        </Button>
+      </div>
+
+      <div className="space-y-6">
+        {/* Description */}
+        <div>
+          <Label>Description</Label>
+          <Input
+            value={debt.description || ''}
+            onChange={(e) => onUpdate('description', e.target.value)}
+            placeholder="e.g. New investment loan for property purchase"
+            className="mt-1"
+          />
+        </div>
+
+        {/* Row 1: Start Date, Ownership, Owner, SMSF */}
+        <div className="grid grid-cols-4 gap-4">
+          <div>
+            <Label>Debt start date</Label>
+            <Input
+              type="date"
+              value={debt.start_date || ''}
+              onChange={(e) => onUpdate('start_date', e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label>Ownership type</Label>
+            <Select value={debt.ownership_type || ''} onValueChange={(v) => onUpdate('ownership_type', v)}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
+              <SelectContent>
+                {OWNERSHIP_TYPES.map(t => (
+                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Owner</Label>
+            <Select value={debt.owner_id || ''} onValueChange={(v) => onUpdate('owner_id', v)}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select owner..." />
+              </SelectTrigger>
+              <SelectContent>
+                {ownerOptions.map(o => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>SMSF account</Label>
+            <Select value={debt.smsf_account_id || ''} onValueChange={(v) => onUpdate('smsf_account_id', v)}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
+              <SelectContent>
+                {smsfOptions.map(s => (
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Row 2: Debt Type, Interest Rate, Interest Only Toggle */}
+        <div className="grid grid-cols-4 gap-4">
+          <div>
+            <Label>Debt type</Label>
+            <Select value={debt.debt_type || ''} onValueChange={(v) => onUpdate('debt_type', v)}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
+              <SelectContent>
+                {DEBT_TYPES.map(t => (
+                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Interest rate %</Label>
+            <Input
+              type="number"
+              step="0.01"
+              value={debt.interest_rate || ''}
+              onChange={(e) => onUpdate('interest_rate', e.target.value)}
+              placeholder="%"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label>Interest only debt?</Label>
+            <div className="flex items-center space-x-2 mt-3">
+              <Switch
+                checked={debt.is_interest_only || false}
+                onCheckedChange={(checked) => onUpdate('is_interest_only', checked)}
+              />
+              <span className="text-sm">{debt.is_interest_only ? 'Yes' : 'No'}</span>
+            </div>
+          </div>
+          <div>
+            <Label>Interest only end date</Label>
+            <Input
+              type="date"
+              value={debt.interest_only_end_date || ''}
+              onChange={(e) => onUpdate('interest_only_end_date', e.target.value)}
+              disabled={!debt.is_interest_only}
+              className="mt-1"
+            />
+          </div>
+        </div>
+
+        {/* Row 3: Loan Amount, Term, Redraw Toggle, Redraw Limit */}
+        <div className="grid grid-cols-4 gap-4">
+          <div>
+            <Label>Loan amount</Label>
+            <Input
+              type="number"
+              value={debt.loan_amount || ''}
+              onChange={(e) => onUpdate('loan_amount', e.target.value)}
+              placeholder="$0.00"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label>Term of loan (years)</Label>
+            <Input
+              type="number"
+              value={debt.term_years || ''}
+              onChange={(e) => onUpdate('term_years', e.target.value)}
+              placeholder="Years"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label>Redraw available?</Label>
+            <div className="flex items-center space-x-2 mt-3">
+              <Switch
+                checked={debt.is_redraw_available || false}
+                onCheckedChange={(checked) => onUpdate('is_redraw_available', checked)}
+              />
+              <span className="text-sm">{debt.is_redraw_available ? 'Yes' : 'No'}</span>
+            </div>
+          </div>
+          <div>
+            <Label>Redraw limit</Label>
+            <Input
+              type="number"
+              value={debt.redraw_limit || ''}
+              onChange={(e) => onUpdate('redraw_limit', e.target.value)}
+              placeholder="$0.00"
+              disabled={!debt.is_redraw_available}
+              className="mt-1"
+            />
+          </div>
+        </div>
+
+        {/* Row 4: Establishment Cost, Offset Toggle, Offset Account */}
+        <div className="grid grid-cols-4 gap-4">
+          <div>
+            <Label>Establishment cost</Label>
+            <Input
+              type="number"
+              value={debt.establishment_cost || ''}
+              onChange={(e) => onUpdate('establishment_cost', e.target.value)}
+              placeholder="$0.00"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label>Offset available?</Label>
+            <div className="flex items-center space-x-2 mt-3">
+              <Switch
+                checked={debt.is_offset_available || false}
+                onCheckedChange={(checked) => onUpdate('is_offset_available', checked)}
+              />
+              <span className="text-sm">{debt.is_offset_available ? 'Yes' : 'No'}</span>
+            </div>
+          </div>
+          <div className="col-span-2">
+            <Label>Select offset account</Label>
+            <Select 
+              value={debt.offset_account_id || ''} 
+              onValueChange={(v) => onUpdate('offset_account_id', v)}
+              disabled={!debt.is_offset_available}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="placeholder">No accounts available</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Row 5: Purchase Security */}
+        <div className="pt-4 border-t border-blue-200">
+          <Label>Use purchase as security for this loan?</Label>
+          <div className="flex items-center space-x-2 mt-2">
+            <Checkbox
+              checked={debt.is_purchase_security || false}
+              onCheckedChange={(checked) => onUpdate('is_purchase_security', checked)}
+            />
+            <span className="text-sm">Link to a buy transaction in this SOA</span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
