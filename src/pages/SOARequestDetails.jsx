@@ -267,10 +267,12 @@ export default function SOARequestDetails() {
     <SOARequestLayout currentSection="details" soaRequest={soaRequest}>
       <div className="flex-1 overflow-auto bg-slate-50">
         {/* Header */}
-        <div className="bg-slate-800 px-8 py-6 border-b border-slate-700">
-          <h1 className="text-2xl font-bold text-white">SOA Details</h1>
-          <p className="text-slate-300 mt-1">
-            Configure sections, reorder with drag & drop, and provide tips for the AI paraplanner.
+        <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderRadius: '16px 16px 0 0' }}>
+          <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#FFFFFF', margin: '0 0 4px 0', letterSpacing: '-0.01em' }}>
+            SOA Details
+          </h1>
+          <p style={{ fontSize: '14px', fontWeight: 400, color: '#94A3B8', margin: 0 }}>
+            Configure sections, reorder, and provide tips for generating the SOA.
           </p>
         </div>
 
