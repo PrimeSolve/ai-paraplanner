@@ -130,8 +130,16 @@ export default function SOARequestWelcome() {
         
         {/* Main Content */}
         <div className="w-full px-6 py-8">
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto space-y-4">
           
+          {/* Welcome Banner */}
+          <div className="bg-white rounded-xl px-6 py-5 shadow-sm border border-slate-200">
+            <h1 className="text-2xl font-bold text-slate-800 mb-2">Welcome to SOA Request</h1>
+            <p className="text-slate-600 text-sm">
+              Submit your Statement of Advice request to our AI paraplanner for professional SOA preparation.
+            </p>
+          </div>
+
           {/* Video Section - Centered */}
           <div className="text-center mb-10">
             <h2 className="text-xl font-semibold text-slate-800 mb-2">
