@@ -356,10 +356,25 @@ export default function AdminTeam() {
       <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-[#0f172a]">Add Team Member</DialogTitle>
+            <DialogTitle className="text-xl font-semibold text-[#0f172a]">
+              {inviteSuccess ? '✓ Invite Sent' : 'Add Team Member'}
+            </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-5 py-4">
+          {inviteSuccess ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+              <p className="text-center text-[#0f172a] font-medium mb-2">
+                Invite sent to <strong>{inviteEmail}</strong>
+              </p>
+              <p className="text-center text-sm text-[#64748b]">
+                They'll receive an email to join as a {selectedRole === 'admin' ? 'Admin' : 'Paraplanner'}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-5 py-4">
             <div>
               <label className="text-sm font-medium text-[#0f172a] mb-2 block">
                 Email Address
