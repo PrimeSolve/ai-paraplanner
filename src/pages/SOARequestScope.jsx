@@ -9,12 +9,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
 import { toast } from 'sonner';
+import { FileText, Shield, Package, DollarSign, Clock, BarChart3 } from 'lucide-react';
 
 const adviceCategories = [
   {
     id: 'insurance',
     title: 'Insurance Requirements',
     description: 'Personal risk and business insurance scope',
+    icon: Shield,
+    iconBg: 'bg-amber-500',
+    iconColor: 'text-white',
     options: [
       { id: 'insurance_needs', label: 'Insurance needs analysis' },
       { id: 'insurance_product', label: 'Product advice' },
@@ -25,6 +29,9 @@ const adviceCategories = [
     id: 'products',
     title: 'Product Recommendations',
     description: 'Financial products to include in advice',
+    icon: Package,
+    iconBg: 'bg-pink-500',
+    iconColor: 'text-white',
     options: [
       { id: 'superannuation', label: 'Superannuation' },
       { id: 'pension', label: 'Pension' },
@@ -39,6 +46,9 @@ const adviceCategories = [
     id: 'cashflow',
     title: 'Cashflow / Estate Planning',
     description: 'Budgeting, tax structures, and estate review',
+    icon: DollarSign,
+    iconBg: 'bg-teal-500',
+    iconColor: 'text-white',
     options: [
       { id: 'budgeting', label: 'Budgeting advice' },
       { id: 'tax_structures', label: 'Tax structures' },
@@ -49,6 +59,9 @@ const adviceCategories = [
     id: 'retirement',
     title: 'Retirement Planning',
     description: 'Super contributions, SMSF, and pension options',
+    icon: Clock,
+    iconBg: 'bg-blue-500',
+    iconColor: 'text-white',
     subsections: [
       {
         id: 'superannuation',
@@ -75,6 +88,9 @@ const adviceCategories = [
     id: 'assets',
     title: 'Assets & Liabilities',
     description: 'Portfolio review and debt management',
+    icon: BarChart3,
+    iconBg: 'bg-indigo-500',
+    iconColor: 'text-white',
     subsections: [
       {
         id: 'portfolio',
@@ -201,8 +217,15 @@ export default function SOARequestScope() {
           {/* Advice Type */}
           <Card>
             <CardHeader>
-              <CardTitle>Advice Type</CardTitle>
-              <p className="text-sm text-slate-600">Select the type of advice document</p>
+              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-slate-100 border-b -m-6 mb-4">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-purple-500">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-slate-800">Advice Type</h3>
+                  <p className="text-sm text-slate-500">Select the type of advice document</p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -235,18 +258,22 @@ export default function SOARequestScope() {
           {adviceCategories.map((category) => {
             const totalOptions = getTotalOptionsCount(category);
             const categorySelectedCount = getCategorySelectedCount(category);
+            const Icon = category.icon;
             
             return (
               <Card key={category.id}>
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>{category.title}</CardTitle>
-                      <p className="text-sm text-slate-600">{category.description}</p>
+                  <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-slate-100 border-b -m-6 mb-4">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${category.iconBg}`}>
+                      <Icon className={`w-5 h-5 ${category.iconColor}`} />
                     </div>
-                    <div className="text-sm font-semibold text-blue-600">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-slate-800">{category.title}</h3>
+                      <p className="text-sm text-slate-500">{category.description}</p>
+                    </div>
+                    <span className="text-sm font-medium text-blue-600">
                       {categorySelectedCount} of {totalOptions}
-                    </div>
+                    </span>
                   </div>
                 </CardHeader>
                 <CardContent>
