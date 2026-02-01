@@ -209,7 +209,7 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
       </div>
 
       {/* Main Content Area */}
-      <div className="absolute left-80 right-0 top-0 bottom-0 overflow-auto">
+      <div className="absolute left-80 right-0 top-16 bottom-0 overflow-auto">
         {children}
       </div>
     </div>
