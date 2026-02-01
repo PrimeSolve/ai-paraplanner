@@ -611,15 +611,15 @@ export default function SOARequestInsurance() {
           </button>
         </div>
 
-        <div className="w-full p-6">
-          <Tabs defaultValue="needs" className="w-full">
-            <TabsList className="hidden">
-              <TabsTrigger value="needs">Needs</TabsTrigger>
-              <TabsTrigger value="policies">Policies</TabsTrigger>
-            </TabsList>
+            <div style={{ padding: '24px 32px' }}>
+              <Tabs defaultValue="needs" className="w-full">
+                <TabsList className="hidden">
+                  <TabsTrigger value="needs">Needs</TabsTrigger>
+                  <TabsTrigger value="policies">Policies</TabsTrigger>
+                </TabsList>
 
-            {/* NEEDS TAB */}
-            <TabsContent value="needs" className="space-y-4 mt-6">
+                {/* NEEDS TAB */}
+                <TabsContent value="needs" className="space-y-4 mt-6">
               {/* Toolbar */}
               <div className="flex items-center justify-between">
                 {/* Person Switcher */}
