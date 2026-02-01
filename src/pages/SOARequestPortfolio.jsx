@@ -230,13 +230,13 @@ export default function SOARequestPortfolio() {
                 style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: '#7C3AED', color: '#FFFFFF', fontSize: '14px', fontWeight: '600' }}
               >
                 {saving ? 'Saving...' : 'Save & Next ▶'}
-              </Button>
-            </div>
-            </>
+                </Button>
+                </div>
+              </>
             )}
             </div>
-            </div>
-            </div>
+          </div>
+        </div>
     </SOARequestLayout>
   );
 }
