@@ -460,14 +460,15 @@ export default function SOARequestDetails() {
             </CardContent>
             </Card>
 
-            {/* Footer */}
-            <div className="flex justify-between items-center" style={{ padding: '24px 32px', borderTop: '1px solid #E2E8F0' }}>
-              <Button variant="outline" onClick={() => navigate(createPageUrl('SOARequestAssumptions') + `?id=${soaRequest?.id}`)}>
-                ◀ Back
-              </Button>
-              <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 min-w-[140px]">
-                {saving ? 'Saving...' : 'Save & Next ▶'}
-              </Button>
+              {/* Footer */}
+              <div className="flex justify-between items-center" style={{ padding: '24px 32px', borderTop: '1px solid #E2E8F0' }}>
+                <Button variant="outline" onClick={() => navigate(createPageUrl('SOARequestAssumptions') + `?id=${soaRequest?.id}`)}>
+                  ◀ Back
+                </Button>
+                <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 min-w-[140px]">
+                  {saving ? 'Saving...' : 'Save & Next ▶'}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
