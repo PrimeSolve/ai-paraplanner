@@ -733,7 +733,7 @@ export default function SOARequestPortfolio() {
             </Button>
           </div>
         </div>
-      </div>
+        </div>
     </SOARequestLayout>
   );
 }
