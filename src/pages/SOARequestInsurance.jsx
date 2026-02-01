@@ -545,20 +545,69 @@ export default function SOARequestInsurance() {
 
   return (
     <SOARequestLayout currentSection="insurance" soaRequest={soaRequest}>
-      <div className="flex-1 overflow-auto bg-slate-50 p-6">
-        <div className="w-full space-y-6">
-          {/* Info Banner */}
-          <Card className="border-blue-200 bg-blue-50">
-            <CardContent className="pt-6">
-              <h3 className="font-bold text-slate-800 mb-2">Insurance</h3>
-              <p className="text-sm text-slate-700">
-                Use the calculators to build insurance needs and define recommended products
-              </p>
-            </CardContent>
-          </Card>
-          
+      {/* Dark Banner */}
+      <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderBottom: '1px solid #334155' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>Insurance</h1>
+        <p style={{ fontSize: '14px', color: '#CBD5E1', lineHeight: '1.5' }}>
+          Use the calculators to build insurance needs and define recommended products
+        </p>
+      </div>
+
+      <div className="flex-1 overflow-auto bg-slate-50">
+        {/* Custom Tab Buttons */}
+        <div style={{ backgroundColor: '#F1F5F9', padding: '16px 32px', display: 'flex', gap: '8px' }}>
+          <button 
+            onClick={() => {
+              const tabs = document.querySelector('[role="tablist"]');
+              const needsTab = tabs?.querySelector('[value="needs"]');
+              needsTab?.click();
+            }}
+            style={{
+              padding: '12px 24px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: '#FFFFFF',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              color: '#1E293B',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s',
+            }}
+          >
+            📊 Needs
+          </button>
+          <button 
+            onClick={() => {
+              const tabs = document.querySelector('[role="tablist"]');
+              const policiesTab = tabs?.querySelector('[value="policies"]');
+              policiesTab?.click();
+            }}
+            style={{
+              padding: '12px 24px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: 'transparent',
+              color: '#64748B',
+              fontSize: '14px',
+              fontWeight: 500,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s',
+            }}
+          >
+            📋 Policies
+          </button>
+        </div>
+
+        <div className="w-full p-6">
           <Tabs defaultValue="needs" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="hidden">
               <TabsTrigger value="needs">Needs</TabsTrigger>
               <TabsTrigger value="policies">Policies</TabsTrigger>
             </TabsList>
@@ -1333,9 +1382,11 @@ export default function SOARequestInsurance() {
               )}
             </TabsContent>
           </Tabs>
+        </div>
 
-          {/* Navigation */}
-          <div className="flex justify-end gap-3 py-6">
+        {/* Navigation */}
+        <div className="px-6 pb-6">
+          <div className="flex justify-end gap-3">
             <Button 
               variant="outline"
               onClick={() => navigate(createPageUrl('SOARequestProducts') + `?id=${soaRequest.id}`)}
