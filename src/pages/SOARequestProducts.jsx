@@ -284,7 +284,7 @@ export default function SOARequestProducts() {
                     borderRadius: '8px',
                     border: 'none',
                     backgroundColor: activeTab === 'entities' ? '#FFFFFF' : 'transparent',
-                    boxShadow: activeTab === 'entities' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    boxShadow: activeTab === 'entities' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
                     color: activeTab === 'entities' ? '#1E293B' : '#64748B',
                     fontSize: '14px',
                     fontWeight: activeTab === 'entities' ? 600 : 500,
@@ -292,6 +292,7 @@ export default function SOARequestProducts() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
+                    transition: 'all 0.2s',
                   }}
                 >
                   🏛️ Entities
@@ -303,7 +304,7 @@ export default function SOARequestProducts() {
                     borderRadius: '8px',
                     border: 'none',
                     backgroundColor: activeTab === 'products' ? '#FFFFFF' : 'transparent',
-                    boxShadow: activeTab === 'products' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    boxShadow: activeTab === 'products' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
                     color: activeTab === 'products' ? '#1E293B' : '#64748B',
                     fontSize: '14px',
                     fontWeight: activeTab === 'products' ? 600 : 500,
@@ -311,6 +312,7 @@ export default function SOARequestProducts() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
+                    transition: 'all 0.2s',
                   }}
                 >
                   📦 Products
