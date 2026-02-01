@@ -545,15 +545,21 @@ export default function SOARequestInsurance() {
 
   return (
     <SOARequestLayout currentSection="insurance" soaRequest={soaRequest}>
-      {/* Dark Banner */}
-      <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderBottom: '1px solid #334155' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>Insurance</h1>
-        <p style={{ fontSize: '14px', color: '#CBD5E1', lineHeight: '1.5' }}>
-          Use the calculators to build insurance needs and define recommended products
-        </p>
-      </div>
+      <div className="flex-1 overflow-auto bg-slate-50 p-6">
+        <div className="w-full">
+          {/* Dark Banner */}
+          <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderRadius: '16px 16px 0 0' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#FFFFFF', margin: '0 0 4px 0', letterSpacing: '-0.01em' }}>
+              Insurance
+            </h1>
+            <p style={{ fontSize: '14px', fontWeight: 400, color: '#94A3B8', margin: 0 }}>
+              Use the calculators to build insurance needs and define recommended products
+            </p>
+          </div>
 
-      <div className="flex-1 overflow-auto bg-slate-50">
+          {/* White Content Card */}
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>
+            <div className="flex-1 overflow-auto">
         {/* Custom Tab Buttons */}
         <div style={{ backgroundColor: '#F1F5F9', padding: '16px 32px', display: 'flex', gap: '8px' }}>
           <button 
