@@ -41,6 +41,7 @@ export default function AdminTeam() {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [inviteSuccess, setInviteSuccess] = useState(false);
 
   useEffect(() => {
     loadTeam();
