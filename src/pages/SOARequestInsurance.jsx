@@ -213,6 +213,157 @@ export default function SOARequestInsurance() {
 
   const totals = calculateTotals();
 
+  // Income Modal Functions
+  const addIncomeRow = () => {
+    setInsuranceData(prev => ({
+      ...prev,
+      [currentPerson]: {
+        ...prev[currentPerson],
+        income_rows: [...prev[currentPerson].income_rows, {
+          id: Date.now(),
+          item: '',
+          life: false,
+          tpd: false,
+          growth: 0,
+          annual_income: 0,
+          years: 0,
+          pv: 0
+        }]
+      }
+    }));
+  };
+
+  const removeIncomeRow = (index) => {
+    setInsuranceData(prev => ({
+      ...prev,
+      [currentPerson]: {
+        ...prev[currentPerson],
+        income_rows: prev[currentPerson].income_rows.filter((_, i) => i !== index)
+      }
+    }));
+  };
+
+  const updateIncomeRow = (index, field, value) => {
+    setInsuranceData(prev => {
+      const updated = [...prev[currentPerson].income_rows];
+      updated[index][field] = value;
+      
+      // Calculate PV
+      const row = updated[index];
+      const annualIncome = parseFloat(row.annual_income) || 0;
+      const years = parseFloat(row.years) || 0;
+      const growth = parseFloat(row.growth) || 0;
+      const discount = parseFloat(assumptions.discount_rate) || 0;
+      
+      const netRate = (growth / 100) - (discount / 100);
+      let pv = 0;
+      if (years > 0 && annualIncome > 0) {
+        if (Math.abs(netRate) < 0.0001) {
+          pv = annualIncome * years;
+        } else {
+          pv = annualIncome * (1 - Math.pow(1 + netRate, -years)) / netRate;
+        }
+      }
+      updated[index].pv = pv;
+      
+      return {
+        ...prev,
+        [currentPerson]: {
+          ...prev[currentPerson],
+          income_rows: updated
+        }
+      };
+    });
+  };
+
+  // Asset Modal Functions
+  const addAssetRow = () => {
+    setInsuranceData(prev => ({
+      ...prev,
+      [currentPerson]: {
+        ...prev[currentPerson],
+        asset_rows: [...prev[currentPerson].asset_rows, {
+          id: Date.now(),
+          description: '',
+          life: false,
+          tpd: false,
+          value: 0
+        }]
+      }
+    }));
+  };
+
+  const removeAssetRow = (index) => {
+    setInsuranceData(prev => ({
+      ...prev,
+      [currentPerson]: {
+        ...prev[currentPerson],
+        asset_rows: prev[currentPerson].asset_rows.filter((_, i) => i !== index)
+      }
+    }));
+  };
+
+  const updateAssetRow = (index, field, value) => {
+    setInsuranceData(prev => {
+      const updated = [...prev[currentPerson].asset_rows];
+      updated[index][field] = value;
+      return {
+        ...prev,
+        [currentPerson]: {
+          ...prev[currentPerson],
+          asset_rows: updated
+        }
+      };
+    });
+  };
+
+  // Calculate metrics for assumptions modal
+  const calculateMetrics = () => {
+    const dob = assumptions.date_of_birth ? new Date(assumptions.date_of_birth) : null;
+    const espStart = assumptions.esp_start_date ? new Date(assumptions.esp_start_date) : null;
+    const serviceEnd = assumptions.service_end_date ? new Date(assumptions.service_end_date) : new Date();
+    const retireAge = assumptions.retirement_age || 65;
+    
+    if (!dob || !espStart) return {};
+    
+    const retireDate = new Date(dob);
+    retireDate.setFullYear(retireDate.getFullYear() + retireAge);
+    
+    const serviceDays = Math.floor((serviceEnd - espStart) / (1000 * 60 * 60 * 24));
+    const daysToRetire = Math.floor((retireDate - serviceEnd) / (1000 * 60 * 60 * 24));
+    const totalDays = serviceDays + daysToRetire;
+    const taxableProp = totalDays > 0 ? daysToRetire / totalDays : 0;
+    
+    const today = new Date();
+    const ageAtServiceEnd = Math.floor((serviceEnd - dob) / (1000 * 60 * 60 * 24 * 365.25));
+    
+    const calculatedUplift = taxableProp * 0.22;
+    const appliedUplift = assumptions.override_tpd_tax && assumptions.override_uplift_pct 
+      ? parseFloat(assumptions.override_uplift_pct) / 100 
+      : calculatedUplift;
+    
+    return {
+      age_at_service_end: ageAtServiceEnd,
+      service_days: serviceDays,
+      days_to_retirement: daysToRetire,
+      taxable_proportion: taxableProp,
+      calculated_uplift: calculatedUplift,
+      applied_uplift: appliedUplift
+    };
+  };
+
+  const calculatedMetrics = calculateMetrics();
+
+  const incomeTotals = {
+    life_pv: currentPersonData.income_rows.filter(r => r.life).reduce((sum, r) => sum + (parseFloat(r.pv) || 0), 0),
+    tpd_pv: currentPersonData.income_rows.filter(r => r.tpd).reduce((sum, r) => sum + (parseFloat(r.pv) || 0), 0)
+  };
+
+  const assetTotals = {
+    life: currentPersonData.asset_rows.filter(r => r.life).reduce((sum, r) => sum + (parseFloat(r.value) || 0), 0),
+    tpd: currentPersonData.asset_rows.filter(r => r.tpd).reduce((sum, r) => sum + (parseFloat(r.value) || 0), 0)
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -603,47 +754,420 @@ export default function SOARequestInsurance() {
         </div>
       </div>
 
-      {/* KEY ASSUMPTIONS MODAL - Placeholder */}
+      {/* KEY ASSUMPTIONS MODAL */}
       <Dialog open={showAssumptionsModal} onOpenChange={setShowAssumptionsModal}>
         <DialogContent className="max-w-[900px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Key Assumptions</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-slate-600">Assumptions modal to be implemented</p>
+          
+          <div className="space-y-6">
+            {/* Info Note */}
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+              Configure key assumptions for {currentPerson === 'client' ? clientName : partnerName}
+            </div>
+            
+            {/* Personal Details Section */}
+            <div className="border border-slate-200 rounded-lg p-4">
+              <div className="text-xs font-bold uppercase text-slate-500 mb-4 pb-2 border-b border-slate-200">
+                Personal Details
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-1 block">Date of birth</label>
+                  <Input 
+                    type="date" 
+                    value={assumptions.date_of_birth}
+                    onChange={(e) => updateAssumptions('date_of_birth', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-1 block">ESP start date</label>
+                  <Input 
+                    type="date"
+                    value={assumptions.esp_start_date}
+                    onChange={(e) => updateAssumptions('esp_start_date', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-1 block">Service end date</label>
+                  <Input 
+                    type="date"
+                    value={assumptions.service_end_date}
+                    onChange={(e) => updateAssumptions('service_end_date', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-1 block">Retirement age</label>
+                  <Input 
+                    type="number"
+                    placeholder="65"
+                    value={assumptions.retirement_age}
+                    onChange={(e) => updateAssumptions('retirement_age', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* TPD Tax Settings Section */}
+            <div className="border border-slate-200 rounded-lg p-4">
+              <div className="text-xs font-bold uppercase text-slate-500 mb-4 pb-2 border-b border-slate-200">
+                TPD Tax Settings
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">TPD held inside super?</label>
+                  <div className="flex gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="inside_super" 
+                        value="yes"
+                        checked={assumptions.tpd_inside_super === true}
+                        onChange={() => updateAssumptions('tpd_inside_super', true)}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">Yes</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="inside_super" 
+                        value="no"
+                        checked={assumptions.tpd_inside_super === false}
+                        onChange={() => updateAssumptions('tpd_inside_super', false)}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">No</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="override_tax"
+                    checked={assumptions.override_tpd_tax}
+                    onCheckedChange={(checked) => updateAssumptions('override_tpd_tax', checked)}
+                  />
+                  <label htmlFor="override_tax" className="text-sm font-semibold text-slate-700 cursor-pointer">
+                    Override TPD tax uplift manually
+                  </label>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-1 block">Override uplift % (optional)</label>
+                  <Input 
+                    type="number"
+                    placeholder="e.g. 15"
+                    className="max-w-[200px]"
+                    value={assumptions.override_uplift_pct}
+                    onChange={(e) => updateAssumptions('override_uplift_pct', e.target.value)}
+                    disabled={!assumptions.override_tpd_tax}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Financial References Section */}
+            <div className="border border-slate-200 rounded-lg p-4">
+              <div className="text-xs font-bold uppercase text-slate-500 mb-4 pb-2 border-b border-slate-200">
+                Financial References
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-1 block">Mortgage balance to consider</label>
+                  <Input 
+                    type="number"
+                    placeholder="$"
+                    value={assumptions.mortgage_balance}
+                    onChange={(e) => updateAssumptions('mortgage_balance', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-1 block">Other debts to consider</label>
+                  <Input 
+                    type="number"
+                    placeholder="$"
+                    value={assumptions.other_debts}
+                    onChange={(e) => updateAssumptions('other_debts', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-1 block">Current salary (annual)</label>
+                  <Input 
+                    type="number"
+                    placeholder="$"
+                    value={assumptions.annual_salary}
+                    onChange={(e) => updateAssumptions('annual_salary', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-slate-700 mb-1 block">Discount rate (% p.a.)</label>
+                  <Input 
+                    type="number"
+                    placeholder="%"
+                    value={assumptions.discount_rate}
+                    onChange={(e) => updateAssumptions('discount_rate', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Calculated Metrics Section */}
+            <div className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+              <div className="text-xs font-bold uppercase text-slate-500 mb-4 pb-2 border-b border-slate-200">
+                Calculated Metrics (Read-only)
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between py-2 text-sm">
+                  <span className="text-slate-500">Age at service end:</span>
+                  <span className="font-bold text-slate-900">{calculatedMetrics.age_at_service_end || '—'}</span>
+                </div>
+                <div className="flex justify-between py-2 text-sm">
+                  <span className="text-slate-500">Service days:</span>
+                  <span className="font-bold text-slate-900">{calculatedMetrics.service_days?.toLocaleString() || '—'}</span>
+                </div>
+                <div className="flex justify-between py-2 text-sm">
+                  <span className="text-slate-500">Days to retirement:</span>
+                  <span className="font-bold text-slate-900">{calculatedMetrics.days_to_retirement?.toLocaleString() || '—'}</span>
+                </div>
+                <div className="flex justify-between py-2 text-sm">
+                  <span className="text-slate-500">Taxable proportion:</span>
+                  <span className="font-bold text-slate-900">{calculatedMetrics.taxable_proportion ? `${(calculatedMetrics.taxable_proportion * 100).toFixed(2)}%` : '—'}</span>
+                </div>
+                <div className="flex justify-between py-2 text-sm border-t border-slate-200 mt-2 pt-3">
+                  <span className="text-slate-500">Calculated uplift % (before override):</span>
+                  <span className="font-bold text-slate-900">{calculatedMetrics.calculated_uplift ? `${(calculatedMetrics.calculated_uplift * 100).toFixed(2)}%` : '—'}</span>
+                </div>
+                <div className="flex justify-between py-2 text-sm">
+                  <span className="text-slate-500">Uplift % actually applied:</span>
+                  <span className="font-bold text-slate-900">{calculatedMetrics.applied_uplift ? `${(calculatedMetrics.applied_uplift * 100).toFixed(2)}%` : '0%'}</span>
+                </div>
+              </div>
+            </div>
           </div>
+          
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAssumptionsModal(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setShowAssumptionsModal(false)}>Cancel</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setShowAssumptionsModal(false)}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* INCOME MODAL - Placeholder */}
+      {/* INCOME MODAL */}
       <Dialog open={showIncomeModal} onOpenChange={setShowIncomeModal}>
         <DialogContent className="max-w-[900px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Income Required</DialogTitle>
           </DialogHeader>
+          
           <div className="space-y-4">
-            <p className="text-sm text-slate-600">Income modal to be implemented</p>
+            {/* Info Note */}
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+              Add income streams to calculate the capital required to replace income. PV uses (growth − discount) rate.
+            </div>
+            
+            {/* Header Row */}
+            <div className="grid grid-cols-7 gap-2 py-2 text-xs font-bold text-slate-500 uppercase border-b border-slate-200">
+              <div className="col-span-1">Item to cover</div>
+              <div className="col-span-1">Insurance type</div>
+              <div className="col-span-1">Growth (%)</div>
+              <div className="col-span-1">Annual income ($)</div>
+              <div className="col-span-1">Years</div>
+              <div className="col-span-1 text-right">PV (today)</div>
+              <div className="col-span-1"></div>
+            </div>
+            
+            {/* Income Rows */}
+            {currentPersonData.income_rows.map((row, index) => (
+              <div key={row.id} className="grid grid-cols-7 gap-2 py-2 items-center border-b border-slate-100">
+                <div>
+                  <Input 
+                    placeholder="e.g. Living expenses"
+                    value={row.item}
+                    onChange={(e) => updateIncomeRow(index, 'item', e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-3 p-2 bg-slate-50 border border-slate-200 rounded-md">
+                  <label className="flex items-center gap-1 text-sm cursor-pointer">
+                    <Checkbox 
+                      checked={row.life}
+                      onCheckedChange={(checked) => updateIncomeRow(index, 'life', checked)}
+                    />
+                    Life
+                  </label>
+                  <label className="flex items-center gap-1 text-sm cursor-pointer">
+                    <Checkbox 
+                      checked={row.tpd}
+                      onCheckedChange={(checked) => updateIncomeRow(index, 'tpd', checked)}
+                    />
+                    TPD
+                  </label>
+                </div>
+                <div>
+                  <Input 
+                    type="number"
+                    placeholder="%"
+                    value={row.growth || ''}
+                    onChange={(e) => updateIncomeRow(index, 'growth', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Input 
+                    type="number"
+                    placeholder="$"
+                    value={row.annual_income || ''}
+                    onChange={(e) => updateIncomeRow(index, 'annual_income', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Input 
+                    type="number"
+                    placeholder="Years"
+                    value={row.years || ''}
+                    onChange={(e) => updateIncomeRow(index, 'years', e.target.value)}
+                  />
+                </div>
+                <div className="text-right p-2 bg-slate-100 border border-slate-200 rounded-md font-semibold text-sm">
+                  {formatCurrency(row.pv)}
+                </div>
+                <div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => removeIncomeRow(index)}
+                    className="w-8 h-8 p-0 bg-red-50 text-red-600 hover:bg-red-100"
+                  >
+                    ×
+                  </Button>
+                </div>
+              </div>
+            ))}
+            
+            {/* Footer with Add Row and Totals */}
+            <div className="flex justify-between items-center pt-4 border-t border-slate-200">
+              <Button variant="outline" onClick={addIncomeRow}>
+                + Add row
+              </Button>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-slate-700">Total PV — Life</span>
+                  <div className="px-3 py-2 bg-slate-100 border border-slate-200 rounded-md font-semibold text-sm min-w-[120px] text-right">
+                    {formatCurrency(incomeTotals.life_pv)}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-slate-700">Total PV — TPD</span>
+                  <div className="px-3 py-2 bg-slate-100 border border-slate-200 rounded-md font-semibold text-sm min-w-[120px] text-right">
+                    {formatCurrency(incomeTotals.tpd_pv)}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+          
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowIncomeModal(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setShowIncomeModal(false)}>Cancel</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setShowIncomeModal(false)}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* ASSETS MODAL - Placeholder */}
+      {/* ASSETS MODAL */}
       <Dialog open={showAssetsModal} onOpenChange={setShowAssetsModal}>
         <DialogContent className="max-w-[900px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Less Realised Assets</DialogTitle>
           </DialogHeader>
+          
           <div className="space-y-4">
-            <p className="text-sm text-slate-600">Assets modal to be implemented</p>
+            {/* Info Note */}
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+              Add assets that would be realised (sold/accessed) in the event of death or TPD to reduce the cover required.
+            </div>
+            
+            {/* Header Row */}
+            <div className="grid grid-cols-4 gap-2 py-2 text-xs font-bold text-slate-500 uppercase border-b border-slate-200">
+              <div>Asset description</div>
+              <div>Insurance type</div>
+              <div className="text-right">Asset value ($)</div>
+              <div></div>
+            </div>
+            
+            {/* Asset Rows */}
+            {currentPersonData.asset_rows.map((row, index) => (
+              <div key={row.id} className="grid grid-cols-4 gap-2 py-2 items-center border-b border-slate-100">
+                <div>
+                  <Input 
+                    placeholder="e.g. Super balance"
+                    value={row.description}
+                    onChange={(e) => updateAssetRow(index, 'description', e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-3 p-2 bg-slate-50 border border-slate-200 rounded-md">
+                  <label className="flex items-center gap-1 text-sm cursor-pointer">
+                    <Checkbox 
+                      checked={row.life}
+                      onCheckedChange={(checked) => updateAssetRow(index, 'life', checked)}
+                    />
+                    Life
+                  </label>
+                  <label className="flex items-center gap-1 text-sm cursor-pointer">
+                    <Checkbox 
+                      checked={row.tpd}
+                      onCheckedChange={(checked) => updateAssetRow(index, 'tpd', checked)}
+                    />
+                    TPD
+                  </label>
+                </div>
+                <div>
+                  <Input 
+                    type="number"
+                    placeholder="$"
+                    value={row.value || ''}
+                    onChange={(e) => updateAssetRow(index, 'value', e.target.value)}
+                    className="text-right"
+                  />
+                </div>
+                <div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => removeAssetRow(index)}
+                    className="w-8 h-8 p-0 bg-red-50 text-red-600 hover:bg-red-100"
+                  >
+                    ×
+                  </Button>
+                </div>
+              </div>
+            ))}
+            
+            {/* Footer with Add Row and Totals */}
+            <div className="flex justify-between items-center pt-4 border-t border-slate-200">
+              <Button variant="outline" onClick={addAssetRow}>
+                + Add row
+              </Button>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-slate-700">Applied to Life</span>
+                  <div className="px-3 py-2 bg-slate-100 border border-slate-200 rounded-md font-semibold text-sm min-w-[120px] text-right">
+                    {formatCurrency(assetTotals.life)}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-slate-700">Applied to TPD</span>
+                  <div className="px-3 py-2 bg-slate-100 border border-slate-200 rounded-md font-semibold text-sm min-w-[120px] text-right">
+                    {formatCurrency(assetTotals.tpd)}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+          
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAssetsModal(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setShowAssetsModal(false)}>Cancel</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setShowAssetsModal(false)}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
