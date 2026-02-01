@@ -445,11 +445,12 @@ export default function SOARequestReview() {
             </CardContent>
           </Card>
           
-          {/* Footer */}
-          <div className="flex justify-start py-4">
-            <Button variant="outline" onClick={() => navigate(createPageUrl('SOARequestDetails') + `?id=${soaRequest?.id}`)}>
-              ◀ Back
-            </Button>
+            {/* Footer */}
+            <div className="flex justify-start py-4 border-t">
+              <Button variant="outline" onClick={() => navigate(createPageUrl('SOARequestDetails') + `?id=${soaRequest?.id}`)}>
+                ◀ Back
+              </Button>
+            </div>
           </div>
         </div>
       </div>
