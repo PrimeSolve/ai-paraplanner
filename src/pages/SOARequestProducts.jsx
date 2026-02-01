@@ -287,7 +287,21 @@ export default function SOARequestProducts() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {entities.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-4">No entities added yet</p>
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <img 
+                        src="https://illustrations.popsy.co/amber/business-deal.svg" 
+                        alt="No entities" 
+                        className="w-64 h-64 mb-6 opacity-80"
+                      />
+                      <h3 className="text-lg font-semibold text-slate-700 mb-2">No entities added yet</h3>
+                      <p className="text-sm text-slate-500 mb-4 text-center max-w-md">
+                        Add trusts, companies, or SMSFs that are part of your advice strategy
+                      </p>
+                      <Button onClick={addEntity} className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add your first entity
+                      </Button>
+                    </div>
                   ) : (
                     entities.map((entity, index) => (
                       <div key={index} className="border border-slate-200 rounded-lg p-4 space-y-3">
@@ -386,7 +400,21 @@ export default function SOARequestProducts() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {products.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-4">No products added yet</p>
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <img 
+                        src="https://illustrations.popsy.co/amber/finance.svg" 
+                        alt="No products" 
+                        className="w-64 h-64 mb-6 opacity-80"
+                      />
+                      <h3 className="text-lg font-semibold text-slate-700 mb-2">No products added yet</h3>
+                      <p className="text-sm text-slate-500 mb-4 text-center max-w-md">
+                        Add retirement products like superannuation, pensions, or investment bonds
+                      </p>
+                      <Button onClick={addProduct} className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add your first product
+                      </Button>
+                    </div>
                   ) : (
                     products.map((product, index) => (
                       <div key={index} className="border border-slate-200 rounded-lg p-4 space-y-3">
