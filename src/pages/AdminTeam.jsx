@@ -71,6 +71,7 @@ export default function AdminTeam() {
   };
 
   const handleSaveMember = async () => {
+    console.log('handleSaveMember called with email:', inviteEmail, 'role:', selectedRole);
     if (!inviteEmail) {
       toast.error('Please enter an email address');
       return;
@@ -78,7 +79,9 @@ export default function AdminTeam() {
 
     setInviting(true);
     try {
+      console.log('About to call base44.auth.inviteUser');
       await base44.auth.inviteUser(inviteEmail, selectedRole);
+      console.log('Invite succeeded');
       setInviteSuccess(true);
       toast.success('Team member invited successfully');
       await new Promise(resolve => setTimeout(resolve, 2000));
