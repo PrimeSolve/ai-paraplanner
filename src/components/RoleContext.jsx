@@ -6,6 +6,7 @@ const RoleContext = createContext();
 export function RoleProvider({ children }) {
   const [user, setUser] = useState(null);
   const [originalUser, setOriginalUser] = useState(null);
+  const [entityCacheRef] = useState({ current: {} });
   
   // Navigation chain: [{ type: 'advice_group', id: 123, name: 'PrimeSolve' }, { type: 'adviser', id: 456, name: 'Sarah Johnson' }]
   const [navigationChain, setNavigationChain] = useState([]);
