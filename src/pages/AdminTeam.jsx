@@ -456,22 +456,24 @@ export default function AdminTeam() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowInviteModal(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleSaveMember} 
-              disabled={inviting || !inviteEmail}
-              className="bg-[#3b82f6] hover:bg-[#2563eb]"
-            >
-              <Send className="w-4 h-4 mr-2" />
-              {inviting ? 'Sending...' : 'Send Invite'}
-            </Button>
-          </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowInviteModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSaveMember} 
+                disabled={inviting || !inviteEmail}
+                className="bg-[#3b82f6] hover:bg-[#2563eb]"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {inviting ? 'Sending...' : 'Send Invite'}
+              </Button>
+            </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
