@@ -214,9 +214,9 @@ export default function SOARequestPortfolio() {
                   </CardContent>
                 </Card>
               );
-            })}
+              })}
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '24px', borderTop: '1px solid #E2E8F0', marginTop: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '24px', borderTop: '1px solid #E2E8F0', marginTop: '24px' }}>
               <Button 
                 variant="outline"
                 onClick={() => navigate(createPageUrl('SOARequestTransactions') + `?id=${soaRequest.id}`)}
