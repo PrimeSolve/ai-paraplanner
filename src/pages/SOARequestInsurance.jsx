@@ -560,56 +560,63 @@ export default function SOARequestInsurance() {
           {/* White Content Card */}
           <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>
             <div className="flex-1 overflow-auto">
-        {/* Custom Tab Buttons */}
-        <div style={{ backgroundColor: '#F1F5F9', padding: '16px 32px', display: 'flex', gap: '8px' }}>
-          <button 
-            onClick={() => {
-              const tabs = document.querySelector('[role="tablist"]');
-              const needsTab = tabs?.querySelector('[value="needs"]');
-              needsTab?.click();
-            }}
-            style={{
-              padding: '12px 24px',
-              borderRadius: '8px',
-              border: 'none',
-              backgroundColor: '#FFFFFF',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-              color: '#1E293B',
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.2s',
-            }}
-          >
-            📊 Needs
-          </button>
-          <button 
-            onClick={() => {
-              const tabs = document.querySelector('[role="tablist"]');
-              const policiesTab = tabs?.querySelector('[value="policies"]');
-              policiesTab?.click();
-            }}
-            style={{
-              padding: '12px 24px',
-              borderRadius: '8px',
-              border: 'none',
-              backgroundColor: 'transparent',
-              color: '#64748B',
-              fontSize: '14px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.2s',
-            }}
-          >
-            📋 Policies
-          </button>
-        </div>
+            <div style={{ padding: '24px 32px', borderBottom: '1px solid #E2E8F0' }}>
+              <div style={{ 
+                display: 'inline-flex', 
+                padding: '4px', 
+                backgroundColor: '#F8FAFC', 
+                borderRadius: '12px', 
+                border: '1px solid #E2E8F0' 
+              }}>
+                <button 
+                  onClick={() => {
+                    const tabs = document.querySelector('[role="tablist"]');
+                    const needsTab = tabs?.querySelector('[value="needs"]');
+                    needsTab?.click();
+                  }}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: '#FFFFFF',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                    color: '#1E293B',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  📊 Needs
+                </button>
+                <button 
+                  onClick={() => {
+                    const tabs = document.querySelector('[role="tablist"]');
+                    const policiesTab = tabs?.querySelector('[value="policies"]');
+                    policiesTab?.click();
+                  }}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    color: '#64748B',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  📋 Policies
+                </button>
+              </div>
+            </div>
 
             <div style={{ padding: '24px 32px' }}>
               <Tabs defaultValue="needs" className="w-full">
