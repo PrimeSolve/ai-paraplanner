@@ -817,6 +817,8 @@ export default function SOARequestAssumptions() {
  </Button>
  </div>
  </div>
+ </Tabs>
+ </div>
  </div>
  </div>
  </SOARequestLayout>
