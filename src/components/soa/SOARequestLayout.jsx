@@ -208,6 +208,18 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
         </div>
       </div>
 
+      {/* Top Panel with Actions */}
+      <div className="absolute left-80 right-0 top-0 h-16 bg-white border-b border-slate-200 flex items-center px-6 gap-4 z-40">
+        <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 transition-colors text-sm font-medium text-slate-700">
+          <Zap className="w-4 h-4" />
+          Talk to AI Paraplanner
+        </button>
+        <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 transition-colors text-sm font-medium text-slate-700">
+          <TrendingUp className="w-4 h-4" />
+          Projected Results
+        </button>
+      </div>
+
       {/* Main Content Area */}
       <div className="absolute left-80 right-0 top-16 bottom-0 overflow-auto">
         {children}
