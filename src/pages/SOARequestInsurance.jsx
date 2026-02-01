@@ -1393,12 +1393,12 @@ export default function SOARequestInsurance() {
                   </div>
                 </div>
               )}
-            </TabsContent>
-          </Tabs>
-        </div>
+              </TabsContent>
+              </Tabs>
+              </div>
 
-            {/* Navigation */}
-            <div className="flex justify-end gap-3" style={{ padding: '24px 32px', borderTop: '1px solid #E2E8F0' }}>
+              {/* Navigation */}
+              <div className="flex justify-end gap-3" style={{ padding: '24px 32px', borderTop: '1px solid #E2E8F0' }}>
               <Button 
                 variant="outline"
                 onClick={() => navigate(createPageUrl('SOARequestProducts') + `?id=${soaRequest.id}`)}
