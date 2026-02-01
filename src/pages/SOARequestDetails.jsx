@@ -280,7 +280,7 @@ export default function SOARequestDetails() {
           {/* White Content Card */}
           <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>
             <div className="p-6 space-y-6">
-          {/* Scope Notice */}
+            {/* Scope Notice */}
           <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
             <span className="text-xl">💡</span>
             <div>
