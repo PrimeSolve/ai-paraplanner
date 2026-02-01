@@ -420,8 +420,8 @@ export default function SOARequestStrategy() {
           <div className="p-8">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="mb-6">
-                <TabsTrigger value="models">Models</TabsTrigger>
-                <TabsTrigger value="strategies">Strategies</TabsTrigger>
+                <TabsTrigger value="models"><BarChart3 className="w-4 h-4 mr-2" />Models</TabsTrigger>
+                <TabsTrigger value="strategies"><Zap className="w-4 h-4 mr-2" />Strategies</TabsTrigger>
               </TabsList>
 
               {/* ============================================================ */}
