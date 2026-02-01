@@ -1106,14 +1106,11 @@ export default function SOARequestInsurance() {
                   }`}>
                     <div className="flex justify-between items-center mb-4">
                       <span className="font-semibold text-slate-700">Life cover</span>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox 
-                          checked={policyForm.include_life}
-                          onCheckedChange={(checked) => updatePolicyForm('include_life', checked)}
-                          className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                        />
-                        <span className="text-sm text-slate-600">Include Life on this policy</span>
-                      </label>
+                      <Checkbox 
+                        checked={policyForm.include_life}
+                        onCheckedChange={(checked) => updatePolicyForm('include_life', checked)}
+                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
