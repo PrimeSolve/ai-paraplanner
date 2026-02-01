@@ -1002,6 +1002,7 @@ export default function SOARequestInsurance() {
                     <Checkbox 
                       checked={row.life}
                       onCheckedChange={(checked) => updateIncomeRow(index, 'life', checked)}
+                      className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                     />
                     <span className="text-slate-900">Life</span>
                   </label>
@@ -1009,6 +1010,7 @@ export default function SOARequestInsurance() {
                     <Checkbox 
                       checked={row.tpd}
                       onCheckedChange={(checked) => updateIncomeRow(index, 'tpd', checked)}
+                      className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                     />
                     <span className="text-slate-900">TPD</span>
                   </label>
@@ -1118,6 +1120,7 @@ export default function SOARequestInsurance() {
                     <Checkbox 
                       checked={row.life}
                       onCheckedChange={(checked) => updateAssetRow(index, 'life', checked)}
+                      className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                     />
                     <span className="text-slate-900">Life</span>
                   </label>
@@ -1125,6 +1128,7 @@ export default function SOARequestInsurance() {
                     <Checkbox 
                       checked={row.tpd}
                       onCheckedChange={(checked) => updateAssetRow(index, 'tpd', checked)}
+                      className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                     />
                     <span className="text-slate-900">TPD</span>
                   </label>
