@@ -77,16 +77,18 @@ export default function AdminTeam() {
 
     setInviting(true);
     try {
-      await base44.users.inviteUser(inviteEmail, selectedRole);
-      toast.success('Team member added successfully');
+      console.log('Inviting user:', inviteEmail, 'with role:', selectedRole);
+      const result = await base44.users.inviteUser(inviteEmail, selectedRole);
+      console.log('Invite result:', result);
+      toast.success('Team member invited successfully');
       setInviteEmail('');
       setInviteName('');
       setSelectedRole('user');
       setShowInviteModal(false);
-      loadTeam();
+      await loadTeam();
     } catch (error) {
-      console.error(error);
-      toast.error('Failed to add team member');
+      console.error('Error inviting user:', error);
+      toast.error(error?.message || 'Failed to invite team member');
     } finally {
       setInviting(false);
     }
