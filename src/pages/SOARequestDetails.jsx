@@ -280,18 +280,6 @@ export default function SOARequestDetails() {
           {/* White Content Card */}
           <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>
             <div className="p-6 space-y-6">
-            {/* Scope Notice */}
-            <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <span className="text-xl">💡</span>
-            <div>
-              <h4 className="font-bold text-amber-900">Intelligent Section Inclusion</h4>
-              <p className="text-sm text-amber-800 mt-1">
-                Sections are automatically included or excluded based on your <strong>Scope of Advice</strong> selections.
-                You can manually override these defaults below.
-              </p>
-            </div>
-            </div>
-
             {/* Stats Bar */}
             <div className="grid grid-cols-2 gap-4">
             <Card className="border-blue-200 bg-blue-50">
