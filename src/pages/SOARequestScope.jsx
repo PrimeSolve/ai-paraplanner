@@ -49,19 +49,23 @@ const adviceCategories = [
     id: 'retirement',
     title: 'Retirement Planning',
     description: 'Super contributions, SMSF, and pension options',
-    options: [
-      { id: 'super_contributions', label: 'Contributions' },
-      { id: 'smsf', label: 'SMSF' },
-      { id: 'lump_sum', label: 'Lump sum/access' },
-      { id: 'pensions', label: 'Pensions' },
-      { id: 'other_retirement', label: 'Other' }
-    ],
-    subCategories: [
+    subsections: [
       {
-        id: 'pensions_sub',
-        parentId: 'pensions',
+        id: 'superannuation',
+        title: 'Superannuation',
         options: [
-          { id: 'account_based', label: 'Account based pension' },
+          { id: 'super_contributions', label: 'Contributions' },
+          { id: 'smsf', label: 'SMSF' },
+          { id: 'lump_sum', label: 'Lump sum/access' },
+          { id: 'pensions', label: 'Pensions' },
+          { id: 'other_retirement', label: 'Other' }
+        ]
+      },
+      {
+        id: 'pensions',
+        title: 'Pensions',
+        options: [
+          { id: 'account_based_pension', label: 'Account based pension' },
           { id: 'defined_benefit', label: 'Defined benefit' }
         ]
       }
@@ -71,12 +75,24 @@ const adviceCategories = [
     id: 'assets',
     title: 'Assets & Liabilities',
     description: 'Portfolio review and debt management',
-    options: [
-      { id: 'portfolio_review', label: 'Review existing portfolio/assets' },
-      { id: 'new_products', label: 'New product recommendations' },
-      { id: 'debt_review', label: 'Review existing debt levels' },
-      { id: 'debt_products', label: 'Review debt products' },
-      { id: 'repayment_strategy', label: 'Review repayment strategy' }
+    subsections: [
+      {
+        id: 'portfolio',
+        title: 'Portfolio Review',
+        options: [
+          { id: 'portfolio_review', label: 'Review existing portfolio/assets' },
+          { id: 'new_products', label: 'New product recommendations' }
+        ]
+      },
+      {
+        id: 'debt',
+        title: 'Debt Management',
+        options: [
+          { id: 'debt_review', label: 'Review existing debt levels' },
+          { id: 'debt_products', label: 'Review debt products' },
+          { id: 'repayment_strategy', label: 'Review repayment strategy' }
+        ]
+      }
     ]
   }
 ];
@@ -153,7 +169,21 @@ export default function SOARequestScope() {
     );
   }
 
-  const selectedCount = Object.values(selectedOptions).filter(Boolean).length;
+  const getTotalOptionsCount = (category) => {
+    if (category.subsections) {
+      return category.subsections.reduce((total, sub) => total + sub.options.length, 0);
+    }
+    return category.options.length;
+  };
+
+  const getCategorySelectedCount = (category) => {
+    if (category.subsections) {
+      return category.subsections.reduce((total, sub) => {
+        return total + sub.options.filter(opt => selectedOptions[opt.id]).length;
+      }, 0);
+    }
+    return category.options.filter(opt => selectedOptions[opt.id]).length;
+  };
 
   return (
     <SOARequestLayout currentSection="scope" soaRequest={soaRequest}>
@@ -203,7 +233,8 @@ export default function SOARequestScope() {
 
           {/* Advice Categories */}
           {adviceCategories.map((category) => {
-            const categorySelectedCount = category.options.filter(opt => selectedOptions[opt.id]).length;
+            const totalOptions = getTotalOptionsCount(category);
+            const categorySelectedCount = getCategorySelectedCount(category);
             
             return (
               <Card key={category.id}>
@@ -214,33 +245,97 @@ export default function SOARequestScope() {
                       <p className="text-sm text-slate-600">{category.description}</p>
                     </div>
                     <div className="text-sm font-semibold text-blue-600">
-                      {categorySelectedCount} selected
+                      {categorySelectedCount} of {totalOptions}
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  {category.options.map((option) => (
-                    <div key={option.id} className="flex items-center gap-3">
-                      <Checkbox
-                        id={option.id}
-                        checked={selectedOptions[option.id] || false}
-                        onCheckedChange={() => handleToggleOption(option.id)}
-                      />
-                      <label htmlFor={option.id} className="text-sm font-medium text-slate-700 cursor-pointer flex-1">
-                        {option.label}
-                      </label>
-                    </div>
-                  ))}
-                  <div>
-                    <label className="text-xs font-semibold text-slate-600 mb-1 block">Reason in/out of scope</label>
-                    <Textarea
-                      value={reasons[category.id] || ''}
-                      onChange={(e) => setReasons(prev => ({ ...prev, [category.id]: e.target.value }))}
-                      placeholder="Explain why these items are in or out of scope..."
-                      rows={2}
-                      className="text-sm"
-                    />
-                  </div>
+                <CardContent>
+                  {category.subsections ? (
+                    // Render with subsection headers and dividers
+                    category.subsections.map((subsection, idx) => (
+                      <div key={subsection.id}>
+                        {idx > 0 && <hr className="my-6 border-slate-200" />}
+                        <div className="text-sm font-semibold text-slate-600 mb-3 flex items-center gap-2">
+                          <div className="w-1 h-4 bg-blue-500 rounded"></div>
+                          {subsection.title}
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                          {subsection.options.map((option) => {
+                            const isSelected = selectedOptions[option.id] || false;
+                            return (
+                              <label 
+                                key={option.id}
+                                className={`
+                                  flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all
+                                  ${isSelected 
+                                    ? 'border-blue-500 bg-blue-50' 
+                                    : 'border-slate-200 bg-white hover:bg-slate-50'
+                                  }
+                                `}
+                              >
+                                <Checkbox
+                                  id={option.id}
+                                  checked={isSelected}
+                                  onCheckedChange={() => handleToggleOption(option.id)}
+                                />
+                                <span className="text-sm font-medium text-slate-700">{option.label}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-600 mb-1 block">
+                            Reason in/out of scope
+                          </label>
+                          <Textarea
+                            value={reasons[subsection.id] || ''}
+                            onChange={(e) => setReasons(prev => ({ ...prev, [subsection.id]: e.target.value }))}
+                            placeholder="Explain why these items are in or out of scope..."
+                            rows={2}
+                            className="text-sm"
+                          />
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    // Render simple options grid
+                    <>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                        {category.options.map((option) => {
+                          const isSelected = selectedOptions[option.id] || false;
+                          return (
+                            <label 
+                              key={option.id}
+                              className={`
+                                flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all
+                                ${isSelected 
+                                  ? 'border-blue-500 bg-blue-50' 
+                                  : 'border-slate-200 bg-white hover:bg-slate-50'
+                                }
+                              `}
+                            >
+                              <Checkbox
+                                id={option.id}
+                                checked={isSelected}
+                                onCheckedChange={() => handleToggleOption(option.id)}
+                              />
+                              <span className="text-sm font-medium text-slate-700">{option.label}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-slate-600 mb-1 block">Reason in/out of scope</label>
+                        <Textarea
+                          value={reasons[category.id] || ''}
+                          onChange={(e) => setReasons(prev => ({ ...prev, [category.id]: e.target.value }))}
+                          placeholder="Explain why these items are in or out of scope..."
+                          rows={2}
+                          className="text-sm"
+                        />
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             );
