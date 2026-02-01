@@ -129,7 +129,7 @@ export default function SOARequestWelcome() {
       <div className="flex-1 overflow-auto bg-slate-50 w-full">
         
         {/* Welcome Banner - Full Width */}
-        <div className="w-full bg-[#1e3a5f] py-6 px-4">
+        <div className="w-full bg-[#1e3a5f] py-6 px-6">
           <div className="max-w-5xl mx-auto">
             <h1 className="text-xl font-bold text-white mb-1">Welcome to SOA Request</h1>
             <p className="text-sm text-blue-100">
@@ -139,7 +139,7 @@ export default function SOARequestWelcome() {
         </div>
 
         {/* Main Content */}
-        <div className="w-full px-4 py-8">
+        <div className="w-full px-6 py-8">
           <div className="max-w-5xl mx-auto">
           
           {/* Video Section - Centered */}
