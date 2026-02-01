@@ -34,6 +34,36 @@ export default function SOARequestInsurance() {
     client: getDefaultPersonData(),
     partner: getDefaultPersonData()
   });
+
+  // Policy form state
+  const [policyForm, setPolicyForm] = useState({
+    owner: '',
+    insurer: '',
+    product_name: '',
+    policy_number: '',
+    insurance_type: '',
+    structure: '',
+    premium_type: '',
+    premium_frequency: '',
+    premium_amount: '',
+    include_life: false,
+    life_sum_insured: '',
+    life_premium: '',
+    include_tpd: false,
+    tpd_sum_insured: '',
+    tpd_premium: '',
+    tpd_definition: '',
+    tpd_notes: '',
+    include_trauma: false,
+    trauma_sum_insured: '',
+    trauma_premium: '',
+    trauma_notes: '',
+    include_ip: false,
+    ip_monthly_benefit: '',
+    ip_premium: '',
+    ip_waiting_period: '',
+    ip_benefit_period: ''
+  });
   
   const navigate = useNavigate();
 
@@ -101,6 +131,7 @@ export default function SOARequestInsurance() {
   const currentPersonData = insuranceData[currentPerson];
   const assumptions = currentPersonData.assumptions;
   const needs = currentPersonData.needs;
+  const policies = currentPersonData.policies || [];
 
   const updateNeeds = (type, field, value) => {
     setInsuranceData(prev => ({
@@ -362,6 +393,130 @@ export default function SOARequestInsurance() {
   const assetTotals = {
     life: currentPersonData.asset_rows.filter(r => r.life).reduce((sum, r) => sum + (parseFloat(r.value) || 0), 0),
     tpd: currentPersonData.asset_rows.filter(r => r.tpd).reduce((sum, r) => sum + (parseFloat(r.value) || 0), 0)
+  };
+
+  // Policy Management Functions
+  const getInsuranceTypeBenefits = (insuranceTypeValue) => {
+    const map = {
+      '1':  { life: true,  tpd: false, trauma: false, ip: false },
+      '2':  { life: true,  tpd: true,  trauma: false, ip: false },
+      '3':  { life: true,  tpd: false, trauma: true,  ip: false },
+      '4':  { life: true,  tpd: true,  trauma: true,  ip: false },
+      '5':  { life: false, tpd: true,  trauma: false, ip: false },
+      '6':  { life: false, tpd: false, trauma: true,  ip: false },
+      '7':  { life: false, tpd: true,  trauma: true,  ip: false },
+      '8':  { life: false, tpd: false, trauma: false, ip: true  },
+      '10': { life: true,  tpd: true,  trauma: false, ip: false },
+      '11': { life: true,  tpd: true,  trauma: false, ip: false },
+      '12': { life: true,  tpd: false, trauma: true,  ip: false },
+      '13': { life: false, tpd: false, trauma: false, ip: true  },
+    };
+    return map[insuranceTypeValue] || { life: false, tpd: false, trauma: false, ip: false };
+  };
+
+  const handleInsuranceTypeChange = (value) => {
+    if (editingPolicyIndex === null) {
+      const benefits = getInsuranceTypeBenefits(value);
+      setPolicyForm(prev => ({
+        ...prev,
+        insurance_type: value,
+        include_life: benefits.life,
+        include_tpd: benefits.tpd,
+        include_trauma: benefits.trauma,
+        include_ip: benefits.ip
+      }));
+    } else {
+      setPolicyForm(prev => ({ ...prev, insurance_type: value }));
+    }
+  };
+
+  const getInsuranceTypeLabel = (value) => {
+    const labels = {
+      '1': 'Life (Stand-alone)', '2': 'Life with Linked TPD', '3': 'Life with Linked Trauma',
+      '4': 'Life with Linked TPD/Trauma', '5': 'TPD (Stand-alone)', '6': 'Trauma (Stand alone)',
+      '7': 'Trauma with Linked TPD', '8': 'Income protection (Stand-alone)',
+      '10': 'Life with Super linked TPD', '11': 'Life with Flexi linked TPD',
+      '12': 'Life with flexi linked Trauma', '13': 'Super-Linked IP'
+    };
+    return labels[value] || '—';
+  };
+
+  const getPremiumTypeLabel = (value) => {
+    const labels = { '1': 'Stepped', '2': 'Level', '3': 'Blended' };
+    return labels[value] || '—';
+  };
+
+  const getPremiumFrequencyLabel = (value) => {
+    const labels = {
+      '1': 'Annual', '2': 'Fortnightly', '3': 'Monthly',
+      '4': 'Quarterly', '5': 'Half-yearly', '6': 'Weekly'
+    };
+    return labels[value] || '—';
+  };
+
+  const resetPolicyForm = () => {
+    setPolicyForm({
+      owner: '', insurer: '', product_name: '', policy_number: '',
+      insurance_type: '', structure: '', premium_type: '', premium_frequency: '', premium_amount: '',
+      include_life: false, life_sum_insured: '', life_premium: '',
+      include_tpd: false, tpd_sum_insured: '', tpd_premium: '', tpd_definition: '', tpd_notes: '',
+      include_trauma: false, trauma_sum_insured: '', trauma_premium: '', trauma_notes: '',
+      include_ip: false, ip_monthly_benefit: '', ip_premium: '', ip_waiting_period: '', ip_benefit_period: ''
+    });
+  };
+
+  const addNewPolicy = () => {
+    resetPolicyForm();
+    setEditingPolicyIndex(null);
+    setShowPolicyForm(true);
+  };
+
+  const editPolicy = (index) => {
+    const policy = policies[index];
+    setPolicyForm({ ...policy });
+    setEditingPolicyIndex(index);
+    setShowPolicyForm(true);
+  };
+
+  const cancelPolicyEdit = () => {
+    resetPolicyForm();
+    setEditingPolicyIndex(null);
+    setShowPolicyForm(false);
+  };
+
+  const savePolicy = () => {
+    setInsuranceData(prev => {
+      const updatedPolicies = [...prev[currentPerson].policies];
+      if (editingPolicyIndex !== null) {
+        updatedPolicies[editingPolicyIndex] = { ...policyForm, id: policies[editingPolicyIndex].id };
+      } else {
+        updatedPolicies.push({ ...policyForm, id: crypto.randomUUID() });
+      }
+      return {
+        ...prev,
+        [currentPerson]: {
+          ...prev[currentPerson],
+          policies: updatedPolicies
+        }
+      };
+    });
+    cancelPolicyEdit();
+  };
+
+  const removePolicy = (index) => {
+    if (confirm('Are you sure you want to delete this policy?')) {
+      setInsuranceData(prev => ({
+        ...prev,
+        [currentPerson]: {
+          ...prev[currentPerson],
+          policies: prev[currentPerson].policies.filter((_, i) => i !== index)
+        }
+      }));
+    }
+  };
+
+  const updatePolicyForm = (field, value) => {
+    setPolicyForm(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSave = async () => {
@@ -725,13 +880,478 @@ export default function SOARequestInsurance() {
 
             {/* POLICIES TAB */}
             <TabsContent value="policies" className="space-y-4 mt-6">
-              <div className="flex flex-col items-center justify-center py-16">
-                <div className="text-5xl mb-6">🛡️</div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">Policies section coming soon</h3>
-                <p className="text-slate-600 text-center mb-8 max-w-md">
-                  This section will allow you to record existing and recommended insurance policies
-                </p>
+              {/* Toolbar */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-600">Policies for:</span>
+                  <span className="font-bold text-slate-900">
+                    {currentPerson === 'client' ? clientName : partnerName}
+                  </span>
+                </div>
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700" 
+                  onClick={addNewPolicy}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add new policy
+                </Button>
               </div>
+              
+              {/* Info Note */}
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 mb-4">
+                Use this section to record existing and recommended policies. Client / Partner selection follows the toggle on the Needs tab.
+              </div>
+              
+              {/* Policies Summary Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-sm bg-white border border-slate-200 rounded-lg">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200">
+                      <th className="text-left p-3 font-bold text-slate-600 text-xs uppercase">Owner</th>
+                      <th className="text-left p-3 font-bold text-slate-600 text-xs uppercase">Insurance type</th>
+                      <th className="text-left p-3 font-bold text-slate-600 text-xs uppercase">Premium type</th>
+                      <th className="text-left p-3 font-bold text-slate-600 text-xs uppercase">Premium frequency</th>
+                      <th className="text-right p-3 font-bold text-slate-600 text-xs uppercase">Premium amount</th>
+                      <th className="p-3 w-[100px]"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {policies.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="text-center py-8 text-slate-500">
+                          No policies added yet. Click "Add new policy" to get started.
+                        </td>
+                      </tr>
+                    ) : (
+                      policies.map((policy, index) => (
+                        <tr key={policy.id} className="border-b border-slate-200 hover:bg-slate-50">
+                          <td className="p-3 text-slate-700">{policy.owner || '—'}</td>
+                          <td className="p-3 text-slate-700">{getInsuranceTypeLabel(policy.insurance_type)}</td>
+                          <td className="p-3 text-slate-700">{getPremiumTypeLabel(policy.premium_type)}</td>
+                          <td className="p-3 text-slate-700">{getPremiumFrequencyLabel(policy.premium_frequency)}</td>
+                          <td className="p-3 text-right font-mono text-slate-700">
+                            {policy.premium_amount ? formatCurrency(policy.premium_amount) : '—'}
+                          </td>
+                          <td className="p-3">
+                            <div className="flex gap-1">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => editPolicy(index)}
+                                className="text-slate-600 hover:text-slate-900"
+                              >
+                                Edit
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => removePolicy(index)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Policy Detail Form */}
+              {showPolicyForm && (
+                <div className="mt-6 pt-6 border-t border-slate-200">
+                  {/* Form Header */}
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-lg font-bold text-slate-900">
+                      {editingPolicyIndex !== null ? 'Edit policy' : 'New policy'}
+                    </h3>
+                    <div className="text-sm text-slate-500 px-3 py-1.5 bg-blue-50 border border-blue-100 rounded-lg">
+                      Benefit sections auto-toggle based on insurance type (for new policies).
+                    </div>
+                  </div>
+                  
+                  {/* Core Fields */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Owner</label>
+                      <Input 
+                        placeholder="e.g. Client, Partner, SMSF"
+                        value={policyForm.owner}
+                        onChange={(e) => updatePolicyForm('owner', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Insurer / Product provider</label>
+                      <Input 
+                        placeholder="e.g. TAL, AIA, MLC"
+                        value={policyForm.insurer}
+                        onChange={(e) => updatePolicyForm('insurer', e.target.value)}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Product / Policy name</label>
+                      <Input 
+                        placeholder="e.g. Accelerated Protection"
+                        value={policyForm.product_name}
+                        onChange={(e) => updatePolicyForm('product_name', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Policy number</label>
+                      <Input 
+                        placeholder="e.g. POL123456"
+                        value={policyForm.policy_number}
+                        onChange={(e) => updatePolicyForm('policy_number', e.target.value)}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Insurance type</label>
+                      <Select 
+                        value={policyForm.insurance_type} 
+                        onValueChange={handleInsuranceTypeChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Life (Stand-alone)</SelectItem>
+                          <SelectItem value="2">Life with Linked TPD</SelectItem>
+                          <SelectItem value="3">Life with Linked Trauma</SelectItem>
+                          <SelectItem value="4">Life with Linked TPD/Trauma</SelectItem>
+                          <SelectItem value="5">TPD (Stand-alone)</SelectItem>
+                          <SelectItem value="6">Trauma (Stand alone)</SelectItem>
+                          <SelectItem value="7">Trauma with Linked TPD</SelectItem>
+                          <SelectItem value="8">Income protection (Stand-alone)</SelectItem>
+                          <SelectItem value="10">Life with Super linked TPD</SelectItem>
+                          <SelectItem value="11">Life with Flexi linked TPD</SelectItem>
+                          <SelectItem value="12">Life with flexi linked Trauma</SelectItem>
+                          <SelectItem value="13">Super-Linked IP</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Structure</label>
+                      <Select 
+                        value={policyForm.structure} 
+                        onValueChange={(v) => updatePolicyForm('structure', v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Outside super</SelectItem>
+                          <SelectItem value="2">Inside super</SelectItem>
+                          <SelectItem value="3">Through SMSF</SelectItem>
+                          <SelectItem value="4">Through platform / wrap</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Premium type</label>
+                      <Select 
+                        value={policyForm.premium_type} 
+                        onValueChange={(v) => updatePolicyForm('premium_type', v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Stepped</SelectItem>
+                          <SelectItem value="2">Level</SelectItem>
+                          <SelectItem value="3">Blended</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Premium frequency</label>
+                      <Select 
+                        value={policyForm.premium_frequency} 
+                        onValueChange={(v) => updatePolicyForm('premium_frequency', v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Annual</SelectItem>
+                          <SelectItem value="2">Fortnightly</SelectItem>
+                          <SelectItem value="3">Monthly</SelectItem>
+                          <SelectItem value="4">Quarterly</SelectItem>
+                          <SelectItem value="5">Half-yearly</SelectItem>
+                          <SelectItem value="6">Weekly</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Premium amount</label>
+                      <Input 
+                        type="number"
+                        placeholder="$ per selected frequency"
+                        value={policyForm.premium_amount}
+                        onChange={(e) => updatePolicyForm('premium_amount', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Life Cover Section */}
+                  <div className={`border rounded-lg p-4 mt-4 transition-all ${
+                    policyForm.include_life 
+                      ? 'border-slate-200 bg-white' 
+                      : 'border-slate-100 bg-slate-50 opacity-60'
+                  }`}>
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="font-semibold text-slate-700">Life cover</span>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox 
+                          checked={policyForm.include_life}
+                          onCheckedChange={(checked) => updatePolicyForm('include_life', checked)}
+                          className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                        />
+                        <span className="text-sm text-slate-600">Include Life on this policy</span>
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Sum insured (Life)</label>
+                        <Input 
+                          type="number"
+                          placeholder="$"
+                          value={policyForm.life_sum_insured}
+                          onChange={(e) => updatePolicyForm('life_sum_insured', e.target.value)}
+                          disabled={!policyForm.include_life}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Premium (Life)</label>
+                        <Input 
+                          type="number"
+                          placeholder="$"
+                          value={policyForm.life_premium}
+                          onChange={(e) => updatePolicyForm('life_premium', e.target.value)}
+                          disabled={!policyForm.include_life}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* TPD Cover Section */}
+                  <div className={`border rounded-lg p-4 mt-4 transition-all ${
+                    policyForm.include_tpd 
+                      ? 'border-slate-200 bg-white' 
+                      : 'border-slate-100 bg-slate-50 opacity-60'
+                  }`}>
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="font-semibold text-slate-700">TPD cover</span>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox 
+                          checked={policyForm.include_tpd}
+                          onCheckedChange={(checked) => updatePolicyForm('include_tpd', checked)}
+                          className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                        />
+                        <span className="text-sm text-slate-600">Include TPD on this policy</span>
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Sum insured (TPD)</label>
+                        <Input 
+                          type="number"
+                          placeholder="$"
+                          value={policyForm.tpd_sum_insured}
+                          onChange={(e) => updatePolicyForm('tpd_sum_insured', e.target.value)}
+                          disabled={!policyForm.include_tpd}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Premium (TPD)</label>
+                        <Input 
+                          type="number"
+                          placeholder="$"
+                          value={policyForm.tpd_premium}
+                          onChange={(e) => updatePolicyForm('tpd_premium', e.target.value)}
+                          disabled={!policyForm.include_tpd}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">TPD definition</label>
+                        <Select 
+                          value={policyForm.tpd_definition} 
+                          onValueChange={(v) => updatePolicyForm('tpd_definition', v)}
+                          disabled={!policyForm.include_tpd}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">Any occupation</SelectItem>
+                            <SelectItem value="2">Own occupation</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Notes (optional)</label>
+                        <Input 
+                          placeholder="Additional notes..."
+                          value={policyForm.tpd_notes}
+                          onChange={(e) => updatePolicyForm('tpd_notes', e.target.value)}
+                          disabled={!policyForm.include_tpd}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Trauma Cover Section */}
+                  <div className={`border rounded-lg p-4 mt-4 transition-all ${
+                    policyForm.include_trauma 
+                      ? 'border-slate-200 bg-white' 
+                      : 'border-slate-100 bg-slate-50 opacity-60'
+                  }`}>
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="font-semibold text-slate-700">Trauma cover</span>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox 
+                          checked={policyForm.include_trauma}
+                          onCheckedChange={(checked) => updatePolicyForm('include_trauma', checked)}
+                          className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                        />
+                        <span className="text-sm text-slate-600">Include Trauma on this policy</span>
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Sum insured (Trauma)</label>
+                        <Input 
+                          type="number"
+                          placeholder="$"
+                          value={policyForm.trauma_sum_insured}
+                          onChange={(e) => updatePolicyForm('trauma_sum_insured', e.target.value)}
+                          disabled={!policyForm.include_trauma}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Premium (Trauma)</label>
+                        <Input 
+                          type="number"
+                          placeholder="$"
+                          value={policyForm.trauma_premium}
+                          onChange={(e) => updatePolicyForm('trauma_premium', e.target.value)}
+                          disabled={!policyForm.include_trauma}
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Key events / comments</label>
+                        <Input 
+                          placeholder="e.g. Cancer, Heart attack, Stroke..."
+                          value={policyForm.trauma_notes}
+                          onChange={(e) => updatePolicyForm('trauma_notes', e.target.value)}
+                          disabled={!policyForm.include_trauma}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Income Protection Section */}
+                  <div className={`border rounded-lg p-4 mt-4 transition-all ${
+                    policyForm.include_ip 
+                      ? 'border-slate-200 bg-white' 
+                      : 'border-slate-100 bg-slate-50 opacity-60'
+                  }`}>
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="font-semibold text-slate-700">Income Protection</span>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox 
+                          checked={policyForm.include_ip}
+                          onCheckedChange={(checked) => updatePolicyForm('include_ip', checked)}
+                          className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                        />
+                        <span className="text-sm text-slate-600">Include IP on this policy</span>
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Monthly benefit</label>
+                        <Input 
+                          type="number"
+                          placeholder="$ per month"
+                          value={policyForm.ip_monthly_benefit}
+                          onChange={(e) => updatePolicyForm('ip_monthly_benefit', e.target.value)}
+                          disabled={!policyForm.include_ip}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Premium (IP)</label>
+                        <Input 
+                          type="number"
+                          placeholder="$"
+                          value={policyForm.ip_premium}
+                          onChange={(e) => updatePolicyForm('ip_premium', e.target.value)}
+                          disabled={!policyForm.include_ip}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Waiting period</label>
+                        <Select 
+                          value={policyForm.ip_waiting_period} 
+                          onValueChange={(v) => updatePolicyForm('ip_waiting_period', v)}
+                          disabled={!policyForm.include_ip}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">30 days</SelectItem>
+                            <SelectItem value="2">60 days</SelectItem>
+                            <SelectItem value="3">90 days</SelectItem>
+                            <SelectItem value="4">120 days</SelectItem>
+                            <SelectItem value="5">180 days</SelectItem>
+                            <SelectItem value="6">1 year</SelectItem>
+                            <SelectItem value="7">2 years</SelectItem>
+                            <SelectItem value="8">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Benefit period</label>
+                        <Select 
+                          value={policyForm.ip_benefit_period} 
+                          onValueChange={(v) => updatePolicyForm('ip_benefit_period', v)}
+                          disabled={!policyForm.include_ip}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="2">180 days</SelectItem>
+                            <SelectItem value="3">1 year</SelectItem>
+                            <SelectItem value="4">2 years</SelectItem>
+                            <SelectItem value="5">3 years</SelectItem>
+                            <SelectItem value="6">5 years</SelectItem>
+                            <SelectItem value="7">To age 60</SelectItem>
+                            <SelectItem value="8">To age 65</SelectItem>
+                            <SelectItem value="9">To age 67</SelectItem>
+                            <SelectItem value="10">To age 70</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Form Actions */}
+                  <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-200">
+                    <Button variant="outline" onClick={cancelPolicyEdit}>
+                      Cancel
+                    </Button>
+                    <Button className="bg-blue-600 hover:bg-blue-700" onClick={savePolicy}>
+                      Save policy
+                    </Button>
+                  </div>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 
