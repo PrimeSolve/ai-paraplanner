@@ -479,12 +479,13 @@ export default function AdminTeam() {
                   Cancel
                 </Button>
                 <Button 
-                  onClick={handleSaveMember} 
-                  disabled={inviting || !inviteEmail}
+                  onClick={() => {
+                    console.log('BUTTON CLICKED');
+                    alert('Button works!');
+                  }}
                   className="bg-[#3b82f6] hover:bg-[#2563eb]"
                 >
-                  <Send className="w-4 h-4 mr-2" />
-                  {inviting ? 'Sending...' : 'Send Invite'}
+                  Test Click
                 </Button>
               </div>
             </>
