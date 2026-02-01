@@ -881,13 +881,7 @@ export default function SOARequestInsurance() {
             {/* POLICIES TAB */}
             <TabsContent value="policies" className="space-y-4 mt-6">
               {/* Toolbar */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-600">Policies for:</span>
-                  <span className="font-bold text-slate-900">
-                    {currentPerson === 'client' ? clientName : partnerName}
-                  </span>
-                </div>
+              <div className="flex items-center justify-end mb-4">
                 <Button 
                   className="bg-blue-600 hover:bg-blue-700" 
                   onClick={addNewPolicy}
@@ -967,9 +961,6 @@ export default function SOARequestInsurance() {
                     <h3 className="text-lg font-bold text-slate-900">
                       {editingPolicyIndex !== null ? 'Edit policy' : 'New policy'}
                     </h3>
-                    <div className="text-sm text-slate-500 px-3 py-1.5 bg-blue-50 border border-blue-100 rounded-lg">
-                      Benefit sections auto-toggle based on insurance type (for new policies).
-                    </div>
                   </div>
                   
                   {/* Core Fields */}
