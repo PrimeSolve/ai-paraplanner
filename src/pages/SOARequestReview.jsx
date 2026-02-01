@@ -77,6 +77,14 @@ export default function SOARequestReview() {
 
   return (
     <SOARequestLayout currentSection="review" soaRequest={soaRequest}>
+      {/* Dark Banner */}
+      <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderBottom: '1px solid #334155' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>Review and submit</h1>
+        <p style={{ fontSize: '14px', color: '#CBD5E1', lineHeight: '1.5' }}>
+          Final review and send to paraplanner
+        </p>
+      </div>
+
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
         <div className="w-full space-y-6">
           <Card className="border-green-200 bg-green-50">

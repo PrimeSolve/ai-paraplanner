@@ -203,8 +203,16 @@ export default function SOARequestScope() {
 
   return (
     <SOARequestLayout currentSection="scope" soaRequest={soaRequest}>
+      {/* Dark Banner */}
+      <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderBottom: '1px solid #334155' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>Scope of advice</h1>
+        <p style={{ fontSize: '14px', color: '#CBD5E1', lineHeight: '1.5' }}>
+          Define what's in and out of scope
+        </p>
+      </div>
+
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
-        <div className="max-w-6xl mx-auto space-y-6">
+        <div className="w-full space-y-6">
           {/* Info Banner */}
           <Card className="border-blue-200 bg-blue-50">
             <CardContent className="pt-6">
