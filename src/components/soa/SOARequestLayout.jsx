@@ -4,7 +4,7 @@ import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
 import {
   Upload, Home, FileText, TrendingUp, Shield, PieChart,
-  DollarSign, Building2, CheckCircle2, MessageSquare
+  DollarSign, Building2, CheckCircle2, MessageSquare, Zap, TrendingUpIcon
 } from 'lucide-react';
 
 const sectionGroups = [
