@@ -115,7 +115,7 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
       {/* Sidebar Navigation */}
-      <div className="w-80 bg-gray-800 text-gray-200 flex flex-col border-r border-gray-900 flex-shrink-0 h-screen overflow-hidden">
+      <div className="w-80 bg-gray-800 text-gray-200 flex flex-col border-r border-gray-900 fixed left-0 top-0 bottom-0 z-50">
         {/* Header */}
         <div style={{
           display: 'flex',
@@ -209,7 +209,7 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden ml-80">
         {children}
       </div>
     </div>
