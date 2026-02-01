@@ -21,7 +21,10 @@ export default function SOARequestProducts() {
   const [products, setProducts] = useState([]);
   const [entities, setEntities] = useState([]);
   const [principals, setPrincipals] = useState([]);
-  const [dependants, setDependants] = useState([]);
+  const [children, setChildren] = useState([]);
+  const [adultDependants, setAdultDependants] = useState([]);
+  const [existingEntities, setExistingEntities] = useState([]);
+  const [existingSMSFs, setExistingSMSFs] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,22 +38,74 @@ export default function SOARequestProducts() {
           if (requests[0]) {
             setSOARequest(requests[0]);
             const productsEntities = requests[0].products_entities || {};
-            setProducts(productsEntities.products || []);
-            setEntities(productsEntities.entities || []);
+            setProducts((productsEntities.products || []).map(p => ({
+              ...p,
+              id: p.id || crypto.randomUUID()
+            })));
+            setEntities((productsEntities.entities || []).map(e => ({
+              ...e,
+              id: e.id || crypto.randomUUID()
+            })));
 
-            // Load fact find data for principals and dependants
+            // Load fact find data
             if (requests[0].fact_find_id) {
               const factFinds = await base44.entities.FactFind.filter({ id: requests[0].fact_find_id });
               if (factFinds[0]) {
                 setFactFind(factFinds[0]);
-                const personal = factFinds[0].personal || {};
-                setPrincipals([
-                  { id: 'principal_1', name: `${personal.first_name || ''} ${personal.last_name || ''}`.trim() || 'Principal 1' }
-                ]);
-                setDependants((factFinds[0].dependants?.dependants_list || []).map((d, i) => ({
-                  id: `dependant_${i}`,
-                  name: d.name || `Dependant ${i + 1}`
-                })));
+                const ff = factFinds[0];
+                
+                // Extract principals from personal data
+                const personal = ff.personal || {};
+                const principalsList = [];
+                if (personal.first_name || personal.last_name) {
+                  principalsList.push({
+                    id: 'principal_1',
+                    name: `${personal.first_name || ''} ${personal.last_name || ''}`.trim(),
+                    role: 'Client'
+                  });
+                }
+                setPrincipals(principalsList);
+                
+                // Extract dependants (split into children and adults)
+                const dependantsList = ff.dependants?.dependants_list || [];
+                const childrenList = [];
+                const adultsList = [];
+                
+                dependantsList.forEach((d, i) => {
+                  const dep = {
+                    id: `dependant_${i}`,
+                    name: d.name || d.full_name || `Dependant ${i + 1}`,
+                    relationship: d.relationship || 'Dependant'
+                  };
+                  
+                  // Determine if child or adult based on relationship or age
+                  if (d.relationship?.toLowerCase().includes('child') || d.relationship?.toLowerCase().includes('son') || d.relationship?.toLowerCase().includes('daughter')) {
+                    childrenList.push(dep);
+                  } else {
+                    adultsList.push(dep);
+                  }
+                });
+                
+                setChildren(childrenList);
+                setAdultDependants(adultsList);
+                
+                // Extract existing trusts and companies
+                const entitiesFromFF = ff.trusts_companies?.entities || [];
+                const existingEntitiesList = entitiesFromFF.map((e, i) => ({
+                  id: `existing_entity_${i}`,
+                  name: e.name || e.entity_name || `Entity ${i + 1}`,
+                  type: e.type || e.entity_type || 'Entity'
+                }));
+                setExistingEntities(existingEntitiesList);
+                
+                // Extract existing SMSFs
+                const smsfsFromFF = ff.smsf?.smsf_details || [];
+                const smsfsList = smsfsFromFF.map((s, i) => ({
+                  id: `existing_smsf_${i}`,
+                  name: s.name || s.fund_name || `SMSF ${i + 1}`,
+                  type: 'SMSF'
+                }));
+                setExistingSMSFs(smsfsList);
               }
             }
           }
@@ -66,13 +121,12 @@ export default function SOARequestProducts() {
 
   const addProduct = () => {
     setProducts([...products, { 
-      product_type: '', 
-      provider: '', 
+      id: crypto.randomUUID(),
       description: '',
+      product_type: '', 
       owner_id: '',
-      // Pension fields
+      provider: '',
       pension_type: '',
-      // Annuity fields
       annuity_tax_env: '',
       annuity_joint: '',
       annuity_lifetime: false,
@@ -88,11 +142,10 @@ export default function SOARequestProducts() {
 
   const addEntity = () => {
     setEntities([...entities, { 
+      id: crypto.randomUUID(),
+      name: '',
       entity_type: '', 
-      entity_name: '', 
-      holders: [],
-      abn_acn: '',
-      notes: ''
+      holders: []
     }]);
   };
 
@@ -143,16 +196,61 @@ export default function SOARequestProducts() {
     );
   }
 
-  const availableHolders = [
-    ...principals,
-    ...dependants,
-    ...entities.map((e, i) => ({ id: `entity_${i}`, name: e.entity_name || '(Unnamed entity)' }))
-  ];
+  const getAvailableHolders = (excludeSMSF = false) => {
+    const holders = [];
+    
+    // Principals
+    principals.forEach(p => {
+      holders.push({ ...p, group: 'Principals', displayName: `${p.name} (${p.role})` });
+    });
+    
+    // Children
+    children.forEach(c => {
+      holders.push({ ...c, group: 'Dependants', displayName: `${c.name} (${c.relationship})` });
+    });
+    
+    // Adult Dependants
+    adultDependants.forEach(a => {
+      holders.push({ ...a, group: 'Dependants', displayName: `${a.name} (${a.relationship})` });
+    });
+    
+    // Existing Entities from Fact Find
+    if (!excludeSMSF) {
+      existingEntities.forEach(e => {
+        holders.push({ ...e, group: 'Existing Entities', displayName: `${e.name} (${e.type})` });
+      });
+      
+      existingSMSFs.forEach(s => {
+        holders.push({ ...s, group: 'Existing Entities', displayName: `${s.name} (${s.type})` });
+      });
+    }
+    
+    // New Entities created on this page
+    entities.forEach(e => {
+      if (excludeSMSF && e.entity_type === 'SMSF') return;
+      holders.push({ 
+        ...e, 
+        group: 'New Entities', 
+        displayName: `${e.name || '(Unnamed)'} (${e.entity_type || 'Entity'})` 
+      });
+    });
+    
+    return holders;
+  };
 
-  const availableOwners = [
-    ...principals,
-    ...entities.map((e, i) => ({ id: `entity_${i}`, name: e.entity_name || '(Unnamed entity)' }))
-  ];
+  const getOwnerOptions = () => {
+    const options = [];
+    
+    principals.forEach(p => {
+      options.push({ id: p.id, name: p.name });
+    });
+    
+    entities.forEach(e => {
+      options.push({ id: e.id, name: e.name || '(Unnamed entity)' });
+    });
+    
+    return options;
+  };
 
   return (
     <SOARequestLayout currentSection="products" soaRequest={soaRequest}>
@@ -206,31 +304,31 @@ export default function SOARequestProducts() {
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Entity Type</label>
-                            <Select value={entity.entity_type} onValueChange={(v) => updateEntity(index, 'entity_type', v)}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select type..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="discretionary_trust">Discretionary trust</SelectItem>
-                                <SelectItem value="unit_trust">Unit trust</SelectItem>
-                                <SelectItem value="company">Company</SelectItem>
-                                <SelectItem value="smsf">SMSF</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Entity name</label>
+                            <Input 
+                              value={entity.name || ''}
+                              onChange={(e) => updateEntity(index, 'name', e.target.value)}
+                              placeholder="Entity name"
+                            />
                           </div>
                           <div>
-                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Entity Name</label>
-                            <Input 
-                              value={entity.entity_name}
-                              onChange={(e) => updateEntity(index, 'entity_name', e.target.value)}
-                              placeholder="Enter entity name"
-                            />
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Entity type</label>
+                            <Select value={entity.entity_type || ''} onValueChange={(v) => updateEntity(index, 'entity_type', v)}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select…" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Discretionary trust">Discretionary trust</SelectItem>
+                                <SelectItem value="Unit trust">Unit trust</SelectItem>
+                                <SelectItem value="Company">Company</SelectItem>
+                                <SelectItem value="SMSF">SMSF</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="col-span-2">
                             <label className="text-xs font-semibold text-slate-600 mb-1 block">Shareholders / Beneficiaries</label>
                             <Select 
-                              value={entity.holders?.[0] || ''} 
+                              value="" 
                               onValueChange={(v) => {
                                 const current = entity.holders || [];
                                 if (v && !current.includes(v)) {
@@ -242,18 +340,18 @@ export default function SOARequestProducts() {
                                 <SelectValue placeholder="Select shareholders/beneficiaries..." />
                               </SelectTrigger>
                               <SelectContent>
-                                {availableHolders.map(h => (
-                                  <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                                {getAvailableHolders(entity.entity_type === 'SMSF').map(h => (
+                                  <SelectItem key={h.id} value={h.id}>{h.displayName}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
                             {entity.holders && entity.holders.length > 0 && (
                               <div className="flex flex-wrap gap-2 mt-2">
                                 {entity.holders.map(holderId => {
-                                  const holder = availableHolders.find(h => h.id === holderId);
+                                  const holder = getAvailableHolders(false).find(h => h.id === holderId);
                                   return holder ? (
                                     <span key={holderId} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded">
-                                      {holder.name}
+                                      {holder.displayName}
                                       <button
                                         onClick={() => updateEntity(index, 'holders', entity.holders.filter(id => id !== holderId))}
                                         className="hover:text-blue-900"
@@ -265,23 +363,6 @@ export default function SOARequestProducts() {
                                 })}
                               </div>
                             )}
-                          </div>
-                          <div>
-                            <label className="text-xs font-semibold text-slate-600 mb-1 block">ABN/ACN</label>
-                            <Input 
-                              value={entity.abn_acn}
-                              onChange={(e) => updateEntity(index, 'abn_acn', e.target.value)}
-                              placeholder="Enter ABN or ACN"
-                            />
-                          </div>
-                          <div className="col-span-2">
-                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Notes</label>
-                            <Textarea 
-                              value={entity.notes}
-                              onChange={(e) => updateEntity(index, 'notes', e.target.value)}
-                              placeholder="Additional notes..."
-                              rows={2}
-                            />
                           </div>
                         </div>
                       </div>
@@ -321,103 +402,106 @@ export default function SOARequestProducts() {
                           </Button>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
+                          <div className="col-span-2">
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Description</label>
+                            <Input 
+                              value={product.description || ''}
+                              onChange={(e) => updateProduct(index, 'description', e.target.value)}
+                              placeholder="Short description (auto-filled, editable)"
+                            />
+                          </div>
                           <div>
                             <label className="text-xs font-semibold text-slate-600 mb-1 block">Retirement product type</label>
-                            <Select value={product.product_type} onValueChange={(v) => updateProduct(index, 'product_type', v)}>
+                            <Select value={product.product_type || ''} onValueChange={(v) => updateProduct(index, 'product_type', v)}>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select type..." />
+                                <SelectValue placeholder="Select…" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="superannuation">Superannuation</SelectItem>
-                                <SelectItem value="pension">Pension</SelectItem>
-                                <SelectItem value="investment_bond">Investment bond</SelectItem>
-                                <SelectItem value="wrap">Wrap</SelectItem>
-                                <SelectItem value="annuity">Annuity</SelectItem>
+                                <SelectItem value="Superannuation">Superannuation</SelectItem>
+                                <SelectItem value="Pension">Pension</SelectItem>
+                                <SelectItem value="Investment bond">Investment bond</SelectItem>
+                                <SelectItem value="Wrap">Wrap</SelectItem>
+                                <SelectItem value="Annuity">Annuity</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
                           <div>
-                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Product provider</label>
-                            <Input 
-                              value={product.provider}
-                              onChange={(e) => updateProduct(index, 'provider', e.target.value)}
-                              placeholder="e.g., AMP, Colonial First State"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Description</label>
-                            <Input 
-                              value={product.description}
-                              onChange={(e) => updateProduct(index, 'description', e.target.value)}
-                              placeholder="Enter description"
-                            />
-                          </div>
-                          <div>
                             <label className="text-xs font-semibold text-slate-600 mb-1 block">Owner</label>
-                            <Select value={product.owner_id} onValueChange={(v) => updateProduct(index, 'owner_id', v)}>
+                            <Select value={product.owner_id || ''} onValueChange={(v) => updateProduct(index, 'owner_id', v)}>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select..." />
+                                <SelectValue placeholder="Select…" />
                               </SelectTrigger>
                               <SelectContent>
-                                {availableOwners.map(o => (
+                                {getOwnerOptions().map(o => (
                                   <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
                           </div>
+                          <div className="col-span-2">
+                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Product provider</label>
+                            <Input 
+                              value={product.provider || ''}
+                              onChange={(e) => updateProduct(index, 'provider', e.target.value)}
+                              placeholder="e.g., Hub24, Macquarie, Netwealth"
+                            />
+                          </div>
 
-                          {product.product_type === 'pension' && (
-                            <div>
+                          {product.product_type === 'Pension' && (
+                            <div className="col-span-2">
                               <label className="text-xs font-semibold text-slate-600 mb-1 block">Type of pension</label>
-                              <Select value={product.pension_type} onValueChange={(v) => updateProduct(index, 'pension_type', v)}>
+                              <Select value={product.pension_type || ''} onValueChange={(v) => updateProduct(index, 'pension_type', v)}>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select..." />
+                                  <SelectValue placeholder="Select…" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="account_based">Account based</SelectItem>
-                                  <SelectItem value="term_allocated">Term allocated</SelectItem>
+                                  <SelectItem value="Account based">Account based</SelectItem>
+                                  <SelectItem value="Term allocated">Term allocated</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
                           )}
 
-                          {product.product_type === 'annuity' && (
+                          {product.product_type === 'Annuity' && (
                             <>
                               <div>
                                 <label className="text-xs font-semibold text-slate-600 mb-1 block">Annuity tax environment</label>
-                                <Select value={product.annuity_tax_env} onValueChange={(v) => updateProduct(index, 'annuity_tax_env', v)}>
+                                <Select value={product.annuity_tax_env || ''} onValueChange={(v) => updateProduct(index, 'annuity_tax_env', v)}>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select..." />
+                                    <SelectValue placeholder="Select…" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="superannuation">Superannuation</SelectItem>
-                                    <SelectItem value="non_superannuation">Non-superannuation</SelectItem>
+                                    <SelectItem value="Superannuation">Superannuation</SelectItem>
+                                    <SelectItem value="Non-superannuation">Non-superannuation</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
                               <div>
                                 <label className="text-xs font-semibold text-slate-600 mb-1 block">Joint</label>
                                 <Input 
-                                  value={product.annuity_joint}
+                                  value={product.annuity_joint || ''}
                                   onChange={(e) => updateProduct(index, 'annuity_joint', e.target.value)}
                                   placeholder="e.g., Joint with spouse"
                                 />
                               </div>
-                              <div className="flex items-center gap-2 col-span-2">
-                                <Checkbox
-                                  id={`lifetime_${index}`}
-                                  checked={product.annuity_lifetime || false}
-                                  onCheckedChange={(checked) => updateProduct(index, 'annuity_lifetime', checked)}
-                                />
-                                <label htmlFor={`lifetime_${index}`} className="text-sm text-slate-600">
-                                  Lifetime annuity
-                                </label>
+                              <div className="col-span-2">
+                                <label className="text-xs font-semibold text-slate-600 mb-1 block">Lifetime annuity</label>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Checkbox
+                                    id={`lifetime_${index}`}
+                                    checked={product.annuity_lifetime || false}
+                                    onCheckedChange={(checked) => updateProduct(index, 'annuity_lifetime', checked)}
+                                  />
+                                  <label htmlFor={`lifetime_${index}`} className="text-sm text-slate-500">
+                                    Check if this is a lifetime annuity
+                                  </label>
+                                </div>
                               </div>
                               {!product.annuity_lifetime && (
                                 <div>
                                   <label className="text-xs font-semibold text-slate-600 mb-1 block">Term of annuity (years)</label>
                                   <Input 
-                                    value={product.annuity_term}
+                                    value={product.annuity_term || ''}
                                     onChange={(e) => updateProduct(index, 'annuity_term', e.target.value)}
                                     placeholder="e.g., 10"
                                   />
@@ -426,8 +510,7 @@ export default function SOARequestProducts() {
                               <div>
                                 <label className="text-xs font-semibold text-slate-600 mb-1 block">Purchase price</label>
                                 <Input 
-                                  type="number"
-                                  value={product.annuity_purchase_price}
+                                  value={product.annuity_purchase_price || ''}
                                   onChange={(e) => updateProduct(index, 'annuity_purchase_price', e.target.value)}
                                   placeholder="0.00"
                                 />
@@ -435,7 +518,7 @@ export default function SOARequestProducts() {
                               <div>
                                 <label className="text-xs font-semibold text-slate-600 mb-1 block">Purchase date</label>
                                 <Input 
-                                  value={product.annuity_purchase_date}
+                                  value={product.annuity_purchase_date || ''}
                                   onChange={(e) => updateProduct(index, 'annuity_purchase_date', e.target.value)}
                                   placeholder="dd-mm-yyyy"
                                 />
@@ -443,8 +526,7 @@ export default function SOARequestProducts() {
                               <div>
                                 <label className="text-xs font-semibold text-slate-600 mb-1 block">Annuity income (per period)</label>
                                 <Input 
-                                  type="number"
-                                  value={product.annuity_income}
+                                  value={product.annuity_income || ''}
                                   onChange={(e) => updateProduct(index, 'annuity_income', e.target.value)}
                                   placeholder="0.00"
                                 />
@@ -452,7 +534,7 @@ export default function SOARequestProducts() {
                               <div>
                                 <label className="text-xs font-semibold text-slate-600 mb-1 block">Annuity index rate (%)</label>
                                 <Input 
-                                  value={product.annuity_index_rate}
+                                  value={product.annuity_index_rate || ''}
                                   onChange={(e) => updateProduct(index, 'annuity_index_rate', e.target.value)}
                                   placeholder="e.g., 2.5"
                                 />
@@ -460,8 +542,7 @@ export default function SOARequestProducts() {
                               <div>
                                 <label className="text-xs font-semibold text-slate-600 mb-1 block">Residual value</label>
                                 <Input 
-                                  type="number"
-                                  value={product.annuity_residual_value}
+                                  value={product.annuity_residual_value || ''}
                                   onChange={(e) => updateProduct(index, 'annuity_residual_value', e.target.value)}
                                   placeholder="0.00"
                                 />
@@ -469,8 +550,7 @@ export default function SOARequestProducts() {
                               <div>
                                 <label className="text-xs font-semibold text-slate-600 mb-1 block">Deductible income</label>
                                 <Input 
-                                  type="number"
-                                  value={product.annuity_deductible_income}
+                                  value={product.annuity_deductible_income || ''}
                                   onChange={(e) => updateProduct(index, 'annuity_deductible_income', e.target.value)}
                                   placeholder="0.00"
                                 />
