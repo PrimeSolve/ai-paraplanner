@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import { Plus, Trash2, Pencil, X } from 'lucide-react';
+import { Plus, Trash2, Pencil, X, Settings, Building2, TrendingUp, Zap, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 
 // ==========================================================================
