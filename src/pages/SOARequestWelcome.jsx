@@ -135,25 +135,18 @@ export default function SOARequestWelcome() {
           {/* Welcome Banner */}
           <div className="border-blue-200 bg-blue-50 rounded-xl px-6 py-5 shadow-sm border">
             <h1 className="text-2xl font-bold text-slate-800 mb-2">Welcome to SOA Request</h1>
-            <p className="text-slate-600 text-sm">
+            <p className="text-slate-600 text-sm mb-4">
               Submit your Statement of Advice request to our AI paraplanner for professional SOA preparation.
             </p>
-          </div>
-
-          {/* Video Section - Centered */}
-          <div className="text-center mb-10">
-            <h2 className="text-xl font-semibold text-slate-800 mb-2">
-              Watch this quick guide to get started
-            </h2>
-            <p className="text-slate-600 mb-6 max-w-2xl mx-auto">
-              This video walks you through each section of the SOA request and shows you how to use the AI paraplanner to streamline your workflow.
-            </p>
-            <div className="aspect-video bg-slate-900 rounded-lg flex items-center justify-center w-full max-w-4xl mx-auto">
+            <div className="aspect-video bg-slate-900 rounded-lg flex items-center justify-center w-full max-w-4xl">
               <div className="text-white text-center">
                 <Play className="w-16 h-16 mx-auto mb-3 opacity-70" />
                 <p className="text-sm opacity-70">Video Guide Coming Soon</p>
               </div>
             </div>
+            <p className="text-slate-600 text-sm mt-4">
+              Watch the below video for more information on how to get started. This video walks you through each section of the SOA request and shows you how to use the AI paraplanner to streamline your workflow.
+            </p>
           </div>
 
           {/* Tools Section - Centered */}
