@@ -126,10 +126,10 @@ export default function SOARequestWelcome() {
 
   return (
     <SOARequestLayout currentSection="welcome" soaRequest={soaRequest}>
-      <div className="flex-1 overflow-auto bg-slate-50">
+      <div className="flex-1 overflow-auto bg-slate-50 w-full">
         
         {/* Welcome Banner - Full Width */}
-        <div className="w-full bg-[#1e3a5f] px-8 py-6">
+        <div className="w-full bg-[#1e3a5f] py-6 px-4">
           <div className="max-w-5xl mx-auto">
             <h1 className="text-xl font-bold text-white mb-1">Welcome to SOA Request</h1>
             <p className="text-sm text-blue-100">
@@ -139,7 +139,8 @@ export default function SOARequestWelcome() {
         </div>
 
         {/* Main Content */}
-        <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="w-full px-4 py-8">
+          <div className="max-w-5xl mx-auto">
           
           {/* Video Section - Centered */}
           <div className="text-center mb-10">
@@ -149,7 +150,7 @@ export default function SOARequestWelcome() {
             <p className="text-slate-600 mb-6 max-w-2xl mx-auto">
               This video walks you through each section of the SOA request and shows you how to use the AI paraplanner to streamline your workflow.
             </p>
-            <div className="aspect-video bg-slate-900 rounded-lg flex items-center justify-center max-w-4xl mx-auto">
+            <div className="aspect-video bg-slate-900 rounded-lg flex items-center justify-center w-full max-w-4xl mx-auto">
               <div className="text-white text-center">
                 <Play className="w-16 h-16 mx-auto mb-3 opacity-70" />
                 <p className="text-sm opacity-70">Video Guide Coming Soon</p>
@@ -224,6 +225,7 @@ export default function SOARequestWelcome() {
             </Button>
           </div>
 
+          </div>
         </div>
       </div>
     </SOARequestLayout>
