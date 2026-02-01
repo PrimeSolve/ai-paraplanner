@@ -268,7 +268,7 @@ export default function SOARequestScope() {
                                 className={`
                                   flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all
                                   ${isSelected 
-                                    ? 'border-blue-500 bg-blue-50' 
+                                    ? 'border-teal-500 bg-teal-50' 
                                     : 'border-slate-200 bg-white hover:bg-slate-50'
                                   }
                                 `}
@@ -277,8 +277,9 @@ export default function SOARequestScope() {
                                   id={option.id}
                                   checked={isSelected}
                                   onCheckedChange={() => handleToggleOption(option.id)}
+                                  className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
                                 />
-                                <span className="text-sm font-medium text-slate-700">{option.label}</span>
+                                <span className={`text-sm ${isSelected ? 'text-teal-900 font-medium' : 'text-slate-700'}`}>{option.label}</span>
                               </label>
                             );
                           })}
@@ -309,7 +310,7 @@ export default function SOARequestScope() {
                               className={`
                                 flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all
                                 ${isSelected 
-                                  ? 'border-blue-500 bg-blue-50' 
+                                  ? 'border-teal-500 bg-teal-50' 
                                   : 'border-slate-200 bg-white hover:bg-slate-50'
                                 }
                               `}
@@ -318,8 +319,9 @@ export default function SOARequestScope() {
                                 id={option.id}
                                 checked={isSelected}
                                 onCheckedChange={() => handleToggleOption(option.id)}
+                                className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
                               />
-                              <span className="text-sm font-medium text-slate-700">{option.label}</span>
+                              <span className={`text-sm ${isSelected ? 'text-teal-900 font-medium' : 'text-slate-700'}`}>{option.label}</span>
                             </label>
                           );
                         })}
