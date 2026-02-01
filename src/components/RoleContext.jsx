@@ -7,11 +7,12 @@ export function RoleProvider({ children }) {
   const [user, setUser] = useState(null);
   const [originalUser, setOriginalUser] = useState(null);
   const [entityCacheRef] = useState({ current: {} });
+  const hasLoadedRef = useRef(false);
   
   // Navigation chain: [{ type: 'advice_group', id: 123, name: 'PrimeSolve' }, { type: 'adviser', id: 456, name: 'Sarah Johnson' }]
   const [navigationChain, setNavigationChain] = useState([]);
 
-  const loadUserData = async (userData) => {
+  const loadUserData = useCallback(async (userData) => {
     // Check if in test mode - this takes precedence
     const testModeEntity = localStorage.getItem('test_mode_entity');
     if (testModeEntity) {
