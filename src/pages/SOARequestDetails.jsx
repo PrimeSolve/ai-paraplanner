@@ -458,7 +458,7 @@ export default function SOARequestDetails() {
                 );
               })}
             </CardContent>
-          </Card>
+            </Card>
 
             {/* Footer */}
             <div className="flex justify-between items-center" style={{ padding: '24px 32px', borderTop: '1px solid #E2E8F0' }}>
