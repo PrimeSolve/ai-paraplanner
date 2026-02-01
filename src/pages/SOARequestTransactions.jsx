@@ -395,64 +395,94 @@ export default function SOARequestTransactions() {
 
   return (
     <SOARequestLayout currentSection="transactions" soaRequest={soaRequest}>
-      <div className="flex-1 overflow-auto bg-slate-50">
-        {/* Dark Banner */}
-        <div style={{
-          background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)',
-          padding: '32px',
-          borderBottom: '3px solid #3b82f6'
-        }}>
-          <h1 style={{
-            fontSize: '28px',
-            fontWeight: 700,
-            color: '#fff',
-            marginBottom: '8px'
-          }}>
-            Transactions
-          </h1>
-          <p style={{
-            fontSize: '15px',
-            color: 'rgba(255, 255, 255, 0.9)',
-            lineHeight: '1.5'
-          }}>
-            Record recommended asset purchases, sales, and new debts within this SOA.
-          </p>
-        </div>
+      <div className="flex-1 overflow-auto bg-slate-50 p-6">
+        <div className="w-full">
+          {/* Dark Banner */}
+          <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderRadius: '16px 16px 0 0' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#FFFFFF', margin: '0 0 4px 0', letterSpacing: '-0.01em' }}>
+              Transactions
+            </h1>
+            <p style={{ fontSize: '14px', fontWeight: 400, color: '#94A3B8', margin: 0 }}>
+              Record recommended asset purchases, sales, and new debts within this SOA.
+            </p>
+          </div>
 
-        {/* Main Content */}
-        <div className="p-6">
-          <Card className="shadow-sm">
-            <CardContent className="p-0">
-              {/* Custom Tab Buttons */}
-              <div style={{
-                display: 'flex',
-                borderBottom: '2px solid #e2e8f0',
-                padding: '0',
-                background: '#f8fafc'
+          {/* White Content Card */}
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>
+            {/* Contained Tabs */}
+            <div style={{ padding: '24px 32px', borderBottom: '1px solid #E2E8F0' }}>
+              <div style={{ 
+                display: 'inline-flex', 
+                padding: '4px', 
+                backgroundColor: '#F8FAFC', 
+                borderRadius: '12px', 
+                border: '1px solid #E2E8F0' 
               }}>
-                {['buy', 'sell', 'debts'].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    style={{
-                      flex: 1,
-                      padding: '16px 24px',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      color: activeTab === tab ? '#1e40af' : '#64748b',
-                      background: activeTab === tab ? '#fff' : 'transparent',
-                      border: 'none',
-                      borderBottom: activeTab === tab ? '3px solid #3b82f6' : '3px solid transparent',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      marginBottom: '-2px',
-                      textTransform: 'capitalize'
-                    }}
-                  >
-                    {tab}
-                  </button>
-                ))}
+                <button 
+                  onClick={() => setActiveTab('buy')}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: activeTab === 'buy' ? '#FFFFFF' : 'transparent',
+                    boxShadow: activeTab === 'buy' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                    color: activeTab === 'buy' ? '#1E293B' : '#64748B',
+                    fontSize: '14px',
+                    fontWeight: activeTab === 'buy' ? 600 : 500,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  🛒 Buy
+                </button>
+                <button 
+                  onClick={() => setActiveTab('sell')}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: activeTab === 'sell' ? '#FFFFFF' : 'transparent',
+                    boxShadow: activeTab === 'sell' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                    color: activeTab === 'sell' ? '#1E293B' : '#64748B',
+                    fontSize: '14px',
+                    fontWeight: activeTab === 'sell' ? 600 : 500,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  📤 Sell
+                </button>
+                <button 
+                  onClick={() => setActiveTab('debts')}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: activeTab === 'debts' ? '#FFFFFF' : 'transparent',
+                    boxShadow: activeTab === 'debts' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                    color: activeTab === 'debts' ? '#1E293B' : '#64748B',
+                    fontSize: '14px',
+                    fontWeight: activeTab === 'debts' ? 600 : 500,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  🏦 Debts
+                </button>
               </div>
+            </div>
+
+            {/* Tab Content */}
+            <div style={{ padding: '24px 32px' }}>
 
               {/* Tab Content */}
               <div className="p-6">
