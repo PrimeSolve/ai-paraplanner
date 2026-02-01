@@ -594,10 +594,12 @@ export default function SOARequestProducts() {
             <Button 
               onClick={handleSave}
               disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700"
+              style={{ backgroundColor: '#7C3AED', color: '#FFFFFF' }}
+              className="hover:opacity-90"
             >
               {saving ? 'Saving...' : 'Save & Continue'}
             </Button>
+          </div>
           </div>
         </div>
       </div>
