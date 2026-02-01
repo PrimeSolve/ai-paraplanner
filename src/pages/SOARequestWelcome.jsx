@@ -131,8 +131,8 @@ export default function SOARequestWelcome() {
         {/* Welcome Banner - Full Width */}
         <div className="w-full bg-[#1e3a5f] py-6">
           <div className="max-w-5xl mx-auto px-6 text-center">
-            <h1 className="text-xl font-bold text-white mb-1">Welcome to SOA Request</h1>
-            <p className="text-sm text-blue-100">
+            <h1 className="text-3xl font-bold text-white mb-2">Welcome to SOA Request</h1>
+            <p className="text-base text-blue-100">
               Submit your Statement of Advice request to our AI paraplanner for professional SOA preparation.
             </p>
           </div>
@@ -144,7 +144,7 @@ export default function SOARequestWelcome() {
           
           {/* Video Section - Centered */}
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-slate-800 mb-3">
+            <h2 className="text-xl font-semibold text-slate-800 mb-2">
               Watch this quick guide to get started
             </h2>
             <p className="text-slate-600 mb-6 max-w-2xl mx-auto">
@@ -160,7 +160,7 @@ export default function SOARequestWelcome() {
 
           {/* Tools Section - Centered */}
           <div className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-800 mb-6 text-center">
+            <h2 className="text-xl font-semibold text-slate-800 mb-6 text-center">
               Tools to help you along the way
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -190,7 +190,7 @@ export default function SOARequestWelcome() {
 
           {/* How it Works - Distinct Background */}
           <div className="bg-gradient-to-r from-blue-50 to-slate-100 rounded-2xl p-8 mb-8">
-            <h2 className="text-2xl font-bold text-slate-800 mb-8 text-center">How it works</h2>
+            <h2 className="text-xl font-semibold text-slate-800 mb-8 text-center">How it works</h2>
             <div className="flex items-center justify-center gap-4">
               <div className="flex flex-col items-center flex-1 max-w-[150px]">
                 <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-3">
