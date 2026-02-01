@@ -3,22 +3,66 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import { Plus, Trash2, Calculator } from 'lucide-react';
+import { Settings, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SOARequestInsurance() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [soaRequest, setSOARequest] = useState(null);
-  const [needsAnalysis, setNeedsAnalysis] = useState({});
-  const [recommendations, setRecommendations] = useState([]);
+  const [factFind, setFactFind] = useState(null);
+  const [currentPerson, setCurrentPerson] = useState('client');
+  const [clientName, setClientName] = useState('Client');
+  const [partnerName, setPartnerName] = useState('Partner');
+  
+  // Modals state
+  const [showAssumptionsModal, setShowAssumptionsModal] = useState(false);
+  const [showIncomeModal, setShowIncomeModal] = useState(false);
+  const [showAssetsModal, setShowAssetsModal] = useState(false);
+  const [showPolicyForm, setShowPolicyForm] = useState(false);
+  const [editingPolicyIndex, setEditingPolicyIndex] = useState(null);
+  
+  // Data state
+  const [insuranceData, setInsuranceData] = useState({
+    client: getDefaultPersonData(),
+    partner: getDefaultPersonData()
+  });
+  
   const navigate = useNavigate();
+
+  function getDefaultPersonData() {
+    return {
+      assumptions: {
+        date_of_birth: '',
+        esp_start_date: '',
+        service_end_date: '',
+        retirement_age: 65,
+        tpd_inside_super: true,
+        override_tpd_tax: false,
+        override_uplift_pct: '',
+        mortgage_balance: 0,
+        other_debts: 0,
+        annual_salary: 0,
+        discount_rate: 0
+      },
+      needs: {
+        life: { pct_mortgage: 0, pct_other_debts: 0, emergency_fund: 0, medical_costs: 0, funeral_costs: 0, other_upfront: 0 },
+        tpd: { pct_mortgage: 0, pct_other_debts: 0, emergency_fund: 0, medical_costs: 0, home_modifications: 0, other_upfront: 0 },
+        trauma: { emergency_fund: 0, medical_costs: 0, home_modifications: 0, other_upfront: 0 },
+        ip: { pct_salary: 0, pct_super: 0 }
+      },
+      income_rows: [],
+      asset_rows: [],
+      policies: []
+    };
+  }
 
   useEffect(() => {
     const loadData = async () => {
@@ -30,9 +74,19 @@ export default function SOARequestInsurance() {
           const requests = await base44.entities.SOARequest.filter({ id });
           if (requests[0]) {
             setSOARequest(requests[0]);
-            const insurance = requests[0].insurance || {};
-            setNeedsAnalysis(insurance.needs_analysis || {});
-            setRecommendations(insurance.recommendations || []);
+            const insurance = requests[0].insurance || { client: getDefaultPersonData(), partner: getDefaultPersonData() };
+            setInsuranceData(insurance);
+
+            // Load fact find for names
+            if (requests[0].fact_find_id) {
+              const factFinds = await base44.entities.FactFind.filter({ id: requests[0].fact_find_id });
+              if (factFinds[0]) {
+                setFactFind(factFinds[0]);
+                const personal = factFinds[0].personal || {};
+                setClientName(`${personal.first_name || ''} ${personal.last_name || ''}`.trim() || 'Client');
+                setPartnerName(personal.partner_first_name ? `${personal.partner_first_name} ${personal.partner_last_name || ''}`.trim() : 'Partner');
+              }
+            }
           }
         }
       } catch (error) {
@@ -44,35 +98,126 @@ export default function SOARequestInsurance() {
     loadData();
   }, []);
 
-  const addRecommendation = () => {
-    setRecommendations([...recommendations, {
-      policy_type: '',
-      provider: '',
-      sum_insured: '',
-      premium: '',
-      beneficiary: '',
-      notes: ''
-    }]);
+  const currentPersonData = insuranceData[currentPerson];
+  const assumptions = currentPersonData.assumptions;
+  const needs = currentPersonData.needs;
+
+  const updateNeeds = (type, field, value) => {
+    setInsuranceData(prev => ({
+      ...prev,
+      [currentPerson]: {
+        ...prev[currentPerson],
+        needs: {
+          ...prev[currentPerson].needs,
+          [type]: {
+            ...prev[currentPerson].needs[type],
+            [field]: parseFloat(value) || 0
+          }
+        }
+      }
+    }));
   };
 
-  const removeRecommendation = (index) => {
-    setRecommendations(recommendations.filter((_, i) => i !== index));
+  const updateAssumptions = (field, value) => {
+    setInsuranceData(prev => ({
+      ...prev,
+      [currentPerson]: {
+        ...prev[currentPerson],
+        assumptions: {
+          ...prev[currentPerson].assumptions,
+          [field]: value
+        }
+      }
+    }));
   };
 
-  const updateRecommendation = (index, field, value) => {
-    const updated = [...recommendations];
-    updated[index][field] = value;
-    setRecommendations(updated);
+  const formatCurrency = (num) => {
+    return `$${(parseFloat(num) || 0).toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
+
+  // Calculate totals
+  const calculateTotals = () => {
+    const lifeCapital = 
+      (needs.life.pct_mortgage / 100) * assumptions.mortgage_balance +
+      (needs.life.pct_other_debts / 100) * assumptions.other_debts +
+      needs.life.emergency_fund +
+      needs.life.medical_costs +
+      needs.life.funeral_costs +
+      needs.life.other_upfront;
+    
+    const tpdCapital = 
+      (needs.tpd.pct_mortgage / 100) * assumptions.mortgage_balance +
+      (needs.tpd.pct_other_debts / 100) * assumptions.other_debts +
+      needs.tpd.emergency_fund +
+      needs.tpd.medical_costs +
+      needs.tpd.home_modifications +
+      needs.tpd.other_upfront;
+    
+    const traumaCapital = 
+      needs.trauma.emergency_fund +
+      needs.trauma.medical_costs +
+      needs.trauma.home_modifications +
+      needs.trauma.other_upfront;
+
+    // Income PV (simplified for now)
+    const lifePV = currentPersonData.income_rows
+      .filter(r => r.life)
+      .reduce((sum, r) => sum + (parseFloat(r.pv) || 0), 0);
+    
+    const tpdPV = currentPersonData.income_rows
+      .filter(r => r.tpd)
+      .reduce((sum, r) => sum + (parseFloat(r.pv) || 0), 0);
+
+    // Assets
+    const lifeAssets = currentPersonData.asset_rows
+      .filter(r => r.life)
+      .reduce((sum, r) => sum + (parseFloat(r.value) || 0), 0);
+    
+    const tpdAssets = currentPersonData.asset_rows
+      .filter(r => r.tpd)
+      .reduce((sum, r) => sum + (parseFloat(r.value) || 0), 0);
+
+    // TPD Tax (simplified)
+    const tpdTaxUplift = (tpdCapital + tpdPV) * 0.15;
+
+    // IP monthly
+    const ipMonthly = (assumptions.annual_salary * ((needs.ip.pct_salary / 100) + (needs.ip.pct_super / 100))) / 12;
+
+    // Initial cover
+    const lifeInitial = lifeCapital + lifePV;
+    const tpdInitial = tpdCapital + tpdPV + tpdTaxUplift;
+    const traumaInitial = traumaCapital;
+
+    // Final cover
+    const lifeFinal = lifeInitial - lifeAssets;
+    const tpdFinal = tpdInitial - tpdAssets;
+
+    return {
+      life_capital: lifeCapital,
+      tpd_capital: tpdCapital,
+      trauma_capital: traumaCapital,
+      life_income_pv: lifePV,
+      tpd_income_pv: tpdPV,
+      tpd_tax_uplift: tpdTaxUplift,
+      life_assets: lifeAssets,
+      tpd_assets: tpdAssets,
+      life_initial: lifeInitial,
+      tpd_initial: tpdInitial,
+      trauma_initial: traumaInitial,
+      ip_monthly: ipMonthly,
+      life_final: Math.max(0, lifeFinal),
+      tpd_final: Math.max(0, tpdFinal),
+      trauma_final: traumaInitial
+    };
+  };
+
+  const totals = calculateTotals();
 
   const handleSave = async () => {
     setSaving(true);
     try {
       await base44.entities.SOARequest.update(soaRequest.id, {
-        insurance: {
-          needs_analysis: needsAnalysis,
-          recommendations
-        }
+        insurance: insuranceData
       });
       toast.success('Insurance details saved');
       navigate(createPageUrl('SOARequestTransactions') + `?id=${soaRequest.id}`);
@@ -101,173 +246,345 @@ export default function SOARequestInsurance() {
             <CardContent className="pt-6">
               <h3 className="font-bold text-slate-800 mb-2">Insurance</h3>
               <p className="text-sm text-slate-700">
-                Use the calculators to build insurance needs and define recommendations
+                Use the calculators to build insurance needs and define recommended products
               </p>
             </CardContent>
           </Card>
           
           <Tabs defaultValue="needs" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="needs">Needs Analysis</TabsTrigger>
-              <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+              <TabsTrigger value="needs">Needs</TabsTrigger>
+              <TabsTrigger value="policies">Policies</TabsTrigger>
             </TabsList>
 
+            {/* NEEDS TAB */}
             <TabsContent value="needs" className="space-y-4 mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calculator className="w-5 h-5" />
-                    Insurance Needs Calculator
-                  </CardTitle>
-                  <p className="text-sm text-slate-600">Calculate insurance requirements based on client circumstances</p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-semibold text-slate-700 mb-2 block">Life Insurance Need</label>
-                      <Input 
-                        type="number"
-                        value={needsAnalysis.life_insurance || ''}
-                        onChange={(e) => setNeedsAnalysis({...needsAnalysis, life_insurance: e.target.value})}
-                        placeholder="$0"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-semibold text-slate-700 mb-2 block">TPD Insurance Need</label>
-                      <Input 
-                        type="number"
-                        value={needsAnalysis.tpd_insurance || ''}
-                        onChange={(e) => setNeedsAnalysis({...needsAnalysis, tpd_insurance: e.target.value})}
-                        placeholder="$0"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-semibold text-slate-700 mb-2 block">Income Protection (Monthly)</label>
-                      <Input 
-                        type="number"
-                        value={needsAnalysis.income_protection || ''}
-                        onChange={(e) => setNeedsAnalysis({...needsAnalysis, income_protection: e.target.value})}
-                        placeholder="$0"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-semibold text-slate-700 mb-2 block">Trauma Insurance Need</label>
-                      <Input 
-                        type="number"
-                        value={needsAnalysis.trauma_insurance || ''}
-                        onChange={(e) => setNeedsAnalysis({...needsAnalysis, trauma_insurance: e.target.value})}
-                        placeholder="$0"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-slate-700 mb-2 block">Calculation Notes</label>
-                    <Textarea 
-                      value={needsAnalysis.calculation_notes || ''}
-                      onChange={(e) => setNeedsAnalysis({...needsAnalysis, calculation_notes: e.target.value})}
-                      placeholder="Explain calculation methodology and assumptions..."
-                      rows={4}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Toolbar */}
+              <div className="flex items-center justify-between">
+                {/* Person Switcher */}
+                <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-1">
+                  <button
+                    className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
+                      currentPerson === 'client' 
+                        ? 'bg-white text-slate-900 shadow-sm' 
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                    onClick={() => setCurrentPerson('client')}
+                  >
+                    {clientName}
+                  </button>
+                  <button
+                    className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
+                      currentPerson === 'partner' 
+                        ? 'bg-white text-slate-900 shadow-sm' 
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                    onClick={() => setCurrentPerson('partner')}
+                  >
+                    {partnerName}
+                  </button>
+                </div>
+                
+                {/* Key Assumptions Button */}
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowAssumptionsModal(true)}
+                  className="gap-2"
+                >
+                  <Settings className="w-4 h-4" />
+                  Key assumptions
+                </Button>
+              </div>
+
+              {/* Matrix Calculator Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse bg-white border border-slate-200 rounded-lg overflow-hidden text-sm">
+                  <thead>
+                    <tr className="bg-[#0f4a8a] text-white">
+                      <th className="text-left p-3 w-[280px]"></th>
+                      <th className="text-center p-3">Life ($)</th>
+                      <th className="text-center p-3">TPD ($)</th>
+                      <th className="text-center p-3">Trauma ($)</th>
+                      <th className="text-center p-3">Income Protection (per month)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Capital Needs Section */}
+                    <tr className="bg-slate-100">
+                      <td className="p-3 font-bold text-slate-900">Capital Needs</td>
+                      <td></td><td></td><td></td><td></td>
+                    </tr>
+                    
+                    <tr className="bg-white border-t border-slate-200">
+                      <td className="p-3 text-slate-700">Repay a % of mortgage</td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="%" className="max-w-[140px] text-center mx-auto" 
+                          value={needs.life.pct_mortgage || ''} 
+                          onChange={(e) => updateNeeds('life', 'pct_mortgage', e.target.value)} 
+                        />
+                      </td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="%" className="max-w-[140px] text-center mx-auto"
+                          value={needs.tpd.pct_mortgage || ''}
+                          onChange={(e) => updateNeeds('tpd', 'pct_mortgage', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                    </tr>
+                    
+                    <tr className="bg-white border-t border-slate-200">
+                      <td className="p-3 text-slate-700">Repay a % of other debts</td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="%" className="max-w-[140px] text-center mx-auto"
+                          value={needs.life.pct_other_debts || ''}
+                          onChange={(e) => updateNeeds('life', 'pct_other_debts', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="%" className="max-w-[140px] text-center mx-auto"
+                          value={needs.tpd.pct_other_debts || ''}
+                          onChange={(e) => updateNeeds('tpd', 'pct_other_debts', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                    </tr>
+                    
+                    <tr className="bg-white border-t border-slate-200">
+                      <td className="p-3 text-slate-700">Emergency fund</td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="$" className="max-w-[140px] text-center mx-auto"
+                          value={needs.life.emergency_fund || ''}
+                          onChange={(e) => updateNeeds('life', 'emergency_fund', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="$" className="max-w-[140px] text-center mx-auto"
+                          value={needs.tpd.emergency_fund || ''}
+                          onChange={(e) => updateNeeds('tpd', 'emergency_fund', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="$" className="max-w-[140px] text-center mx-auto"
+                          value={needs.trauma.emergency_fund || ''}
+                          onChange={(e) => updateNeeds('trauma', 'emergency_fund', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                    </tr>
+
+                    <tr className="bg-white border-t border-slate-200">
+                      <td className="p-3 text-slate-700">Medical costs (specific)</td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="$" className="max-w-[140px] text-center mx-auto"
+                          value={needs.life.medical_costs || ''}
+                          onChange={(e) => updateNeeds('life', 'medical_costs', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="$" className="max-w-[140px] text-center mx-auto"
+                          value={needs.tpd.medical_costs || ''}
+                          onChange={(e) => updateNeeds('tpd', 'medical_costs', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="$" className="max-w-[140px] text-center mx-auto"
+                          value={needs.trauma.medical_costs || ''}
+                          onChange={(e) => updateNeeds('trauma', 'medical_costs', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                    </tr>
+
+                    <tr className="bg-white border-t border-slate-200">
+                      <td className="p-3 text-slate-700">Funeral costs</td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="$" className="max-w-[140px] text-center mx-auto"
+                          value={needs.life.funeral_costs || ''}
+                          onChange={(e) => updateNeeds('life', 'funeral_costs', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                    </tr>
+
+                    <tr className="bg-white border-t border-slate-200">
+                      <td className="p-3 text-slate-700">Home modifications / Recovery support</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="$" className="max-w-[140px] text-center mx-auto"
+                          value={needs.tpd.home_modifications || ''}
+                          onChange={(e) => updateNeeds('tpd', 'home_modifications', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="$" className="max-w-[140px] text-center mx-auto"
+                          value={needs.trauma.home_modifications || ''}
+                          onChange={(e) => updateNeeds('trauma', 'home_modifications', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                    </tr>
+
+                    <tr className="bg-white border-t border-slate-200">
+                      <td className="p-3 text-slate-700">Other upfront capital / Recovery</td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="$" className="max-w-[140px] text-center mx-auto"
+                          value={needs.life.other_upfront || ''}
+                          onChange={(e) => updateNeeds('life', 'other_upfront', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="$" className="max-w-[140px] text-center mx-auto"
+                          value={needs.tpd.other_upfront || ''}
+                          onChange={(e) => updateNeeds('tpd', 'other_upfront', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3">
+                        <Input type="number" placeholder="$" className="max-w-[140px] text-center mx-auto"
+                          value={needs.trauma.other_upfront || ''}
+                          onChange={(e) => updateNeeds('trauma', 'other_upfront', e.target.value)}
+                        />
+                      </td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                    </tr>
+
+                    {/* Capital Needs Total */}
+                    <tr className="bg-slate-100 border-t border-slate-200">
+                      <td className="p-3 font-bold text-slate-900">Capital needs total</td>
+                      <td className="text-center p-3 font-bold">{formatCurrency(totals.life_capital)}</td>
+                      <td className="text-center p-3 font-bold">{formatCurrency(totals.tpd_capital)}</td>
+                      <td className="text-center p-3 font-bold">{formatCurrency(totals.trauma_capital)}</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                    </tr>
+
+                    {/* Income Producing Capital */}
+                    <tr className="bg-white border-t-2 border-slate-300">
+                      <td className="p-3 font-bold text-slate-900 pt-4">Income Producing Capital Required</td>
+                      <td></td><td></td><td></td><td></td>
+                    </tr>
+
+                    <tr className="bg-white border-t border-slate-200">
+                      <td className="p-3">
+                        <Button 
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          onClick={() => setShowIncomeModal(true)}
+                        >
+                          Edit income required
+                        </Button>
+                      </td>
+                      <td className="text-center p-3">{formatCurrency(totals.life_income_pv)}</td>
+                      <td className="text-center p-3">{formatCurrency(totals.tpd_income_pv)}</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                    </tr>
+
+                    {/* Capital & Income Total */}
+                    <tr className="bg-slate-100 border-t border-slate-200">
+                      <td className="p-3 font-bold text-slate-900">Capital & income needs</td>
+                      <td className="text-center p-3 font-bold">{formatCurrency(totals.life_capital + totals.life_income_pv)}</td>
+                      <td className="text-center p-3 font-bold">{formatCurrency(totals.tpd_capital + totals.tpd_income_pv)}</td>
+                      <td className="text-center p-3 font-bold">{formatCurrency(totals.trauma_capital)}</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                    </tr>
+
+                    {/* Income Protection Section */}
+                    <tr className="bg-green-50 border-t-2 border-slate-300">
+                      <td className="p-3 font-bold text-green-800 pt-4">Income Protection</td>
+                      <td></td><td></td><td></td><td></td>
+                    </tr>
+
+                    <tr className="bg-white border-t border-slate-200">
+                      <td className="p-3 text-slate-700">IP inputs</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                      <td className="text-center p-3">
+                        <div className="flex gap-2 justify-center">
+                          <Input 
+                            type="number" 
+                            placeholder="% salary" 
+                            className="max-w-[100px] text-center"
+                            value={needs.ip.pct_salary || ''}
+                            onChange={(e) => updateNeeds('ip', 'pct_salary', e.target.value)}
+                          />
+                          <Input 
+                            type="number" 
+                            placeholder="% super" 
+                            className="max-w-[100px] text-center"
+                            value={needs.ip.pct_super || ''}
+                            onChange={(e) => updateNeeds('ip', 'pct_super', e.target.value)}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+
+                    {/* Initial Cover Required */}
+                    <tr className="bg-green-50 border-t border-slate-200">
+                      <td className="p-3 font-bold text-green-800">Initial cover required</td>
+                      <td className="text-center p-3 font-bold text-green-800">{formatCurrency(totals.life_initial)}</td>
+                      <td className="text-center p-3 font-bold text-green-800">{formatCurrency(totals.tpd_initial)}</td>
+                      <td className="text-center p-3 font-bold text-green-800">{formatCurrency(totals.trauma_initial)}</td>
+                      <td className="text-center p-3 font-bold text-green-800">{formatCurrency(totals.ip_monthly)} per month</td>
+                    </tr>
+
+                    {/* Adjustments Section */}
+                    <tr className="bg-amber-50 border-t-2 border-slate-300">
+                      <td className="p-3 font-bold text-amber-800 pt-4">Adjustments</td>
+                      <td></td><td></td><td></td><td></td>
+                    </tr>
+
+                    <tr className="bg-white border-t border-slate-200">
+                      <td className="p-3 text-slate-700">TPD tax uplift (estimate)</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                      <td className="text-center p-3">{formatCurrency(totals.tpd_tax_uplift)}</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                    </tr>
+
+                    <tr className="bg-white border-t border-slate-200">
+                      <td className="p-3">
+                        <Button 
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          onClick={() => setShowAssetsModal(true)}
+                        >
+                          Less realised assets
+                        </Button>
+                      </td>
+                      <td className="text-center p-3 text-red-600">-{formatCurrency(totals.life_assets)}</td>
+                      <td className="text-center p-3 text-red-600">-{formatCurrency(totals.tpd_assets)}</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                    </tr>
+
+                    {/* Final Cover Required */}
+                    <tr className="bg-[#0f4a8a] text-white border-t border-slate-200">
+                      <td className="p-3 font-bold">Final cover required</td>
+                      <td className="text-center p-3 font-bold">{formatCurrency(totals.life_final)}</td>
+                      <td className="text-center p-3 font-bold">{formatCurrency(totals.tpd_final)}</td>
+                      <td className="text-center p-3 font-bold">{formatCurrency(totals.trauma_final)}</td>
+                      <td className="text-center p-3 text-slate-400">—</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </TabsContent>
 
-            <TabsContent value="recommendations" className="space-y-4 mt-6">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Insurance Recommendations</CardTitle>
-                    <Button onClick={addRecommendation} size="sm" className="bg-blue-600 hover:bg-blue-700">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Policy
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {recommendations.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-4">No recommendations added yet</p>
-                  ) : (
-                    recommendations.map((policy, index) => (
-                      <div key={index} className="border border-slate-200 rounded-lg p-4 space-y-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-sm font-semibold text-slate-700">Policy #{index + 1}</h4>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => removeRecommendation(index)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Policy Type</label>
-                            <Select value={policy.policy_type} onValueChange={(v) => updateRecommendation(index, 'policy_type', v)}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select type..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="life">Life Insurance</SelectItem>
-                                <SelectItem value="tpd">TPD</SelectItem>
-                                <SelectItem value="income_protection">Income Protection</SelectItem>
-                                <SelectItem value="trauma">Trauma</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Provider</label>
-                            <Input 
-                              value={policy.provider}
-                              onChange={(e) => updateRecommendation(index, 'provider', e.target.value)}
-                              placeholder="Insurance provider"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Sum Insured ($)</label>
-                            <Input 
-                              type="number"
-                              value={policy.sum_insured}
-                              onChange={(e) => updateRecommendation(index, 'sum_insured', e.target.value)}
-                              placeholder="0"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Annual Premium ($)</label>
-                            <Input 
-                              type="number"
-                              value={policy.premium}
-                              onChange={(e) => updateRecommendation(index, 'premium', e.target.value)}
-                              placeholder="0"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Beneficiary</label>
-                            <Input 
-                              value={policy.beneficiary}
-                              onChange={(e) => updateRecommendation(index, 'beneficiary', e.target.value)}
-                              placeholder="Beneficiary name"
-                            />
-                          </div>
-                          <div className="col-span-2">
-                            <label className="text-xs font-semibold text-slate-600 mb-1 block">Policy Notes</label>
-                            <Textarea 
-                              value={policy.notes}
-                              onChange={(e) => updateRecommendation(index, 'notes', e.target.value)}
-                              placeholder="Additional policy details..."
-                              rows={2}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </CardContent>
-              </Card>
+            {/* POLICIES TAB */}
+            <TabsContent value="policies" className="space-y-4 mt-6">
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="text-5xl mb-6">🛡️</div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">Policies section coming soon</h3>
+                <p className="text-slate-600 text-center mb-8 max-w-md">
+                  This section will allow you to record existing and recommended insurance policies
+                </p>
+              </div>
             </TabsContent>
           </Tabs>
 
+          {/* Navigation */}
           <div className="flex justify-end gap-3 py-6">
             <Button 
               variant="outline"
@@ -285,6 +602,51 @@ export default function SOARequestInsurance() {
           </div>
         </div>
       </div>
+
+      {/* KEY ASSUMPTIONS MODAL - Placeholder */}
+      <Dialog open={showAssumptionsModal} onOpenChange={setShowAssumptionsModal}>
+        <DialogContent className="max-w-[900px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Key Assumptions</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600">Assumptions modal to be implemented</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAssumptionsModal(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* INCOME MODAL - Placeholder */}
+      <Dialog open={showIncomeModal} onOpenChange={setShowIncomeModal}>
+        <DialogContent className="max-w-[900px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Income Required</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600">Income modal to be implemented</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowIncomeModal(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ASSETS MODAL - Placeholder */}
+      <Dialog open={showAssetsModal} onOpenChange={setShowAssetsModal}>
+        <DialogContent className="max-w-[900px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Less Realised Assets</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600">Assets modal to be implemented</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAssetsModal(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SOARequestLayout>
   );
 }
