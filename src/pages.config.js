@@ -109,7 +109,6 @@ import FactFindSuperTax from './pages/FactFindSuperTax';
 import FactFindSuperannuation from './pages/FactFindSuperannuation';
 import FactFindTrusts from './pages/FactFindTrusts';
 import FactFindWelcome from './pages/FactFindWelcome';
-import Home from './pages/Home';
 import MyProfile from './pages/MyProfile';
 import PublicAbout from './pages/PublicAbout';
 import PublicContact from './pages/PublicContact';
@@ -132,6 +131,7 @@ import SignIn from './pages/SignIn';
 import TestVerifyOtp from './pages/TestVerifyOtp';
 import VerifyEmail from './pages/VerifyEmail';
 import Whitepaper from './pages/Whitepaper';
+import ClientPortal from './pages/ClientPortal';
 import __Layout from './Layout.jsx';
 
 
@@ -198,7 +198,6 @@ export const PAGES = {
     "FactFindSuperannuation": FactFindSuperannuation,
     "FactFindTrusts": FactFindTrusts,
     "FactFindWelcome": FactFindWelcome,
-    "Home": Home,
     "MyProfile": MyProfile,
     "PublicAbout": PublicAbout,
     "PublicContact": PublicContact,
@@ -221,6 +220,7 @@ export const PAGES = {
     "TestVerifyOtp": TestVerifyOtp,
     "VerifyEmail": VerifyEmail,
     "Whitepaper": Whitepaper,
+    "ClientPortal": ClientPortal,
 }
 
 export const pagesConfig = {

@@ -61,8 +61,8 @@ export default function SignIn() {
       }
 
       // DEFAULT: Client portal
-      console.log('No role found - redirecting to Home (client portal)');
-      window.location.href = createPageUrl('Home');
+      console.log('No role found - redirecting to ClientPortal (client portal)');
+      window.location.href = createPageUrl('ClientPortal');
     } catch (error) {
       console.error('=== LOGIN ERROR ===');
       console.error('Error message:', error?.message);
