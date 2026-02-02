@@ -49,23 +49,23 @@ export default function Home() {
         }
         
         console.log('✗ No Admin record found - checking for AdviceGroup record...');
-        
-        // Check for AdviceGroup record by email
-        const adviceGroupRecords = await base44.entities.AdviceGroup.filter({ contact_email: currentUser.email });
-        console.log('AdviceGroup check for:', currentUser.email, 'Found:', adviceGroupRecords?.length, 'records');
-        
+
+        // Check for AdviceGroup record by user_id (more reliable than email)
+        const adviceGroupRecords = await base44.entities.AdviceGroup.filter({ user_id: currentUser.id });
+        console.log('AdviceGroup check for user_id:', currentUser.id, 'Found:', adviceGroupRecords?.length, 'records');
+
         if (adviceGroupRecords && adviceGroupRecords.length > 0) {
           console.log('✓ AdviceGroup record found - redirecting to AdviceGroupDashboard');
           navigate(createPageUrl('AdviceGroupDashboard'));
           return;
         }
-        
+
         console.log('✗ No AdviceGroup record found - checking for Adviser record...');
-        
-        // Check for Adviser record by email
-        const adviserRecords = await base44.entities.Adviser.filter({ email: currentUser.email });
-        console.log('Adviser check for:', currentUser.email, 'Found:', adviserRecords?.length, 'records');
-        
+
+        // Check for Adviser record by user_id (more reliable than email)
+        const adviserRecords = await base44.entities.Adviser.filter({ user_id: currentUser.id });
+        console.log('Adviser check for user_id:', currentUser.id, 'Found:', adviserRecords?.length, 'records');
+
         if (adviserRecords && adviserRecords.length > 0) {
           console.log('✓ Adviser record found - redirecting to AdviserDashboard');
           navigate(createPageUrl('AdviserDashboard'));
