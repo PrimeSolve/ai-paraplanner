@@ -110,6 +110,7 @@ export default function AdminTeam() {
   };
 
   const handleSaveMember = async () => {
+    console.log('handleSaveMember called - inviteEmail:', inviteEmail, 'tempPassword:', tempPassword, 'editingMember:', editingMember);
     if (!inviteEmail) {
       toast.error('Please enter an email address');
       return;
