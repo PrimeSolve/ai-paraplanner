@@ -7,13 +7,7 @@ import AdviceGroupLayout from '@/components/advicegroup/AdviceGroupLayout';
 export default function Layout({ children, currentPageName }) {
   const [loading, setLoading] = useState(false);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-      </div>
-    );
-  }
+
 
   // Pages that should not have the AppShell navigation
   const noNavPages = ['Whitepaper', 'PublicHome', 'PublicAbout', 'PublicPricing', 'PublicContact', 'Register', 'SignIn', 'VerifyEmail'];
