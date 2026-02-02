@@ -9,30 +9,32 @@ export default function TestVerifyOtp() {
   useEffect(() => {
     const test = async () => {
       try {
-        console.log('Requesting fresh OTP for logintest@hotmail.com...');
+        console.log('Step 1: Requesting fresh OTP for logintest@hotmail.com...');
         await base44.auth.resendOtp('logintest@hotmail.com');
-        setResult('Fresh OTP sent. Fetching new code from DB...');
+        console.log('Step 2: Fresh OTP sent.');
         
         // Get the fresh OTP code from the database
-        setTimeout(async () => {
-          const users = await base44.entities.User.filter({ email: 'logintest@hotmail.com' });
-          if (users[0]?.otp_code) {
-            const newOtp = users[0].otp_code;
-            console.log('Fresh OTP code:', newOtp);
-            setResult(`Fresh OTP received: ${newOtp}. Verifying...`);
-            
-            const verifyRes = await base44.auth.verifyOtp({
-              email: 'logintest@hotmail.com',
-              otpCode: newOtp
-            });
-            console.log('VERIFY SUCCESS:', verifyRes);
-            setResult('SUCCESS: ' + JSON.stringify(verifyRes, null, 2));
-          }
-        }, 500);
+        await new Promise(r => setTimeout(r, 1000));
+        const users = await base44.entities.User.filter({ email: 'logintest@hotmail.com' });
+        if (!users[0]?.otp_code) {
+          throw new Error('No OTP code found in DB after resendOtp');
+        }
+        
+        const newOtp = users[0].otp_code;
+        console.log('Step 3: Fresh OTP code retrieved:', newOtp);
+        setResult(`OTP: ${newOtp}\nVerifying...`);
+        
+        console.log('Step 4: Calling verifyOtp with otpCode parameter...');
+        const verifyRes = await base44.auth.verifyOtp({
+          email: 'logintest@hotmail.com',
+          otpCode: newOtp
+        });
+        console.log('Step 5: VERIFY RESPONSE:', verifyRes);
+        setResult('✅ SUCCESS:\n' + JSON.stringify(verifyRes, null, 2));
       } catch (err) {
-        console.error('ERROR:', err);
+        console.error('CRITICAL ERROR:', err);
         const errorMsg = err?.message || err?.detail || err?.error || JSON.stringify(err, null, 2) || 'Unknown error';
-        setError(errorMsg);
+        setError('ERROR: ' + errorMsg);
       } finally {
         setLoading(false);
       }
