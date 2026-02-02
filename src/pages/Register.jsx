@@ -121,6 +121,7 @@ export default function Register() {
         await base44.entities.AdviceGroup.create({
           user_id: currentUser.id,
           name: formData.groupName,
+          afslNumber: formData.afslNumber || '',
           contact_email: formData.email,
           contact_phone: formData.phone || '',
           status: 'active',
