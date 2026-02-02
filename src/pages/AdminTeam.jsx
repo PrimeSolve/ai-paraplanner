@@ -130,7 +130,8 @@ export default function AdminTeam() {
           email: inviteEmail,
           first_name: inviteName.split(' ')[0] || '',
           last_name: inviteName.split(' ').slice(1).join(' ') || '',
-          status: 'pending'
+          status: 'pending',
+          user_type: selectedRole === 'admin' ? 'admin' : 'paraplanner'
         });
         await base44.users.inviteUser(inviteEmail, selectedRole);
         toast.success(`Invite sent to ${inviteEmail}`);
