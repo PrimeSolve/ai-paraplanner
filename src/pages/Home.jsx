@@ -26,6 +26,16 @@ export default function Home() {
           return;
         }
         
+        // Check if user is a paraplanner (has Admin record with role='user')
+        if (currentUser.role === 'user' && !currentUser.user_type) {
+          const adminRecords = await base44.entities.Admin.filter({ email: currentUser.email });
+          if (adminRecords && adminRecords.length > 0) {
+            // This is a paraplanner - redirect to admin dashboard
+            window.location.href = createPageUrl('AdminDashboard');
+            return;
+          }
+        }
+        
         // Check for adviser role (stored in custom user field)
         if (currentUser.user_type === 'adviser') {
           window.location.href = createPageUrl('AdviserDashboard');
