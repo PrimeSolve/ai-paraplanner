@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -10,7 +10,7 @@ import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 
 export default function Home() {
-  const navigate = useNavigate();
+  const navigate = useNavigate ? useNavigate() : null;
   const [user, setUser] = useState(null);
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);

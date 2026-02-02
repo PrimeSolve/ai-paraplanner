@@ -55,14 +55,27 @@ export default function Register() {
       console.log('Starting registration for:', accountType);
       
       // Register user
-      if (accountType === 'adviser') {
-        console.log('Registering adviser:', formData.email);
-        await base44.auth.register({
-          email: formData.email,
-          password: formData.password,
-          full_name: formData.fullName
-        });
-      } else if (accountType === 'advice_group') {
+       if (accountType === 'adviser') {
+         console.log('Registering adviser:', formData.email);
+         await base44.auth.register({
+           email: formData.email,
+           password: formData.password,
+           full_name: formData.fullName
+         });
+
+         // Create Adviser record
+         console.log('Creating Adviser record...');
+         const currentUser = await base44.auth.me();
+         await base44.entities.Adviser.create({
+           user_id: currentUser.id,
+           email: formData.email,
+           first_name: formData.fullName.split(' ')[0],
+           last_name: formData.fullName.split(' ').slice(1).join(' ') || '',
+           phone: formData.phone || '',
+           status: 'active'
+         });
+         console.log('Adviser record created');
+       } else if (accountType === 'advice_group') {
         console.log('Registering advice group:', formData.email);
         await base44.auth.register({
           email: formData.email,
