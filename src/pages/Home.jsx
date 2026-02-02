@@ -24,6 +24,7 @@ export default function Home() {
         console.log('Current user email:', currentUser.email);
         console.log('Current user role:', currentUser.role);
         console.log('Current user user_type:', currentUser.user_type);
+        console.log('FULL USER OBJECT:', JSON.stringify(currentUser, null, 2));
         
         // FIRST: Check for Admin record - this takes priority over everything
         const adminRecords = await base44.entities.Admin.filter({ email: currentUser.email });
