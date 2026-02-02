@@ -10,6 +10,7 @@ import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 
 export default function Home() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,7 +44,7 @@ export default function Home() {
           }
           
           console.log('✓ Admin record found - redirecting to AdminDashboard');
-          window.location.href = createPageUrl('AdminDashboard');
+          navigate(createPageUrl('AdminDashboard'));
           return; // STOP - don't check anything else
         }
         
@@ -55,7 +56,7 @@ export default function Home() {
         
         if (adviceGroupRecords && adviceGroupRecords.length > 0) {
           console.log('✓ AdviceGroup record found - redirecting to AdviceGroupDashboard');
-          window.location.href = createPageUrl('AdviceGroupDashboard');
+          navigate(createPageUrl('AdviceGroupDashboard'));
           return;
         }
         
@@ -67,7 +68,7 @@ export default function Home() {
         
         if (adviserRecords && adviserRecords.length > 0) {
           console.log('✓ Adviser record found - redirecting to AdviserDashboard');
-          window.location.href = createPageUrl('AdviserDashboard');
+          navigate(createPageUrl('AdviserDashboard'));
           return;
         }
         
