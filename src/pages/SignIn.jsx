@@ -162,6 +162,9 @@ export default function SignIn() {
             <Button
               type="submit"
               disabled={loading}
+              onClick={() => {
+                alert('Login button clicked');
+              }}
               className="w-full h-[50px] rounded-[10px] text-[16px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:opacity-90"
             >
               {loading ? 'Logging in...' : (
