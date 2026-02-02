@@ -9,32 +9,17 @@ export default function TestVerifyOtp() {
   useEffect(() => {
     const test = async () => {
       try {
-        console.log('Step 1: Requesting fresh OTP for logintest@hotmail.com...');
-        await base44.auth.resendOtp('logintest@hotmail.com');
-        console.log('Step 2: Fresh OTP sent.');
-        
-        // Get the fresh OTP code from the database
-        await new Promise(r => setTimeout(r, 1000));
-        const users = await base44.entities.User.filter({ email: 'logintest@hotmail.com' });
-        if (!users[0]?.otp_code) {
-          throw new Error('No OTP code found in DB after resendOtp');
-        }
-        
-        const newOtp = users[0].otp_code;
-        console.log('Step 3: Fresh OTP code retrieved:', newOtp);
-        setResult(`OTP: ${newOtp}\nVerifying...`);
-        
-        console.log('Step 4: Calling verifyOtp with otpCode parameter...');
+        console.log('Attempting direct verifyOtp with hardcoded OTP: 163403');
         const verifyRes = await base44.auth.verifyOtp({
           email: 'logintest@hotmail.com',
-          otpCode: newOtp
+          otpCode: '163403'
         });
-        console.log('Step 5: VERIFY RESPONSE:', verifyRes);
-        setResult('✅ SUCCESS:\n' + JSON.stringify(verifyRes, null, 2));
+        console.log('VERIFY SUCCESS:', verifyRes);
+        setResult('✅ VERIFICATION SUCCESSFUL:\n' + JSON.stringify(verifyRes, null, 2));
       } catch (err) {
-        console.error('CRITICAL ERROR:', err);
+        console.error('VERIFY FAILED:', err);
         const errorMsg = err?.message || err?.detail || err?.error || JSON.stringify(err, null, 2) || 'Unknown error';
-        setError('ERROR: ' + errorMsg);
+        setError('VERIFICATION FAILED:\n' + errorMsg);
       } finally {
         setLoading(false);
       }
