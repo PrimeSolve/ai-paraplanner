@@ -65,7 +65,7 @@ export default function Register() {
 
          // STEP 1: Ensure fallback group exists
          console.log('Ensuring PrimeSolve Unassigned fallback group exists...');
-         let fallbackGroups = await base44.entities.AdviceGroup.filter({ name: 'PrimeSolve Unassigned' });
+         let fallbackGroups = await base44.entities.AdviceGroup.filter({ name: 'PrimeSolve Unassigned' }, null, null, 'prod');
          let fallbackGroup = fallbackGroups && fallbackGroups.length > 0 ? fallbackGroups[0] : null;
 
          if (!fallbackGroup) {
