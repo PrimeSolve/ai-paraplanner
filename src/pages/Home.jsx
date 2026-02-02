@@ -47,19 +47,27 @@ export default function Home() {
           return; // STOP - don't check anything else
         }
         
-        console.log('✗ No Admin record found - checking user_type...');
+        console.log('✗ No Admin record found - checking for AdviceGroup record...');
         
-        // Check for adviser role (stored in custom user field)
-        if (currentUser.user_type === 'adviser') {
-          console.log('✓ user_type = adviser - redirecting to AdviserDashboard');
-          window.location.href = createPageUrl('AdviserDashboard');
+        // Check for AdviceGroup record by email
+        const adviceGroupRecords = await base44.entities.AdviceGroup.filter({ contact_email: currentUser.email });
+        console.log('AdviceGroup check for:', currentUser.email, 'Found:', adviceGroupRecords?.length, 'records');
+        
+        if (adviceGroupRecords && adviceGroupRecords.length > 0) {
+          console.log('✓ AdviceGroup record found - redirecting to AdviceGroupDashboard');
+          window.location.href = createPageUrl('AdviceGroupDashboard');
           return;
         }
         
-        // Check for advice group role
-        if (currentUser.user_type === 'advice_group') {
-          console.log('✓ user_type = advice_group - redirecting to AdviceGroupDashboard');
-          window.location.href = createPageUrl('AdviceGroupDashboard');
+        console.log('✗ No AdviceGroup record found - checking for Adviser record...');
+        
+        // Check for Adviser record by email
+        const adviserRecords = await base44.entities.Adviser.filter({ email: currentUser.email });
+        console.log('Adviser check for:', currentUser.email, 'Found:', adviserRecords?.length, 'records');
+        
+        if (adviserRecords && adviserRecords.length > 0) {
+          console.log('✓ Adviser record found - redirecting to AdviserDashboard');
+          window.location.href = createPageUrl('AdviserDashboard');
           return;
         }
         
