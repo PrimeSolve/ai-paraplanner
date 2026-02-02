@@ -102,17 +102,23 @@ export default function Register() {
          // STEP 3: Create Adviser with GUARANTEED group ID
          console.log('Creating Adviser record with group ID:', targetGroupId);
          const currentUser = await base44.auth.me();
+         console.log('Current user ID:', currentUser.id, 'Email:', currentUser.email);
 
-         const adviser = await base44.entities.Adviser.create({
-           user_id: currentUser.id,
-           advice_group_id: targetGroupId,
-           email: formData.email,
-           first_name: formData.fullName.split(' ')[0],
-           last_name: formData.fullName.split(' ').slice(1).join(' ') || '',
-           phone: formData.phone || '',
-           status: 'pending'
-         });
-         console.log('✓ Adviser created - ID:', adviser.id, 'Linked to group:', targetGroupId);
+         try {
+           const adviser = await base44.entities.Adviser.create({
+             user_id: currentUser.id,
+             advice_group_id: targetGroupId,
+             email: formData.email,
+             first_name: formData.fullName.split(' ')[0],
+             last_name: formData.fullName.split(' ').slice(1).join(' ') || '',
+             phone: formData.phone || '',
+             status: 'pending'
+           });
+           console.log('✓ Adviser created - ID:', adviser.id, 'Linked to group:', targetGroupId);
+         } catch (adviserError) {
+           console.error('✗ CRITICAL: Failed to create Adviser record:', adviserError);
+           throw new Error('Failed to create adviser record: ' + adviserError.message);
+         }
        } else if (accountType === 'advice_group') {
         console.log('Registering advice group:', formData.email);
         await base44.auth.register({
