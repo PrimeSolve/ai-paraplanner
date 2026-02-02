@@ -70,10 +70,6 @@ export default function Register() {
           full_name: formData.primaryContact
         });
         
-        // Set user_type for routing
-        console.log('Setting user_type to advice_group...');
-        await base44.auth.updateMe({ user_type: 'advice_group' });
-        
         // Create AdviceGroup record
         console.log('Creating AdviceGroup record...');
         const currentUser = await base44.auth.me();
@@ -85,7 +81,11 @@ export default function Register() {
           status: 'active',
           subscription_tier: 'professional'
         });
-        console.log('AdviceGroup created');
+        
+        // Set user_type AFTER creating AdviceGroup
+        console.log('Setting user_type to advice_group...');
+        await base44.auth.updateMe({ user_type: 'advice_group' });
+        console.log('AdviceGroup created and user_type set');
       }
       
       console.log('Registration complete, redirecting to VerifyEmail');
