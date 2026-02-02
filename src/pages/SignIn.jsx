@@ -19,18 +19,22 @@ export default function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Login button clicked');
-    
-    console.log('Attempting login with:', formData.email);
+    console.log('=== LOGIN ATTEMPT ===');
+    console.log('Email:', formData.email);
+    console.log('Password:', formData.password);
     
     try {
       setLoading(true);
+      console.log('Calling loginViaEmailPassword...');
       const result = await base44.auth.loginViaEmailPassword(formData.email, formData.password);
       console.log('Login success:', result);
       window.location.href = createPageUrl('Home');
     } catch (error) {
-      console.error('Login error:', error);
-      alert('Login failed: ' + error.message);
+      console.error('=== LOGIN ERROR ===');
+      console.error('Error object:', error);
+      console.error('Error message:', error?.message);
+      console.error('Error code:', error?.code);
+      toast.error(error?.message || 'Login failed');
     } finally {
       setLoading(false);
     }
