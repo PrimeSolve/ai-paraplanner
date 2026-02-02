@@ -171,27 +171,6 @@ export default function SignIn() {
               )}
             </Button>
 
-            {/* TEST NATIVE BUTTON */}
-            <button
-              type="button"
-              onClick={() => alert('Native button clicked!')}
-              style={{
-                width: '100%',
-                height: '50px',
-                padding: '10px 20px',
-                background: 'blue',
-                color: 'white',
-                border: 'none',
-                borderRadius: '10px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                marginTop: '10px'
-              }}
-            >
-              TEST NATIVE BUTTON - CLICK ME
-            </button>
-
             <div className="text-center">
               <p className="text-[14px] text-[#64748b] mb-4">or continue with</p>
               <div className="grid grid-cols-2 gap-4">
