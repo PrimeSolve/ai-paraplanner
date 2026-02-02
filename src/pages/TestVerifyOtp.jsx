@@ -9,10 +9,10 @@ export default function TestVerifyOtp() {
   useEffect(() => {
     const test = async () => {
       try {
-        console.log('Attempting direct verifyOtp with hardcoded OTP: 163403');
+        console.log('Attempting direct verifyOtp with hardcoded OTP: 774113 (expires 05:42:58)');
         const verifyRes = await base44.auth.verifyOtp({
           email: 'logintest@hotmail.com',
-          otpCode: '163403'
+          otpCode: '774113'
         });
         console.log('VERIFY SUCCESS:', verifyRes);
         setResult('✅ VERIFICATION SUCCESSFUL:\n' + JSON.stringify(verifyRes, null, 2));
