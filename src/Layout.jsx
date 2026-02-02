@@ -5,21 +5,7 @@ import AppShell from '@/components/AppShell';
 import AdviceGroupLayout from '@/components/advicegroup/AdviceGroupLayout';
 
 export default function Layout({ children, currentPageName }) {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const userData = await base44.auth.me();
-        // This will cause a re-render after RoleProvider's loadUserData is called
-      } catch (error) {
-        // User not authenticated
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadUser();
-  }, []);
+  const [loading, setLoading] = useState(false);
 
   if (loading) {
     return (
