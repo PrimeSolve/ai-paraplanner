@@ -20,25 +20,39 @@ export default function Home() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
         
-        // Check if user has an Admin record (paraplanner or admin team member)
+        console.log('=== HOME PAGE ROUTING DEBUG ===');
+        console.log('Current user email:', currentUser.email);
+        console.log('Current user role:', currentUser.role);
+        console.log('Current user user_type:', currentUser.user_type);
+        
+        // FIRST: Check for Admin record - this takes priority over everything
         const adminRecords = await base44.entities.Admin.filter({ email: currentUser.email });
+        console.log('Admin check for:', currentUser.email, 'Found:', adminRecords?.length, 'records');
+        
         if (adminRecords && adminRecords.length > 0) {
-          // This is a team member - redirect to admin dashboard
+          console.log('✓ Admin record found - redirecting to AdminDashboard');
           window.location.href = createPageUrl('AdminDashboard');
-          return;
+          return; // STOP - don't check anything else
         }
+        
+        console.log('✗ No Admin record found - checking user_type...');
         
         // Check for adviser role (stored in custom user field)
         if (currentUser.user_type === 'adviser') {
+          console.log('✓ user_type = adviser - redirecting to AdviserDashboard');
           window.location.href = createPageUrl('AdviserDashboard');
           return;
         }
         
         // Check for advice group role
         if (currentUser.user_type === 'advice_group') {
+          console.log('✓ user_type = advice_group - redirecting to AdviceGroupDashboard');
           window.location.href = createPageUrl('AdviceGroupDashboard');
           return;
         }
+        
+        console.log('No routing match - loading client fact find...');
+        console.log('=== END ROUTING DEBUG ===');
         
         // Default: client portal - continue loading fact find
         const urlParams = new URLSearchParams(window.location.search);
