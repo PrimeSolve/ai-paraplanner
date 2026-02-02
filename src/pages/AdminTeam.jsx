@@ -54,14 +54,26 @@ export default function AdminTeam() {
 
   const loadTeam = async () => {
     try {
-      const data = await base44.entities.User.list('-created_date', 100);
-      // Mock SOA data for each user
-      const teamWithStats = data.map(member => ({
-        ...member,
-        soasThisMonth: Math.floor(Math.random() * 20),
-        soasTotal: Math.floor(Math.random() * 100) + 20,
-        status: member.email?.includes('pending') ? 'pending' : 'active'
-      }));
+      const [users, admins] = await Promise.all([
+        base44.entities.User.list('-created_date', 100),
+        base44.entities.Admin.list('-created_date', 100)
+      ]);
+
+      // Merge User and Admin data
+      const teamWithStats = admins.map(admin => {
+        const user = users.find(u => u.id === admin.user_id);
+        return {
+          id: admin.id,
+          email: admin.email,
+          full_name: user?.full_name || `${admin.first_name || ''} ${admin.last_name || ''}`.trim() || 'No name',
+          role: user?.role || 'user',
+          status: admin.status || (user ? 'active' : 'pending'),
+          created_date: admin.created_date,
+          soasThisMonth: Math.floor(Math.random() * 20),
+          soasTotal: Math.floor(Math.random() * 100) + 20
+        };
+      });
+
       setTeam(teamWithStats);
     } catch (error) {
       console.error('Failed to load team:', error);
@@ -71,56 +83,36 @@ export default function AdminTeam() {
   };
 
   const handleSaveMember = async () => {
-    try {
-      console.log('Step 1: Function called');
-      console.log('Email:', inviteEmail);
-      console.log('Role:', selectedRole);
-    
     if (!inviteEmail) {
-      console.log('Step 1.5: Email validation failed');
       toast.error('Please enter an email address');
       return;
     }
 
     setInviting(true);
-    console.log('Step 2: Starting save...');
-    
-    try {
-      // Step 1: Send invite via users.inviteUser (correct method)
-      console.log('Step 3: About to call base44.users.inviteUser');
-      await base44.users.inviteUser(inviteEmail, selectedRole);
-      console.log('Step 4: Invite sent successfully');
-      toast.success('Team member invited');
 
-      // Step 2: Create Admin record
-      console.log('Step 5: Creating Admin record for:', inviteEmail);
-      const adminRecord = await base44.entities.Admin.create({
+    try {
+      // 1. Create Admin record with pending status
+      await base44.entities.Admin.create({
         email: inviteEmail,
-        status: 'active'
+        first_name: inviteName.split(' ')[0] || '',
+        last_name: inviteName.split(' ').slice(1).join(' ') || '',
+        status: 'pending'
       });
-      console.log('Step 6: Admin record created:', adminRecord);
-      
-      console.log('Step 7: Setting success state');
-      setInviteSuccess(true);
-      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // 2. Send invite email
+      await base44.users.inviteUser(inviteEmail, selectedRole);
+
+      // 3. Success
+      toast.success(`Invite sent to ${inviteEmail}`);
       setInviteEmail('');
       setInviteName('');
       setSelectedRole('user');
-      setInviteSuccess(false);
       setShowInviteModal(false);
       await loadTeam();
-      console.log('Step 8: Save complete');
-      } catch (error) {
-        console.error('ERROR in handleSaveMember:', error);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-        toast.error(error?.message || 'Failed to invite team member');
-      } finally {
-        console.log('Step 9: Finally block');
-        setInviting(false);
-      }
-    } catch (outerError) {
-      console.error('OUTER ERROR - function itself failed:', outerError);
+    } catch (error) {
+      toast.error(error?.message || 'Failed to send invite');
+    } finally {
+      setInviting(false);
     }
   };
 
@@ -497,10 +489,7 @@ export default function AdminTeam() {
                   Cancel
                 </Button>
                 <Button 
-                  onClick={() => {
-                    alert('Click registered - now calling handleSaveMember');
-                    handleSaveMember();
-                  }}
+                  onClick={handleSaveMember}
                   disabled={inviting || !inviteEmail}
                   className="bg-[#3b82f6] hover:bg-[#2563eb]"
                 >
