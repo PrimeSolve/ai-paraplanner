@@ -131,7 +131,6 @@ import SignIn from './pages/SignIn';
 import TestVerifyOtp from './pages/TestVerifyOtp';
 import VerifyEmail from './pages/VerifyEmail';
 import Whitepaper from './pages/Whitepaper';
-import ClientPortal from './pages/ClientPortal';
 import __Layout from './Layout.jsx';
 
 
@@ -220,7 +219,6 @@ export const PAGES = {
     "TestVerifyOtp": TestVerifyOtp,
     "VerifyEmail": VerifyEmail,
     "Whitepaper": Whitepaper,
-    "ClientPortal": ClientPortal,
 }
 
 export const pagesConfig = {
