@@ -141,6 +141,7 @@ export default function AdminTeam() {
         });
         toast.success('Team member updated');
         setShowInviteModal(false);
+        setInviting(false);
       } else {
         console.log('Step 5b: Creating new member');
         console.log('Step 6: Calling base44.auth.register...');
