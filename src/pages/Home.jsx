@@ -30,7 +30,7 @@ export default function Home() {
         
         // FIRST: Check for Admin record - this takes priority over everything
         console.log('\n--- ADMIN CHECK ---');
-        const adminRecords = await base44.entities.Admin.filter({ email: currentUser.email });
+        const adminRecords = await base44.entities.Admin.filter({ email: currentUser.email }, null, null, 'prod');
         console.log('Admin filter query: { email:', currentUser.email, '}');
         console.log('Admin records found:', adminRecords?.length);
         if (adminRecords && adminRecords.length > 0) {
@@ -58,7 +58,7 @@ export default function Home() {
 
         // Check for AdviceGroup record by user_id (more reliable than email)
         console.log('\n--- ADVICE GROUP CHECK ---');
-        const adviceGroupRecords = await base44.entities.AdviceGroup.filter({ user_id: currentUser.id });
+        const adviceGroupRecords = await base44.entities.AdviceGroup.filter({ user_id: currentUser.id }, null, null, 'prod');
         console.log('AdviceGroup filter query: { user_id:', currentUser.id, '}');
         console.log('AdviceGroup records found:', adviceGroupRecords?.length);
         if (adviceGroupRecords && adviceGroupRecords.length > 0) {
@@ -75,7 +75,7 @@ export default function Home() {
 
         // THIRD: Check for Adviser record
         console.log('\n--- ADVISER CHECK ---');
-        const adviserRecords = await base44.entities.Adviser.filter({ user_id: currentUser.id });
+        const adviserRecords = await base44.entities.Adviser.filter({ user_id: currentUser.id }, null, null, 'prod');
         console.log('Adviser filter query: { user_id:', currentUser.id, '}');
         console.log('Adviser records found:', adviserRecords?.length);
         if (adviserRecords && adviserRecords.length > 0) {
