@@ -144,14 +144,16 @@ export default function AdminTeam() {
       } else {
         console.log('Step 5b: Creating new member');
         console.log('Step 6: Calling base44.auth.register...');
+        console.log('Parameters:', { email: inviteEmail, password: tempPassword, full_name: inviteName });
         
-        await base44.auth.register({
+        const registerResult = await base44.auth.register({
           email: inviteEmail,
           password: tempPassword,
           full_name: inviteName
         });
 
-        console.log('Step 7: Registration successful, creating Admin record...');
+        console.log('Step 7: Registration successful! Result:', registerResult);
+        console.log('Step 7b: Creating Admin record...');
         
         await base44.entities.Admin.create({
           email: inviteEmail,
