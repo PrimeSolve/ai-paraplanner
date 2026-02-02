@@ -160,10 +160,11 @@ export default function SignIn() {
             </div>
 
             <Button
-              type="submit"
+              type="button"
               disabled={loading}
-              onClick={() => {
+              onClick={(e) => {
                 alert('Login button clicked');
+                handleSubmit(e);
               }}
               className="w-full h-[50px] rounded-[10px] text-[16px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:opacity-90"
             >
