@@ -2,174 +2,159 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { base44 } from '@/api/base44Client';
-import { useRole } from '../RoleContext';
 import { 
   LayoutDashboard, 
+  Layers, 
+  CheckCircle, 
   Users, 
-  FileText, 
-  Target,
-  Briefcase,
   Settings,
+  LogOut,
   ChevronDown,
-  User,
-  HelpCircle,
-  LogOut
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function AdviceGroupLayout({ children, currentPage }) {
-  const { navigationChain } = useRole();
   const [user, setUser] = useState(null);
-  const [group, setGroup] = useState(null);
-  const [expandedMenu, setExpandedMenu] = useState(null);
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadUser = async () => {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        
-        if (currentUser.advice_group_id) {
-          const groups = await base44.entities.AdviceGroup.filter({ id: currentUser.advice_group_id });
-          setGroup(groups[0]);
-        }
       } catch (error) {
-        console.error('Failed to load data:', error);
+        console.error('Failed to load user:', error);
       }
     };
-    loadData();
-
-    const handleProfileUpdate = () => {
-      loadData();
-    };
-    
-    window.addEventListener('userProfileUpdated', handleProfileUpdate);
-    return () => window.removeEventListener('userProfileUpdated', handleProfileUpdate);
+    loadUser();
   }, []);
-
-  const getSubtitle = () => {
-    if (navigationChain.length === 0) {
-      return 'ADVICE GROUP PORTAL';
-    }
-    const current = navigationChain[navigationChain.length - 1];
-    return `VIEWING ${current.type.toUpperCase()}`;
-  };
 
   const navItems = [
     { section: 'OVERVIEW', items: [
       { label: 'Dashboard', path: 'AdviceGroupDashboard', icon: LayoutDashboard },
-      { label: 'Completed SOAs', path: 'AdviceGroupCompleted', icon: FileText }
+      { label: 'SOA Queue', path: 'AdviceGroupSOARequests', icon: Layers },
+      { label: 'Completed SOAs', path: 'AdviceGroupCompleted', icon: CheckCircle }
     ]},
-    { section: 'TEAM', items: [
-      { label: 'Advisers', path: 'AdviceGroupAdvisers', icon: Users, submenu: [
-        { label: 'Clients', path: 'AdviceGroupClients', icon: Users }
-      ]}
-    ]},
-    { section: 'SOA MANAGEMENT', items: [
-      { label: 'SOA Requests', path: 'AdviceGroupSOARequests', icon: FileText }
+    { section: 'MANAGEMENT', items: [
+      { label: 'Advisers', path: 'AdviceGroupAdvisers', icon: Users },
+      { label: 'Clients', path: 'AdviceGroupClients', icon: Users }
     ]},
     { section: 'CONFIGURATION', items: [
-      { label: 'Risk Profiles', path: 'AdviceGroupRiskProfiles', icon: Target },
-      { label: 'Model Portfolios', path: 'AdviceGroupModelPortfolios', icon: Briefcase },
-      { label: 'SOA Template', path: 'AdviceGroupSOATemplate', icon: FileText },
+      { label: 'Risk Profiles', path: 'AdviceGroupRiskProfiles', icon: Settings },
+      { label: 'Model Portfolios', path: 'AdviceGroupModelPortfolios', icon: Settings },
+      { label: 'SOA Template', path: 'AdviceGroupSOATemplate', icon: Settings },
       { label: 'Settings', path: 'AdviceGroupSettings', icon: Settings }
     ]}
   ];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen font-['DM_Sans']">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+      `}</style>
+
       {/* Sidebar */}
-      <div className="w-64 bg-gradient-to-b from-[#0f172a] to-[#1e293b] fixed top-0 left-0 bottom-0 flex flex-col z-50">
-        <div className="p-6 border-b border-white/10">
+      <div className="w-[260px] bg-[#0f172a] fixed top-0 left-0 bottom-0 flex flex-col z-50">
+        <div className="p-6 border-b border-white/[0.08]">
           <Link to={createPageUrl('AdviceGroupDashboard')} className="flex items-center gap-3 text-white no-underline">
-            {group?.logo_url ? (
-              <img src={group.logo_url} alt="Logo" className="w-10 h-10 rounded-lg object-cover" />
-            ) : (
-              <div className="w-10 h-10 bg-white/15 rounded-lg flex items-center justify-center font-bold">
-                {group?.name?.charAt(0) || 'AG'}
-              </div>
-            )}
+            <div className="w-10 h-10 bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] rounded-xl flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-900/30">
+              AI
+            </div>
             <div>
-              <div className="text-sm font-semibold text-white">
-                {group?.name || 'Advice Group'}
+              <div className="font-['Playfair_Display'] text-xl font-semibold">
+                AI <span className="text-[#22d3ee]">Paraplanner</span>
               </div>
-              <div className="text-xs text-white/50 font-medium uppercase tracking-wider">{getSubtitle()}</div>
+              <div className="text-[#64748b] text-xs font-medium uppercase tracking-wider">
+                ADVICE GROUP
+              </div>
             </div>
           </Link>
         </div>
 
-        <nav className="flex-1 py-4 overflow-y-auto">
+        <nav className="flex-1 py-6 px-4 overflow-y-auto">
           {navItems.map((section, idx) => (
-            <div key={idx} className="mb-6">
-              <div className="px-6 py-2 text-xs font-semibold uppercase tracking-wider text-white/40">
+            <div key={idx} className="mb-7">
+              <div className="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
                 {section.section}
               </div>
               {section.items.map((item) => {
-                 const Icon = item.icon;
-                 const isActive = currentPage === item.label.toLowerCase().replace(/\s+/g, '-') || currentPage === item.path;
-                 const hasSubmenu = item.submenu && item.submenu.length > 0;
-
-                 return (
-                   <div key={item.path}>
-                     <Link
-                       to={createPageUrl(item.path)}
-                       className={`flex items-center gap-3 px-6 py-3 text-white/70 no-underline transition-all border-l-3 ${
-                         isActive 
-                           ? 'bg-white/10 !text-white border-l-white' 
-                           : 'border-l-transparent hover:bg-white/5 hover:text-white'
-                       }`}
-                     >
-                       <Icon className="w-5 h-5" />
-                       <span className="font-medium">{item.label}</span>
-                     </Link>
-                     {hasSubmenu && (
-                       <div className="pl-6">
-                         {item.submenu.map((subitem) => {
-                           const SubIcon = subitem.icon;
-                           const isSubActive = currentPage === subitem.path;
-                           return (
-                             <Link
-                               key={subitem.path}
-                               to={createPageUrl(subitem.path)}
-                               className={`flex items-center gap-3 px-6 py-2 text-white/60 no-underline transition-all border-l-3 text-sm ${
-                                 isSubActive 
-                                   ? 'bg-white/5 !text-white border-l-white' 
-                                   : 'border-l-transparent hover:bg-white/5 hover:text-white'
-                               }`}
-                             >
-                               <SubIcon className="w-4 h-4" />
-                               <span className="font-medium">{subitem.label}</span>
-                             </Link>
-                           );
-                         })}
-                       </div>
-                     )}
-                   </div>
-                 );
-               })}
+                const Icon = item.icon;
+                const isActive = currentPage === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={createPageUrl(item.path)}
+                    className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium no-underline transition-all mb-1 relative ${
+                      isActive 
+                        ? 'bg-[#3b82f6]/15 text-white' 
+                        : 'text-[#94a3b8] hover:bg-white/[0.05] hover:text-white'
+                    }`}
+                  >
+                    {isActive && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#3b82f6] rounded-r-md" />
+                    )}
+                    <Icon className="w-5 h-5" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
             </div>
           ))}
         </nav>
 
-        <div className="p-6 border-t border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-cyan-400 rounded-full flex items-center justify-center text-slate-900 font-semibold">
-              {user?.full_name?.charAt(0) || 'A'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-white font-semibold text-sm truncate">
-                {user?.full_name || user?.email}
+        <div className="p-4 border-t border-white/[0.08]">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.05] cursor-pointer transition-all">
+                <div className="w-10 h-10 bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] rounded-xl flex items-center justify-center text-white font-bold text-sm">
+                  {user?.full_name?.charAt(0) || 'U'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white font-semibold text-sm truncate">
+                    {user?.full_name || 'User'}
+                  </div>
+                  <div className="text-[#64748b] text-xs">
+                    Advice Group
+                  </div>
+                </div>
+                <ChevronDown className="w-4 h-4 text-[#64748b]" />
               </div>
-              <div className="text-white/50 text-xs">Group Admin</div>
-            </div>
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem asChild>
+                <Link to={createPageUrl('AdviceGroupProfile')} className="no-underline text-black">
+                  My Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to={createPageUrl('AdviceGroupSettings')} className="no-underline text-black">
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to={createPageUrl('AdviceGroupHelp')} className="no-underline text-black">
+                  Help & Support
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={async () => {
+                  await base44.auth.logout();
+                  window.location.href = createPageUrl('SignIn');
+                }}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
       {/* Main Content */}
-       <div className="flex-1 ml-64">
-         {children}
-       </div>
+      <div className="flex-1 ml-[260px] bg-[#f8fafc]">
+        {children}
+      </div>
     </div>
   );
 }
