@@ -102,6 +102,7 @@ export default function Register() {
          // STEP 3: Get authenticated user and create Adviser
          console.log('Getting authenticated user...');
          const currentUser = await base44.auth.me();
+         alert('DEBUG: currentUser.id = ' + currentUser.id + ', email = ' + currentUser.email);
          console.log('✓ Authenticated user ID:', currentUser.id, 'Email:', currentUser.email);
 
          console.log('Creating Adviser record with user_id:', currentUser.id, 'group_id:', targetGroupId);
