@@ -130,6 +130,7 @@ import SOARequestWelcome from './pages/SOARequestWelcome';
 import SignIn from './pages/SignIn';
 import Whitepaper from './pages/Whitepaper';
 import AdminTeamMemberProfile from './pages/AdminTeamMemberProfile';
+import RegisterInternal from './pages/RegisterInternal';
 import __Layout from './Layout.jsx';
 
 
@@ -217,6 +218,7 @@ export const PAGES = {
     "SignIn": SignIn,
     "Whitepaper": Whitepaper,
     "AdminTeamMemberProfile": AdminTeamMemberProfile,
+    "RegisterInternal": RegisterInternal,
 }
 
 export const pagesConfig = {
