@@ -29,7 +29,7 @@ export default function Layout({ children, currentPageName }) {
   }
 
   // Pages that should not have the AppShell navigation
-  const noNavPages = ['Whitepaper', 'PublicHome', 'PublicAbout', 'PublicPricing', 'PublicContact', 'Register', 'SignIn'];
+  const noNavPages = ['Whitepaper', 'PublicHome', 'PublicAbout', 'PublicPricing', 'PublicContact', 'Register', 'SignIn', 'VerifyEmail'];
   const hideNav = noNavPages.includes(currentPageName);
 
   // Check if in test mode for top padding
