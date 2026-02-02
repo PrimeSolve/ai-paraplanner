@@ -448,16 +448,38 @@ export default function AdminTeam() {
           </DialogHeader>
 
           {successCredentials ? (
-            <div className="flex flex-col items-center justify-center py-8">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+            <div className="flex flex-col py-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 mx-auto">
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              <p className="text-center text-[#0f172a] font-medium mb-2">
-                Invite sent to <strong>{inviteEmail}</strong>
+              <p className="text-center text-[#0f172a] font-medium mb-4">
+                Account created successfully!
               </p>
-              <p className="text-center text-sm text-[#64748b]">
-                They'll receive an email to join as a {selectedRole === 'admin' ? 'Admin' : 'Paraplanner'}
+              
+              <div className="bg-slate-50 rounded-lg p-4 space-y-3 mb-4">
+                <div>
+                  <label className="text-xs font-semibold text-[#64748b] uppercase">Email</label>
+                  <p className="text-sm text-[#0f172a] font-mono">{successCredentials.email}</p>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-[#64748b] uppercase">Temporary Password</label>
+                  <p className="text-sm text-[#0f172a] font-mono">{successCredentials.password}</p>
+                </div>
+              </div>
+
+              <p className="text-xs text-[#64748b] text-center mb-4">
+                Share these credentials with the new team member. They can change their password after logging in.
               </p>
+
+              <Button 
+                onClick={() => {
+                  setShowInviteModal(false);
+                  setSuccessCredentials(null);
+                }}
+                className="bg-[#3b82f6] hover:bg-[#2563eb]"
+              >
+                Done
+              </Button>
             </div>
           ) : (
             <>
