@@ -10,7 +10,7 @@ import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 
 export default function Home() {
-  const navigate = useNavigate ? useNavigate() : null;
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -136,7 +136,7 @@ export default function Home() {
       }
     };
     loadData();
-  }, []);
+  }, [navigate]);
 
   // Calculate financial metrics
   const calculateNetWorth = () => {
