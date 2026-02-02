@@ -156,16 +156,27 @@ export default function AdminTeam() {
         console.log('Step 7: Registration successful! Result:', registerResult);
         
         // Auto-verify the user so they can log in immediately
-        console.log('Step 7a: Waiting for user to be created...');
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        console.log('Step 7a: Verifying user with OTP...');
+        await new Promise(resolve => setTimeout(resolve, 500)); // Wait for OTP to be set
         
         const users = await base44.entities.User.filter({ email: inviteEmail });
         console.log('Found users:', users.length);
         if (users.length > 0) {
-          console.log('User ID to update:', users[0].id);
-          console.log('Full user object:', JSON.stringify(users[0]));
-          const updateResult = await base44.entities.User.update(users[0].id, { is_verified: true });
-          console.log('Update result:', JSON.stringify(updateResult));
+          const user = users[0];
+          console.log('OTP code:', user.otp_code);
+          
+          // Use verifyOtp to mark user as verified
+          if (user.otp_code) {
+            try {
+              await base44.auth.verifyOtp({
+                email: inviteEmail,
+                otpCode: user.otp_code
+              });
+              console.log('User verified via OTP');
+            } catch (verifyError) {
+              console.error('OTP verification failed:', verifyError);
+            }
+          }
         } else {
           console.log('ERROR: No user found with email:', inviteEmail);
         }
