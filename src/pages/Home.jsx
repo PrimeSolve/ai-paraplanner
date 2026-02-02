@@ -22,14 +22,20 @@ export default function Home() {
         setUser(currentUser);
         
         console.log('=== HOME PAGE ROUTING DEBUG ===');
+        console.log('Current user ID:', currentUser.id);
         console.log('Current user email:', currentUser.email);
         console.log('Current user role:', currentUser.role);
         console.log('Current user user_type:', currentUser.user_type);
         console.log('FULL USER OBJECT:', JSON.stringify(currentUser, null, 2));
         
         // FIRST: Check for Admin record - this takes priority over everything
+        console.log('\n--- ADMIN CHECK ---');
         const adminRecords = await base44.entities.Admin.filter({ email: currentUser.email });
-        console.log('Admin check for:', currentUser.email, 'Found:', adminRecords?.length, 'records');
+        console.log('Admin filter query: { email:', currentUser.email, '}');
+        console.log('Admin records found:', adminRecords?.length);
+        if (adminRecords && adminRecords.length > 0) {
+          console.log('Admin records data:', JSON.stringify(adminRecords, null, 2));
+        }
         
         if (adminRecords && adminRecords.length > 0) {
           const adminRecord = adminRecords[0];
@@ -51,8 +57,13 @@ export default function Home() {
         console.log('✗ No Admin record found - checking for AdviceGroup record...');
 
         // Check for AdviceGroup record by user_id (more reliable than email)
+        console.log('\n--- ADVICE GROUP CHECK ---');
         const adviceGroupRecords = await base44.entities.AdviceGroup.filter({ user_id: currentUser.id });
-        console.log('AdviceGroup check for user_id:', currentUser.id, 'Found:', adviceGroupRecords?.length, 'records');
+        console.log('AdviceGroup filter query: { user_id:', currentUser.id, '}');
+        console.log('AdviceGroup records found:', adviceGroupRecords?.length);
+        if (adviceGroupRecords && adviceGroupRecords.length > 0) {
+          console.log('AdviceGroup records data:', JSON.stringify(adviceGroupRecords, null, 2));
+        }
 
         if (adviceGroupRecords && adviceGroupRecords.length > 0) {
           console.log('✓ AdviceGroup record found - redirecting to AdviceGroupDashboard');
@@ -63,11 +74,17 @@ export default function Home() {
         console.log('✗ No AdviceGroup record found - checking for Adviser record...');
 
         // THIRD: Check for Adviser record
+        console.log('\n--- ADVISER CHECK ---');
         const adviserRecords = await base44.entities.Adviser.filter({ user_id: currentUser.id });
-        console.log('Adviser check for user_id:', currentUser.id, 'Found:', adviserRecords?.length, 'records');
+        console.log('Adviser filter query: { user_id:', currentUser.id, '}');
+        console.log('Adviser records found:', adviserRecords?.length);
+        if (adviserRecords && adviserRecords.length > 0) {
+          console.log('Adviser records data:', JSON.stringify(adviserRecords, null, 2));
+        }
 
         if (adviserRecords && adviserRecords.length > 0) {
           const adviserRecord = adviserRecords[0];
+          console.log('Adviser record selected:', JSON.stringify(adviserRecord, null, 2));
 
           // Activate adviser on first login if pending
           if (adviserRecord.status === 'pending') {
@@ -82,7 +99,7 @@ export default function Home() {
 
         console.log('✗ No Adviser record found - defaulting to client portal');
         console.log('No routing match - loading client fact find...');
-        console.log('=== END ROUTING DEBUG ===');
+        console.log('=== END ROUTING DEBUG ===\n');
         
         // Default: client portal - continue loading fact find
         const urlParams = new URLSearchParams(window.location.search);
