@@ -65,7 +65,7 @@ export default function Register() {
 
          // STEP 1: Ensure fallback group exists
          console.log('Ensuring PrimeSolve Unassigned fallback group exists...');
-         let fallbackGroups = await base44.entities.AdviceGroup.filter({ name: 'PrimeSolve Unassigned' }, null, null, 'prod');
+         let fallbackGroups = await base44.entities.AdviceGroup.filter({ name: 'PrimeSolve Unassigned' });
          let fallbackGroup = fallbackGroups && fallbackGroups.length > 0 ? fallbackGroups[0] : null;
 
          if (!fallbackGroup) {
@@ -88,7 +88,7 @@ export default function Register() {
            console.log('Checking for AdviceGroup with AFSL:', formData.afslNumber);
            const matchedGroups = await base44.entities.AdviceGroup.filter({ 
              afslNumber: formData.afslNumber 
-           }, null, null, 'prod');
+           });
            if (matchedGroups && matchedGroups.length > 0) {
              targetGroupId = matchedGroups[0].id;
              console.log('✓ AFSL matched - using group ID:', targetGroupId);
@@ -114,7 +114,7 @@ export default function Register() {
              last_name: formData.fullName.split(' ').slice(1).join(' ') || '',
              phone: formData.phone || '',
              status: 'pending'
-           }, 'prod');
+           });
            console.log('✓ Adviser created successfully - ID:', adviser.id, 'User ID:', adviser.user_id, 'Group ID:', adviser.advice_group_id);
          } catch (adviserError) {
            console.error('✗ CRITICAL: Adviser creation failed:', adviserError);
