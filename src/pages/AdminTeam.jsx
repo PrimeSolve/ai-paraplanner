@@ -42,12 +42,16 @@ export default function AdminTeam() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [inviteSuccess, setInviteSuccess] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
 
   useEffect(() => {
     loadTeam();
 
     // Listen for custom event from header button
-    const handleOpenDialog = () => setShowInviteModal(true);
+    const handleOpenDialog = () => {
+      setEditingMember(null);
+      setShowInviteModal(true);
+    };
     window.addEventListener('openAddMemberDialog', handleOpenDialog);
     return () => window.removeEventListener('openAddMemberDialog', handleOpenDialog);
   }, []);
@@ -82,6 +86,26 @@ export default function AdminTeam() {
     }
   };
 
+  const handleEditMember = (member) => {
+    setEditingMember(member);
+    setInviteEmail(member.email);
+    setInviteName(member.full_name);
+    setSelectedRole(member.role);
+    setShowInviteModal(true);
+  };
+
+  const handleRemoveMember = async (memberId) => {
+    if (!confirm('Are you sure you want to remove this team member?')) return;
+
+    try {
+      await base44.entities.Admin.delete(memberId);
+      toast.success('Team member removed');
+      await loadTeam();
+    } catch (error) {
+      toast.error('Failed to remove member');
+    }
+  };
+
   const handleSaveMember = async () => {
     if (!inviteEmail) {
       toast.error('Please enter an email address');
@@ -91,26 +115,34 @@ export default function AdminTeam() {
     setInviting(true);
 
     try {
-      // 1. Create Admin record with pending status
-      await base44.entities.Admin.create({
-        email: inviteEmail,
-        first_name: inviteName.split(' ')[0] || '',
-        last_name: inviteName.split(' ').slice(1).join(' ') || '',
-        status: 'pending'
-      });
+      if (editingMember) {
+        // Update existing member
+        await base44.entities.Admin.update(editingMember.id, {
+          email: inviteEmail,
+          first_name: inviteName.split(' ')[0] || '',
+          last_name: inviteName.split(' ').slice(1).join(' ') || ''
+        });
+        toast.success('Team member updated');
+      } else {
+        // Create new member
+        await base44.entities.Admin.create({
+          email: inviteEmail,
+          first_name: inviteName.split(' ')[0] || '',
+          last_name: inviteName.split(' ').slice(1).join(' ') || '',
+          status: 'pending'
+        });
+        await base44.users.inviteUser(inviteEmail, selectedRole);
+        toast.success(`Invite sent to ${inviteEmail}`);
+      }
 
-      // 2. Send invite email
-      await base44.users.inviteUser(inviteEmail, selectedRole);
-
-      // 3. Success
-      toast.success(`Invite sent to ${inviteEmail}`);
       setInviteEmail('');
       setInviteName('');
       setSelectedRole('user');
+      setEditingMember(null);
       setShowInviteModal(false);
       await loadTeam();
     } catch (error) {
-      toast.error(error?.message || 'Failed to send invite');
+      toast.error(error?.message || 'Failed to save member');
     } finally {
       setInviting(false);
     }
@@ -345,7 +377,11 @@ export default function AdminTeam() {
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
-                        <Button size="sm" className="bg-[#3b82f6] hover:bg-[#2563eb] text-white">
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleEditMember(member)}
+                          className="bg-[#3b82f6] hover:bg-[#2563eb] text-white"
+                        >
                           View
                         </Button>
                         <DropdownMenu>
@@ -355,8 +391,15 @@ export default function AdminTeam() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>Edit</DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">Remove</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditMember(member)}>
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleRemoveMember(member.id)}
+                              className="text-red-600"
+                            >
+                              Remove
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -377,7 +420,7 @@ export default function AdminTeam() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-[#0f172a]">
-              {inviteSuccess ? '✓ Invite Sent' : 'Add Team Member'}
+              {inviteSuccess ? '✓ Invite Sent' : editingMember ? 'Edit Team Member' : 'Add Team Member'}
             </DialogTitle>
           </DialogHeader>
           
@@ -481,10 +524,12 @@ export default function AdminTeam() {
               </div>
 
               <div className="flex justify-end gap-3 pt-4">
-                {console.log('Rendering buttons - inviteEmail:', inviteEmail, 'inviting:', inviting, 'disabled:', inviting || !inviteEmail)}
                 <Button 
                   variant="outline" 
-                  onClick={() => setShowInviteModal(false)}
+                  onClick={() => {
+                    setShowInviteModal(false);
+                    setEditingMember(null);
+                  }}
                 >
                   Cancel
                 </Button>
@@ -493,8 +538,14 @@ export default function AdminTeam() {
                   disabled={inviting || !inviteEmail}
                   className="bg-[#3b82f6] hover:bg-[#2563eb]"
                 >
-                  <Send className="w-4 h-4 mr-2" />
-                  {inviting ? 'Sending...' : 'Send Invite'}
+                  {editingMember ? (
+                    <>Save Changes</>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      {inviting ? 'Sending...' : 'Send Invite'}
+                    </>
+                  )}
                 </Button>
               </div>
             </>
