@@ -70,10 +70,15 @@ export default function Register() {
           full_name: formData.primaryContact
         });
         
+        // Set user_type for routing
+        console.log('Setting user_type to advice_group...');
+        await base44.auth.updateMe({ user_type: 'advice_group' });
+        
         // Create AdviceGroup record
         console.log('Creating AdviceGroup record...');
+        const currentUser = await base44.auth.me();
         await base44.entities.AdviceGroup.create({
-          user_id: '', // Will be set after user verifies email
+          user_id: currentUser.id,
           name: formData.groupName,
           contact_email: formData.email,
           contact_phone: formData.phone || '',
