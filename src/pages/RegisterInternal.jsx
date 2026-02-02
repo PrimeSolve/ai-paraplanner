@@ -38,6 +38,19 @@ export default function RegisterInternal() {
         return;
       }
 
+      // Check if user already exists
+      const users = await base44.entities.User.filter({ email: email });
+      if (users.length > 0) {
+        setAlreadyRegistered(true);
+        setInviteData({
+          email: email,
+          name: name || users[0].full_name || 'Team Member',
+          role: role || 'user'
+        });
+        setLoading(false);
+        return;
+      }
+
       setInviteData({
         email: email,
         name: name || 'Team Member',
