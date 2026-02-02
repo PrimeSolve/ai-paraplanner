@@ -21,19 +21,28 @@ export default function SignIn() {
     e.preventDefault();
     console.log('=== LOGIN ATTEMPT ===');
     console.log('Email:', formData.email);
-    console.log('Password:', formData.password);
     
     try {
       setLoading(true);
       console.log('Calling loginViaEmailPassword...');
       const result = await base44.auth.loginViaEmailPassword(formData.email, formData.password);
       console.log('Login success:', result);
-      window.location.href = createPageUrl('Home');
+      
+      // Check if user has an Admin record (team member)
+      console.log('Checking for Admin record...');
+      const adminRecords = await base44.entities.Admin.filter({ email: formData.email });
+      console.log('Admin records found:', adminRecords.length);
+      
+      if (adminRecords.length > 0) {
+        // User is a team member, go to admin/adviser dashboard
+        window.location.href = createPageUrl('Home');
+      } else {
+        // User is a client, go to client dashboard
+        window.location.href = createPageUrl('Home');
+      }
     } catch (error) {
       console.error('=== LOGIN ERROR ===');
-      console.error('Error object:', error);
       console.error('Error message:', error?.message);
-      console.error('Error code:', error?.code);
       toast.error(error?.message || 'Login failed');
     } finally {
       setLoading(false);
