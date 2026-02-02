@@ -46,6 +46,7 @@ export default function AdminTeam() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [inviteSuccess, setInviteSuccess] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
+  const [memberToDelete, setMemberToDelete] = useState(null);
 
   useEffect(() => {
     loadTeam();
@@ -93,12 +94,13 @@ export default function AdminTeam() {
     navigate(createPageUrl('AdminTeamMemberProfile') + '?id=' + member.id);
   };
 
-  const handleRemoveMember = async (memberId) => {
-    if (!confirm('Are you sure you want to remove this team member?')) return;
+  const handleRemoveMember = async () => {
+    if (!memberToDelete) return;
 
     try {
-      await base44.entities.Admin.delete(memberId);
+      await base44.entities.Admin.delete(memberToDelete.id);
       toast.success('Team member removed');
+      setMemberToDelete(null);
       await loadTeam();
     } catch (error) {
       toast.error('Failed to remove member');
@@ -394,7 +396,7 @@ export default function AdminTeam() {
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem 
-                              onClick={() => handleRemoveMember(member.id)}
+                              onClick={() => setMemberToDelete(member)}
                               className="text-red-600"
                             >
                               Remove
@@ -551,6 +553,41 @@ export default function AdminTeam() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={!!memberToDelete} onOpenChange={(open) => !open && setMemberToDelete(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-[#0f172a]">
+              Remove Team Member
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="py-4">
+            <p className="text-[#0f172a] mb-2">
+              Are you sure you want to remove <strong>{memberToDelete?.full_name || memberToDelete?.email}</strong>?
+            </p>
+            <p className="text-sm text-[#64748b]">
+              This action cannot be undone. They will lose access to the platform immediately.
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setMemberToDelete(null)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleRemoveMember}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Remove Member
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      </div>
+      );
+      }
