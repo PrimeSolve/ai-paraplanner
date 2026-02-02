@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { RoleProvider } from '@/components/RoleContext';
 import AppShell from '@/components/AppShell';
+import AdviceGroupLayout from '@/components/advicegroup/AdviceGroupLayout';
 
 export default function Layout({ children, currentPageName }) {
   const [loading, setLoading] = useState(true);
@@ -169,6 +170,17 @@ export default function Layout({ children, currentPageName }) {
 
   const pageContent = children;
 
+  // Determine which layout to use
+  let layoutComponent = null;
+  
+  if (adviceGroupPages.includes(currentPageName)) {
+    layoutComponent = <AdviceGroupLayout currentPage={currentPageName}>{pageContent}</AdviceGroupLayout>;
+  } else if (!hideNav) {
+    layoutComponent = <AppShell pageActions={pageActions} pageTitle={pageTitle}>{pageContent}</AppShell>;
+  } else {
+    layoutComponent = children;
+  }
+
   return (
     <RoleProvider>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100" style={{ paddingTop: isInTestMode ? '40px' : '0' }}>
@@ -180,7 +192,7 @@ export default function Layout({ children, currentPageName }) {
             --accent-dark: #d97706;
           }
         `}</style>
-        {hideNav ? children : <AppShell pageActions={pageActions} pageTitle={pageTitle}>{pageContent}</AppShell>}
+        {layoutComponent}
       </div>
     </RoleProvider>
   );
