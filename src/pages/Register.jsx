@@ -56,97 +56,99 @@ export default function Register() {
       
       // Register user
        if (accountType === 'adviser') {
-         console.log('Registering adviser:', formData.email);
-         await base44.auth.register({
+          console.log('Registering adviser:', formData.email);
+          const registrationResult = await base44.auth.register({
+            email: formData.email,
+            password: formData.password,
+            full_name: formData.fullName
+          });
+
+          // Use the returned user ID from registration, NOT base44.auth.me()
+          const newUserId = registrationResult.id || registrationResult.user?.id;
+          console.log('✓ New user registered with ID:', newUserId);
+
+          // STEP 1: Ensure fallback group exists
+          console.log('Ensuring PrimeSolve Unassigned fallback group exists...');
+          let fallbackGroups = await base44.entities.AdviceGroup.filter({ name: 'PrimeSolve Unassigned' });
+          let fallbackGroup = fallbackGroups && fallbackGroups.length > 0 ? fallbackGroups[0] : null;
+
+          if (!fallbackGroup) {
+            console.log('Creating PrimeSolve Unassigned fallback group...');
+            fallbackGroup = await base44.entities.AdviceGroup.create({
+              name: 'PrimeSolve Unassigned',
+              contact_email: 'unassigned@primesolve.com.au',
+              status: 'active',
+              subscription_tier: 'professional'
+            });
+            console.log('✓ Created fallback group - ID:', fallbackGroup.id);
+          } else {
+            console.log('✓ Fallback group exists - ID:', fallbackGroup.id);
+          }
+
+          // STEP 2: Try to match AFSL - default to fallback
+          let targetGroupId = fallbackGroup.id; // Always default to fallback
+
+          if (formData.afslNumber) {
+            console.log('Checking for AdviceGroup with AFSL:', formData.afslNumber);
+            const matchedGroups = await base44.entities.AdviceGroup.filter({ 
+              afslNumber: formData.afslNumber 
+            });
+            if (matchedGroups && matchedGroups.length > 0) {
+              targetGroupId = matchedGroups[0].id;
+              console.log('✓ AFSL matched - using group ID:', targetGroupId);
+            } else {
+              console.log('✗ AFSL not matched - using fallback group ID:', targetGroupId);
+            }
+          } else {
+            console.log('✗ No AFSL provided - using fallback group ID:', targetGroupId);
+          }
+
+          // STEP 3: Create Adviser with the CORRECT user_id from registration
+          console.log('Creating Adviser record with user_id:', newUserId, 'group_id:', targetGroupId);
+          try {
+            const adviser = await base44.entities.Adviser.create({
+              user_id: newUserId,
+              advice_group_id: targetGroupId,
+              email: formData.email,
+              first_name: formData.fullName.split(' ')[0],
+              last_name: formData.fullName.split(' ').slice(1).join(' ') || '',
+              phone: formData.phone || '',
+              status: 'pending'
+            });
+            console.log('✓ Adviser created successfully - ID:', adviser.id, 'User ID:', adviser.user_id, 'Group ID:', adviser.advice_group_id);
+          } catch (adviserError) {
+            console.error('✗ CRITICAL: Adviser creation failed:', adviserError);
+            throw new Error('Failed to create adviser record: ' + adviserError.message);
+          }
+        } else if (accountType === 'advice_group') {
+         console.log('Registering advice group:', formData.email);
+         const registrationResult = await base44.auth.register({
            email: formData.email,
            password: formData.password,
-           full_name: formData.fullName
+           full_name: formData.primaryContact
          });
 
-         // STEP 1: Ensure fallback group exists
-         console.log('Ensuring PrimeSolve Unassigned fallback group exists...');
-         let fallbackGroups = await base44.entities.AdviceGroup.filter({ name: 'PrimeSolve Unassigned' });
-         let fallbackGroup = fallbackGroups && fallbackGroups.length > 0 ? fallbackGroups[0] : null;
+         // Use the returned user ID from registration, NOT base44.auth.me()
+         const newUserId = registrationResult.id || registrationResult.user?.id;
+         console.log('✓ New user registered with ID:', newUserId);
 
-         if (!fallbackGroup) {
-           console.log('Creating PrimeSolve Unassigned fallback group...');
-           fallbackGroup = await base44.entities.AdviceGroup.create({
-             name: 'PrimeSolve Unassigned',
-             contact_email: 'unassigned@primesolve.com.au',
-             status: 'active',
-             subscription_tier: 'professional'
-           });
-           console.log('✓ Created fallback group - ID:', fallbackGroup.id);
-         } else {
-           console.log('✓ Fallback group exists - ID:', fallbackGroup.id);
-         }
+         // Create AdviceGroup record
+         console.log('Creating AdviceGroup record...');
+         await base44.entities.AdviceGroup.create({
+           user_id: newUserId,
+           name: formData.groupName,
+           afslNumber: formData.afslNumber || '',
+           contact_email: formData.email,
+           contact_phone: formData.phone || '',
+           status: 'active',
+           subscription_tier: 'professional'
+         });
 
-         // STEP 2: Try to match AFSL - default to fallback
-         let targetGroupId = fallbackGroup.id; // Always default to fallback
-
-         if (formData.afslNumber) {
-           console.log('Checking for AdviceGroup with AFSL:', formData.afslNumber);
-           const matchedGroups = await base44.entities.AdviceGroup.filter({ 
-             afslNumber: formData.afslNumber 
-           });
-           if (matchedGroups && matchedGroups.length > 0) {
-             targetGroupId = matchedGroups[0].id;
-             console.log('✓ AFSL matched - using group ID:', targetGroupId);
-           } else {
-             console.log('✗ AFSL not matched - using fallback group ID:', targetGroupId);
-           }
-         } else {
-           console.log('✗ No AFSL provided - using fallback group ID:', targetGroupId);
-         }
-
-         // STEP 3: Get authenticated user and create Adviser
-         console.log('Getting authenticated user...');
-         const currentUser = await base44.auth.me();
-         alert('DEBUG: currentUser.id = ' + currentUser.id + ', email = ' + currentUser.email);
-         console.log('✓ Authenticated user ID:', currentUser.id, 'Email:', currentUser.email);
-
-         console.log('Creating Adviser record with user_id:', currentUser.id, 'group_id:', targetGroupId);
-         try {
-           const adviser = await base44.entities.Adviser.create({
-             user_id: currentUser.id,
-             advice_group_id: targetGroupId,
-             email: formData.email,
-             first_name: formData.fullName.split(' ')[0],
-             last_name: formData.fullName.split(' ').slice(1).join(' ') || '',
-             phone: formData.phone || '',
-             status: 'pending'
-           });
-           console.log('✓ Adviser created successfully - ID:', adviser.id, 'User ID:', adviser.user_id, 'Group ID:', adviser.advice_group_id);
-         } catch (adviserError) {
-           console.error('✗ CRITICAL: Adviser creation failed:', adviserError);
-           throw new Error('Failed to create adviser record: ' + adviserError.message);
-         }
-       } else if (accountType === 'advice_group') {
-        console.log('Registering advice group:', formData.email);
-        await base44.auth.register({
-          email: formData.email,
-          password: formData.password,
-          full_name: formData.primaryContact
-        });
-        
-        // Create AdviceGroup record
-        console.log('Creating AdviceGroup record...');
-        const currentUser = await base44.auth.me();
-        await base44.entities.AdviceGroup.create({
-          user_id: currentUser.id,
-          name: formData.groupName,
-          afslNumber: formData.afslNumber || '',
-          contact_email: formData.email,
-          contact_phone: formData.phone || '',
-          status: 'active',
-          subscription_tier: 'professional'
-        });
-        
-        // Set user_type AFTER creating AdviceGroup
-        console.log('Setting user_type to advice_group...');
-        await base44.auth.updateMe({ user_type: 'advice_group' });
-        console.log('AdviceGroup created and user_type set');
-      }
+         // Set user_type AFTER creating AdviceGroup
+         console.log('Setting user_type to advice_group...');
+         await base44.auth.updateMe({ user_type: 'advice_group' });
+         console.log('AdviceGroup created and user_type set');
+       }
       
       console.log('Registration complete, redirecting to VerifyEmail');
       toast.success('Account created! Please verify your email.');
