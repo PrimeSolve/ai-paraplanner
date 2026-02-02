@@ -136,7 +136,7 @@ export default function Home() {
       }
     };
     loadData();
-  }, []);
+  }, [navigate]);
 
   // Calculate financial metrics
   const calculateNetWorth = () => {
