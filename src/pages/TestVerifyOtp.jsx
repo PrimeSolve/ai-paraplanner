@@ -9,13 +9,26 @@ export default function TestVerifyOtp() {
   useEffect(() => {
     const test = async () => {
       try {
-        console.log('Calling verifyOtp with email: logintest@hotmail.com, otp: 644299');
-        const res = await base44.auth.verifyOtp({
-          email: 'logintest@hotmail.com',
-          otp: '644299'
-        });
-        console.log('SUCCESS:', res);
-        setResult(res);
+        console.log('Requesting fresh OTP for logintest@hotmail.com...');
+        await base44.auth.resendOtp('logintest@hotmail.com');
+        setResult('Fresh OTP sent. Fetching new code from DB...');
+        
+        // Get the fresh OTP code from the database
+        setTimeout(async () => {
+          const users = await base44.entities.User.filter({ email: 'logintest@hotmail.com' });
+          if (users[0]?.otp_code) {
+            const newOtp = users[0].otp_code;
+            console.log('Fresh OTP code:', newOtp);
+            setResult(`Fresh OTP received: ${newOtp}. Verifying...`);
+            
+            const verifyRes = await base44.auth.verifyOtp({
+              email: 'logintest@hotmail.com',
+              otpCode: newOtp
+            });
+            console.log('VERIFY SUCCESS:', verifyRes);
+            setResult('SUCCESS: ' + JSON.stringify(verifyRes, null, 2));
+          }
+        }, 500);
       } catch (err) {
         console.error('ERROR:', err);
         const errorMsg = err?.message || err?.detail || err?.error || JSON.stringify(err, null, 2) || 'Unknown error';
