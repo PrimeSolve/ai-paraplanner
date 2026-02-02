@@ -21,15 +21,18 @@ export default function RegisterInternal() {
 
   const loadInviteData = async () => {
     try {
-      // Get invite token from URL
+      // Get invite data from URL
       const urlParams = new URLSearchParams(window.location.search);
       const email = urlParams.get('email');
+      const name = urlParams.get('name');
+      const role = urlParams.get('role');
 
       if (!email) {
         // For preview purposes, show dummy data
         setInviteData({
           email: 'invited.user@example.com',
-          name: 'Team Member'
+          name: 'Team Member',
+          role: 'user'
         });
         setLoading(false);
         return;
@@ -37,7 +40,8 @@ export default function RegisterInternal() {
 
       setInviteData({
         email: email,
-        name: 'Team Member'
+        name: name || 'Team Member',
+        role: role || 'user'
       });
     } catch (error) {
       console.error('Failed to load invite data:', error);
@@ -68,14 +72,30 @@ export default function RegisterInternal() {
     setSubmitting(true);
 
     try {
-      // Base44 handles invite completion through their system
-      // This is a placeholder for the actual invite completion flow
+      // Complete the invite by creating the User account
+      await base44.users.inviteUser(inviteData.email, inviteData.role || 'user');
+      
+      // Update Admin record status to active and link user
+      const admins = await base44.entities.Admin.filter({ email: inviteData.email });
+      if (admins.length > 0) {
+        const admin = admins[0];
+        
+        // Get the newly created user
+        const users = await base44.entities.User.filter({ email: inviteData.email });
+        if (users.length > 0) {
+          await base44.entities.Admin.update(admin.id, {
+            status: 'active',
+            user_id: users[0].id
+          });
+        }
+      }
+      
       toast.success('Account setup complete!');
       
-      // Redirect to Home which will route to AdminDashboard
+      // Redirect to login
       setTimeout(() => {
-        window.location.href = createPageUrl('Home');
-      }, 1000);
+        window.location.href = createPageUrl('SignIn');
+      }, 1500);
     } catch (error) {
       console.error('Registration failed:', error);
       toast.error(error?.message || 'Failed to complete setup');
