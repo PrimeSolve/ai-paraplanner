@@ -14,6 +14,7 @@ export default function RegisterInternal() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
 
   useEffect(() => {
     loadInviteData();
@@ -121,6 +122,36 @@ export default function RegisterInternal() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0F4C5C]"></div>
+      </div>
+    );
+  }
+
+  if (alreadyRegistered) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+        <div className="w-full max-w-md text-center">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="w-10 h-10 text-green-600" />
+          </div>
+          
+          <h2 className="text-3xl font-bold text-[#0f172a] mb-3">
+            Welcome back!
+          </h2>
+          <p className="text-lg text-[#64748b] mb-8">
+            Your account has already been set up. You can now log in to access your dashboard.
+          </p>
+
+          <Button
+            onClick={() => window.location.href = createPageUrl('SignIn')}
+            className="w-full bg-gradient-to-r from-[#0F4C5C] to-[#1a6b7d] hover:from-[#0d3f4a] hover:to-[#155563] text-white h-12 text-base font-semibold"
+          >
+            Go to Login
+          </Button>
+
+          <p className="text-sm text-[#64748b] mt-6">
+            Forgot your password? You can reset it on the login page.
+          </p>
+        </div>
       </div>
     );
   }
