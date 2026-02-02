@@ -86,30 +86,24 @@ export default function RegisterInternal() {
     setSubmitting(true);
 
     try {
-      // Complete the invite by creating the User account
-      await base44.users.inviteUser(inviteData.email, inviteData.role || 'user');
-      
-      // Update Admin record status to active and link user
+      // Update Admin record to mark as ready for Base44 invite
       const admins = await base44.entities.Admin.filter({ email: inviteData.email });
       if (admins.length > 0) {
         const admin = admins[0];
-        
-        // Get the newly created user
-        const users = await base44.entities.User.filter({ email: inviteData.email });
-        if (users.length > 0) {
-          await base44.entities.Admin.update(admin.id, {
-            status: 'active',
-            user_id: users[0].id
-          });
-        }
+        await base44.entities.Admin.update(admin.id, {
+          status: 'ready_for_invite'
+        });
       }
       
-      toast.success('Account setup complete!');
+      // Now trigger the actual Base44 user invite
+      await base44.users.inviteUser(inviteData.email, inviteData.role || 'user');
+      
+      toast.success('Setup link sent! Check your email to complete registration.');
       
       // Redirect to login
       setTimeout(() => {
         window.location.href = createPageUrl('SignIn');
-      }, 1500);
+      }, 2000);
     } catch (error) {
       console.error('Registration failed:', error);
       toast.error(error?.message || 'Failed to complete setup');

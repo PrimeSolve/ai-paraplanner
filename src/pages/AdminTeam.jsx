@@ -134,27 +134,8 @@ export default function AdminTeam() {
           user_type: selectedRole === 'admin' ? 'admin' : 'paraplanner'
         });
 
-        // Send custom welcome email with registration link
-        const registerUrl = `${window.location.origin}${createPageUrl('RegisterInternal')}?email=${encodeURIComponent(inviteEmail)}&role=${selectedRole}&name=${encodeURIComponent(inviteName)}`;
-
-        await base44.integrations.Core.SendEmail({
-          to: inviteEmail,
-          subject: 'Welcome to AI Paraplanner - Complete Your Setup',
-          body: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h1 style="color: #0F4C5C;">Welcome to AI Paraplanner!</h1>
-              <p>Hi ${inviteName || 'there'},</p>
-              <p>You've been invited to join the AI Paraplanner team as ${selectedRole === 'admin' ? 'an Admin' : 'a Paraplanner'}.</p>
-              <p>Click the button below to complete your account setup:</p>
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${registerUrl}" style="background-color: #0F4C5C; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Complete Setup</a>
-              </div>
-              <p style="color: #64748b; font-size: 14px;">Or copy and paste this link into your browser:</p>
-              <p style="color: #64748b; font-size: 12px; word-break: break-all;">${registerUrl}</p>
-              <p style="margin-top: 40px; color: #64748b; font-size: 12px;">If you didn't expect this invitation, please ignore this email.</p>
-            </div>
-          `
-        });
+        // Directly call Base44's invite system which sends email and handles password setup
+        await base44.users.inviteUser(inviteEmail, selectedRole);
 
         toast.success(`Invite sent to ${inviteEmail}`);
       }
