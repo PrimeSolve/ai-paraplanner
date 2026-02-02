@@ -153,7 +153,17 @@ export default function AdminTeam() {
         });
 
         console.log('Step 7: Registration successful! Result:', registerResult);
-        console.log('Step 7b: Creating Admin record...');
+        
+        // Auto-verify the user so they can log in immediately
+        console.log('Step 7a: Finding user to verify...');
+        const users = await base44.entities.User.filter({ email: inviteEmail });
+        if (users.length > 0) {
+          console.log('Step 7b: Verifying user...');
+          await base44.entities.User.update(users[0].id, { is_verified: true });
+          console.log('Step 7c: User verified!');
+        }
+        
+        console.log('Step 8: Creating Admin record...');
         
         await base44.entities.Admin.create({
           email: inviteEmail,
@@ -163,18 +173,18 @@ export default function AdminTeam() {
           user_type: selectedRole === 'admin' ? 'admin' : 'paraplanner'
         });
 
-        console.log('Step 8: Admin record created, showing success');
+        console.log('Step 9: Admin record created, showing success');
         setSuccessCredentials({ email: inviteEmail, password: tempPassword });
       }
 
-      console.log('Step 9: Clearing form and reloading team');
+      console.log('Step 10: Clearing form and reloading team');
       setInviteEmail('');
       setInviteName('');
       setTempPassword('');
       setSelectedRole('user');
       setEditingMember(null);
       await loadTeam();
-      console.log('Step 10: Complete!');
+      console.log('Step 11: Complete!');
     } catch (error) {
       console.error('ERROR in handleSaveMember:', error);
       alert('Error: ' + error.message);
