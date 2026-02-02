@@ -86,16 +86,15 @@ export default function AdminTeam() {
     console.log('Step 2: Starting save...');
     
     try {
-      // Step 1: Send invite via auth first (creates the user)
-      console.log('Step 3: About to call base44.auth.inviteUser');
-      const newUser = await base44.auth.inviteUser(inviteEmail, selectedRole);
-      console.log('Step 4: Invite sent, new user:', newUser);
+      // Step 1: Send invite via users.inviteUser (correct method)
+      console.log('Step 3: About to call base44.users.inviteUser');
+      await base44.users.inviteUser(inviteEmail, selectedRole);
+      console.log('Step 4: Invite sent successfully');
       toast.success('Team member invited');
 
-      // Step 2: Create Admin record with the new user_id
+      // Step 2: Create Admin record
       console.log('Step 5: Creating Admin record for:', inviteEmail);
       const adminRecord = await base44.entities.Admin.create({
-        user_id: newUser?.id,
         email: inviteEmail,
         status: 'active'
       });
