@@ -43,6 +43,7 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Submit button clicked, accountType:', accountType);
     
     if (!formData.agreeToTerms) {
       toast.error('Please agree to the Terms of Service');
@@ -51,23 +52,46 @@ export default function Register() {
 
     setLoading(true);
     try {
+      console.log('Starting registration for:', accountType);
+      
+      // Register user
       if (accountType === 'adviser') {
+        console.log('Registering adviser:', formData.email);
         await base44.auth.register({
           email: formData.email,
           password: formData.password,
           full_name: formData.fullName
         });
-      } else {
+      } else if (accountType === 'advice_group') {
+        console.log('Registering advice group:', formData.email);
         await base44.auth.register({
           email: formData.email,
           password: formData.password,
           full_name: formData.primaryContact
         });
+        
+        // Create AdviceGroup record
+        console.log('Creating AdviceGroup record...');
+        await base44.entities.AdviceGroup.create({
+          user_id: '', // Will be set after user verifies email
+          name: formData.groupName,
+          contact_email: formData.email,
+          contact_phone: formData.phone || '',
+          status: 'active',
+          subscription_tier: 'professional'
+        });
+        console.log('AdviceGroup created');
       }
-      toast.success('Registration successful! Please check your email to verify your account.');
+      
+      console.log('Registration complete, redirecting to VerifyEmail');
+      toast.success('Account created! Please verify your email.');
+      
+      // Redirect to VerifyEmail with email pre-filled
+      window.location.href = createPageUrl('VerifyEmail') + `?email=${encodeURIComponent(formData.email)}`;
     } catch (error) {
-      toast.error(error.message || 'Registration failed');
-    } finally {
+      console.error('Registration error:', error);
+      alert('Error: ' + error.message);
+      toast.error(error?.message || 'Registration failed');
       setLoading(false);
     }
   };
