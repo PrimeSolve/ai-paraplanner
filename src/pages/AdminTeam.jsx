@@ -156,12 +156,18 @@ export default function AdminTeam() {
         console.log('Step 7: Registration successful! Result:', registerResult);
         
         // Auto-verify the user so they can log in immediately
-        console.log('Step 7a: Finding user to verify...');
+        console.log('Step 7a: Waiting for user to be created...');
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        
         const users = await base44.entities.User.filter({ email: inviteEmail });
+        console.log('Found users:', users.length);
         if (users.length > 0) {
-          console.log('Step 7b: Verifying user...');
-          await base44.entities.User.update(users[0].id, { is_verified: true });
-          console.log('Step 7c: User verified!');
+          console.log('User ID to update:', users[0].id);
+          console.log('Full user object:', JSON.stringify(users[0]));
+          const updateResult = await base44.entities.User.update(users[0].id, { is_verified: true });
+          console.log('Update result:', JSON.stringify(updateResult));
+        } else {
+          console.log('ERROR: No user found with email:', inviteEmail);
         }
         
         console.log('Step 8: Creating Admin record...');
