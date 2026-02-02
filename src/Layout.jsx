@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { RoleProvider } from '@/components/RoleContext';
 import AppShell from '@/components/AppShell';
 import AdviceGroupLayout from '@/components/advicegroup/AdviceGroupLayout';
+import AdviserLayout from '@/components/adviser/AdviserLayout';
 
 export default function Layout({ children, currentPageName }) {
   const [loading, setLoading] = useState(false);
@@ -12,7 +13,8 @@ export default function Layout({ children, currentPageName }) {
   // Pages that should not have the AppShell navigation
   const noNavPages = ['Whitepaper', 'PublicHome', 'PublicAbout', 'PublicPricing', 'PublicContact', 'Register', 'SignIn', 'VerifyEmail'];
   const adviceGroupPages = ['AdviceGroupDashboard', 'AdviceGroupSOARequests', 'AdviceGroupCompleted', 'AdviceGroupAdvisers', 'AdviceGroupClients', 'AdviceGroupProfile', 'AdviceGroupSettings', 'AdviceGroupHelp', 'AdviceGroupRiskProfiles', 'AdviceGroupModelPortfolios', 'AdviceGroupSOATemplate'];
-  const hideNav = noNavPages.includes(currentPageName) || adviceGroupPages.includes(currentPageName);
+  const adviserPages = ['AdviserDashboard', 'AdviserClients', 'AdviserFactFinds', 'AdviserSOARequests', 'AdviserSettings', 'AdviserProfile', 'AdviserHelp'];
+  const hideNav = noNavPages.includes(currentPageName) || adviceGroupPages.includes(currentPageName) || adviserPages.includes(currentPageName);
 
   // Check if in test mode for top padding
   const isInTestMode = typeof window !== 'undefined' && !!localStorage.getItem('test_mode_entity');
@@ -155,6 +157,8 @@ export default function Layout({ children, currentPageName }) {
   
   if (adviceGroupPages.includes(currentPageName)) {
     layoutComponent = <AdviceGroupLayout currentPage={currentPageName}>{pageContent}</AdviceGroupLayout>;
+  } else if (adviserPages.includes(currentPageName)) {
+    layoutComponent = <AdviserLayout currentPage={currentPageName}>{pageContent}</AdviserLayout>;
   } else if (!hideNav) {
     layoutComponent = <AppShell pageActions={pageActions} pageTitle={pageTitle}>{pageContent}</AppShell>;
   } else {
