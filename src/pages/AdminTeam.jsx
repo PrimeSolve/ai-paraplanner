@@ -498,7 +498,10 @@ export default function AdminTeam() {
                   Cancel
                 </Button>
                 <Button 
-                  onClick={handleSaveMember} 
+                  onClick={() => {
+                    alert('Click registered - now calling handleSaveMember');
+                    handleSaveMember();
+                  }}
                   disabled={inviting || !inviteEmail}
                   className="bg-[#3b82f6] hover:bg-[#2563eb]"
                 >
