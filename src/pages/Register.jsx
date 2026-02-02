@@ -104,7 +104,7 @@ export default function Register() {
            first_name: formData.fullName.split(' ')[0],
            last_name: formData.fullName.split(' ').slice(1).join(' ') || '',
            phone: formData.phone || '',
-           status: 'active'
+           status: 'pending'
          });
          console.log('✓ Adviser record created and linked to group');
        } else if (accountType === 'advice_group') {

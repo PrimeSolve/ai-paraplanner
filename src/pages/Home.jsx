@@ -60,8 +60,27 @@ export default function Home() {
           return;
         }
 
-        console.log('✗ No AdviceGroup or Admin record found - defaulting to client portal');
-        
+        console.log('✗ No AdviceGroup record found - checking for Adviser record...');
+
+        // THIRD: Check for Adviser record
+        const adviserRecords = await base44.entities.Adviser.filter({ user_id: currentUser.id });
+        console.log('Adviser check for user_id:', currentUser.id, 'Found:', adviserRecords?.length, 'records');
+
+        if (adviserRecords && adviserRecords.length > 0) {
+          const adviserRecord = adviserRecords[0];
+
+          // Activate adviser on first login if pending
+          if (adviserRecord.status === 'pending') {
+            console.log('✓ First login - activating Adviser record');
+            await base44.entities.Adviser.update(adviserRecord.id, { status: 'active' });
+          }
+
+          console.log('✓ Adviser record found - redirecting to AdviserDashboard');
+          navigate(createPageUrl('AdviserDashboard'));
+          return;
+        }
+
+        console.log('✗ No Adviser record found - defaulting to client portal');
         console.log('No routing match - loading client fact find...');
         console.log('=== END ROUTING DEBUG ===');
         
