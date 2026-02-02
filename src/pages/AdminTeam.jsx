@@ -176,6 +176,7 @@ export default function AdminTeam() {
 
         console.log('Step 9: Admin record created, showing success');
         setSuccessCredentials({ email: inviteEmail, password: tempPassword });
+        setInviting(false);
       }
 
       console.log('Step 10: Clearing form and reloading team');
