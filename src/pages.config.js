@@ -58,6 +58,7 @@ import AdminProfile from './pages/AdminProfile';
 import AdminQueue from './pages/AdminQueue';
 import AdminSettings from './pages/AdminSettings';
 import AdminTeam from './pages/AdminTeam';
+import AdminTeamMemberProfile from './pages/AdminTeamMemberProfile';
 import AdminTemplate from './pages/AdminTemplate';
 import AdminTestSetup from './pages/AdminTestSetup';
 import AdviceGroupAdvisers from './pages/AdviceGroupAdvisers';
@@ -129,8 +130,6 @@ import SOARequestTransactions from './pages/SOARequestTransactions';
 import SOARequestWelcome from './pages/SOARequestWelcome';
 import SignIn from './pages/SignIn';
 import Whitepaper from './pages/Whitepaper';
-import AdminTeamMemberProfile from './pages/AdminTeamMemberProfile';
-import RegisterInternal from './pages/RegisterInternal';
 import __Layout from './Layout.jsx';
 
 
@@ -146,6 +145,7 @@ export const PAGES = {
     "AdminQueue": AdminQueue,
     "AdminSettings": AdminSettings,
     "AdminTeam": AdminTeam,
+    "AdminTeamMemberProfile": AdminTeamMemberProfile,
     "AdminTemplate": AdminTemplate,
     "AdminTestSetup": AdminTestSetup,
     "AdviceGroupAdvisers": AdviceGroupAdvisers,
@@ -217,8 +217,6 @@ export const PAGES = {
     "SOARequestWelcome": SOARequestWelcome,
     "SignIn": SignIn,
     "Whitepaper": Whitepaper,
-    "AdminTeamMemberProfile": AdminTeamMemberProfile,
-    "RegisterInternal": RegisterInternal,
 }
 
 export const pagesConfig = {
