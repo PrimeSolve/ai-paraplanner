@@ -19,15 +19,21 @@ export default function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Login attempt started');
+    console.log('Email:', formData.email);
+    console.log('Password:', formData.password ? '(provided)' : '(empty)');
     setLoading(true);
     try {
-      await base44.auth.login({
+      console.log('Calling base44.auth.login...');
+      const result = await base44.auth.login({
         email: formData.email,
         password: formData.password
       });
+      console.log('Login successful, result:', result);
       toast.success('Login successful!');
       window.location.href = createPageUrl('Home');
     } catch (error) {
+      console.error('Login error:', error);
       toast.error(error.message || 'Login failed');
     } finally {
       setLoading(false);
