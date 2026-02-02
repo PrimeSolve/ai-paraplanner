@@ -62,12 +62,12 @@ export default function Register() {
            password: formData.password,
            full_name: formData.fullName
          });
-         
+
          // Get or create the default "PrimeSolve Unassigned" group
          console.log('Checking for PrimeSolve Unassigned group...');
          let adviceGroups = await base44.entities.AdviceGroup.filter({ name: 'PrimeSolve Unassigned' });
          let unassignedGroup = adviceGroups && adviceGroups[0];
-         
+
          if (!unassignedGroup) {
            console.log('Creating PrimeSolve Unassigned group...');
            unassignedGroup = await base44.entities.AdviceGroup.create({
@@ -76,28 +76,38 @@ export default function Register() {
              status: 'active',
              subscription_tier: 'professional'
            });
+           console.log('✓ Created PrimeSolve Unassigned group:', unassignedGroup.id);
+         } else {
+           console.log('✓ Found existing PrimeSolve Unassigned group:', unassignedGroup.id);
          }
-         
+
          // Try to match AFSL to an existing AdviceGroup
          console.log('Looking for AdviceGroup with AFSL:', formData.afslNumber);
          let targetGroup = unassignedGroup;
-         
+
          if (formData.afslNumber) {
            const matchedGroups = await base44.entities.AdviceGroup.filter({ 
              afslNumber: formData.afslNumber 
            });
            if (matchedGroups && matchedGroups.length > 0) {
              targetGroup = matchedGroups[0];
-             console.log('✓ Found matching AdviceGroup for AFSL:', formData.afslNumber);
+             console.log('✓ Found matching AdviceGroup for AFSL:', formData.afslNumber, 'ID:', targetGroup.id);
            } else {
              console.log('✗ No matching AdviceGroup found for AFSL:', formData.afslNumber, '- using Unassigned');
            }
          }
-         
+
+         // Validate targetGroup has ID before creating Adviser
+         if (!targetGroup || !targetGroup.id) {
+           throw new Error('Failed to get or create advice group. Please try again.');
+         }
+
          // Create Adviser record linked to the group
          console.log('Creating Adviser record for group:', targetGroup.id);
          const currentUser = await base44.auth.me();
-         await base44.entities.Adviser.create({
+         console.log('Current user ID:', currentUser.id);
+
+         const adviser = await base44.entities.Adviser.create({
            user_id: currentUser.id,
            advice_group_id: targetGroup.id,
            email: formData.email,
@@ -106,7 +116,7 @@ export default function Register() {
            phone: formData.phone || '',
            status: 'pending'
          });
-         console.log('✓ Adviser record created and linked to group');
+         console.log('✓ Adviser record created successfully - ID:', adviser.id, 'Group ID:', targetGroup.id);
        } else if (accountType === 'advice_group') {
         console.log('Registering advice group:', formData.email);
         await base44.auth.register({
