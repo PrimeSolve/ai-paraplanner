@@ -165,21 +165,21 @@ export default function RegisterInternal() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#0F4C5C] to-[#1a6b7d] rounded-2xl flex items-center justify-center mb-6 mx-auto lg:mx-0">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#0F4C5C] to-[#1a6b7d] rounded-2xl flex items-center justify-center mb-6">
               <Lock className="w-8 h-8 text-white" />
             </div>
             
             <h2 className="text-3xl font-bold text-[#0f172a] mb-2">
-              Welcome, {inviteData?.name || 'Team Member'}!
+              Welcome to the team!
             </h2>
             <p className="text-[#64748b] text-lg">
-              Set up your password to complete your account
+              You've been invited as a team member. Set your password to get started.
             </p>
           </div>
 
           {/* Pre-filled Info */}
           <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <div className="text-sm text-[#64748b] mb-1">Your Email</div>
+            <div className="text-sm text-[#64748b] mb-1">Email</div>
             <div className="font-medium text-[#0f172a]">{inviteData?.email}</div>
           </div>
 
