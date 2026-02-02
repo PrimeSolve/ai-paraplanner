@@ -18,10 +18,17 @@ export default function Home() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-        
-        console.log('=== HOME PAGE ROUTING DEBUG ===');
+         const currentUser = await base44.auth.me();
+         setUser(currentUser);
+
+         // HARDCODED TEST REDIRECT
+         if (currentUser.email === 'demesec509@cimario.com') {
+           console.log('HARDCODED REDIRECT FOR DEMESEC509');
+           navigate(createPageUrl('AdviserDashboard'));
+           return;
+         }
+
+         console.log('=== HOME PAGE ROUTING DEBUG ===');
         console.log('Current user ID:', currentUser.id);
         console.log('Current user email:', currentUser.email);
         console.log('Current user role:', currentUser.role);
