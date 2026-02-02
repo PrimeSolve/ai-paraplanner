@@ -71,29 +71,36 @@ export default function AdminTeam() {
   };
 
   const handleSaveMember = async () => {
-    console.log('handleSaveMember called with email:', inviteEmail, 'role:', selectedRole);
+    console.log('Step 1: Function called');
+    console.log('Email:', inviteEmail);
+    console.log('Role:', selectedRole);
+    
     if (!inviteEmail) {
+      console.log('Step 1.5: Email validation failed');
       toast.error('Please enter an email address');
       return;
     }
 
     setInviting(true);
+    console.log('Step 2: Starting save...');
+    
     try {
       // Step 1: Send invite via auth first (creates the user)
-      console.log('About to call base44.auth.inviteUser');
+      console.log('Step 3: About to call base44.auth.inviteUser');
       const newUser = await base44.auth.inviteUser(inviteEmail, selectedRole);
-      console.log('Invite sent, new user:', newUser);
+      console.log('Step 4: Invite sent, new user:', newUser);
       toast.success('Team member invited');
 
       // Step 2: Create Admin record with the new user_id
-      console.log('Creating Admin record for:', inviteEmail);
+      console.log('Step 5: Creating Admin record for:', inviteEmail);
       const adminRecord = await base44.entities.Admin.create({
         user_id: newUser?.id,
         email: inviteEmail,
         status: 'active'
       });
-      console.log('Admin record created:', adminRecord);
+      console.log('Step 6: Admin record created:', adminRecord);
       
+      console.log('Step 7: Setting success state');
       setInviteSuccess(true);
       await new Promise(resolve => setTimeout(resolve, 2000));
       setInviteEmail('');
@@ -102,10 +109,14 @@ export default function AdminTeam() {
       setInviteSuccess(false);
       setShowInviteModal(false);
       await loadTeam();
+      console.log('Step 8: Save complete');
     } catch (error) {
-      console.error('Error inviting or saving admin record:', error);
+      console.error('ERROR in handleSaveMember:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
       toast.error(error?.message || 'Failed to invite team member');
     } finally {
+      console.log('Step 9: Finally block');
       setInviting(false);
     }
   };
@@ -479,13 +490,12 @@ export default function AdminTeam() {
                   Cancel
                 </Button>
                 <Button 
-                  onClick={() => {
-                    console.log('BUTTON CLICKED');
-                    alert('Button works!');
-                  }}
+                  onClick={handleSaveMember} 
+                  disabled={inviting || !inviteEmail}
                   className="bg-[#3b82f6] hover:bg-[#2563eb]"
                 >
-                  Test Click
+                  <Send className="w-4 h-4 mr-2" />
+                  {inviting ? 'Sending...' : 'Send Invite'}
                 </Button>
               </div>
             </>
