@@ -60,17 +60,7 @@ export default function Home() {
           return;
         }
 
-        console.log('✗ No AdviceGroup record found - checking for Adviser record...');
-
-        // Check for Adviser record by user_id (more reliable than email)
-        const adviserRecords = await base44.entities.Adviser.filter({ user_id: currentUser.id });
-        console.log('Adviser check for user_id:', currentUser.id, 'Found:', adviserRecords?.length, 'records');
-
-        if (adviserRecords && adviserRecords.length > 0) {
-          console.log('✓ Adviser record found - redirecting to AdviserDashboard');
-          navigate(createPageUrl('AdviserDashboard'));
-          return;
-        }
+        console.log('✗ No AdviceGroup or Admin record found - defaulting to client portal');
         
         console.log('No routing match - loading client fact find...');
         console.log('=== END ROUTING DEBUG ===');
