@@ -409,7 +409,10 @@ export default function AdminTeam() {
                     type="email"
                     placeholder="colleague@company.com"
                     value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
+                    onChange={(e) => {
+                      console.log('Email input onChange fired, value:', e.target.value);
+                      setInviteEmail(e.target.value);
+                    }}
                   />
                   <p className="text-xs text-[#64748b] mt-1.5">
                     The team member will be created and you can send a welcome email separately
@@ -483,6 +486,7 @@ export default function AdminTeam() {
               </div>
 
               <div className="flex justify-end gap-3 pt-4">
+                {console.log('Rendering buttons - inviteEmail:', inviteEmail, 'inviting:', inviting, 'disabled:', inviting || !inviteEmail)}
                 <Button 
                   variant="outline" 
                   onClick={() => setShowInviteModal(false)}
