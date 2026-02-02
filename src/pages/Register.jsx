@@ -88,7 +88,7 @@ export default function Register() {
            console.log('Checking for AdviceGroup with AFSL:', formData.afslNumber);
            const matchedGroups = await base44.entities.AdviceGroup.filter({ 
              afslNumber: formData.afslNumber 
-           });
+           }, null, null, 'prod');
            if (matchedGroups && matchedGroups.length > 0) {
              targetGroupId = matchedGroups[0].id;
              console.log('✓ AFSL matched - using group ID:', targetGroupId);
@@ -99,11 +99,12 @@ export default function Register() {
            console.log('✗ No AFSL provided - using fallback group ID:', targetGroupId);
          }
 
-         // STEP 3: Create Adviser with GUARANTEED group ID
-         console.log('Creating Adviser record with group ID:', targetGroupId);
+         // STEP 3: Get authenticated user and create Adviser
+         console.log('Getting authenticated user...');
          const currentUser = await base44.auth.me();
-         console.log('Current user ID:', currentUser.id, 'Email:', currentUser.email);
+         console.log('✓ Authenticated user ID:', currentUser.id, 'Email:', currentUser.email);
 
+         console.log('Creating Adviser record with user_id:', currentUser.id, 'group_id:', targetGroupId);
          try {
            const adviser = await base44.entities.Adviser.create({
              user_id: currentUser.id,
@@ -113,10 +114,10 @@ export default function Register() {
              last_name: formData.fullName.split(' ').slice(1).join(' ') || '',
              phone: formData.phone || '',
              status: 'pending'
-           });
-           console.log('✓ Adviser created - ID:', adviser.id, 'Linked to group:', targetGroupId);
+           }, 'prod');
+           console.log('✓ Adviser created successfully - ID:', adviser.id, 'User ID:', adviser.user_id, 'Group ID:', adviser.advice_group_id);
          } catch (adviserError) {
-           console.error('✗ CRITICAL: Failed to create Adviser record:', adviserError);
+           console.error('✗ CRITICAL: Adviser creation failed:', adviserError);
            throw new Error('Failed to create adviser record: ' + adviserError.message);
          }
        } else if (accountType === 'advice_group') {
