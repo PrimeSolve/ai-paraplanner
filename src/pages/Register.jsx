@@ -62,7 +62,51 @@ export default function Register() {
            password: formData.password,
            full_name: formData.fullName
          });
-         console.log('Adviser registered successfully - they will be invited by their advice group');
+         
+         // Get or create the default "PrimeSolve Unassigned" group
+         console.log('Checking for PrimeSolve Unassigned group...');
+         let adviceGroups = await base44.entities.AdviceGroup.filter({ name: 'PrimeSolve Unassigned' });
+         let unassignedGroup = adviceGroups && adviceGroups[0];
+         
+         if (!unassignedGroup) {
+           console.log('Creating PrimeSolve Unassigned group...');
+           unassignedGroup = await base44.entities.AdviceGroup.create({
+             name: 'PrimeSolve Unassigned',
+             contact_email: 'unassigned@primesolve.com.au',
+             status: 'active',
+             subscription_tier: 'professional'
+           });
+         }
+         
+         // Try to match AFSL to an existing AdviceGroup
+         console.log('Looking for AdviceGroup with AFSL:', formData.afslNumber);
+         let targetGroup = unassignedGroup;
+         
+         if (formData.afslNumber) {
+           const matchedGroups = await base44.entities.AdviceGroup.filter({ 
+             afslNumber: formData.afslNumber 
+           });
+           if (matchedGroups && matchedGroups.length > 0) {
+             targetGroup = matchedGroups[0];
+             console.log('✓ Found matching AdviceGroup for AFSL:', formData.afslNumber);
+           } else {
+             console.log('✗ No matching AdviceGroup found for AFSL:', formData.afslNumber, '- using Unassigned');
+           }
+         }
+         
+         // Create Adviser record linked to the group
+         console.log('Creating Adviser record for group:', targetGroup.id);
+         const currentUser = await base44.auth.me();
+         await base44.entities.Adviser.create({
+           user_id: currentUser.id,
+           advice_group_id: targetGroup.id,
+           email: formData.email,
+           first_name: formData.fullName.split(' ')[0],
+           last_name: formData.fullName.split(' ').slice(1).join(' ') || '',
+           phone: formData.phone || '',
+           status: 'active'
+         });
+         console.log('✓ Adviser record created and linked to group');
        } else if (accountType === 'advice_group') {
         console.log('Registering advice group:', formData.email);
         await base44.auth.register({
