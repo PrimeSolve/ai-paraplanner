@@ -18,7 +18,8 @@ export default function TestVerifyOtp() {
         setResult(res);
       } catch (err) {
         console.error('ERROR:', err);
-        setError(err?.message || err?.toString());
+        const errorMsg = err?.message || err?.detail || err?.error || JSON.stringify(err, null, 2) || 'Unknown error';
+        setError(errorMsg);
       } finally {
         setLoading(false);
       }
@@ -39,7 +40,7 @@ export default function TestVerifyOtp() {
       {error && (
         <div className="bg-red-100 p-4 rounded">
           <p className="font-bold text-red-800">ERROR:</p>
-          <p>{error}</p>
+          <pre className="whitespace-pre-wrap text-sm">{error}</pre>
         </div>
       )}
     </div>
