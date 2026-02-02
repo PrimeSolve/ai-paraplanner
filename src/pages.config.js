@@ -129,9 +129,9 @@ import SOARequestStrategy from './pages/SOARequestStrategy';
 import SOARequestTransactions from './pages/SOARequestTransactions';
 import SOARequestWelcome from './pages/SOARequestWelcome';
 import SignIn from './pages/SignIn';
-import Whitepaper from './pages/Whitepaper';
 import TestVerifyOtp from './pages/TestVerifyOtp';
 import VerifyEmail from './pages/VerifyEmail';
+import Whitepaper from './pages/Whitepaper';
 import __Layout from './Layout.jsx';
 
 
@@ -218,9 +218,9 @@ export const PAGES = {
     "SOARequestTransactions": SOARequestTransactions,
     "SOARequestWelcome": SOARequestWelcome,
     "SignIn": SignIn,
-    "Whitepaper": Whitepaper,
     "TestVerifyOtp": TestVerifyOtp,
     "VerifyEmail": VerifyEmail,
+    "Whitepaper": Whitepaper,
 }
 
 export const pagesConfig = {

@@ -21,18 +21,18 @@ export default function SignIn() {
     e.preventDefault();
     console.log('=== LOGIN ATTEMPT ===');
     console.log('Email:', formData.email);
-    
+
     try {
       setLoading(true);
       console.log('Calling loginViaEmailPassword...');
       const result = await base44.auth.loginViaEmailPassword(formData.email, formData.password);
       console.log('Login success:', result);
-      
+
       // Check if user has an Admin record (team member)
       console.log('Checking for Admin record...');
       const adminRecords = await base44.entities.Admin.filter({ email: formData.email });
       console.log('Admin records found:', adminRecords.length);
-      
+
       if (adminRecords.length > 0) {
         // User is a team member, go to admin/adviser dashboard
         window.location.href = createPageUrl('Home');
@@ -43,6 +43,14 @@ export default function SignIn() {
     } catch (error) {
       console.error('=== LOGIN ERROR ===');
       console.error('Error message:', error?.message);
+
+      // Check if error is due to unverified email
+      if (error?.message?.includes('verify') || error?.message?.includes('email')) {
+        console.log('Email not verified, redirecting to VerifyEmail page');
+        window.location.href = createPageUrl('VerifyEmail') + `?email=${encodeURIComponent(formData.email)}`;
+        return;
+      }
+
       toast.error(error?.message || 'Login failed');
     } finally {
       setLoading(false);
