@@ -39,8 +39,10 @@ export default function AdminTeam() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteName, setInviteName] = useState('');
+  const [tempPassword, setTempPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState('user');
   const [inviting, setInviting] = useState(false);
+  const [successCredentials, setSuccessCredentials] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -113,6 +115,11 @@ export default function AdminTeam() {
       return;
     }
 
+    if (!editingMember && !tempPassword) {
+      toast.error('Please enter a temporary password');
+      return;
+    }
+
     setInviting(true);
 
     try {
@@ -124,9 +131,17 @@ export default function AdminTeam() {
           last_name: inviteName.split(' ').slice(1).join(' ') || ''
         });
         toast.success('Team member updated');
+        setShowInviteModal(false);
       } else {
-        // Create new member
-        const admin = await base44.entities.Admin.create({
+        // Register user account first
+        await base44.auth.register({
+          email: inviteEmail,
+          password: tempPassword,
+          full_name: inviteName
+        });
+
+        // Create Admin record
+        await base44.entities.Admin.create({
           email: inviteEmail,
           first_name: inviteName.split(' ')[0] || '',
           last_name: inviteName.split(' ').slice(1).join(' ') || '',
@@ -134,21 +149,18 @@ export default function AdminTeam() {
           user_type: selectedRole === 'admin' ? 'admin' : 'paraplanner'
         });
 
-        // Directly call Base44's invite system which sends email and handles password setup
-        await base44.users.inviteUser(inviteEmail, selectedRole);
-
-        toast.success(`Invite sent to ${inviteEmail}`);
+        // Show success with credentials
+        setSuccessCredentials({ email: inviteEmail, password: tempPassword });
       }
 
       setInviteEmail('');
       setInviteName('');
+      setTempPassword('');
       setSelectedRole('user');
       setEditingMember(null);
-      setShowInviteModal(false);
       await loadTeam();
     } catch (error) {
       toast.error(error?.message || 'Failed to save member');
-    } finally {
       setInviting(false);
     }
   };
@@ -421,15 +433,21 @@ export default function AdminTeam() {
         </Card>
 
       {/* Invite Modal */}
-      <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
+      <Dialog open={showInviteModal} onOpenChange={(open) => {
+        if (!open) {
+          setShowInviteModal(false);
+          setSuccessCredentials(null);
+          setInviting(false);
+        }
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-[#0f172a]">
-              {inviteSuccess ? '✓ Invite Sent' : editingMember ? 'Edit Team Member' : 'Add Team Member'}
+              {successCredentials ? '✓ Team Member Created' : editingMember ? 'Edit Team Member' : 'Add Team Member'}
             </DialogTitle>
           </DialogHeader>
-          
-          {inviteSuccess ? (
+
+          {successCredentials ? (
             <div className="flex flex-col items-center justify-center py-8">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <CheckCircle className="w-8 h-8 text-green-600" />
@@ -473,6 +491,23 @@ export default function AdminTeam() {
                     onChange={(e) => setInviteName(e.target.value)}
                   />
                 </div>
+
+                {!editingMember && (
+                  <div>
+                    <label className="text-sm font-medium text-[#0f172a] mb-2 block">
+                      Temporary Password
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="Set a temporary password"
+                      value={tempPassword}
+                      onChange={(e) => setTempPassword(e.target.value)}
+                    />
+                    <p className="text-xs text-[#64748b] mt-1.5">
+                      You'll share this with the team member so they can log in
+                    </p>
+                  </div>
+                )}
 
                 <div>
                   <label className="text-sm font-medium text-[#0f172a] mb-3 block">
@@ -540,15 +575,17 @@ export default function AdminTeam() {
                 </Button>
                 <Button 
                   onClick={handleSaveMember}
-                  disabled={inviting || !inviteEmail}
+                  disabled={inviting || !inviteEmail || (!editingMember && !tempPassword)}
                   className="bg-[#3b82f6] hover:bg-[#2563eb]"
                 >
-                  {editingMember ? (
-                    <>Save Changes</>
+                  {inviting ? (
+                    'Creating...'
+                  ) : editingMember ? (
+                    'Save Changes'
                   ) : (
                     <>
-                      <Send className="w-4 h-4 mr-2" />
-                      {inviting ? 'Sending...' : 'Send Invite'}
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Member
                     </>
                   )}
                 </Button>
