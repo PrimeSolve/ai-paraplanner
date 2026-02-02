@@ -129,6 +129,7 @@ import SOARequestTransactions from './pages/SOARequestTransactions';
 import SOARequestWelcome from './pages/SOARequestWelcome';
 import SignIn from './pages/SignIn';
 import Whitepaper from './pages/Whitepaper';
+import AdminTeamMemberProfile from './pages/AdminTeamMemberProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -215,6 +216,7 @@ export const PAGES = {
     "SOARequestWelcome": SOARequestWelcome,
     "SignIn": SignIn,
     "Whitepaper": Whitepaper,
+    "AdminTeamMemberProfile": AdminTeamMemberProfile,
 }
 
 export const pagesConfig = {

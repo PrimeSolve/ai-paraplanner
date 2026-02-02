@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +33,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function AdminTeam() {
+  const navigate = useNavigate();
   const [team, setTeam] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -87,11 +90,7 @@ export default function AdminTeam() {
   };
 
   const handleEditMember = (member) => {
-    setEditingMember(member);
-    setInviteEmail(member.email);
-    setInviteName(member.full_name);
-    setSelectedRole(member.role);
-    setShowInviteModal(true);
+    navigate(createPageUrl('AdminTeamMemberProfile') + '?id=' + member.id);
   };
 
   const handleRemoveMember = async (memberId) => {
