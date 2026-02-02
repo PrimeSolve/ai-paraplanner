@@ -28,18 +28,41 @@ export default function SignIn() {
       const result = await base44.auth.loginViaEmailPassword(formData.email, formData.password);
       console.log('Login success:', result);
 
-      // Check if user has an Admin record (team member)
-      console.log('Checking for Admin record...');
-      const adminRecords = await base44.entities.Admin.filter({ email: formData.email });
-      console.log('Admin records found:', adminRecords.length);
+      // Get authenticated user
+      const user = await base44.auth.me();
+      console.log('Current user:', user.email, 'ID:', user.id);
 
+      // ROUTING LOGIC: Check entity type and route accordingly
+      // FIRST: Check for Admin record
+      console.log('Checking for Admin record...');
+      const adminRecords = await base44.entities.Admin.filter({ email: user.email });
       if (adminRecords.length > 0) {
-        // User is a team member, go to admin/adviser dashboard
-        window.location.href = createPageUrl('Home');
-      } else {
-        // User is a client, go to client dashboard
-        window.location.href = createPageUrl('Home');
+        console.log('Admin found - redirecting to AdminDashboard');
+        window.location.href = createPageUrl('AdminDashboard');
+        return;
       }
+
+      // SECOND: Check for AdviceGroup record by user_id
+      console.log('Checking for AdviceGroup record...');
+      const adviceGroupRecords = await base44.entities.AdviceGroup.filter({ user_id: user.id });
+      if (adviceGroupRecords.length > 0) {
+        console.log('AdviceGroup found - redirecting to AdviceGroupDashboard');
+        window.location.href = createPageUrl('AdviceGroupDashboard');
+        return;
+      }
+
+      // THIRD: Check for Adviser record by user_id
+      console.log('Checking for Adviser record...');
+      const adviserRecords = await base44.entities.Adviser.filter({ user_id: user.id });
+      if (adviserRecords.length > 0) {
+        console.log('Adviser found - redirecting to AdviserDashboard');
+        window.location.href = createPageUrl('AdviserDashboard');
+        return;
+      }
+
+      // DEFAULT: Client portal
+      console.log('No role found - redirecting to Home (client portal)');
+      window.location.href = createPageUrl('Home');
     } catch (error) {
       console.error('=== LOGIN ERROR ===');
       console.error('Error message:', error?.message);
