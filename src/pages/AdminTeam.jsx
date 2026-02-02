@@ -110,22 +110,30 @@ export default function AdminTeam() {
   };
 
   const handleSaveMember = async () => {
-    console.log('handleSaveMember called - inviteEmail:', inviteEmail, 'tempPassword:', tempPassword, 'editingMember:', editingMember);
-    if (!inviteEmail) {
-      toast.error('Please enter an email address');
-      return;
-    }
-
-    if (!editingMember && !tempPassword) {
-      toast.error('Please enter a temporary password');
-      return;
-    }
-
-    setInviting(true);
-
     try {
+      console.log('Step 1: Function started');
+      console.log('Email:', inviteEmail);
+      console.log('Password:', tempPassword);
+      console.log('Name:', inviteName);
+      console.log('Role:', selectedRole);
+      
+      if (!inviteEmail) {
+        console.log('Step 2: No email - showing error');
+        toast.error('Please enter an email address');
+        return;
+      }
+
+      if (!editingMember && !tempPassword) {
+        console.log('Step 3: No password - showing error');
+        toast.error('Please enter a temporary password');
+        return;
+      }
+
+      console.log('Step 4: Validation passed, setting inviting=true');
+      setInviting(true);
+
       if (editingMember) {
-        // Update existing member
+        console.log('Step 5a: Updating existing member');
         await base44.entities.Admin.update(editingMember.id, {
           email: inviteEmail,
           first_name: inviteName.split(' ')[0] || '',
@@ -134,14 +142,17 @@ export default function AdminTeam() {
         toast.success('Team member updated');
         setShowInviteModal(false);
       } else {
-        // Register user account first
+        console.log('Step 5b: Creating new member');
+        console.log('Step 6: Calling base44.auth.register...');
+        
         await base44.auth.register({
           email: inviteEmail,
           password: tempPassword,
           full_name: inviteName
         });
 
-        // Create Admin record
+        console.log('Step 7: Registration successful, creating Admin record...');
+        
         await base44.entities.Admin.create({
           email: inviteEmail,
           first_name: inviteName.split(' ')[0] || '',
@@ -150,17 +161,21 @@ export default function AdminTeam() {
           user_type: selectedRole === 'admin' ? 'admin' : 'paraplanner'
         });
 
-        // Show success with credentials
+        console.log('Step 8: Admin record created, showing success');
         setSuccessCredentials({ email: inviteEmail, password: tempPassword });
       }
 
+      console.log('Step 9: Clearing form and reloading team');
       setInviteEmail('');
       setInviteName('');
       setTempPassword('');
       setSelectedRole('user');
       setEditingMember(null);
       await loadTeam();
+      console.log('Step 10: Complete!');
     } catch (error) {
+      console.error('ERROR in handleSaveMember:', error);
+      alert('Error: ' + error.message);
       toast.error(error?.message || 'Failed to save member');
       setInviting(false);
     }
