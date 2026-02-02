@@ -71,9 +71,10 @@ export default function AdminTeam() {
   };
 
   const handleSaveMember = async () => {
-    console.log('Step 1: Function called');
-    console.log('Email:', inviteEmail);
-    console.log('Role:', selectedRole);
+    try {
+      console.log('Step 1: Function called');
+      console.log('Email:', inviteEmail);
+      console.log('Role:', selectedRole);
     
     if (!inviteEmail) {
       console.log('Step 1.5: Email validation failed');
@@ -110,14 +111,17 @@ export default function AdminTeam() {
       setShowInviteModal(false);
       await loadTeam();
       console.log('Step 8: Save complete');
-    } catch (error) {
-      console.error('ERROR in handleSaveMember:', error);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      toast.error(error?.message || 'Failed to invite team member');
-    } finally {
-      console.log('Step 9: Finally block');
-      setInviting(false);
+      } catch (error) {
+        console.error('ERROR in handleSaveMember:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        toast.error(error?.message || 'Failed to invite team member');
+      } finally {
+        console.log('Step 9: Finally block');
+        setInviting(false);
+      }
+    } catch (outerError) {
+      console.error('OUTER ERROR - function itself failed:', outerError);
     }
   };
 
