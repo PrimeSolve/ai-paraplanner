@@ -30,6 +30,17 @@ export default function Home() {
         console.log('Admin check for:', currentUser.email, 'Found:', adminRecords?.length, 'records');
         
         if (adminRecords && adminRecords.length > 0) {
+          const adminRecord = adminRecords[0];
+          
+          // If Admin record exists but has no user_id, this is first login - link them
+          if (!adminRecord.user_id) {
+            console.log('✓ First login - linking Admin record to user');
+            await base44.entities.Admin.update(adminRecord.id, { 
+              user_id: currentUser.id,
+              status: 'active' 
+            });
+          }
+          
           console.log('✓ Admin record found - redirecting to AdminDashboard');
           window.location.href = createPageUrl('AdminDashboard');
           return; // STOP - don't check anything else
