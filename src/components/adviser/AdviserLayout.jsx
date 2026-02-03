@@ -12,6 +12,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import AppHeader from '../AppHeader';
 
 export default function AdviserLayout({ children, currentPage }) {
   const [user, setUser] = useState(null);
@@ -147,7 +148,10 @@ export default function AdviserLayout({ children, currentPage }) {
 
       {/* Main Content */}
       <div className="flex-1 ml-[260px] bg-[#f8fafc]">
-        {children}
+        <div style={{ paddingTop: '64px' }}>
+          <AppHeader />
+          {children}
+        </div>
       </div>
     </div>
   );
