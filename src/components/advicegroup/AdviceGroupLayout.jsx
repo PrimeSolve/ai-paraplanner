@@ -14,7 +14,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AppHeader from '../AppHeader';
 
-export default function AdviceGroupLayout({ children, currentPage }) {
+export default function AdviceGroupLayout({ children, currentPage, pageActions }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -155,7 +155,7 @@ export default function AdviceGroupLayout({ children, currentPage }) {
       {/* Main Content */}
       <div className="flex-1 ml-[260px] bg-[#f8fafc]">
         <div style={{ paddingTop: '64px' }}>
-          <AppHeader />
+          <AppHeader pageActions={pageActions} />
           {children}
         </div>
       </div>

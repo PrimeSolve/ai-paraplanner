@@ -156,9 +156,9 @@ export default function Layout({ children, currentPageName }) {
   let layoutComponent = null;
   
   if (adviceGroupPages.includes(currentPageName)) {
-    layoutComponent = <AdviceGroupLayout currentPage={currentPageName}>{pageContent}</AdviceGroupLayout>;
+    layoutComponent = <AdviceGroupLayout currentPage={currentPageName} pageActions={pageActions}>{pageContent}</AdviceGroupLayout>;
   } else if (adviserPages.includes(currentPageName)) {
-    layoutComponent = <AdviserLayout currentPage={currentPageName}>{pageContent}</AdviserLayout>;
+    layoutComponent = <AdviserLayout currentPage={currentPageName} pageActions={pageActions}>{pageContent}</AdviserLayout>;
   } else if (!hideNav) {
     layoutComponent = <AppShell pageActions={pageActions} pageTitle={pageTitle}>{pageContent}</AppShell>;
   } else {
