@@ -124,55 +124,6 @@ export default function AdviceGroupLayout({ children, currentPage, pageActions }
             </div>
           </Link>
         </div>
-
-        <div className="p-4 border-t border-white/[0.08]">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.05] cursor-pointer transition-all">
-                <div className="w-10 h-10 bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] rounded-xl flex items-center justify-center text-white font-bold text-sm">
-                  {user?.full_name?.charAt(0) || 'U'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-white font-semibold text-sm truncate">
-                    {user?.full_name || 'User'}
-                  </div>
-                  <div className="text-[#64748b] text-xs">
-                    Advice Group
-                  </div>
-                </div>
-                <ChevronDown className="w-4 h-4 text-[#64748b]" />
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem asChild>
-                <Link to={createPageUrl('AdviceGroupProfile')} className="no-underline text-black">
-                  My Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to={createPageUrl('AdviceGroupSettings')} className="no-underline text-black">
-                  Settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to={createPageUrl('AdviceGroupHelp')} className="no-underline text-black">
-                  Help & Support
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={async () => {
-                  await base44.auth.logout();
-                  window.location.href = createPageUrl('SignIn');
-                }}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
       </div>
 
       {/* Main Content */}
