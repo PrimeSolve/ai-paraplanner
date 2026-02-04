@@ -53,10 +53,9 @@ export default function AppHeader({ pageActions, pageTitle }) {
    // The actual logged-in user (for profile display)
    const loggedInUser = originalUser || user;
 
-   // Get consistent header padding (parent wrapper handles sidebar margin)
-    const getHeaderPadding = () => {
-      return '24px'; // Normal content padding only
-    };
+   // Calculate header left position based on sidebar width
+   const isSpecialLayout = location.pathname.includes('FactFind') || location.pathname.includes('SOARequest');
+   const headerLeft = isSpecialLayout ? '320px' : '260px';
 
   const handleGoHome = () => {
     resetToOriginal();
