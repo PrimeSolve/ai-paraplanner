@@ -264,7 +264,7 @@ const PriorityBadge = ({ priority }) => {
 // MAIN DASHBOARD COMPONENT
 // ============================================
 export default function AdviceGroupDashboard() {
-  const { switchedToId } = useRole();
+  const { switchedToId, switchRole, navigationChain } = useRole();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [groupName, setGroupName] = useState('');
@@ -278,7 +278,14 @@ export default function AdviceGroupDashboard() {
         if (groupId) {
           const group = await base44.entities.AdviceGroup.list();
           const current = group.find(g => g.id === groupId);
-          if (current) setGroupName(current.name);
+          if (current) {
+            setGroupName(current.name);
+            // Ensure switchRole is called so breadcrumbs appear
+            if (navigationChain.length === 0 || navigationChain[navigationChain.length - 1].id !== groupId) {
+              console.log('AdviceGroupDashboard: calling switchRole for group', current.name, groupId);
+              switchRole('advice_group', groupId, current.name);
+            }
+          }
         }
       } catch (error) {
         console.error('Failed to load user:', error);
@@ -287,7 +294,7 @@ export default function AdviceGroupDashboard() {
       }
     };
     loadData();
-  }, [switchedToId]);
+  }, []);
 
   return (
     <div style={{
