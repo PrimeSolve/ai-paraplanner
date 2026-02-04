@@ -65,7 +65,7 @@ export default function AppShell({ children, pageActions, pageTitle }) {
     console.log('originalRole:', originalRole);
     console.log('isSpecialLayout:', isSpecialLayout);
     
-    if (isFactFindOrSOA || isClientPortal) {
+    if (isSpecialLayout) {
       console.log('Returning null due to special layout');
       return null;
     }
