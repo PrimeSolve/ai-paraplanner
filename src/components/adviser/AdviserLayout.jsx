@@ -40,6 +40,9 @@ export default function AdviserLayout({ children, currentPage, pageActions }) {
       { label: 'Support Tickets', path: 'AdviserTickets', icon: MessageSquare }
     ]},
     { section: 'SETTINGS', items: [
+      { label: 'Avatar Setup', path: 'AdviserAvatarSetup', icon: Sparkles }
+    ]},
+    { section: 'SETTINGS', items: [
       { label: 'Settings', path: 'AdviserSettings', icon: Settings }
     ]}
   ];

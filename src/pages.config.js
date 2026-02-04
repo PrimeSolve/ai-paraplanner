@@ -61,6 +61,7 @@ import AdminTeam from './pages/AdminTeam';
 import AdminTeamMemberProfile from './pages/AdminTeamMemberProfile';
 import AdminTemplate from './pages/AdminTemplate';
 import AdminTestSetup from './pages/AdminTestSetup';
+import AdminTickets from './pages/AdminTickets';
 import AdviceGroupAdvisers from './pages/AdviceGroupAdvisers';
 import AdviceGroupClients from './pages/AdviceGroupClients';
 import AdviceGroupCompleted from './pages/AdviceGroupCompleted';
@@ -73,6 +74,7 @@ import AdviceGroupRiskProfiles from './pages/AdviceGroupRiskProfiles';
 import AdviceGroupSOARequests from './pages/AdviceGroupSOARequests';
 import AdviceGroupSOATemplate from './pages/AdviceGroupSOATemplate';
 import AdviceGroupSettings from './pages/AdviceGroupSettings';
+import AdviceGroupTickets from './pages/AdviceGroupTickets';
 import AdviserAnalytics from './pages/AdviserAnalytics';
 import AdviserCalendar from './pages/AdviserCalendar';
 import AdviserClientDetail from './pages/AdviserClientDetail';
@@ -86,6 +88,7 @@ import AdviserProfile from './pages/AdviserProfile';
 import AdviserSOARequests from './pages/AdviserSOARequests';
 import AdviserSOATemplate from './pages/AdviserSOATemplate';
 import AdviserSettings from './pages/AdviserSettings';
+import AdviserTickets from './pages/AdviserTickets';
 import AvatarMarketing from './pages/AvatarMarketing';
 import ClientDashboard from './pages/ClientDashboard';
 import ClientDocuments from './pages/ClientDocuments';
@@ -132,9 +135,7 @@ import SignIn from './pages/SignIn';
 import TestVerifyOtp from './pages/TestVerifyOtp';
 import VerifyEmail from './pages/VerifyEmail';
 import Whitepaper from './pages/Whitepaper';
-import AdviserTickets from './pages/AdviserTickets';
-import AdviceGroupTickets from './pages/AdviceGroupTickets';
-import AdminTickets from './pages/AdminTickets';
+import AdviserAvatarSetup from './pages/AdviserAvatarSetup';
 import __Layout from './Layout.jsx';
 
 
@@ -153,6 +154,7 @@ export const PAGES = {
     "AdminTeamMemberProfile": AdminTeamMemberProfile,
     "AdminTemplate": AdminTemplate,
     "AdminTestSetup": AdminTestSetup,
+    "AdminTickets": AdminTickets,
     "AdviceGroupAdvisers": AdviceGroupAdvisers,
     "AdviceGroupClients": AdviceGroupClients,
     "AdviceGroupCompleted": AdviceGroupCompleted,
@@ -165,6 +167,7 @@ export const PAGES = {
     "AdviceGroupSOARequests": AdviceGroupSOARequests,
     "AdviceGroupSOATemplate": AdviceGroupSOATemplate,
     "AdviceGroupSettings": AdviceGroupSettings,
+    "AdviceGroupTickets": AdviceGroupTickets,
     "AdviserAnalytics": AdviserAnalytics,
     "AdviserCalendar": AdviserCalendar,
     "AdviserClientDetail": AdviserClientDetail,
@@ -178,6 +181,7 @@ export const PAGES = {
     "AdviserSOARequests": AdviserSOARequests,
     "AdviserSOATemplate": AdviserSOATemplate,
     "AdviserSettings": AdviserSettings,
+    "AdviserTickets": AdviserTickets,
     "AvatarMarketing": AvatarMarketing,
     "ClientDashboard": ClientDashboard,
     "ClientDocuments": ClientDocuments,
@@ -224,9 +228,7 @@ export const PAGES = {
     "TestVerifyOtp": TestVerifyOtp,
     "VerifyEmail": VerifyEmail,
     "Whitepaper": Whitepaper,
-    "AdviserTickets": AdviserTickets,
-    "AdviceGroupTickets": AdviceGroupTickets,
-    "AdminTickets": AdminTickets,
+    "AdviserAvatarSetup": AdviserAvatarSetup,
 }
 
 export const pagesConfig = {
