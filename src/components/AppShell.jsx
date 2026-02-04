@@ -147,9 +147,9 @@ export default function AppShell({ children, pageActions, pageTitle }) {
    return (
       <div className="flex min-h-screen bg-[#f8fafc]">
         {renderSidebar()}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: contentMargin }}>
          <AppHeader pageActions={pageActions} pageTitle={pageTitle} />
-         <main className="flex-1" style={{ marginLeft: contentMargin, paddingTop: isSpecialLayout ? '0' : '64px' }}>
+         <main className="flex-1" style={{ paddingTop: isSpecialLayout ? '0' : '64px' }}>
            {children}
          </main>
        </div>
