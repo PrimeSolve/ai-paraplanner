@@ -130,33 +130,32 @@ export default function AppHeader({ pageActions, pageTitle }) {
       {/* Left side: Home button (if viewing as) + Breadcrumbs OR Page Title */}
        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '16px' }}>
          {isViewingAs && (
-           <button
-             onClick={handleGoHome}
-             style={{
-               display: 'flex',
-               alignItems: 'center',
-               gap: '8px',
-               padding: '8px 12px',
-               background: '#eff6ff',
-               border: '1px solid #bfdbfe',
-               borderRadius: '8px',
-               cursor: 'pointer',
-               color: '#3b82f6',
-               transition: 'all 0.2s',
-             }}
-             onMouseEnter={(e) => {
-               e.currentTarget.style.background = '#dbeafe';
-               e.currentTarget.style.borderColor = '#93c5fd';
-             }}
-             onMouseLeave={(e) => {
-               e.currentTarget.style.background = '#eff6ff';
-               e.currentTarget.style.borderColor = '#bfdbfe';
-             }}
-             title="Return to my dashboard"
-           >
-             <Home size={18} />
-           </button>
-         )}
+            <button
+              onClick={handleGoHome}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                background: '#eff6ff',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#3b82f6',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#dbeafe';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#eff6ff';
+              }}
+              title="Return to my dashboard"
+            >
+              <Home size={18} />
+            </button>
+          )}
          {pageTitle && !isViewingAs && (
            <h1 style={{
              fontFamily: "'Plus Jakarta Sans', sans-serif",
