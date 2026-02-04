@@ -86,6 +86,7 @@ import AdviserProfile from './pages/AdviserProfile';
 import AdviserSOARequests from './pages/AdviserSOARequests';
 import AdviserSOATemplate from './pages/AdviserSOATemplate';
 import AdviserSettings from './pages/AdviserSettings';
+import AvatarMarketing from './pages/AvatarMarketing';
 import ClientDashboard from './pages/ClientDashboard';
 import ClientDocuments from './pages/ClientDocuments';
 import ClientHelp from './pages/ClientHelp';
@@ -131,7 +132,9 @@ import SignIn from './pages/SignIn';
 import TestVerifyOtp from './pages/TestVerifyOtp';
 import VerifyEmail from './pages/VerifyEmail';
 import Whitepaper from './pages/Whitepaper';
-import AvatarMarketing from './pages/AvatarMarketing';
+import AdviserTickets from './pages/AdviserTickets';
+import AdviceGroupTickets from './pages/AdviceGroupTickets';
+import AdminTickets from './pages/AdminTickets';
 import __Layout from './Layout.jsx';
 
 
@@ -175,6 +178,7 @@ export const PAGES = {
     "AdviserSOARequests": AdviserSOARequests,
     "AdviserSOATemplate": AdviserSOATemplate,
     "AdviserSettings": AdviserSettings,
+    "AvatarMarketing": AvatarMarketing,
     "ClientDashboard": ClientDashboard,
     "ClientDocuments": ClientDocuments,
     "ClientHelp": ClientHelp,
@@ -220,7 +224,9 @@ export const PAGES = {
     "TestVerifyOtp": TestVerifyOtp,
     "VerifyEmail": VerifyEmail,
     "Whitepaper": Whitepaper,
-    "AvatarMarketing": AvatarMarketing,
+    "AdviserTickets": AdviserTickets,
+    "AdviceGroupTickets": AdviceGroupTickets,
+    "AdminTickets": AdminTickets,
 }
 
 export const pagesConfig = {
