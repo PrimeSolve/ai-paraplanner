@@ -13,7 +13,9 @@ import {
   Settings, 
   UsersRound,
   Sparkles,
-  Database
+  Database,
+  MessageSquare,
+  Settings2
 } from 'lucide-react';
 
 export default function AdminSidebar({ currentPage }) {
@@ -54,7 +56,11 @@ export default function AdminSidebar({ currentPage }) {
       { label: 'Advisers', path: 'AdminAdvisers', icon: UserCheck },
       { label: 'Clients', path: 'AdminClients', icon: Users }
     ]},
+    { section: 'SUPPORT', items: [
+      { label: 'All Tickets', path: 'AdminTickets', icon: MessageSquare }
+    ]},
     { section: 'CONFIGURATION', items: [
+      { label: 'Data Manager', path: 'AdminDataManager', icon: Settings2 },
       { label: 'SOA Template', path: 'AdminTemplate', icon: FileText },
       { label: 'Team', path: 'AdminTeam', icon: UsersRound },
       { label: 'Settings', path: 'AdminSettings', icon: Settings },
