@@ -156,8 +156,10 @@ export default function Layout({ children, currentPageName }) {
 
   // Determine which layout to use
   let layoutComponent = null;
-  
-  if (adviceGroupPages.includes(currentPageName)) {
+
+  if (adminPages.includes(currentPageName)) {
+    layoutComponent = <AdminLayout currentPage={currentPageName} pageActions={pageActions}>{pageContent}</AdminLayout>;
+  } else if (adviceGroupPages.includes(currentPageName)) {
     layoutComponent = <AdviceGroupLayout currentPage={currentPageName} pageActions={pageActions}>{pageContent}</AdviceGroupLayout>;
   } else if (adviserPages.includes(currentPageName)) {
     layoutComponent = <AdviserLayout currentPage={currentPageName} pageActions={pageActions}>{pageContent}</AdviserLayout>;
