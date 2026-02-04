@@ -183,7 +183,7 @@ export default function AppHeader({ pageActions, pageTitle }) {
              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
                <span style={{ color: '#64748b' }}>Viewing:</span>
                {navigationChain.map((level, index) => (
-                 <React.Fragment key={index}>
+                 <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                    {index > 0 && <ChevronRight size={14} style={{ color: '#94a3b8' }} />}
                    <button
                      onClick={() => handleBreadcrumbClick(index)}
@@ -199,7 +199,7 @@ export default function AppHeader({ pageActions, pageTitle }) {
                    >
                      {level.name}
                    </button>
-                 </React.Fragment>
+                 </div>
                ))}
              </div>
            </>
