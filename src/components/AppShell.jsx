@@ -138,8 +138,7 @@ export default function AppShell({ children, pageActions, pageTitle }) {
   }
 
   console.log('AppShell rendering');
-   console.log('isFactFindOrSOA:', isFactFindOrSOA);
-   console.log('isClientPortal:', isClientPortal);
+   console.log('isSpecialLayout:', isSpecialLayout);
    console.log('location.pathname:', location.pathname);
    console.log('currentLevel:', currentLevel);
    console.log('originalRole:', originalRole);
@@ -147,7 +146,7 @@ export default function AppShell({ children, pageActions, pageTitle }) {
    return (
       <div className="flex min-h-screen bg-[#f8fafc]">
         {renderSidebar()}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: (isFactFindOrSOA || isClientPortal) ? '0' : '64px', marginLeft: getContentMargin() }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: isSpecialLayout ? '0' : '64px', marginLeft: contentMargin }}>
          <AppHeader pageActions={pageActions} pageTitle={pageTitle} />
          <main className="flex-1">
            {children}
