@@ -125,7 +125,7 @@ export default function AppHeader({ pageActions, pageTitle }) {
       height: '64px',
       background: '#ffffff',
       borderBottom: '1px solid #e2e8f0',
-      paddingLeft: getHeaderMargin(),
+      paddingLeft: getHeaderPadding(),
       paddingRight: '32px',
       display: 'flex',
       alignItems: 'center',
