@@ -950,32 +950,30 @@ export default function AdminDataManager() {
     setDatabases([...databases, newDatabase]);
   };
 
-  if (selectedDatabase) {
-    return (
-      <div style={{ padding: '32px' }}>
-        <DatabaseDetailView database={selectedDatabase} onBack={() => setSelectedDatabase(null)} />
-      </div>
-    );
-  }
-
   return (
-    <div style={{ padding: '32px' }}>
-      <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', color: colors.text, margin: 0, marginBottom: '8px' }}>
-            Data Manager
-          </h2>
-          <p style={{ fontSize: '15px', color: colors.textMuted, margin: 0 }}>
-            Manage your reference data, upload new databases, and configure relationships
-          </p>
-        </div>
+    <>
+      {/* Top Panel */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: '260px',
+        right: 0,
+        height: '64px',
+        backgroundColor: 'white',
+        borderBottom: '1px solid #e2e8f0',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        padding: '0 32px',
+        zIndex: 40,
+      }}>
         <button
           onClick={() => setShowNewDatabaseModal(true)}
           style={{
-            padding: '10px 20px',
+            padding: '10px 18px',
             borderRadius: '8px',
             border: 'none',
-            background: colors.primary,
+            background: '#0F4C5C',
             color: 'white',
             fontSize: '14px',
             fontWeight: '600',
@@ -989,11 +987,22 @@ export default function AdminDataManager() {
         </button>
       </div>
 
-      <DatabaseListView 
-        databases={databases}
-        onSelectDatabase={setSelectedDatabase}
-        onNewDatabase={() => setShowNewDatabaseModal(true)}
-      />
+      {/* Main Content */}
+      <div style={{ paddingTop: '64px' }}>
+        {selectedDatabase ? (
+          <div style={{ padding: '32px' }}>
+            <DatabaseDetailView database={selectedDatabase} onBack={() => setSelectedDatabase(null)} />
+          </div>
+        ) : (
+          <div style={{ padding: '32px' }}>
+            <DatabaseListView 
+              databases={databases}
+              onSelectDatabase={setSelectedDatabase}
+              onNewDatabase={() => setShowNewDatabaseModal(true)}
+            />
+          </div>
+        )}
+      </div>
 
       {showNewDatabaseModal && (
         <NewDatabaseModal 
@@ -1002,6 +1011,6 @@ export default function AdminDataManager() {
           existingDatabases={databases}
         />
       )}
-    </div>
+    </>
   );
 }
