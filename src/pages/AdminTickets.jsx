@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import AdminLayout from '../components/admin/AdminLayout';
 
 const StatusBadge = ({ status }) => {
   const statusConfig = {
@@ -146,8 +147,9 @@ export default function AdminTickets() {
   const openTickets = tickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed');
 
   return (
-    <div style={{ padding: '32px' }}>
-      {/* Stats */}
+    <AdminLayout currentPage="AdminTickets">
+      <div style={{ padding: '32px' }}>
+        {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '24px' }}>
         <div style={{ background: '#7C3AED', borderRadius: '16px', padding: '24px' }}>
           <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', fontSize: '20px' }}>📬</div>
@@ -232,7 +234,8 @@ export default function AdminTickets() {
             </div>
           ))
         )}
+        </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
