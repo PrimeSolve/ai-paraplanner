@@ -39,12 +39,19 @@ export default function AppHeader({ pageActions, pageTitle }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   
   const isFactFindAnyPage = location.pathname.includes('FactFind');
-  const isSOARequestPage = location.pathname.includes('SOARequestDetails');
-  const isSOARequestAnyPage = location.pathname.includes('SOARequest');
-  const factFindId = new URLSearchParams(window.location.search).get('id');
+   const isSOARequestPage = location.pathname.includes('SOARequestDetails');
+   const isSOARequestAnyPage = location.pathname.includes('SOARequest');
+   const factFindId = new URLSearchParams(window.location.search).get('id');
 
-  // The actual logged-in user (for profile display)
-  const loggedInUser = originalUser || user;
+   // The actual logged-in user (for profile display)
+   const loggedInUser = originalUser || user;
+
+   // Get consistent header margin based on sidebar width
+   const getHeaderMargin = () => {
+     if (isFactFindAnyPage || isSOARequestAnyPage) return '320px';
+     if (location.pathname.includes('Client')) return '288px';
+     return '260px';
+   };
 
   const handleGoHome = () => {
     resetToOriginal();
