@@ -136,6 +136,7 @@ import TestVerifyOtp from './pages/TestVerifyOtp';
 import VerifyEmail from './pages/VerifyEmail';
 import Whitepaper from './pages/Whitepaper';
 import AdviserAvatarSetup from './pages/AdviserAvatarSetup';
+import AdminDataManager from './pages/AdminDataManager';
 import __Layout from './Layout.jsx';
 
 
@@ -229,6 +230,7 @@ export const PAGES = {
     "VerifyEmail": VerifyEmail,
     "Whitepaper": Whitepaper,
     "AdviserAvatarSetup": AdviserAvatarSetup,
+    "AdminDataManager": AdminDataManager,
 }
 
 export const pagesConfig = {
