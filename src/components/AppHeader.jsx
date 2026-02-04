@@ -120,7 +120,7 @@ export default function AppHeader({ pageActions, pageTitle }) {
       height: '64px',
       background: '#ffffff',
       borderBottom: '1px solid #e2e8f0',
-      paddingLeft: isSOARequestAnyPage ? '320px' : (location.pathname.includes('FactFind') || location.pathname.includes('Client') ? '288px' : '260px'),
+      paddingLeft: (isSOARequestAnyPage || isFactFindAnyPage) ? '320px' : (location.pathname.includes('Client') ? '288px' : '260px'),
       paddingRight: '32px',
       display: 'flex',
       alignItems: 'center',
