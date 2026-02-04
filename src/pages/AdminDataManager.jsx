@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Upload, Play, Download, Copy, Trash2, Settings } from 'lucide-react';
 
 const colors = {
   primary: '#7C3AED',
@@ -69,6 +68,30 @@ const sampleDatabases = [
       { id: 'platformId', name: 'Platform ID', type: 'text', isKey: false, isDropdown: false, isLink: true },
       { id: 'fundName', name: 'Fund Name', type: 'text', isKey: false, isDropdown: true },
       { id: 'manager', name: 'Fund Manager', type: 'text', isKey: false, isDropdown: true },
+    ],
+  },
+  {
+    id: 'fee-structures',
+    name: 'Fee Structures',
+    description: 'Platform fee tiers and structures',
+    icon: '💰',
+    rowCount: 36,
+    columnCount: 6,
+    lastUpdated: '2024-02-20T16:45:00',
+    updatedBy: 'Tim Hall',
+    linkedTo: 'platforms',
+    linkColumn: 'platformId',
+    linkedFrom: [],
+    versions: [
+      { id: 'v1', date: '2024-02-20T16:45:00', uploadedBy: 'Tim Hall', rowCount: 36, filename: 'fees_feb2024.csv' },
+    ],
+    columns: [
+      { id: 'id', name: 'ID', type: 'text', isKey: true, isDropdown: false },
+      { id: 'platformId', name: 'Platform ID', type: 'text', isKey: false, isDropdown: false, isLink: true },
+      { id: 'tierName', name: 'Tier Name', type: 'text', isKey: false, isDropdown: true },
+      { id: 'minBalance', name: 'Min Balance', type: 'currency', isKey: false, isDropdown: false },
+      { id: 'maxBalance', name: 'Max Balance', type: 'currency', isKey: false, isDropdown: false },
+      { id: 'feePercent', name: 'Fee %', type: 'percentage', isKey: false, isDropdown: false },
     ],
   },
 ];
@@ -163,6 +186,181 @@ const DatabaseCard = ({ database, onClick }) => {
         color: colors.textMuted,
       }}>
         Updated {formatDate(database.lastUpdated)} by {database.updatedBy}
+      </div>
+    </div>
+  );
+};
+
+const DatabaseListView = ({ databases, onSelectDatabase, onNewDatabase }) => {
+  return (
+    <div>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: '20px',
+        marginBottom: '32px',
+      }}>
+        <div style={{
+          backgroundColor: colors.primary,
+          borderRadius: '16px',
+          padding: '24px',
+        }}>
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            backgroundColor: 'rgba(255,255,255,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '16px',
+            fontSize: '20px',
+          }}>
+            🗄️
+          </div>
+          <div style={{ fontSize: '32px', fontWeight: '700', color: 'white', marginBottom: '4px' }}>
+            {databases.length}
+          </div>
+          <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Databases</div>
+        </div>
+
+        <div style={{
+          backgroundColor: colors.card,
+          borderRadius: '16px',
+          padding: '24px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+          border: `1px solid ${colors.border}`,
+        }}>
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            backgroundColor: colors.primaryLight,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '16px',
+            fontSize: '20px',
+          }}>
+            📊
+          </div>
+          <div style={{ fontSize: '32px', fontWeight: '700', color: colors.text, marginBottom: '4px' }}>
+            {databases.reduce((sum, db) => sum + db.rowCount, 0).toLocaleString()}
+          </div>
+          <div style={{ fontSize: '14px', color: colors.textMuted }}>Total Rows</div>
+        </div>
+
+        <div style={{
+          backgroundColor: colors.card,
+          borderRadius: '16px',
+          padding: '24px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+          border: `1px solid ${colors.border}`,
+        }}>
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            backgroundColor: colors.accentLight,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '16px',
+            fontSize: '20px',
+          }}>
+            🔗
+          </div>
+          <div style={{ fontSize: '32px', fontWeight: '700', color: colors.text, marginBottom: '4px' }}>
+            {databases.filter(db => db.linkedTo).length}
+          </div>
+          <div style={{ fontSize: '14px', color: colors.textMuted }}>Linked Databases</div>
+        </div>
+
+        <div style={{
+          backgroundColor: colors.card,
+          borderRadius: '16px',
+          padding: '24px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+          border: `1px solid ${colors.border}`,
+        }}>
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            backgroundColor: colors.successBg,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '16px',
+            fontSize: '20px',
+          }}>
+            ✓
+          </div>
+          <div style={{ fontSize: '32px', fontWeight: '700', color: colors.text, marginBottom: '4px' }}>
+            {databases.reduce((sum, db) => sum + db.columns.filter(c => c.isDropdown).length, 0)}
+          </div>
+          <div style={{ fontSize: '14px', color: colors.textMuted }}>Dropdown Fields</div>
+        </div>
+      </div>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '20px',
+      }}>
+        {databases.map(db => (
+          <DatabaseCard 
+            key={db.id} 
+            database={db} 
+            onClick={() => onSelectDatabase(db)}
+          />
+        ))}
+        
+        <div
+          onClick={onNewDatabase}
+          style={{
+            backgroundColor: colors.background,
+            borderRadius: '16px',
+            padding: '24px',
+            border: `2px dashed ${colors.border}`,
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '280px',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseOver={e => {
+            e.currentTarget.style.borderColor = colors.primary;
+            e.currentTarget.style.backgroundColor = colors.primaryLight;
+          }}
+          onMouseOut={e => {
+            e.currentTarget.style.borderColor = colors.border;
+            e.currentTarget.style.backgroundColor = colors.background;
+          }}
+        >
+          <div style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '16px',
+            backgroundColor: colors.card,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '28px',
+            color: colors.primary,
+            marginBottom: '16px',
+          }}>
+            +
+          </div>
+          <div style={{ fontSize: '16px', fontWeight: '600', color: colors.text, marginBottom: '4px' }}>
+            Create New Database
+          </div>
+          <div style={{ fontSize: '13px', color: colors.textMuted }}>
+            Upload CSV or Excel file
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -434,11 +632,330 @@ const DatabaseDetailView = ({ database, onBack }) => {
   );
 };
 
+const NewDatabaseModal = ({ onClose, onCreated, existingDatabases }) => {
+  const [step, setStep] = useState(1);
+  const [dragOver, setDragOver] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [previewData, setPreviewData] = useState(null);
+  const [databaseInfo, setDatabaseInfo] = useState({
+    name: '',
+    description: '',
+    icon: '📊',
+  });
+
+  const iconOptions = ['📊', '🏦', '📈', '💰', '🛡️', '🏛️', '📦', '👥', '📋', '⚙️'];
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
+  const processFile = (file) => {
+    setUploadedFile(file);
+    const mockColumns = [
+      { id: 'col1', name: 'ID', type: 'text', isKey: true, isDropdown: false },
+      { id: 'col2', name: 'Name', type: 'text', isKey: false, isDropdown: true },
+      { id: 'col3', name: 'Category', type: 'text', isKey: false, isDropdown: true },
+    ];
+    const mockPreview = [
+      { col1: 'PLT001', col2: 'Sample Item 1', col3: 'Category A' },
+      { col1: 'PLT002', col2: 'Sample Item 2', col3: 'Category B' },
+    ];
+    setPreviewData({ columns: mockColumns, rows: mockPreview, totalRows: 47 });
+    
+    const baseName = file.name.replace(/\.(csv|xlsx|xls)$/i, '').replace(/[_-]/g, ' ');
+    setDatabaseInfo(prev => ({
+      ...prev,
+      name: baseName.charAt(0).toUpperCase() + baseName.slice(1),
+    }));
+  };
+
+  const handleCreate = () => {
+    const newDatabase = {
+      id: `db-${Date.now()}`,
+      name: databaseInfo.name,
+      description: databaseInfo.description,
+      icon: databaseInfo.icon,
+      rowCount: previewData.totalRows,
+      columnCount: previewData.columns.length,
+      lastUpdated: new Date().toISOString(),
+      updatedBy: 'Tim Hall',
+      linkedTo: null,
+      linkedFrom: [],
+      versions: [{
+        id: 'v1',
+        date: new Date().toISOString(),
+        uploadedBy: 'Tim Hall',
+        rowCount: previewData.totalRows,
+        filename: uploadedFile.name,
+      }],
+      columns: previewData.columns,
+    };
+    onCreated(newDatabase);
+    onClose();
+  };
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+    }}>
+      <div style={{
+        backgroundColor: colors.card,
+        borderRadius: '16px',
+        width: '700px',
+        maxHeight: '85vh',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        <div style={{
+          padding: '24px',
+          borderBottom: `1px solid ${colors.border}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <div>
+            <h2 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: 0 }}>
+              Create New Database
+            </h2>
+            <p style={{ fontSize: '13px', color: colors.textMuted, margin: '4px 0 0 0' }}>
+              Step {step} of 2
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: colors.background,
+              color: colors.textMuted,
+              fontSize: '18px',
+              cursor: 'pointer',
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        <div style={{ padding: '24px', flex: 1, overflowY: 'auto' }}>
+          {step === 1 && (
+            <div>
+              <div
+                onClick={() => document.getElementById('file-input').click()}
+                style={{
+                  border: `2px dashed ${dragOver ? colors.primary : colors.border}`,
+                  borderRadius: '12px',
+                  padding: '48px',
+                  textAlign: 'center',
+                  backgroundColor: dragOver ? colors.primaryLight : colors.background,
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer',
+                }}
+              >
+                <input
+                  id="file-input"
+                  type="file"
+                  accept=".csv,.xlsx,.xls"
+                  onChange={handleFileSelect}
+                  style={{ display: 'none' }}
+                />
+                {uploadedFile ? (
+                  <>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>✅</div>
+                    <div style={{ fontSize: '16px', fontWeight: '500', color: colors.text, marginBottom: '8px' }}>
+                      {uploadedFile.name}
+                    </div>
+                    <div style={{ fontSize: '14px', color: colors.textMuted }}>
+                      {previewData?.totalRows} rows • {previewData?.columns.length} columns
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>📄</div>
+                    <div style={{ fontSize: '16px', fontWeight: '500', color: colors.text, marginBottom: '8px' }}>
+                      Drop your CSV or Excel file here
+                    </div>
+                    <div style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '16px' }}>
+                      or click to browse
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div>
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: colors.textMuted,
+                  marginBottom: '10px',
+                }}>
+                  Icon
+                </label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {iconOptions.map(icon => (
+                    <button
+                      key={icon}
+                      onClick={() => setDatabaseInfo({ ...databaseInfo, icon })}
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '10px',
+                        border: `2px solid ${databaseInfo.icon === icon ? colors.primary : colors.border}`,
+                        backgroundColor: databaseInfo.icon === icon ? colors.primaryLight : colors.card,
+                        fontSize: '24px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {icon}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: colors.textMuted,
+                  marginBottom: '10px',
+                }}>
+                  Database Name
+                </label>
+                <input
+                  type="text"
+                  value={databaseInfo.name}
+                  onChange={(e) => setDatabaseInfo({ ...databaseInfo, name: e.target.value })}
+                  placeholder="e.g. Investment Platforms"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: `1px solid ${colors.border}`,
+                    backgroundColor: colors.card,
+                    fontSize: '15px',
+                    color: colors.text,
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: colors.textMuted,
+                  marginBottom: '10px',
+                }}>
+                  Description
+                </label>
+                <textarea
+                  value={databaseInfo.description}
+                  onChange={(e) => setDatabaseInfo({ ...databaseInfo, description: e.target.value })}
+                  placeholder="Brief description..."
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: `1px solid ${colors.border}`,
+                    backgroundColor: colors.card,
+                    fontSize: '15px',
+                    color: colors.text,
+                    minHeight: '80px',
+                    resize: 'vertical',
+                    fontFamily: 'inherit',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{
+          padding: '16px 24px',
+          borderTop: `1px solid ${colors.border}`,
+          display: 'flex',
+          justifyContent: 'space-between',
+        }}>
+          <button
+            onClick={() => step > 1 ? setStep(step - 1) : onClose()}
+            style={{
+              padding: '10px 20px',
+              borderRadius: '8px',
+              border: `1px solid ${colors.border}`,
+              backgroundColor: colors.card,
+              color: colors.textMuted,
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+            }}
+          >
+            {step === 1 ? 'Cancel' : 'Back'}
+          </button>
+          <button
+            onClick={() => {
+              if (step < 2) {
+                setStep(step + 1);
+              } else {
+                handleCreate();
+              }
+            }}
+            disabled={step === 1 && !uploadedFile}
+            style={{
+              padding: '10px 20px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: (step === 1 && !uploadedFile) ? colors.border : colors.primary,
+              color: (step === 1 && !uploadedFile) ? colors.textMuted : 'white',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: (step === 1 && !uploadedFile) ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {step === 2 ? 'Create Database' : 'Continue'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function AdminDataManager() {
   const [selectedDatabase, setSelectedDatabase] = useState(null);
+  const [showNewDatabaseModal, setShowNewDatabaseModal] = useState(false);
+  const [databases, setDatabases] = useState(sampleDatabases);
+
+  const handleDatabaseCreated = (newDatabase) => {
+    setDatabases([...databases, newDatabase]);
+  };
 
   if (selectedDatabase) {
-    return <DatabaseDetailView database={selectedDatabase} onBack={() => setSelectedDatabase(null)} />;
+    return (
+      <div style={{ padding: '32px' }}>
+        <DatabaseDetailView database={selectedDatabase} onBack={() => setSelectedDatabase(null)} />
+      </div>
+    );
   }
 
   return (
@@ -452,127 +969,39 @@ export default function AdminDataManager() {
             Manage your reference data, upload new databases, and configure relationships
           </p>
         </div>
+        <button
+          onClick={() => setShowNewDatabaseModal(true)}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            border: 'none',
+            background: colors.primary,
+            color: 'white',
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          + New Database
+        </button>
       </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '20px',
-        marginBottom: '32px',
-      }}>
-        <div style={{
-          backgroundColor: colors.primary,
-          borderRadius: '16px',
-          padding: '24px',
-        }}>
-          <div style={{
-            width: '44px',
-            height: '44px',
-            borderRadius: '12px',
-            backgroundColor: 'rgba(255,255,255,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '16px',
-            fontSize: '20px',
-          }}>
-            🗄️
-          </div>
-          <div style={{ fontSize: '32px', fontWeight: '700', color: 'white', marginBottom: '4px' }}>
-            {sampleDatabases.length}
-          </div>
-          <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Databases</div>
-        </div>
+      <DatabaseListView 
+        databases={databases}
+        onSelectDatabase={setSelectedDatabase}
+        onNewDatabase={() => setShowNewDatabaseModal(true)}
+      />
 
-        <div style={{
-          backgroundColor: colors.card,
-          borderRadius: '16px',
-          padding: '24px',
-          border: `1px solid ${colors.border}`,
-        }}>
-          <div style={{
-            width: '44px',
-            height: '44px',
-            borderRadius: '12px',
-            backgroundColor: colors.primaryLight,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '16px',
-            fontSize: '20px',
-          }}>
-            📊
-          </div>
-          <div style={{ fontSize: '32px', fontWeight: '700', color: colors.text, marginBottom: '4px' }}>
-            {sampleDatabases.reduce((sum, db) => sum + db.rowCount, 0).toLocaleString()}
-          </div>
-          <div style={{ fontSize: '14px', color: colors.textMuted }}>Total Rows</div>
-        </div>
-
-        <div style={{
-          backgroundColor: colors.card,
-          borderRadius: '16px',
-          padding: '24px',
-          border: `1px solid ${colors.border}`,
-        }}>
-          <div style={{
-            width: '44px',
-            height: '44px',
-            borderRadius: '12px',
-            backgroundColor: colors.accentLight,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '16px',
-            fontSize: '20px',
-          }}>
-            🔗
-          </div>
-          <div style={{ fontSize: '32px', fontWeight: '700', color: colors.text, marginBottom: '4px' }}>
-            {sampleDatabases.filter(db => db.linkedTo).length}
-          </div>
-          <div style={{ fontSize: '14px', color: colors.textMuted }}>Linked Databases</div>
-        </div>
-
-        <div style={{
-          backgroundColor: colors.card,
-          borderRadius: '16px',
-          padding: '24px',
-          border: `1px solid ${colors.border}`,
-        }}>
-          <div style={{
-            width: '44px',
-            height: '44px',
-            borderRadius: '12px',
-            backgroundColor: colors.successBg,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '16px',
-            fontSize: '20px',
-          }}>
-            ✓
-          </div>
-          <div style={{ fontSize: '32px', fontWeight: '700', color: colors.text, marginBottom: '4px' }}>
-            {sampleDatabases.reduce((sum, db) => sum + db.columns.filter(c => c.isDropdown).length, 0)}
-          </div>
-          <div style={{ fontSize: '14px', color: colors.textMuted }}>Dropdown Fields</div>
-        </div>
-      </div>
-
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '20px',
-      }}>
-        {sampleDatabases.map(db => (
-          <DatabaseCard 
-            key={db.id} 
-            database={db} 
-            onClick={() => setSelectedDatabase(db)}
-          />
-        ))}
-      </div>
+      {showNewDatabaseModal && (
+        <NewDatabaseModal 
+          onClose={() => setShowNewDatabaseModal(false)}
+          onCreated={handleDatabaseCreated}
+          existingDatabases={databases}
+        />
+      )}
     </div>
   );
 }

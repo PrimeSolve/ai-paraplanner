@@ -53,6 +53,7 @@ import AdminAdvisers from './pages/AdminAdvisers';
 import AdminClients from './pages/AdminClients';
 import AdminCompleted from './pages/AdminCompleted';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminDataManager from './pages/AdminDataManager';
 import AdminHelp from './pages/AdminHelp';
 import AdminProfile from './pages/AdminProfile';
 import AdminQueue from './pages/AdminQueue';
@@ -76,6 +77,7 @@ import AdviceGroupSOATemplate from './pages/AdviceGroupSOATemplate';
 import AdviceGroupSettings from './pages/AdviceGroupSettings';
 import AdviceGroupTickets from './pages/AdviceGroupTickets';
 import AdviserAnalytics from './pages/AdviserAnalytics';
+import AdviserAvatarSetup from './pages/AdviserAvatarSetup';
 import AdviserCalendar from './pages/AdviserCalendar';
 import AdviserClientDetail from './pages/AdviserClientDetail';
 import AdviserClients from './pages/AdviserClients';
@@ -135,8 +137,6 @@ import SignIn from './pages/SignIn';
 import TestVerifyOtp from './pages/TestVerifyOtp';
 import VerifyEmail from './pages/VerifyEmail';
 import Whitepaper from './pages/Whitepaper';
-import AdviserAvatarSetup from './pages/AdviserAvatarSetup';
-import AdminDataManager from './pages/AdminDataManager';
 import __Layout from './Layout.jsx';
 
 
@@ -147,6 +147,7 @@ export const PAGES = {
     "AdminClients": AdminClients,
     "AdminCompleted": AdminCompleted,
     "AdminDashboard": AdminDashboard,
+    "AdminDataManager": AdminDataManager,
     "AdminHelp": AdminHelp,
     "AdminProfile": AdminProfile,
     "AdminQueue": AdminQueue,
@@ -170,6 +171,7 @@ export const PAGES = {
     "AdviceGroupSettings": AdviceGroupSettings,
     "AdviceGroupTickets": AdviceGroupTickets,
     "AdviserAnalytics": AdviserAnalytics,
+    "AdviserAvatarSetup": AdviserAvatarSetup,
     "AdviserCalendar": AdviserCalendar,
     "AdviserClientDetail": AdviserClientDetail,
     "AdviserClients": AdviserClients,
@@ -229,8 +231,6 @@ export const PAGES = {
     "TestVerifyOtp": TestVerifyOtp,
     "VerifyEmail": VerifyEmail,
     "Whitepaper": Whitepaper,
-    "AdviserAvatarSetup": AdviserAvatarSetup,
-    "AdminDataManager": AdminDataManager,
 }
 
 export const pagesConfig = {
