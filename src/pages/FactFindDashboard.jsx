@@ -739,7 +739,7 @@ export default function FactFindDashboard() {
                 </BarChart>
               </ResponsiveContainer>
             )}
-              </div>
+          </div>
             </>
           )}
         </div>
