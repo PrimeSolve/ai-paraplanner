@@ -46,9 +46,9 @@ export default function AppHeader({ pageActions, pageTitle }) {
    // The actual logged-in user (for profile display)
    const loggedInUser = originalUser || user;
 
-   // Header only needs normal content padding — parent wrapper handles sidebar margin
+   // Get consistent header padding (parent wrapper handles sidebar margin)
     const getHeaderPadding = () => {
-      return '32px'; // Normal content padding only
+      return '24px'; // Normal content padding only
     };
 
   const handleGoHome = () => {
