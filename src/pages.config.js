@@ -102,6 +102,7 @@ import FactFindAboutYou from './pages/FactFindAboutYou';
 import FactFindAdviceReason from './pages/FactFindAdviceReason';
 import FactFindAssetsLiabilities from './pages/FactFindAssetsLiabilities';
 import FactFindAssistant from './pages/FactFindAssistant';
+import FactFindDashboard from './pages/FactFindDashboard';
 import FactFindDependants from './pages/FactFindDependants';
 import FactFindIncomeExpenses from './pages/FactFindIncomeExpenses';
 import FactFindInsurance from './pages/FactFindInsurance';
@@ -137,7 +138,6 @@ import SignIn from './pages/SignIn';
 import TestVerifyOtp from './pages/TestVerifyOtp';
 import VerifyEmail from './pages/VerifyEmail';
 import Whitepaper from './pages/Whitepaper';
-import FactFindDashboard from './pages/FactFindDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -197,6 +197,7 @@ export const PAGES = {
     "FactFindAdviceReason": FactFindAdviceReason,
     "FactFindAssetsLiabilities": FactFindAssetsLiabilities,
     "FactFindAssistant": FactFindAssistant,
+    "FactFindDashboard": FactFindDashboard,
     "FactFindDependants": FactFindDependants,
     "FactFindIncomeExpenses": FactFindIncomeExpenses,
     "FactFindInsurance": FactFindInsurance,
@@ -232,7 +233,6 @@ export const PAGES = {
     "TestVerifyOtp": TestVerifyOtp,
     "VerifyEmail": VerifyEmail,
     "Whitepaper": Whitepaper,
-    "FactFindDashboard": FactFindDashboard,
 }
 
 export const pagesConfig = {

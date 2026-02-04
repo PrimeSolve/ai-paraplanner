@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useRole } from '../components/RoleContext';
+import AdviceGroupLayout from '../components/advicegroup/AdviceGroupLayout';
 import { 
   FileText, 
   Clock, 
@@ -290,13 +291,14 @@ export default function AdviceGroupDashboard() {
   }, [switchedToId]);
 
   return (
-    <div style={{
-      padding: '24px 32px',
-      display: 'flex',
-      gap: '24px',
-    }}>
-      {/* Main Column */}
-      <div style={{ flex: 1 }}>
+    <AdviceGroupLayout currentPage="AdviceGroupDashboard">
+      <div style={{
+        padding: '24px 32px',
+        display: 'flex',
+        gap: '24px',
+      }}>
+        {/* Main Column */}
+        <div style={{ flex: 1 }}>
         {/* Stats Grid */}
         <div style={{
           display: 'grid',
@@ -657,6 +659,7 @@ export default function AdviceGroupDashboard() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </AdviceGroupLayout>
   );
 }
