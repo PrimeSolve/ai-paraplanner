@@ -77,6 +77,7 @@ export default function AdminLayout({ children, currentPage }) {
       { label: 'All Tickets', path: 'AdminTickets', icon: MessageSquare }
     ]},
     { section: 'CONFIGURATION', items: [
+      { label: 'Data Manager', path: 'AdminDataManager', icon: Settings2 },
       { label: 'SOA Template', path: 'AdminTemplate', icon: FileText },
       { label: 'Team', path: 'AdminTeam', icon: UsersRound },
       { label: 'Settings', path: 'AdminSettings', icon: Settings }
