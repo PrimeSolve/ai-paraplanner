@@ -38,7 +38,7 @@ export default function AppHeader({ pageActions, pageTitle }) {
   const [refreshing, setRefreshing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   
-  const isFactFindPage = location.pathname.includes('FactFind');
+  const isFactFindAnyPage = location.pathname.includes('FactFind');
   const isSOARequestPage = location.pathname.includes('SOARequestDetails');
   const isSOARequestAnyPage = location.pathname.includes('SOARequest');
   const factFindId = new URLSearchParams(window.location.search).get('id');
