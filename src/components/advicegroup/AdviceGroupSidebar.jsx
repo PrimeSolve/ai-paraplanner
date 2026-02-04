@@ -103,9 +103,19 @@ export default function AdviceGroupSidebar({ children, currentPage }) {
         </nav>
 
         <div className="p-4 border-t border-white/[0.08]">
+          <Link to={createPageUrl('AdviceGroupHelp')} className="no-underline">
+            <button className="w-full flex items-center gap-3 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-white transition-all">
+              <Sparkles className="w-5 h-5" />
+              <div className="text-left">
+                <div className="text-sm font-semibold">AI Assistant</div>
+                <div className="text-xs opacity-80">Ask for help</div>
+              </div>
+            </button>
+          </Link>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.05] cursor-pointer transition-all">
+              <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.05] cursor-pointer transition-all mt-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] rounded-xl flex items-center justify-center text-white font-bold text-sm">
                   {user?.full_name?.charAt(0) || 'U'}
                 </div>
