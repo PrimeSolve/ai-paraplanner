@@ -37,7 +37,9 @@ export default function AppHeader({ pageActions, pageTitle }) {
   console.log('=== AppHeader render ===');
   console.log('isViewingAs:', isViewingAs);
   console.log('navigationChain:', navigationChain);
+  console.log('navigationChain.length:', navigationChain?.length);
   console.log('originalUser:', originalUser?.full_name, originalUser?.role);
+  console.log('shouldRenderHomeButton:', isViewingAs && navigationChain?.length > 0);
   
   const [showRefreshWarning, setShowRefreshWarning] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
