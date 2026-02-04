@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import AdminLayout from '../components/admin/AdminLayout';
 
 const colors = {
   primary: '#7C3AED',
@@ -959,7 +958,7 @@ export default function AdminDataManager() {
   };
 
   return (
-    <AdminLayout currentPage="AdminDataManager">
+    <>
       <div style={{ padding: '32px' }}>
         {selectedDatabase ? (
           <DatabaseDetailView database={selectedDatabase} onBack={() => setSelectedDatabase(null)} />
@@ -979,6 +978,6 @@ export default function AdminDataManager() {
           existingDatabases={databases}
         />
       )}
-    </AdminLayout>
+    </>
   );
 }
