@@ -234,7 +234,7 @@ export default function AdminTickets() {
             </div>
           ))
         )}
-      </div>
+        </div>
       </div>
     </AdminLayout>
   );
