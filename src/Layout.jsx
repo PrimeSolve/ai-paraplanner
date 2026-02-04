@@ -11,7 +11,7 @@ export default function Layout({ children, currentPageName }) {
 
 
   // Pages that should not have the AppShell navigation
-  const noNavPages = ['Whitepaper', 'PublicHome', 'PublicAbout', 'PublicPricing', 'PublicContact', 'Register', 'SignIn', 'VerifyEmail'];
+  const noNavPages = ['Whitepaper', 'PublicHome', 'PublicAbout', 'PublicPricing', 'PublicContact', 'Register', 'SignIn', 'VerifyEmail', 'AvatarMarketing'];
   const adviceGroupPages = ['AdviceGroupDashboard', 'AdviceGroupSOARequests', 'AdviceGroupCompleted', 'AdviceGroupAdvisers', 'AdviceGroupClients', 'AdviceGroupProfile', 'AdviceGroupSettings', 'AdviceGroupHelp', 'AdviceGroupRiskProfiles', 'AdviceGroupModelPortfolios', 'AdviceGroupSOATemplate'];
   const adviserPages = ['AdviserDashboard', 'AdviserClients', 'AdviserFactFinds', 'AdviserSOARequests', 'AdviserSettings', 'AdviserProfile', 'AdviserHelp'];
   const hideNav = noNavPages.includes(currentPageName) || adviceGroupPages.includes(currentPageName) || adviserPages.includes(currentPageName);
