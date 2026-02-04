@@ -149,7 +149,7 @@ export default function AdminTickets() {
   return (
     <AdminLayout currentPage="AdminTickets">
       <div style={{ padding: '32px' }}>
-      {/* Stats */}
+        {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '24px' }}>
         <div style={{ background: '#7C3AED', borderRadius: '16px', padding: '24px' }}>
           <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', fontSize: '20px' }}>📬</div>
