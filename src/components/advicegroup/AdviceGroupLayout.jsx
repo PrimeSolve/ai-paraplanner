@@ -10,7 +10,8 @@ import {
   Settings,
   LogOut,
   ChevronDown,
-  Sparkles
+  Sparkles,
+  MessageSquare
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AppHeader from '../AppHeader';
@@ -39,6 +40,9 @@ export default function AdviceGroupLayout({ children, currentPage, pageActions }
     { section: 'MANAGEMENT', items: [
       { label: 'Advisers', path: 'AdviceGroupAdvisers', icon: Users },
       { label: 'Clients', path: 'AdviceGroupClients', icon: Users }
+    ]},
+    { section: 'SUPPORT', items: [
+      { label: 'Support Tickets', path: 'AdviceGroupTickets', icon: MessageSquare }
     ]},
     { section: 'CONFIGURATION', items: [
       { label: 'Risk Profiles', path: 'AdviceGroupRiskProfiles', icon: Settings },
