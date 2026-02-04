@@ -13,10 +13,7 @@ export default function Layout({ children, currentPageName }) {
 
   // Pages that should not have the AppShell navigation
   const noNavPages = ['Whitepaper', 'PublicHome', 'PublicAbout', 'PublicPricing', 'PublicContact', 'Register', 'SignIn', 'VerifyEmail', 'AvatarMarketing'];
-  const adviceGroupPages = ['AdviceGroupDashboard', 'AdviceGroupSOARequests', 'AdviceGroupCompleted', 'AdviceGroupAdvisers', 'AdviceGroupClients', 'AdviceGroupProfile', 'AdviceGroupSettings', 'AdviceGroupHelp', 'AdviceGroupRiskProfiles', 'AdviceGroupModelPortfolios', 'AdviceGroupSOATemplate', 'AdviceGroupTickets'];
-  const adviserPages = ['AdviserDashboard', 'AdviserClients', 'AdviserFactFinds', 'AdviserSOARequests', 'AdviserSettings', 'AdviserProfile', 'AdviserHelp', 'AdviserTickets', 'AdviserAvatarSetup'];
-  const adminPages = ['AdminDashboard', 'AdminQueue', 'AdminCompleted', 'AdminAdviceGroups', 'AdminAdvisers', 'AdminClients', 'AdminTickets', 'AdminDataManager', 'AdminTemplate', 'AdminTeam', 'AdminSettings', 'AdminProfile', 'AdminHelp', 'AdminAdviceGroupDetail', 'AdminTeamMemberProfile'];
-  const hideNav = noNavPages.includes(currentPageName) || adviceGroupPages.includes(currentPageName) || adviserPages.includes(currentPageName) || adminPages.includes(currentPageName);
+  const hideNav = noNavPages.includes(currentPageName);
 
   // Check if in test mode for top padding
   const isInTestMode = typeof window !== 'undefined' && !!localStorage.getItem('test_mode_entity');
@@ -182,13 +179,7 @@ export default function Layout({ children, currentPageName }) {
   // Determine which layout to use
   let layoutComponent = null;
 
-  if (adminPages.includes(currentPageName)) {
-    layoutComponent = <AdminLayout currentPage={currentPageName} pageActions={pageActions}>{pageContent}</AdminLayout>;
-  } else if (adviceGroupPages.includes(currentPageName)) {
-    layoutComponent = <AdviceGroupLayout currentPage={currentPageName} pageActions={pageActions}>{pageContent}</AdviceGroupLayout>;
-  } else if (adviserPages.includes(currentPageName)) {
-    layoutComponent = <AdviserLayout currentPage={currentPageName} pageActions={pageActions}>{pageContent}</AdviserLayout>;
-  } else if (!hideNav) {
+  if (!hideNav) {
     layoutComponent = <AppShell pageActions={pageActions} pageTitle={pageTitle}>{pageContent}</AppShell>;
   } else {
     layoutComponent = children;
