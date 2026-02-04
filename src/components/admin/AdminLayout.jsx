@@ -17,7 +17,8 @@ import {
   HelpCircle,
   LogOut,
   ChevronDown,
-  Settings2
+  Settings2,
+  MessageSquare
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
@@ -71,6 +72,9 @@ export default function AdminLayout({ children, currentPage }) {
       { label: 'Advice Groups', path: 'AdminAdviceGroups', icon: Users },
       { label: 'Advisers', path: 'AdminAdvisers', icon: UserCheck },
       { label: 'Clients', path: 'AdminClients', icon: Users }
+    ]},
+    { section: 'SUPPORT', items: [
+      { label: 'All Tickets', path: 'AdminTickets', icon: MessageSquare }
     ]},
     { section: 'CONFIGURATION', items: [
       { label: 'SOA Template', path: 'AdminTemplate', icon: FileText },
