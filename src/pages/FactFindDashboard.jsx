@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, DollarSign, Shield, Home, CreditCard, PiggyBank, Users, Briefcase, ShoppingCart, Target, FileText } from 'lucide-react';
+import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 
 // Currency formatter
