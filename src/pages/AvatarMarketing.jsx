@@ -165,7 +165,7 @@ export default function AvatarMarketing() {
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px' }}>
             {[
-              { number: '1', icon: '📹', title: 'Record Your Video', text: 'Film yourself speaking professionally for 3 minutes in good lighting. We'll provide guidance to get the best results.' },
+              { number: '1', icon: '📹', title: 'Record Your Video', text: "Film yourself speaking professionally for 3 minutes in good lighting. We'll provide guidance to get the best results." },
               { number: '2', icon: '☁️', title: 'Upload & Submit', text: 'Upload your video to our secure platform. Our AI technology powered by HeyGen will process and train your avatar.' },
               { number: '3', icon: '✨', title: 'Avatar Ready', text: 'Your custom avatar will be ready within 3-5 business days. Start creating personalised client experiences immediately.' }
             ].map((step, idx) => (
