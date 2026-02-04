@@ -190,8 +190,8 @@ export default function AdminTickets() {
         ))}
       </div>
 
-      {/* Tickets Table */}
-      <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+        {/* Tickets Table */}
+        <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
         <div style={{ padding: '16px 24px', borderBottom: '1px solid #e2e8f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', backgroundColor: '#f8fafc', borderRadius: '8px', flex: 1, maxWidth: '400px' }}>
             <span style={{ color: '#94a3b8' }}>🔍</span>
