@@ -8,12 +8,8 @@ import {
   CheckCircle, 
   Users, 
   Settings,
-  HelpCircle,
-  LogOut,
-  ChevronDown,
   Sparkles,
 } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function AdviceGroupSidebar({ children, currentPage }) {
   const [user, setUser] = useState(null);
