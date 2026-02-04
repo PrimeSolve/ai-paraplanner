@@ -53,14 +53,14 @@ export default function AppShell({ children, pageActions, pageTitle }) {
   const originalRole = originalUser?.role || user?.role;
 
   // Don't render sidebar for Fact Find, SOA Request detail, and Client portal pages (they have their own sidebars)
-  const isSpecialLayout = location.pathname.includes('FactFind') || 
-                         location.pathname.includes('SOARequestDetails') ||
-                         location.pathname.includes('ClientDashboard') ||
-                         location.pathname.includes('ClientDocuments') ||
-                         location.pathname.includes('ClientMessages') ||
-                         location.pathname.includes('ClientSettings') ||
-                         location.pathname.includes('ClientHelp') ||
-                         location.pathname.includes('ClientProfile');
+   const isSpecialLayout = location.pathname.includes('FactFind') || 
+                          location.pathname.includes('SOARequestDetails') ||
+                          location.pathname.startsWith('/ClientDashboard') ||
+                          location.pathname.startsWith('/ClientDocuments') ||
+                          location.pathname.startsWith('/ClientMessages') ||
+                          location.pathname.startsWith('/ClientSettings') ||
+                          location.pathname.startsWith('/ClientHelp') ||
+                          location.pathname.startsWith('/ClientProfile');
 
   // Determine which sidebar to render based on navigation chain
   const renderSidebar = () => {
