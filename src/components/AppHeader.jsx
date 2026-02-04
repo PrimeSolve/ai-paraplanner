@@ -200,7 +200,7 @@ export default function AppHeader({ pageActions, pageTitle }) {
       {/* Right side: Page Actions + Fact Find / SOA Request Buttons + User menu */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         {pageActions && <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>{pageActions}</div>}
-        {isFactFindPage && (
+        {isFactFindAnyPage && (
           <>
             {/* Talk to Assistant */}
             <Link to={createPageUrl('FactFindAssistant') + (factFindId ? `?id=${factFindId}` : '')}>
