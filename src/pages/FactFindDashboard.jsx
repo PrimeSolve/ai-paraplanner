@@ -467,17 +467,37 @@ export default function FactFindDashboard() {
   const policies = factFind.insurance?.policies || [];
   const goals = factFind.advice_reason?.detailed_notes || '';
 
-  return (
-    <FactFindLayout currentSection="dashboard" factFindId={factFindId}>
-      <div className="max-w-[1600px] mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-800">Client Dashboard</h1>
-          <p className="text-slate-600">Complete financial summary</p>
-        </div>
+  const hasAnyData = netWorth !== 0 || monthlySurplus !== 0 || totalCover !== 0;
 
-        {/* Top 3 Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+  return (
+    <FactFindLayout currentSection="dashboard" factFind={factFind}>
+      <div className="flex-1 overflow-y-auto p-8">
+        <div className="max-w-[1600px] mx-auto">
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-slate-800">Your Financial Dashboard</h1>
+            <p className="text-slate-600">Complete financial summary</p>
+          </div>
+
+          {/* Empty State */}
+          {!hasAnyData && (
+            <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
+              <div className="text-5xl mb-4">📊</div>
+              <h2 className="text-xl font-bold text-slate-800 mb-2">Your Financial Dashboard</h2>
+              <p className="text-slate-600 mb-6">Complete your Fact Find to see your financial summary here.</p>
+              <button 
+                onClick={() => navigate(createPageUrl('FactFindPersonal') + (factFindId ? `?id=${factFindId}` : ''))}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+              >
+                Start Your Fact Find →
+              </button>
+            </div>
+          )}
+
+          {hasAnyData && (
+            <>
+              {/* Top 3 Stat Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="rounded-xl p-5 text-white bg-gradient-to-br from-indigo-500 to-purple-600">
             <div className="text-xs uppercase tracking-wide opacity-90 mb-1">Net Worth</div>
             <div className="text-3xl font-extrabold">{formatCurrency(netWorth)}</div>
@@ -719,7 +739,9 @@ export default function FactFindDashboard() {
                 </BarChart>
               </ResponsiveContainer>
             )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </FactFindLayout>

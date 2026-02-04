@@ -2,9 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LayoutDashboard } from 'lucide-react';
 
 const sectionGroups = [
+  {
+    title: 'OVERVIEW',
+    sections: [
+      { id: 'dashboard', label: 'Dashboard', path: 'FactFindDashboard', icon: LayoutDashboard }
+    ]
+  },
   {
     title: 'GETTING STARTED',
     sections: [
@@ -112,6 +118,7 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
                  {group.sections.map((section) => {
                    const completion = getCompletionForSection(section.id);
                    const isActive = currentSection === section.id;
+                   const Icon = section.icon;
 
                    return (
                      <Link
@@ -124,7 +131,10 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
                            : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
                        )}
                      >
-                       <span>{section.label}</span>
+                       <span className="flex items-center gap-2">
+                         {Icon && <Icon className="w-4 h-4" />}
+                         {section.label}
+                       </span>
                        {completion > 0 && (
                          <span className="text-xs text-slate-400 font-semibold">{completion}%</span>
                        )}
