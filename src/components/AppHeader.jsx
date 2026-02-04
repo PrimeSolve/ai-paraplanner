@@ -34,6 +34,11 @@ export default function AppHeader({ pageActions, pageTitle }) {
     resetToOriginal 
   } = useRole();
   
+  console.log('=== AppHeader render ===');
+  console.log('isViewingAs:', isViewingAs);
+  console.log('navigationChain:', navigationChain);
+  console.log('originalUser:', originalUser?.full_name, originalUser?.role);
+  
   const [showRefreshWarning, setShowRefreshWarning] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);

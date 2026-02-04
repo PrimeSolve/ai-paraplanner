@@ -85,10 +85,18 @@ export function RoleProvider({ children }) {
 
   // Push a new level onto the navigation chain
   const switchRole = (type, id, name) => {
+    console.log('=== switchRole called ===');
+    console.log('type:', type, 'id:', id, 'name:', name);
+    
     if (!originalUser && user) {
       setOriginalUser(user);
     }
-    setNavigationChain(prev => [...prev, { type, id, name }]);
+    setNavigationChain(prev => {
+      const updated = [...prev, { type, id, name }];
+      console.log('navigationChain after update:', updated);
+      console.log('isViewingAs should be:', updated.length > 0);
+      return updated;
+    });
   };
 
   // Pop back to a specific level in the chain (by index)
