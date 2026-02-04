@@ -174,8 +174,8 @@ export default function AdminTickets() {
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div style={{ display: 'flex', gap: '4px', padding: '4px', backgroundColor: '#f8fafc', borderRadius: '10px', marginBottom: '20px' }}>
+        {/* Filter Tabs */}
+        <div style={{ display: 'flex', gap: '4px', padding: '4px', backgroundColor: '#f8fafc', borderRadius: '10px', marginBottom: '20px' }}>
         {[
           { id: 'all', label: 'All Tickets', count: counts.all },
           { id: 'mine', label: 'My Tickets', count: counts.mine },
