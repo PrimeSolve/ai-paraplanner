@@ -48,12 +48,11 @@ export default function AdviceGroupSidebar({ children, currentPage }) {
   ];
 
   return (
-    <div className="flex min-h-screen font-['DM_Sans']">
+    <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
       `}</style>
 
-      {/* Sidebar */}
       <div className="w-[260px] bg-[#0f172a] fixed top-0 left-0 bottom-0 flex flex-col z-50">
         <div className="p-6 border-b border-white/[0.08]">
           <Link to={createPageUrl('AdviceGroupDashboard')} className="flex items-center gap-3 text-white no-underline">
@@ -151,11 +150,6 @@ export default function AdviceGroupSidebar({ children, currentPage }) {
           </DropdownMenu>
         </div>
       </div>
-
-      {/* Main Content */}
-      <div className="flex-1 ml-[260px] bg-[#f8fafc]">
-        {children}
-      </div>
-    </div>
+    </>
   );
 }
