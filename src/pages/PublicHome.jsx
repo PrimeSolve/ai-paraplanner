@@ -52,7 +52,7 @@ export default function PublicHome() {
           <div className="flex items-center gap-9">
             <a href="#how-it-works" className="text-[15px] font-medium text-[#334155] hover:text-[#0f172a] no-underline relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-[#3b82f6] after:transition-all hover:after:w-full">How It Works</a>
             <a href="#features" className="text-[15px] font-medium text-[#334155] hover:text-[#0f172a] no-underline relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-[#3b82f6] after:transition-all hover:after:w-full">Features</a>
-            <a href="#avatar" className="text-[15px] font-medium text-[#334155] hover:text-[#0f172a] no-underline relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-[#3b82f6] after:transition-all hover:after:w-full">AI Avatar</a>
+            <a href={createPageUrl('AvatarMarketing')} className="text-[15px] font-medium text-[#334155] hover:text-[#0f172a] no-underline relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-[#3b82f6] after:transition-all hover:after:w-full">AI Avatar</a>
             <a href="#pricing" className="text-[15px] font-medium text-[#334155] hover:text-[#0f172a] no-underline relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-[#3b82f6] after:transition-all hover:after:w-full">Pricing</a>
           </div>
 
@@ -260,11 +260,17 @@ export default function PublicHome() {
                 <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
                   Your digital twin walks clients through every recommendation. A fully trained AI model answers their questions, explains key concepts, clarifies trade-offs, and helps them understand why each recommendation makes sense for their situation.
                 </p>
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-2 flex-wrap mb-4">
                   <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Your Avatar</span>
                   <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Trained AI Q&A</span>
                   <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Explains Trade-offs</span>
                 </div>
+                <a 
+                  href={createPageUrl('AvatarMarketing')}
+                  className="inline-flex items-center gap-2 text-[14px] font-semibold text-[#22d3ee] hover:text-white transition-colors no-underline"
+                >
+                  Learn More →
+                </a>
               </div>
               <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">6</div>
             </div>
@@ -448,12 +454,12 @@ export default function PublicHome() {
                   </div>
                 </div>
               </div>
-              <button 
-                onClick={() => base44.auth.redirectToLogin()}
-                className="px-8 py-4 rounded-[12px] text-[17px] font-bold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all"
+              <a 
+                href={createPageUrl('AvatarMarketing')}
+                className="inline-block px-8 py-4 rounded-[12px] text-[17px] font-bold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all no-underline"
               >
                 Create Your Avatar
-              </button>
+              </a>
             </div>
             <div>
               <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
