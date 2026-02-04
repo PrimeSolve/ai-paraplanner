@@ -11,6 +11,7 @@ import {
   HelpCircle,
   LogOut,
   ChevronDown,
+  Sparkles,
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
