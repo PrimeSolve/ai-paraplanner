@@ -8,7 +8,8 @@ import {
   FileText,
   CheckSquare,
   Settings,
-  Sparkles
+  Sparkles,
+  MessageSquare
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AppHeader from '../AppHeader';
@@ -34,6 +35,9 @@ export default function AdviserLayout({ children, currentPage, pageActions }) {
       { label: 'Clients', path: 'AdviserClients', icon: Users },
       { label: 'Fact Finds', path: 'AdviserFactFinds', icon: FileText },
       { label: 'SOA Requests', path: 'AdviserSOARequests', icon: CheckSquare }
+    ]},
+    { section: 'SUPPORT', items: [
+      { label: 'Support Tickets', path: 'AdviserTickets', icon: MessageSquare }
     ]},
     { section: 'SETTINGS', items: [
       { label: 'Settings', path: 'AdviserSettings', icon: Settings }
