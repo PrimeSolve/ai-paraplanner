@@ -191,20 +191,84 @@ export default function AvatarMarketing() {
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '28px' }}>
             {[
-              { name: 'James', traits: 'Authoritative • Trustworthy • Clear' },
-              { name: 'Mia', traits: 'Calm • Approachable • Patient' },
-              { name: 'Marcus', traits: 'Energetic • Engaging • Friendly' },
-              { name: 'Sarah', traits: 'Modern • Confident • Direct' },
-              { name: 'Emma', traits: 'Professional • Warm • Reassuring' },
-              { name: 'Richard', traits: 'Experienced • Distinguished • Wise' },
-              { name: 'Nicole', traits: 'Warm • Trustworthy • Articulate' },
-              { name: 'Daniel', traits: 'Friendly • Relaxed • Supportive' }
+              { 
+                name: 'James', 
+                traits: 'Authoritative • Trustworthy • Clear',
+                gender: 'Male',
+                appearance: 'Dark suit, white shirt',
+                bestFor: 'High-net-worth clients, corporate professionals',
+                image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&crop=faces'
+              },
+              { 
+                name: 'Mia', 
+                traits: 'Calm • Approachable • Patient',
+                gender: 'Female',
+                appearance: 'Grey sweater',
+                bestFor: 'First-time investors, nervous clients',
+                image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=faces'
+              },
+              { 
+                name: 'Marcus', 
+                traits: 'Energetic • Engaging • Friendly',
+                gender: 'Male',
+                appearance: 'Navy suit, friendly expression',
+                bestFor: 'Young professionals, growth-focused clients',
+                image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=faces'
+              },
+              { 
+                name: 'Sarah', 
+                traits: 'Modern • Confident • Direct',
+                gender: 'Female',
+                appearance: 'Dark blazer, long dark hair',
+                bestFor: 'Busy executives, efficiency-focused clients',
+                image: 'https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=400&h=400&fit=crop&crop=faces'
+              },
+              { 
+                name: 'Emma', 
+                traits: 'Professional • Warm • Reassuring',
+                gender: 'Female',
+                appearance: 'Black blazer, white top, light hair',
+                bestFor: 'Pre-retirees, families, insurance discussions',
+                image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=faces'
+              },
+              { 
+                name: 'Richard', 
+                traits: 'Experienced • Distinguished • Wise',
+                gender: 'Male',
+                appearance: 'Grey suit, silver hair',
+                bestFor: 'Retirees, complex estate planning, SMSFs',
+                image: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?w=400&h=400&fit=crop&crop=faces'
+              },
+              { 
+                name: 'Nicole', 
+                traits: 'Warm • Trustworthy • Articulate',
+                gender: 'Female',
+                appearance: 'Black blazer, red hair',
+                bestFor: 'General advice, balanced approach',
+                image: 'https://images.unsplash.com/photo-1598550874175-4d0ef436c909?w=400&h=400&fit=crop&crop=faces'
+              },
+              { 
+                name: 'Daniel', 
+                traits: 'Friendly • Relaxed • Supportive',
+                gender: 'Male',
+                appearance: 'Navy cardigan, casual setting',
+                bestFor: 'Casual clients, younger demographics',
+                image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=faces'
+              }
             ].map((avatar, idx) => (
-              <div key={idx} style={{ background: '#f8fafc', border: '2px solid #e2e8f0', borderRadius: '20px', overflow: 'hidden', transition: 'all 0.3s ease', cursor: 'pointer' }}>
-                <div style={{ width: '100%', aspectRatio: '16/10', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '48px' }}>👤</div>
+              <div key={idx} style={{ background: '#f8fafc', border: '2px solid #e2e8f0', borderRadius: '20px', overflow: 'hidden', transition: 'all 0.3s ease', cursor: 'pointer', position: 'relative' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.12)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
+                <div style={{ width: '100%', aspectRatio: '1/1', background: 'linear-gradient(135deg, #e2e8f0, #cbd5e1)', overflow: 'hidden' }}>
+                  <img src={avatar.image} alt={avatar.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
                 <div style={{ padding: '20px' }}>
-                  <h4 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>{avatar.name}</h4>
-                  <p style={{ fontSize: '13px', color: '#64748b' }}>{avatar.traits}</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <h4 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: 0 }}>{avatar.name}</h4>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{avatar.gender}</span>
+                  </div>
+                  <p style={{ fontSize: '13px', color: '#3b82f6', marginBottom: '10px', fontWeight: 500 }}>{avatar.traits}</p>
+                  <div style={{ fontSize: '12px', color: '#64748b', lineHeight: 1.4 }}>
+                    <div style={{ marginBottom: '4px' }}><strong style={{ color: '#334155' }}>Best for:</strong> {avatar.bestFor}</div>
+                  </div>
                 </div>
               </div>
             ))}
