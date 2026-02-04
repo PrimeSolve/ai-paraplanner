@@ -343,7 +343,7 @@ export default function AdviserAvatarSetup() {
                     <td style={{ padding: '16px', color: '#1e293b' }}>{asset.client}</td>
                     <td style={{ padding: '16px', color: '#64748b' }}>{asset.time}</td>
                     <td style={{ padding: '16px' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 500', background: asset.status === 'ready' ? '#d1fae5' : asset.status === 'processing' ? '#fef3c7' : '#fee2e2', color: asset.status === 'ready' ? '#059669' : asset.status === 'processing' ? '#d97706' : '#dc2626' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 500, background: asset.status === 'ready' ? '#d1fae5' : asset.status === 'processing' ? '#fef3c7' : '#fee2e2', color: asset.status === 'ready' ? '#059669' : asset.status === 'processing' ? '#d97706' : '#dc2626' }}>
                         <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'currentColor' }} />
                         {asset.status === 'ready' ? 'Ready' : asset.status === 'processing' ? 'Processing' : 'Failed'}
                       </span>
