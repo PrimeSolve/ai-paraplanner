@@ -46,12 +46,10 @@ export default function AppHeader({ pageActions, pageTitle }) {
    // The actual logged-in user (for profile display)
    const loggedInUser = originalUser || user;
 
-   // Get consistent header margin based on sidebar width
-   const getHeaderMargin = () => {
-     if (isFactFindAnyPage || isSOARequestAnyPage) return '320px';
-     if (location.pathname.includes('Client')) return '288px';
-     return '260px';
-   };
+   // Header only needs normal content padding — parent wrapper handles sidebar margin
+    const getHeaderPadding = () => {
+      return '32px'; // Normal content padding only
+    };
 
   const handleGoHome = () => {
     resetToOriginal();
