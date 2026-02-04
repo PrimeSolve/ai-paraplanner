@@ -18,11 +18,12 @@ import {
   LogOut,
   ChevronDown,
   Settings2,
-  MessageSquare
+  MessageSquare,
+  Sparkles
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-export default function AdminLayout({ children, currentPage }) {
+export default function AdminLayout({ children, currentPage, pageActions }) {
   const { navigationChain } = useRole();
   const [user, setUser] = useState(null);
   const [businessDetails, setBusinessDetails] = useState(null);
@@ -144,6 +145,28 @@ export default function AdminLayout({ children, currentPage }) {
           ))}
         </nav>
 
+        {/* AI Assistant Button */}
+        <div className="p-4">
+          <Link to={createPageUrl('AdminHelp')} className="no-underline">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] hover:from-[#4f46e5] hover:to-[#7c3aed] cursor-pointer transition-all shadow-lg shadow-purple-900/30">
+              <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-white font-semibold text-sm">
+                  AI Assistant
+                </div>
+                <div className="text-white/80 text-xs">
+                  Ask for help
+                </div>
+              </div>
+              <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-bold">?</span>
+              </div>
+            </div>
+          </Link>
+        </div>
+
         <div className="p-4 border-t border-white/[0.08]">
           <Link to={createPageUrl('AdminSettings')} className="no-underline">
             <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.05] cursor-pointer transition-all">
@@ -169,7 +192,86 @@ export default function AdminLayout({ children, currentPage }) {
 
       {/* Main Content */}
       <div className="flex-1 ml-[260px] bg-[#f8fafc]">
-        {children}
+        {/* Top Header Bar */}
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: '260px',
+          right: 0,
+          height: '64px',
+          backgroundColor: 'white',
+          borderBottom: '1px solid #e2e8f0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 32px',
+          zIndex: 40,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: 'white',
+                    cursor: 'pointer',
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontWeight: '600',
+                      fontSize: '14px',
+                    }}>
+                      {user.full_name?.charAt(0) || 'U'}
+                    </div>
+                    <div style={{ textAlign: 'left' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#0f172a' }}>
+                        {user.full_name}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#64748b' }}>
+                        {user.email}
+                      </div>
+                    </div>
+                    <ChevronDown style={{ width: '16px', height: '16px', color: '#64748b' }} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem onClick={() => window.location.href = createPageUrl('AdminProfile')}>
+                    <User className="mr-2 h-4 w-4" />
+                    My Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.location.href = createPageUrl('AdminSettings')}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => base44.auth.logout()}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+          <div>
+            {pageActions}
+          </div>
+        </div>
+        
+        <div style={{ paddingTop: '64px' }}>
+          {children}
+        </div>
       </div>
     </div>
   );
