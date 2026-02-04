@@ -12,9 +12,10 @@ export default function Layout({ children, currentPageName }) {
 
   // Pages that should not have the AppShell navigation
   const noNavPages = ['Whitepaper', 'PublicHome', 'PublicAbout', 'PublicPricing', 'PublicContact', 'Register', 'SignIn', 'VerifyEmail', 'AvatarMarketing'];
-  const adviceGroupPages = ['AdviceGroupDashboard', 'AdviceGroupSOARequests', 'AdviceGroupCompleted', 'AdviceGroupAdvisers', 'AdviceGroupClients', 'AdviceGroupProfile', 'AdviceGroupSettings', 'AdviceGroupHelp', 'AdviceGroupRiskProfiles', 'AdviceGroupModelPortfolios', 'AdviceGroupSOATemplate'];
-  const adviserPages = ['AdviserDashboard', 'AdviserClients', 'AdviserFactFinds', 'AdviserSOARequests', 'AdviserSettings', 'AdviserProfile', 'AdviserHelp'];
-  const hideNav = noNavPages.includes(currentPageName) || adviceGroupPages.includes(currentPageName) || adviserPages.includes(currentPageName);
+  const adviceGroupPages = ['AdviceGroupDashboard', 'AdviceGroupSOARequests', 'AdviceGroupCompleted', 'AdviceGroupAdvisers', 'AdviceGroupClients', 'AdviceGroupProfile', 'AdviceGroupSettings', 'AdviceGroupHelp', 'AdviceGroupRiskProfiles', 'AdviceGroupModelPortfolios', 'AdviceGroupSOATemplate', 'AdviceGroupTickets'];
+  const adviserPages = ['AdviserDashboard', 'AdviserClients', 'AdviserFactFinds', 'AdviserSOARequests', 'AdviserSettings', 'AdviserProfile', 'AdviserHelp', 'AdviserTickets', 'AdviserAvatarSetup'];
+  const adminPages = ['AdminDashboard', 'AdminQueue', 'AdminCompleted', 'AdminAdviceGroups', 'AdminAdvisers', 'AdminClients', 'AdminTickets', 'AdminDataManager', 'AdminTemplate', 'AdminTeam', 'AdminSettings', 'AdminProfile', 'AdminHelp', 'AdminAdviceGroupDetail', 'AdminTeamMemberProfile'];
+  const hideNav = noNavPages.includes(currentPageName) || adviceGroupPages.includes(currentPageName) || adviserPages.includes(currentPageName) || adminPages.includes(currentPageName);
 
   // Check if in test mode for top padding
   const isInTestMode = typeof window !== 'undefined' && !!localStorage.getItem('test_mode_entity');
