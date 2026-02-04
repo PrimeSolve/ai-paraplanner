@@ -52,16 +52,9 @@ export default function AppShell({ children, pageActions, pageTitle }) {
   // Get the original user's role (who is actually logged in)
   const originalRole = originalUser?.role || user?.role;
 
-  // Identify pages with their own sidebars
-  const isFactFindOrSOA = location.pathname.includes('FactFind') || location.pathname.includes('SOARequest');
-  const isClientPortal = location.pathname.startsWith('/Client');
-  
-  // Calculate content margin based on sidebar type
-  const getContentMargin = () => {
-    if (isFactFindOrSOA) return '320px';  // Wide sidebar for FactFind/SOA
-    if (isClientPortal) return '0px';      // Client portal has its own layout
-    return '260px';                        // Standard sidebar
-  };
+  // Only FactFind and SOARequest have the wide 320px sidebar
+  const isSpecialLayout = location.pathname.includes('FactFind') || location.pathname.includes('SOARequest');
+  const contentMargin = isSpecialLayout ? '320px' : '260px';
 
   // Determine which sidebar to render based on navigation chain
   const renderSidebar = () => {
