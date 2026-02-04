@@ -11,20 +11,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-export default function AdviceGroupSidebar({ children, currentPage }) {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-      } catch (error) {
-        console.error('Failed to load user:', error);
-      }
-    };
-    loadUser();
-  }, []);
+export default function AdviceGroupSidebar({ currentPage }) {
 
   const navItems = [
     { section: 'OVERVIEW', items: [
