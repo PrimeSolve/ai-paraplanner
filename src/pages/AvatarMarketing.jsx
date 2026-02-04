@@ -119,7 +119,7 @@ export default function AvatarMarketing() {
           </div>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
-            <div style={{ background: 'white', border: '2px solid #e2e8f0', borderRadius: '24px', padding: '48px', position: 'relative' }}>
+            <div style={{ background: 'white', border: '2px solid #e2e8f0', borderRadius: '24px', padding: '48px', position: 'relative', display: 'flex', flexDirection: 'column' }}>
               <div style={{ width: '72px', height: '72px', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', marginBottom: '24px', boxShadow: '0 10px 30px rgba(59, 130, 246, 0.25)' }}>👥</div>
               <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '28px', fontWeight: 600, color: '#0f172a', marginBottom: '12px' }}>Stock Avatars</h3>
               <p style={{ fontSize: '16px', color: '#64748b', marginBottom: '24px', lineHeight: 1.6 }}>Choose from 20+ professional avatars ready to represent your practice.</p>
@@ -131,10 +131,10 @@ export default function AvatarMarketing() {
                   </li>
                 ))}
               </ul>
-              <a href="#avatars" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '12px 24px', borderRadius: '10px', fontSize: '15px', fontWeight: 600, textDecoration: 'none', background: 'white', color: '#0f172a', border: '2px solid #e2e8f0' }}>Browse Avatars</a>
+              <a href="#avatars" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '12px 24px', borderRadius: '10px', fontSize: '15px', fontWeight: 600, textDecoration: 'none', background: 'white', color: '#0f172a', border: '2px solid #e2e8f0', marginTop: 'auto' }}>Browse Avatars</a>
             </div>
             
-            <div style={{ background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.03) 0%, white 100%)', border: '2px solid #f97316', borderRadius: '24px', padding: '48px', position: 'relative' }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.03) 0%, white 100%)', border: '2px solid #f97316', borderRadius: '24px', padding: '48px', position: 'relative', display: 'flex', flexDirection: 'column' }}>
               <div style={{ position: 'absolute', top: '24px', right: '24px', padding: '6px 14px', background: '#f97316', borderRadius: '50px', fontSize: '12px', fontWeight: 700, color: 'white' }}>Premium</div>
               <div style={{ width: '72px', height: '72px', background: 'linear-gradient(135deg, #f97316, #ea580c)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', marginBottom: '24px', boxShadow: '0 10px 30px rgba(249, 115, 22, 0.25)' }}>🎬</div>
               <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '28px', fontWeight: 600, color: '#0f172a', marginBottom: '12px' }}>Custom Avatar</h3>
@@ -147,7 +147,7 @@ export default function AvatarMarketing() {
                   </li>
                 ))}
               </ul>
-              <a href="#custom" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '12px 24px', borderRadius: '10px', fontSize: '15px', fontWeight: 600, textDecoration: 'none', background: 'linear-gradient(135deg, #f97316, #ea580c)', color: 'white', boxShadow: '0 4px 14px rgba(249, 115, 22, 0.35)' }}>See Example</a>
+              <a href="#custom" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '12px 24px', borderRadius: '10px', fontSize: '15px', fontWeight: 600, textDecoration: 'none', background: 'linear-gradient(135deg, #f97316, #ea580c)', color: 'white', boxShadow: '0 4px 14px rgba(249, 115, 22, 0.35)', marginTop: 'auto' }}>See Example</a>
             </div>
           </div>
         </div>
