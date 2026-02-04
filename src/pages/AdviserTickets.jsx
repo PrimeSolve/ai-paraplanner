@@ -131,6 +131,9 @@ export default function AdviserTickets() {
             <span style={{ color: '#94a3b8' }}>🔍</span>
             <input type="text" placeholder="Search tickets..." style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '14px', color: '#0f172a', width: '100%' }} />
           </div>
+          <button onClick={() => setShowNewTicket(true)} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#7C3AED', color: 'white', fontSize: '14px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            + New Ticket
+          </button>
         </div>
 
         {/* Table Header */}
