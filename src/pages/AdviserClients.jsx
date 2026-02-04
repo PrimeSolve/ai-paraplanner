@@ -99,7 +99,7 @@ export default function AdviserClients() {
   };
 
   return (
-    <div className="py-6 px-8 w-full">
+    <div className="py-6 px-8">
       {/* Stats Grid */}
       <div className="grid grid-cols-4 gap-6 mb-8">
         <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white">

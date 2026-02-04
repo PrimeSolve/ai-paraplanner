@@ -89,7 +89,7 @@ export default function AdviceGroupClients() {
   const uniqueAdvisers = [...new Set(clients.map(c => c.adviser_email).filter(Boolean))];
 
   return (
-    <div className="py-6 px-8 w-full">
+    <div className="py-6 px-8">
 
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
