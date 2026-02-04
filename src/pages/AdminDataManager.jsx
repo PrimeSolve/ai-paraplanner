@@ -946,61 +946,28 @@ export default function AdminDataManager() {
   const [showNewDatabaseModal, setShowNewDatabaseModal] = useState(false);
   const [databases, setDatabases] = useState(sampleDatabases);
 
+  // Listen for the button click event from the layout
+  React.useEffect(() => {
+    const handleNewDatabase = () => setShowNewDatabaseModal(true);
+    window.addEventListener('openNewDatabaseDialog', handleNewDatabase);
+    return () => window.removeEventListener('openNewDatabaseDialog', handleNewDatabase);
+  }, []);
+
   const handleDatabaseCreated = (newDatabase) => {
     setDatabases([...databases, newDatabase]);
   };
 
   return (
     <>
-      {/* Top Panel */}
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: '260px',
-        right: 0,
-        height: '64px',
-        backgroundColor: 'white',
-        borderBottom: '1px solid #e2e8f0',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        padding: '0 32px',
-        zIndex: 40,
-      }}>
-        <button
-          onClick={() => setShowNewDatabaseModal(true)}
-          style={{
-            padding: '10px 18px',
-            borderRadius: '8px',
-            border: 'none',
-            background: '#0F4C5C',
-            color: 'white',
-            fontSize: '14px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          + New Database
-        </button>
-      </div>
-
-      {/* Main Content */}
-      <div style={{ paddingTop: '64px' }}>
+      <div style={{ padding: '32px' }}>
         {selectedDatabase ? (
-          <div style={{ padding: '32px' }}>
-            <DatabaseDetailView database={selectedDatabase} onBack={() => setSelectedDatabase(null)} />
-          </div>
+          <DatabaseDetailView database={selectedDatabase} onBack={() => setSelectedDatabase(null)} />
         ) : (
-          <div style={{ padding: '32px' }}>
-            <DatabaseListView 
-              databases={databases}
-              onSelectDatabase={setSelectedDatabase}
-              onNewDatabase={() => setShowNewDatabaseModal(true)}
-            />
-          </div>
+          <DatabaseListView 
+            databases={databases}
+            onSelectDatabase={setSelectedDatabase}
+            onNewDatabase={() => setShowNewDatabaseModal(true)}
+          />
         )}
       </div>
 

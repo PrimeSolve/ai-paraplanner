@@ -77,6 +77,31 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
+  if (currentPageName === 'AdminDataManager') {
+    pageActions = (
+      <button
+        onClick={() => {
+          window.dispatchEvent(new CustomEvent('openNewDatabaseDialog'));
+        }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '10px 18px',
+          background: '#0F4C5C',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '14px',
+          fontWeight: 600,
+          cursor: 'pointer',
+        }}
+      >
+        + New Database
+      </button>
+    );
+  }
+
   if (currentPageName === 'AdviceGroupAdvisers') {
     pageActions = (
       <button
