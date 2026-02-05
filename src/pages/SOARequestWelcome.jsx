@@ -130,7 +130,7 @@ export default function SOARequestWelcome() {
         
         {/* Main Content */}
         <div className="w-full px-6 py-8">
-          <div className="max-w-5xl mx-auto space-y-4">
+          <div className="space-y-4">
           
           {/* Welcome Banner */}
           <div className="border-blue-200 bg-blue-50 rounded-xl px-6 py-5 shadow-sm border">
