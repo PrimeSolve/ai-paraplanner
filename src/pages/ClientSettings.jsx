@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useRole } from '../components/RoleContext';
 import { User, Mail, Phone, Lock, Bell, Shield, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ClientSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [user, setUser] = useState(null);
+  const [clientUser, setClientUser] = useState(null);
   const [client, setClient] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const { navigationChain } = useRole();
+  
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -22,59 +25,49 @@ export default function ClientSettings() {
   });
 
   useEffect(() => {
-    loadUser();
-  }, []);
+    loadClientData();
+  }, [navigationChain]);
 
-  const loadUser = async () => {
+  const loadClientData = async () => {
     try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-
-      // Check if viewing from admin/adviser (client_email parameter)
-      const params = new URLSearchParams(window.location.search);
-      const clientEmail = params.get('client_email');
+      // Get the client being viewed from navigation chain
+      const currentLevel = navigationChain.length > 0 
+        ? navigationChain[navigationChain.length - 1] 
+        : null;
       
-      let clientData;
-      if (clientEmail) {
-        // Load specific client from admin/adviser view
-        const clients = await base44.entities.Client.filter({ user_email: clientEmail });
-        clientData = clients[0];
-        
-        // Load the client's user record
-        const users = await base44.entities.User.filter({ email: clientEmail });
-        const clientUser = users[0];
-        
-        setClient(clientData);
-        setFormData({
-          full_name: clientUser?.full_name || '',
-          email: clientUser?.email || '',
-          phone: clientUser?.phone || '',
-          profile_image_url: clientUser?.profile_image_url || ''
-        });
-        setNotifications({
-          email_updates: clientUser?.email_updates ?? true,
-          soa_ready: clientUser?.soa_ready ?? true,
-          fact_find_reminders: clientUser?.fact_find_reminders ?? true
-        });
-      } else {
-        // Load logged-in user's own data
-        const clients = await base44.entities.Client.filter({ user_email: currentUser.email });
-        setClient(clients[0]);
-        
-        setFormData({
-          full_name: currentUser.full_name || '',
-          email: currentUser.email || '',
-          phone: currentUser.phone || '',
-          profile_image_url: currentUser.profile_image_url || ''
-        });
-        setNotifications({
-          email_updates: currentUser.email_updates ?? true,
-          soa_ready: currentUser.soa_ready ?? true,
-          fact_find_reminders: currentUser.fact_find_reminders ?? true
-        });
+      if (!currentLevel || currentLevel.type !== 'client') {
+        console.error('Not viewing a client');
+        setLoading(false);
+        return;
       }
+
+      const clientEmail = currentLevel.email;
+      
+      // Load the Client entity
+      const clients = await base44.entities.Client.filter({ user_email: clientEmail });
+      const clientData = clients[0];
+      setClient(clientData);
+      
+      // Load the User entity for this client
+      const users = await base44.entities.User.filter({ email: clientEmail });
+      const clientUserData = users[0];
+      setClientUser(clientUserData);
+      
+      // Populate form with CLIENT's data (not logged-in user)
+      setFormData({
+        full_name: clientUserData?.full_name || '',
+        email: clientUserData?.email || '',
+        phone: clientUserData?.phone || '',
+        profile_image_url: clientUserData?.profile_image_url || ''
+      });
+      
+      setNotifications({
+        email_updates: clientUserData?.email_updates ?? true,
+        soa_ready: clientUserData?.soa_ready ?? true,
+        fact_find_reminders: clientUserData?.fact_find_reminders ?? true
+      });
     } catch (error) {
-      console.error('Failed to load user:', error);
+      console.error('Failed to load client:', error);
     } finally {
       setLoading(false);
     }
@@ -88,21 +81,13 @@ export default function ClientSettings() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       
-      const params = new URLSearchParams(window.location.search);
-      const clientEmail = params.get('client_email');
-      
-      if (clientEmail) {
-        const users = await base44.entities.User.filter({ email: clientEmail });
-        if (users[0]) {
-          await base44.entities.User.update(users[0].id, { profile_image_url: file_url });
-        }
-      } else {
-        await base44.auth.updateMe({ profile_image_url: file_url });
+      if (clientUser?.id) {
+        await base44.entities.User.update(clientUser.id, { profile_image_url: file_url });
       }
       
       setFormData({ ...formData, profile_image_url: file_url });
       toast.success('Profile image updated');
-      loadUser();
+      loadClientData();
     } catch (error) {
       toast.error('Failed to upload image');
     } finally {
@@ -112,21 +97,13 @@ export default function ClientSettings() {
 
   const handleRemoveImage = async () => {
     try {
-      const params = new URLSearchParams(window.location.search);
-      const clientEmail = params.get('client_email');
-      
-      if (clientEmail) {
-        const users = await base44.entities.User.filter({ email: clientEmail });
-        if (users[0]) {
-          await base44.entities.User.update(users[0].id, { profile_image_url: '' });
-        }
-      } else {
-        await base44.auth.updateMe({ profile_image_url: '' });
+      if (clientUser?.id) {
+        await base44.entities.User.update(clientUser.id, { profile_image_url: '' });
       }
       
       setFormData({ ...formData, profile_image_url: '' });
       toast.success('Profile image removed');
-      loadUser();
+      loadClientData();
     } catch (error) {
       toast.error('Failed to remove image');
     }
@@ -135,29 +112,15 @@ export default function ClientSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const params = new URLSearchParams(window.location.search);
-      const clientEmail = params.get('client_email');
-      
-      if (clientEmail) {
-        // Update the client's user record (admin/adviser viewing)
-        const users = await base44.entities.User.filter({ email: clientEmail });
-        if (users[0]) {
-          await base44.entities.User.update(users[0].id, {
-            full_name: formData.full_name,
-            phone: formData.phone,
-            ...notifications
-          });
-        }
-      } else {
-        // Update own user record
-        await base44.auth.updateMe({
+      if (clientUser?.id) {
+        await base44.entities.User.update(clientUser.id, {
           full_name: formData.full_name,
           phone: formData.phone,
           ...notifications
         });
       }
       toast.success('Settings saved successfully');
-      loadUser();
+      loadClientData();
     } catch (error) {
       toast.error('Failed to save settings');
     } finally {
@@ -332,7 +295,7 @@ export default function ClientSettings() {
           {/* Action Buttons */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
             <button
-              onClick={loadUser}
+              onClick={loadClientData}
               style={{
                 padding: '10px 20px',
                 border: '1px solid #e2e8f0',
