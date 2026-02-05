@@ -474,11 +474,6 @@ export default function FactFindDashboard() {
     <FactFindLayout currentSection="dashboard" factFind={factFind}>
       <div className="flex-1 overflow-y-auto p-8">
         <div className="max-w-[1600px] mx-auto">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-slate-800">Your Financial Dashboard</h1>
-            <p className="text-slate-600">Complete financial summary</p>
-          </div>
 
           {/* Empty State */}
           {!hasAnyData && (
