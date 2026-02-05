@@ -17,6 +17,12 @@ export function useFactFind() {
   const saveTimeoutRef = useRef({});
 
   useEffect(() => {
+    // Don't run until we have navigationChain
+    if (!navigationChain || navigationChain.length === 0) {
+      console.log('⏳ Waiting for navigationChain...');
+      return;
+    }
+
     const initFactFind = async () => {
       console.log('🔍 useFactFind: Starting initialization');
       console.log('Navigation chain:', navigationChain);
