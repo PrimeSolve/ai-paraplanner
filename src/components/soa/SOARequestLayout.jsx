@@ -113,9 +113,9 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
   const overallCompletion = soaRequest?.completion_percentage || 0;
 
   return (
-    <div className="h-screen bg-slate-50 overflow-hidden">
+    <div className="flex bg-slate-50 overflow-hidden" style={{ height: 'calc(100vh - 64px)' }}>
       {/* Sidebar Navigation */}
-      <div className="w-80 bg-gray-800 text-gray-200 flex flex-col border-r border-gray-900 fixed left-0 top-0 bottom-0 z-50">
+      <div className="w-80 bg-gray-800 text-gray-200 flex flex-col border-r border-gray-900 fixed left-0 bottom-0 z-50" style={{ top: '64px' }}>
         {/* Header */}
         <div style={{
           display: 'flex',
@@ -209,7 +209,7 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
       </div>
 
       {/* Main Content Area */}
-      <div className="absolute left-80 right-0 top-16 bottom-0 overflow-auto">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden ml-80 pt-4">
         {children}
       </div>
     </div>
