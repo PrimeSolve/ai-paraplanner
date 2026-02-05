@@ -11,8 +11,7 @@ import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 export default function FactFindSuperannuation() {
   const navigate = useNavigate();
-  const [factFind, setFactFind] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { factFind, loading: ffLoading } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('super');

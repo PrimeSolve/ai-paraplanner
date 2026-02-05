@@ -12,8 +12,7 @@ import {
 
 export default function FactFindWelcome() {
   const navigate = useNavigate();
-  const [factFind, setFactFind] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { factFind, loading: ffLoading } = useFactFind();
   const [user, setUser] = useState(null);
 
   useEffect(() => {

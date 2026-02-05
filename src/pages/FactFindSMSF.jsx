@@ -13,8 +13,7 @@ const MAX_SMSF = 2;
 
 export default function FactFindSMSF() {
   const navigate = useNavigate();
-  const [factFind, setFactFind] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { factFind, loading: ffLoading } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);

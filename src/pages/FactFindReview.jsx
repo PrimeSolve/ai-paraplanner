@@ -36,8 +36,7 @@ const sectionList = [
 
 export default function FactFindReview() {
   const navigate = useNavigate();
-  const [factFind, setFactFind] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { factFind, loading: ffLoading } = useFactFind();
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [user, setUser] = useState(null);

@@ -303,8 +303,7 @@ const questions = [
 
 export default function FactFindRiskProfile() {
   const navigate = useNavigate();
-  const [factFind, setFactFind] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { factFind, loading: ffLoading } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('questionnaire');

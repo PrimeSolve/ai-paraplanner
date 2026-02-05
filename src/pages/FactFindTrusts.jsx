@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
+import { useFactFind } from '../components/factfind/useFactFind';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -11,8 +12,7 @@ import { ArrowRight, ArrowLeft, Trash2 } from 'lucide-react';
 
 export default function FactFindTrusts() {
   const navigate = useNavigate();
-  const [factFind, setFactFind] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { factFind, loading: ffLoading } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('trust');
