@@ -872,8 +872,11 @@ export default function FactFindPersonal() {
                 </Button>
 
                 <Button
-                  onClick={handleSaveAndContinue}
-                  disabled={saving}
+                  onClick={() => {
+                    alert('CLICKED!');
+                    handleSaveAndContinue();
+                  }}
+                  disabled={false}
                   className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
                 >
                   {saving ? (
