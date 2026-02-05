@@ -7,6 +7,7 @@ import { base44 } from '@/api/base44Client';
 import AdminSidebar from './admin/AdminSidebar';
 import AdviceGroupSidebar from './advicegroup/AdviceGroupSidebar';
 import AdviserSidebar from './adviser/AdviserSidebar';
+import ClientSidebar from './client/ClientSidebar';
 
 // Import unified header
 import AppHeader from './AppHeader';
@@ -121,6 +122,9 @@ export default function AppShell({ children, pageActions, pageTitle }) {
     }
 
     // If viewing as a different level, show that level's sidebar
+    if (currentLevel === 'client') {
+      return <ClientSidebar currentPage={getCurrentPage()} />;
+    }
     if (currentLevel === 'adviser') {
       return <AdviserSidebar currentPage={getCurrentPage()} />;
     }
