@@ -44,8 +44,8 @@ export default function ClientSettings() {
       // currentLevel.id now contains the email
       const clientEmail = currentLevel.id;
       
-      // Load the Client entity
-      const clients = await base44.entities.Client.filter({ user_email: clientEmail });
+      // Load the Client entity (filter by email field in the data)
+      const clients = await base44.entities.Client.filter({ email: clientEmail });
       const clientData = clients[0];
       setClient(clientData);
       
