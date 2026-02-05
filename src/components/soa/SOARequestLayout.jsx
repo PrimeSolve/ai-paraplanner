@@ -153,16 +153,18 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
                     to={createPageUrl(section.path) + (soaRequest?.id ? `?id=${soaRequest.id}` : '')}
                     title={section.description}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg mb-2 transition-all group",
+                      "flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all text-sm",
                       isActive 
-                        ? "bg-gray-700 text-white" 
-                        : "text-gray-300 hover:bg-gray-700/50 hover:text-white"
+                        ? "bg-slate-700 text-white font-medium" 
+                        : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
                     )}
                   >
-                    <Icon className="w-4 h-4 flex-shrink-0" />
-                    <span className="font-semibold text-xs">{section.label}</span>
+                    <span className="flex items-center gap-2">
+                      {Icon && <Icon className="w-4 h-4" />}
+                      {section.label}
+                    </span>
                     {completion > 0 && (
-                      <span className="text-xs text-slate-400 font-semibold ml-auto">{completion}%</span>
+                      <span className="text-xs text-slate-400 font-semibold">{completion}%</span>
                     )}
                   </Link>
                 );
