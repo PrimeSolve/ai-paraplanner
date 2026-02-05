@@ -25,7 +25,7 @@ const subSections = [
 
 export default function FactFindPersonal() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading, setFactFind } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('client');
   const [activeSubSection, setActiveSubSection] = useState('basic');
@@ -101,50 +101,22 @@ export default function FactFindPersonal() {
     }
   }, [factFind]);
 
-  // Auto-save when data changes (debounced)
+  // Auto-save on unmount (when navigating away)
   useEffect(() => {
-    if (!factFind?.id || ffLoading) return;
-
-    const timeoutId = setTimeout(async () => {
-      try {
+    return () => {
+      if (factFind?.id && (clientData.first_name || partnerData.first_name)) {
         const personalData = {
           client: clientData,
           ...(hasPartner && { partner: partnerData })
         };
-        await base44.entities.FactFind.update(factFind.id, {
-          personal: personalData,
-          current_section: 'personal'
-        });
-      } catch (error) {
-        console.error('Auto-save failed:', error);
+        updateSection('personal', personalData);
       }
-    }, 1000);
-
-    return () => clearTimeout(timeoutId);
-  }, [clientData, partnerData, hasPartner, factFind?.id, ffLoading]);
-
-  const handleSave = async () => {
-    if (!factFind?.id) return;
-
-    setSaving(true);
-    try {
-      const personalData = {
-        client: clientData,
-        ...(hasPartner && { partner: partnerData })
-      };
-      await base44.entities.FactFind.update(factFind.id, {
-        personal: personalData,
-        current_section: 'personal'
-      });
-      toast.success('Progress saved successfully');
-    } catch (error) {
-      toast.error('Failed to save progress');
-    } finally {
-      setSaving(false);
-    }
-  };
+    };
+  }, [factFind?.id, clientData, partnerData, hasPartner, updateSection]);
 
   const handleSaveAndContinue = async () => {
+    if (!factFind?.id) return;
+
     // Validation for basic section
     if (activeSubSection === 'basic') {
       if (!clientData.first_name || !clientData.last_name) {
@@ -153,45 +125,33 @@ export default function FactFindPersonal() {
       }
     }
 
-    // Save current data
     setSaving(true);
     try {
       const personalData = {
         client: clientData,
         ...(hasPartner && { partner: partnerData })
       };
-      await base44.entities.FactFind.update(factFind.id, {
-        personal: personalData,
-        current_section: 'personal'
-      });
 
       // Move to next sub-section or complete
       const currentIndex = subSections.findIndex(s => s.id === activeSubSection);
       if (currentIndex < subSections.length - 1) {
+        await updateSection('personal', personalData);
         setActiveSubSection(subSections[currentIndex + 1].id);
         setActiveTab('client');
         toast.success('Progress saved');
       } else {
-        // Completed all sub-sections
-        const sectionsCompleted = factFind.sections_completed || [];
-        if (!sectionsCompleted.includes('personal')) {
-          sectionsCompleted.push('personal');
-        }
-
-        const personalData = {
-          client: clientData,
-          ...(hasPartner && { partner: partnerData })
-        };
+        // Completed all sub-sections - mark section complete and navigate
         await base44.entities.FactFind.update(factFind.id, {
           personal: personalData,
           current_section: 'dependants',
-          sections_completed: sectionsCompleted,
-          completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
+          sections_completed: [...(factFind.sections_completed || []), 'personal'].filter((v, i, a) => a.indexOf(v) === i),
+          completion_percentage: Math.round(((factFind.sections_completed?.length || 0) + 1) / 14 * 100)
         });
 
         navigate(createPageUrl('FactFindDependants') + `?id=${factFind.id}`);
       }
     } catch (error) {
+      console.error('Error saving:', error);
       toast.error('Failed to save data');
     } finally {
       setSaving(false);
