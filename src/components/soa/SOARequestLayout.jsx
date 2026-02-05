@@ -105,6 +105,7 @@ const sectionGroups = [
 
 export default function SOARequestLayout({ children, currentSection, soaRequest }) {
   const navigate = useNavigate();
+  const { navigationChain } = useRole();
 
   const getCompletionForSection = (sectionId) => {
     // TODO: Implement completion tracking
