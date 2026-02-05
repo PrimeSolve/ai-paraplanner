@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
+import { useRole } from '../RoleContext';
 import {
   Upload, Home, FileText, TrendingUp, Shield, PieChart,
   DollarSign, Building2, CheckCircle2, MessageSquare
