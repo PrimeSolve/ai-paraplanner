@@ -95,7 +95,6 @@ export default function AppShell({ children, pageActions, pageTitle }) {
     console.log('currentLevel:', currentLevel);
     console.log('originalRole:', originalRole);
     console.log('isSpecialLayout:', isSpecialLayout);
-    console.log('contentMargin:', contentMargin);
     
     if (isSpecialLayout) {
       console.log('Returning null due to special layout');
