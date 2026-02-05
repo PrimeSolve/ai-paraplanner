@@ -52,13 +52,40 @@ export default function AppShell({ children, pageActions, pageTitle }) {
   // Get the original user's role (who is actually logged in)
   const originalRole = originalUser?.role || user?.role;
 
-  // Only FactFind and SOARequestDetails/Welcome/etc (individual SOA pages) have the wide 320px sidebar
-  // NOT the SOA queue/list pages like AdviceGroupSOARequests or AdviserSOARequests
-  const isFactFindPage = location.pathname.includes('FactFind');
-  const isSOADetailPage = location.pathname.includes('SOARequest') && 
-    !location.pathname.includes('SOARequests'); // SOARequests is the list page, SOARequest is detail
-  const isSpecialLayout = isFactFindPage || isSOADetailPage;
-  const contentMargin = isSpecialLayout ? '320px' : '260px';
+  // RULE 5: isSpecialLayout is an EXPLICIT whitelist
+  const SPECIAL_LAYOUT_ROUTES = [
+    '/FactFindWelcome',
+    '/FactFindPrefill',
+    '/FactFindPersonal',
+    '/FactFindAboutYou',
+    '/FactFindDependants',
+    '/FactFindTrusts',
+    '/FactFindSMSF',
+    '/FactFindSuperannuation',
+    '/FactFindInvestment',
+    '/FactFindAssetsLiabilities',
+    '/FactFindIncomeExpenses',
+    '/FactFindInsurance',
+    '/FactFindSuperTax',
+    '/FactFindAdviceReason',
+    '/FactFindRiskProfile',
+    '/FactFindReview',
+    '/FactFindDashboard',
+    '/FactFindAssistant',
+    '/SOARequestWelcome',
+    '/SOARequestPrefill',
+    '/SOARequestScope',
+    '/SOARequestStrategy',
+    '/SOARequestProducts',
+    '/SOARequestTransactions',
+    '/SOARequestInsurance',
+    '/SOARequestPortfolio',
+    '/SOARequestAssumptions',
+    '/SOARequestReview',
+    '/SOARequestDetails'
+  ];
+  const isSpecialLayout = SPECIAL_LAYOUT_ROUTES.some(route => location.pathname.startsWith(route));
+  const sidebarWidth = isSpecialLayout ? '320px' : '260px';
 
   // Determine which sidebar to render based on navigation chain
   const renderSidebar = () => {
@@ -148,12 +175,23 @@ export default function AppShell({ children, pageActions, pageTitle }) {
    console.log('currentLevel:', currentLevel);
    console.log('originalRole:', originalRole);
 
+   // RULE 1: AppShell is the SINGLE source of truth for layout
+   const showSidebar = !isSpecialLayout && renderSidebar() !== null;
+   const contentWidth = showSidebar ? `calc(100% - ${sidebarWidth})` : '100%';
+   const contentMargin = showSidebar ? sidebarWidth : '0';
+
    return (
       <div className="flex min-h-screen bg-[#f8fafc]">
-        {renderSidebar()}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: contentMargin }}>
+        {showSidebar && renderSidebar()}
+        <div style={{ 
+          marginLeft: contentMargin, 
+          width: contentWidth,
+          display: 'flex', 
+          flexDirection: 'column',
+          minHeight: '100vh'
+        }}>
          <AppHeader pageActions={pageActions} pageTitle={pageTitle} />
-         <main className="flex-1" style={{ paddingTop: isSpecialLayout ? '0' : '64px' }}>
+         <main className="flex-1">
            {children}
          </main>
        </div>

@@ -122,17 +122,14 @@ export default function AppHeader({ pageActions, pageTitle }) {
     }
   };
 
+  // RULE 4: Header ALWAYS spans 100% width of content area
   return (
     <div style={{
-      position: 'fixed',
-      top: 0,
-      left: headerLeft,
-      right: 0,
+      width: '100%',
       height: '64px',
       background: '#ffffff',
       borderBottom: '1px solid #e2e8f0',
-      paddingLeft: '24px',
-      paddingRight: '32px',
+      padding: '12px 32px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
