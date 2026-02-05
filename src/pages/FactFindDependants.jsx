@@ -291,36 +291,31 @@ export default function FactFindDependants() {
   }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
 
   // ============================================
-  // LOAD DATA
+  // LOAD USER AND SYNC FACTFIND
   // ============================================
 
-  const loadData = useCallback(async () => {
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-
-      if (id) {
-        const finds = await base44.entities.FactFind.filter({ id });
-        if (finds[0]) {
-          setFactFind(finds[0]);
-          if (finds[0].dependants) {
-            globalStateRef.current.dependants = {
-              ...finds[0].dependants,
-              currentTab: finds[0].dependants.currentTab || 'children',
-              activeIndex: finds[0].dependants.activeIndex || 0
-            };
-          }
-        }
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Error loading user:', error);
       }
-    } catch (error) {
-      console.error('Error loading fact find:', error);
-    } finally {
-      setLoading(false);
-    }
+    };
+    loadUser();
   }, []);
+
+  // When FactFind loads, sync its dependants data
+  useEffect(() => {
+    if (factFind?.id && factFind.dependants) {
+      globalStateRef.current.dependants = {
+        ...factFind.dependants,
+        currentTab: factFind.dependants.currentTab || 'children',
+        activeIndex: factFind.dependants.activeIndex || 0
+      };
+    }
+  }, [factFind?.id]);
 
   // ============================================
   // SETUP INPUT LISTENERS
