@@ -7,6 +7,7 @@ export default function ClientSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
+  const [client, setClient] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
@@ -28,17 +29,50 @@ export default function ClientSettings() {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
-      setFormData({
-        full_name: currentUser.full_name || '',
-        email: currentUser.email || '',
-        phone: currentUser.phone || '',
-        profile_image_url: currentUser.profile_image_url || ''
-      });
-      setNotifications({
-        email_updates: currentUser.email_updates ?? true,
-        soa_ready: currentUser.soa_ready ?? true,
-        fact_find_reminders: currentUser.fact_find_reminders ?? true
-      });
+
+      // Check if viewing from admin/adviser (client_email parameter)
+      const params = new URLSearchParams(window.location.search);
+      const clientEmail = params.get('client_email');
+      
+      let clientData;
+      if (clientEmail) {
+        // Load specific client from admin/adviser view
+        const clients = await base44.entities.Client.filter({ user_email: clientEmail });
+        clientData = clients[0];
+        
+        // Load the client's user record
+        const users = await base44.entities.User.filter({ email: clientEmail });
+        const clientUser = users[0];
+        
+        setClient(clientData);
+        setFormData({
+          full_name: clientUser?.full_name || '',
+          email: clientUser?.email || '',
+          phone: clientUser?.phone || '',
+          profile_image_url: clientUser?.profile_image_url || ''
+        });
+        setNotifications({
+          email_updates: clientUser?.email_updates ?? true,
+          soa_ready: clientUser?.soa_ready ?? true,
+          fact_find_reminders: clientUser?.fact_find_reminders ?? true
+        });
+      } else {
+        // Load logged-in user's own data
+        const clients = await base44.entities.Client.filter({ user_email: currentUser.email });
+        setClient(clients[0]);
+        
+        setFormData({
+          full_name: currentUser.full_name || '',
+          email: currentUser.email || '',
+          phone: currentUser.phone || '',
+          profile_image_url: currentUser.profile_image_url || ''
+        });
+        setNotifications({
+          email_updates: currentUser.email_updates ?? true,
+          soa_ready: currentUser.soa_ready ?? true,
+          fact_find_reminders: currentUser.fact_find_reminders ?? true
+        });
+      }
     } catch (error) {
       console.error('Failed to load user:', error);
     } finally {
@@ -53,7 +87,19 @@ export default function ClientSettings() {
     setUploadingImage(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      await base44.auth.updateMe({ profile_image_url: file_url });
+      
+      const params = new URLSearchParams(window.location.search);
+      const clientEmail = params.get('client_email');
+      
+      if (clientEmail) {
+        const users = await base44.entities.User.filter({ email: clientEmail });
+        if (users[0]) {
+          await base44.entities.User.update(users[0].id, { profile_image_url: file_url });
+        }
+      } else {
+        await base44.auth.updateMe({ profile_image_url: file_url });
+      }
+      
       setFormData({ ...formData, profile_image_url: file_url });
       toast.success('Profile image updated');
       loadUser();
@@ -66,7 +112,18 @@ export default function ClientSettings() {
 
   const handleRemoveImage = async () => {
     try {
-      await base44.auth.updateMe({ profile_image_url: '' });
+      const params = new URLSearchParams(window.location.search);
+      const clientEmail = params.get('client_email');
+      
+      if (clientEmail) {
+        const users = await base44.entities.User.filter({ email: clientEmail });
+        if (users[0]) {
+          await base44.entities.User.update(users[0].id, { profile_image_url: '' });
+        }
+      } else {
+        await base44.auth.updateMe({ profile_image_url: '' });
+      }
+      
       setFormData({ ...formData, profile_image_url: '' });
       toast.success('Profile image removed');
       loadUser();
@@ -78,11 +135,27 @@ export default function ClientSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await base44.auth.updateMe({
-        full_name: formData.full_name,
-        phone: formData.phone,
-        ...notifications
-      });
+      const params = new URLSearchParams(window.location.search);
+      const clientEmail = params.get('client_email');
+      
+      if (clientEmail) {
+        // Update the client's user record (admin/adviser viewing)
+        const users = await base44.entities.User.filter({ email: clientEmail });
+        if (users[0]) {
+          await base44.entities.User.update(users[0].id, {
+            full_name: formData.full_name,
+            phone: formData.phone,
+            ...notifications
+          });
+        }
+      } else {
+        // Update own user record
+        await base44.auth.updateMe({
+          full_name: formData.full_name,
+          phone: formData.phone,
+          ...notifications
+        });
+      }
       toast.success('Settings saved successfully');
       loadUser();
     } catch (error) {
