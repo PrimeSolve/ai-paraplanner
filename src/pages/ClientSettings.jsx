@@ -30,10 +30,21 @@ export default function ClientSettings() {
 
   const loadClientData = async () => {
     try {
+      // DEBUG: Log navigation chain
+      console.log('=== ClientSettings loadClientData ===');
+      console.log('navigationChain:', navigationChain);
+      
+      const clientFromNav = navigationChain?.find(n => n.type === 'client');
+      console.log('clientFromNav:', clientFromNav);
+      console.log('clientId:', clientFromNav?.id);
+      console.log('clientEmail:', clientFromNav?.email);
+      
       // Get the client being viewed from navigation chain
       const currentLevel = navigationChain.length > 0 
         ? navigationChain[navigationChain.length - 1] 
         : null;
+      
+      console.log('currentLevel:', currentLevel);
       
       if (!currentLevel || currentLevel.type !== 'client') {
         console.error('Not viewing a client');
@@ -42,6 +53,7 @@ export default function ClientSettings() {
       }
 
       const clientEmail = currentLevel.email;
+      console.log('Using clientEmail:', clientEmail);
       
       // Load the Client entity
       const clients = await base44.entities.Client.filter({ user_email: clientEmail });
