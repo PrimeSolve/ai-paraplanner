@@ -4,7 +4,6 @@ import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight, LayoutDashboard } from 'lucide-react';
 import { useRole } from '../RoleContext';
-import AppHeader from '../AppHeader';
 
 const sectionGroups = [
   {
@@ -89,7 +88,7 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
   const overallCompletion = factFind?.completion_percentage || 0;
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex h-screen bg-slate-50 overflow-hidden">
       {/* Sidebar Navigation */}
       <div className="w-80 bg-slate-800 text-slate-200 flex flex-col border-r border-slate-900 fixed left-0 top-0 bottom-0 z-40">
         {/* Brand */}
@@ -186,14 +185,8 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
         </div>
 
       {/* Main Content Area */}
-      <div style={{ marginLeft: '320px', width: 'calc(100% - 320px)', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        {/* AppHeader for breadcrumbs */}
-        <AppHeader />
-        
-        {/* Page content */}
-        <main style={{ flex: 1 }}>
-          {children}
-        </main>
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden ml-80 pt-16">
+        {children}
       </div>
     </div>
   );
