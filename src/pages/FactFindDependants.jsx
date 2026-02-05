@@ -360,9 +360,8 @@ export default function FactFindDependants() {
   // ============================================
 
   useEffect(() => {
-    loadData();
     setupInputListeners();
-  }, []);
+  }, [currentTab, activeIndex]);
 
   useEffect(() => {
     if (!loading && factFind?.id) {
