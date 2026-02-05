@@ -137,10 +137,6 @@ export default function AppHeader({ pageActions, pageTitle }) {
     }}>
       {/* Left side: Home button (if viewing as) + Breadcrumbs OR Page Title */}
        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '16px' }}>
-         {console.log('=== AppHeader Debug ===') || true}
-         {console.log('isViewingAs:', isViewingAs) || true}
-         {console.log('navigationChain:', JSON.stringify(navigationChain)) || true}
-         {console.log('pathname:', location.pathname) || true}
          {isViewingAs && (
             <button
               onClick={handleGoHome}
