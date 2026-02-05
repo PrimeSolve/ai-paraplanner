@@ -77,11 +77,9 @@ export default function ClientDashboard() {
 
   if (loading) {
     return (
-      <ClientLayout currentPage="ClientDashboard">
-        <div style={{ padding: '24px 32px' }} className="flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-        </div>
-      </ClientLayout>
+      <div style={{ padding: '24px 32px' }} className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+      </div>
     );
   }
 
@@ -106,9 +104,8 @@ export default function ClientDashboard() {
   const totalSections = 11;
 
   return (
-    <ClientLayout currentPage="ClientDashboard">
-      <div style={{ padding: '24px 32px' }}>
-        {/* Welcome Card - Different for first time vs returning */}
+    <div style={{ padding: '24px 32px' }}>
+      {/* Welcome Card - Different for first time vs returning */}
         {dashboardState === 'first_time' ? (
           <div style={{ 
             background: 'white', 
@@ -982,6 +979,5 @@ export default function ClientDashboard() {
           </div>
         </div>
       </div>
-    </ClientLayout>
   );
 }
