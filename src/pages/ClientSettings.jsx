@@ -49,16 +49,17 @@ export default function ClientSettings() {
       const clientData = clients[0];
       setClient(clientData);
       
-      // Load the User entity for this client
+      // Load the User entity for this client (may not exist)
       const users = await base44.entities.User.filter({ email: clientEmail });
       const clientUserData = users[0];
       setClientUser(clientUserData);
       
-      // Populate form with CLIENT's data (not logged-in user)
+      // Populate form with Client entity data (not User entity)
+      const fullName = `${clientData?.first_name || ''} ${clientData?.last_name || ''}`.trim();
       setFormData({
-        full_name: clientUserData?.full_name || '',
-        email: clientUserData?.email || '',
-        phone: clientUserData?.phone || '',
+        full_name: fullName || clientUserData?.full_name || '',
+        email: clientData?.email || clientEmail,
+        phone: clientData?.phone || clientUserData?.phone || '',
         profile_image_url: clientUserData?.profile_image_url || ''
       });
       
