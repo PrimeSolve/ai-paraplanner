@@ -72,11 +72,12 @@ export function useFactFind() {
           });
           console.log('Created FactFind:', newFactFind);
 
-          // 4. Link to Client
-          await base44.entities.Client.update(client.id, {
-            fact_find_id: newFactFind.id
-          });
-          console.log('Linked FactFind to Client');
+          // 4. Link to Client (preserve all existing fields)
+           await base44.entities.Client.update(client.id, {
+             ...client,
+             fact_find_id: newFactFind.id
+           });
+           console.log('Linked FactFind to Client');
 
           setFactFind(newFactFind);
         }
