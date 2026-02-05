@@ -450,36 +450,30 @@ export default function FactFindTrusts() {
   }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
 
   // ============================================
-  // LOAD DATA
+  // LOAD USER AND SYNC FACTFIND
   // ============================================
 
-  const loadData = useCallback(async () => {
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-
-      if (id) {
-        const finds = await base44.entities.FactFind.filter({ id });
-        if (finds[0]) {
-          setFactFind(finds[0]);
-          if (finds[0].trusts) {
-            globalStateRef.current.trusts = {
-              ...finds[0].trusts,
-              currentTab: finds[0].trusts.currentTab || 'trust',
-              activeIndex: finds[0].trusts.activeIndex || { trust: 0, company: 0 }
-            };
-          }
-        }
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Error loading user:', error);
       }
-    } catch (error) {
-      console.error('Error loading fact find:', error);
-    } finally {
-      setLoading(false);
-    }
+    };
+    loadUser();
   }, []);
+
+  useEffect(() => {
+    if (factFind?.id && factFind.trusts_companies) {
+      globalStateRef.current.trusts = {
+        ...factFind.trusts_companies,
+        currentTab: factFind.trusts_companies.currentTab || 'trust',
+        activeIndex: factFind.trusts_companies.activeIndex || { trust: 0, company: 0 }
+      };
+    }
+  }, [factFind?.id]);
 
   // ============================================
   // SAVE STATE

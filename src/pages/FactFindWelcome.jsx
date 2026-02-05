@@ -16,37 +16,15 @@ export default function FactFindWelcome() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadUser = async () => {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-
-        if (id) {
-          const finds = await base44.entities.FactFind.filter({ id });
-          if (finds[0]) {
-            setFactFind(finds[0]);
-          }
-        } else {
-          const existingFinds = await base44.entities.FactFind.filter(
-            { created_by: currentUser.email, status: { $ne: 'submitted' } },
-            '-updated_date',
-            1
-          );
-          if (existingFinds[0]) {
-            setFactFind(existingFinds[0]);
-            window.history.replaceState({}, '', `?id=${existingFinds[0].id}`);
-          }
-        }
       } catch (error) {
-        console.error('Error loading fact find:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error loading user:', error);
       }
     };
-    loadData();
+    loadUser();
   }, []);
 
   const handleBegin = async () => {

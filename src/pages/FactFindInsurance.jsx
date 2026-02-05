@@ -68,29 +68,25 @@ export default function FactFindInsurance() {
     return opts;
   }, [factFind]);
 
-  const loadData = useCallback(async () => {
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-
-      if (id) {
-        const finds = await base44.entities.FactFind.filter({ id });
-        if (finds[0]) {
-          setFactFind(finds[0]);
-          const insuranceData = finds[0].insurance || {};
-          setPolicies(insuranceData.policies || []);
-          setActiveIdx(insuranceData.activeIdx || 0);
-        }
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Error loading user:', error);
       }
-    } catch (error) {
-      console.error('Error loading fact find:', error);
-    } finally {
-      setLoading(false);
-    }
+    };
+    loadUser();
   }, []);
+
+  useEffect(() => {
+    if (factFind?.insurance) {
+      const insuranceData = factFind.insurance;
+      setPolicies(insuranceData.policies || []);
+      setActiveIdx(insuranceData.activeIdx || 0);
+    }
+  }, [factFind]);
 
   useEffect(() => {
     loadData();

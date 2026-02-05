@@ -43,39 +43,34 @@ export default function FactFindIncomeExpenses() {
     return 'Partner';
   }, [factFind]);
 
-  const loadData = useCallback(async () => {
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-
-      if (id) {
-        const finds = await base44.entities.FactFind.filter({ id });
-        if (finds[0]) {
-          setFactFind(finds[0]);
-          const incomeData = finds[0].income || {};
-
-          setCurrentTab(incomeData.currentTab || 'inc');
-          setActivePerson(incomeData.activePerson || 'c1');
-          setHasPartner(incomeData.hasPartner || false);
-
-          setClientFields(incomeData.client?.fields || {});
-          setPartnerFields(incomeData.partner?.fields || {});
-          setExpenseFields(incomeData.expenses?.fields || {});
-
-          setClientAdjustments(incomeData.client?.adjustments || []);
-          setPartnerAdjustments(incomeData.partner?.adjustments || []);
-          setExpenseAdjustments(incomeData.expenses?.adjustments || []);
-        }
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Error loading user:', error);
       }
-    } catch (error) {
-      console.error('Error loading fact find:', error);
-    } finally {
-      setLoading(false);
-    }
+    };
+    loadUser();
   }, []);
+
+  useEffect(() => {
+    if (factFind?.income) {
+      const incomeData = factFind.income;
+      setCurrentTab(incomeData.currentTab || 'inc');
+      setActivePerson(incomeData.activePerson || 'c1');
+      setHasPartner(incomeData.hasPartner || false);
+
+      setClientFields(incomeData.client?.fields || {});
+      setPartnerFields(incomeData.partner?.fields || {});
+      setExpenseFields(incomeData.expenses?.fields || {});
+
+      setClientAdjustments(incomeData.client?.adjustments || []);
+      setPartnerAdjustments(incomeData.partner?.adjustments || []);
+      setExpenseAdjustments(incomeData.expenses?.adjustments || []);
+    }
+  }, [factFind]);
 
   useEffect(() => {
     loadData();

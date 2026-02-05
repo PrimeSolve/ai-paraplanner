@@ -447,35 +447,29 @@ export default function FactFindSMSF() {
   }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
 
   // ============================================
-  // LOAD DATA
+  // LOAD USER AND SYNC FACTFIND
   // ============================================
 
-  const loadData = useCallback(async () => {
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-
-      if (id) {
-        const finds = await base44.entities.FactFind.filter({ id });
-        if (finds[0]) {
-          setFactFind(finds[0]);
-          if (finds[0].smsf) {
-            globalStateRef.current.smsf = {
-              ...finds[0].smsf,
-              activeIndex: finds[0].smsf.activeIndex || 0
-            };
-          }
-        }
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Error loading user:', error);
       }
-    } catch (error) {
-      console.error('Error loading fact find:', error);
-    } finally {
-      setLoading(false);
-    }
+    };
+    loadUser();
   }, []);
+
+  useEffect(() => {
+    if (factFind?.id && factFind.smsf) {
+      globalStateRef.current.smsf = {
+        ...factFind.smsf,
+        activeIndex: factFind.smsf.activeIndex || 0
+      };
+    }
+  }, [factFind?.id]);
 
   // ============================================
   // INITIALIZE DOM
