@@ -52,8 +52,12 @@ export default function AppShell({ children, pageActions, pageTitle }) {
   // Get the original user's role (who is actually logged in)
   const originalRole = originalUser?.role || user?.role;
 
-  // Only FactFind and SOARequest have the wide 320px sidebar
-  const isSpecialLayout = location.pathname.includes('FactFind') || location.pathname.includes('SOARequest');
+  // Only FactFind and SOARequestDetails/Welcome/etc (individual SOA pages) have the wide 320px sidebar
+  // NOT the SOA queue/list pages like AdviceGroupSOARequests or AdviserSOARequests
+  const isFactFindPage = location.pathname.includes('FactFind');
+  const isSOADetailPage = location.pathname.includes('SOARequest') && 
+    !location.pathname.includes('SOARequests'); // SOARequests is the list page, SOARequest is detail
+  const isSpecialLayout = isFactFindPage || isSOADetailPage;
   const contentMargin = isSpecialLayout ? '320px' : '260px';
 
   // Determine which sidebar to render based on navigation chain
