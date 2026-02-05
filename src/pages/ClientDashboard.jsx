@@ -146,7 +146,7 @@ export default function ClientDashboard() {
               </div>
               <div style={{ flex: 1 }}>
                 <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
-                  Welcome, {user?.full_name?.split(' ')[0] || 'Tim'}! 👋
+                  Welcome, {client?.full_name?.split(' ')[0] || user?.full_name?.split(' ')[0] || 'there'}! 👋
                 </h2>
                 <p style={{ color: '#64748b', marginBottom: '16px', lineHeight: '1.6' }}>
                   I'm excited to help you with your financial planning journey. To get started, please complete your Fact Find below — it takes about 15-20 minutes and helps me understand your current situation, goals, and what you'd like to achieve.
@@ -215,7 +215,7 @@ export default function ClientDashboard() {
               </div>
               <div>
                 <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1e293b', marginBottom: '2px' }}>
-                  Welcome back, {user?.full_name?.split(' ')[0] || 'Tim'}! 👋
+                  Welcome back, {client?.full_name?.split(' ')[0] || user?.full_name?.split(' ')[0] || 'there'}! 👋
                 </h3>
                 <p style={{ fontSize: '14px', color: '#64748b' }}>
                   Continue where you left off with your financial planning journey.

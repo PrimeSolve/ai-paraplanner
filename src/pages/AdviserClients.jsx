@@ -5,11 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Users, CheckCircle, Clock, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import AddClientModal from '../components/adviser/AddClientModal.jsx';
+import { useRole } from '../components/RoleContext';
 
 export default function AdviserClients() {
+  const navigate = useNavigate();
+  const { switchRole } = useRole();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -210,9 +213,15 @@ export default function AdviserClients() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <Link to={createPageUrl(`ClientDashboard?client_email=${client.email}`)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+                        <button
+                          onClick={() => {
+                            switchRole('client', client.id, `${client.first_name} ${client.last_name}`);
+                            navigate(createPageUrl(`ClientDashboard?client_email=${client.email}`));
+                          }}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+                        >
                           View
-                        </Link>
+                        </button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button className="p-1.5 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">

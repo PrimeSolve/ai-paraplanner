@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight, LayoutDashboard } from 'lucide-react';
+import { useRole } from '../RoleContext';
+import AppHeader from '../AppHeader';
 
 const sectionGroups = [
   {
@@ -75,6 +77,7 @@ const sectionGroups = [
 
 export default function FactFindLayout({ children, currentSection, factFind }) {
   const navigate = useNavigate();
+  const { navigationChain } = useRole();
   const [showDashboard, setShowDashboard] = useState(false);
 
   const getCompletionForSection = (sectionId) => {
@@ -86,7 +89,7 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
   const overallCompletion = factFind?.completion_percentage || 0;
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex min-h-screen bg-slate-50">
       {/* Sidebar Navigation */}
       <div className="w-80 bg-slate-800 text-slate-200 flex flex-col border-r border-slate-900 fixed left-0 top-0 bottom-0 z-40">
         {/* Brand */}
@@ -99,11 +102,12 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
             </div>
             <div className="flex flex-col gap-0.5">
               <div className="text-lg font-extrabold text-slate-50">Fact Find</div>
-              {factFind?.personal?.first_name && (
-                <div className="text-xs text-slate-400">
-                  Client: {factFind.personal.first_name} {factFind.personal.last_name}
-                </div>
-              )}
+              <div className="text-xs text-slate-400">
+                Client: {navigationChain?.find(n => n.type === 'client')?.name 
+                  || (factFind?.personal?.first_name 
+                    ? `${factFind.personal.first_name} ${factFind.personal.last_name}` 
+                    : 'Unknown Client')}
+              </div>
             </div>
           </div>
         </Link>
@@ -182,8 +186,14 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
         </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden ml-80 pt-16">
-        {children}
+      <div style={{ marginLeft: '320px', width: 'calc(100% - 320px)', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        {/* AppHeader for breadcrumbs */}
+        <AppHeader />
+        
+        {/* Page content */}
+        <main style={{ flex: 1 }}>
+          {children}
+        </main>
       </div>
     </div>
   );
