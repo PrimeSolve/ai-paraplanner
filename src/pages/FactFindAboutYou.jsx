@@ -103,7 +103,7 @@ export default function FactFindPersonal() {
 
   // Auto-save when data changes (debounced)
   useEffect(() => {
-    if (!factFind?.id || loading) return;
+    if (!factFind?.id || ffLoading) return;
 
     const timeoutId = setTimeout(async () => {
       try {
@@ -121,7 +121,7 @@ export default function FactFindPersonal() {
     }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [clientData, partnerData, hasPartner, factFind?.id, loading]);
+  }, [clientData, partnerData, hasPartner, factFind?.id, ffLoading]);
 
   const handleSave = async () => {
     if (!factFind?.id) return;
