@@ -138,7 +138,7 @@ export default function SOARequestWelcome() {
             <p className="text-slate-600 text-sm mb-4">
               Submit your Statement of Advice request to our AI paraplanner for professional SOA preparation.
             </p>
-            <div className="aspect-video bg-slate-900 rounded-lg flex items-center justify-center w-full max-w-4xl">
+            <div className="aspect-video bg-slate-900 rounded-lg flex items-center justify-center w-full max-w-4xl mx-auto">
               <div className="text-white text-center">
                 <Play className="w-16 h-16 mx-auto mb-3 opacity-70" />
                 <p className="text-sm opacity-70">Video Guide Coming Soon</p>
