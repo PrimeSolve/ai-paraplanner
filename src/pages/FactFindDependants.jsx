@@ -364,7 +364,7 @@ export default function FactFindDependants() {
   }, [currentTab, activeIndex]);
 
   useEffect(() => {
-    if (!loading && factFind?.id) {
+    if (!ffLoading && factFind?.id) {
       setTimeout(() => {
         const childrenWrap = document.getElementById('childrenWrap');
         const dependantsWrap = document.getElementById('dependantsWrap');
@@ -391,7 +391,7 @@ export default function FactFindDependants() {
         showOnlyActiveEntry(currentTab, globalStateRef.current.dependants.activeIndex || 0);
       }, 50);
     }
-  }, [loading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
+  }, [ffLoading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
 
   // ============================================
   // NAVIGATION
