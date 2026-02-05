@@ -88,9 +88,7 @@ export default function FactFindInsurance() {
     }
   }, [factFind]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+
 
   const addPolicy = () => {
     const newPolicy = {
@@ -171,7 +169,7 @@ export default function FactFindInsurance() {
     navigate(createPageUrl('FactFindIncomeExpenses') + `?id=${factFind?.id || ''}`);
   };
 
-  if (loading) {
+  if (ffLoading) {
     return (
       <FactFindLayout currentSection="insurance" factFind={factFind}>
         <div className="flex items-center justify-center h-full">

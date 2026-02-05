@@ -342,36 +342,27 @@ export default function FactFindRiskProfile() {
   });
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadUser = async () => {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-
-        if (id) {
-          const finds = await base44.entities.FactFind.filter({ id });
-          if (finds[0]) {
-            setFactFind(finds[0]);
-            if (finds[0].riskProfile) {
-              const data = finds[0].riskProfile;
-              if (data.mode) setMode(data.mode);
-              if (data.adjustRisk) setAdjustRisk(data.adjustRisk);
-              if (data.client) setClientData(data.client);
-              if (data.partner) setPartnerData(data.partner);
-              if (data.otherInfo) setOtherInfo(data.otherInfo);
-            }
-          }
-        }
       } catch (error) {
-        console.error('Error loading fact find:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error loading user:', error);
       }
     };
-    loadData();
+    loadUser();
   }, []);
+
+  useEffect(() => {
+    if (factFind?.risk_profile) {
+      const data = factFind.risk_profile;
+      if (data.mode) setMode(data.mode);
+      if (data.adjustRisk) setAdjustRisk(data.adjustRisk);
+      if (data.client) setClientData(data.client);
+      if (data.partner) setPartnerData(data.partner);
+      if (data.otherInfo) setOtherInfo(data.otherInfo);
+    }
+  }, [factFind]);
 
   const currentData = activeOwner === 'client' ? clientData : partnerData;
   const setCurrentData = activeOwner === 'client' ? setClientData : setPartnerData;
@@ -447,7 +438,7 @@ export default function FactFindRiskProfile() {
     navigate(createPageUrl('FactFindAdviceReason') + `?id=${factFind?.id || ''}`);
   };
 
-  if (loading) {
+  if (ffLoading) {
     return (
       <FactFindLayout currentSection="risk_profile" factFind={factFind}>
         <div className="flex items-center justify-center h-full">

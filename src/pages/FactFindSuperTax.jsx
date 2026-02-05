@@ -66,48 +66,36 @@ export default function FactFindSuperTax() {
     }
   }, [factFind]);
 
-  // Load data
   useEffect(() => {
-    const loadData = async () => {
+    const loadUser = async () => {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-
-        if (id) {
-          const finds = await base44.entities.FactFind.filter({ id });
-          if (finds[0]) {
-            setFactFind(finds[0]);
-
-            // Load existing supertax data
-            if (finds[0].supertax) {
-              const st = finds[0].supertax;
-              setData({
-                client: {
-                  super: st.client?.super || { ...EMPTY_SUPER },
-                  tax: st.client?.tax || { ...EMPTY_TAX }
-                },
-                partner: {
-                  super: st.partner?.super || { ...EMPTY_SUPER },
-                  tax: st.partner?.tax || { ...EMPTY_TAX }
-                }
-              });
-              if (st.currentTab) setCurrentTab(st.currentTab);
-              if (st.activePerson) setActivePerson(st.activePerson);
-              if (st.hasPartner !== undefined) setHasPartner(st.hasPartner);
-            }
-          }
-        }
       } catch (error) {
-        console.error('Error loading fact find:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error loading user:', error);
       }
     };
-    loadData();
+    loadUser();
   }, []);
+
+  useEffect(() => {
+    if (factFind?.super_tax) {
+      const st = factFind.super_tax;
+      setData({
+        client: {
+          super: st.client?.super || { ...EMPTY_SUPER },
+          tax: st.client?.tax || { ...EMPTY_TAX }
+        },
+        partner: {
+          super: st.partner?.super || { ...EMPTY_SUPER },
+          tax: st.partner?.tax || { ...EMPTY_TAX }
+        }
+      });
+      if (st.currentTab) setCurrentTab(st.currentTab);
+      if (st.activePerson) setActivePerson(st.activePerson);
+      if (st.hasPartner !== undefined) setHasPartner(st.hasPartner);
+    }
+  }, [factFind]);
 
   // Get current person key
   const personKey = activePerson === 'c1' ? 'client' : 'partner';
@@ -176,7 +164,7 @@ export default function FactFindSuperTax() {
     navigate(createPageUrl('FactFindInsurance') + `?id=${factFind?.id || ''}`);
   };
 
-  if (loading) {
+  if (ffLoading) {
     return (
       <FactFindLayout currentSection="super_tax" factFind={factFind}>
         <div className="flex items-center justify-center h-full">

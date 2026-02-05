@@ -477,11 +477,7 @@ export default function FactFindSMSF() {
   // ============================================
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    if (!loading && factFind?.id) {
+    if (!ffLoading && factFind?.id) {
       setTimeout(() => {
         const wrap = wrapForTab();
         if (wrap) wrap.innerHTML = '';
@@ -498,7 +494,7 @@ export default function FactFindSMSF() {
         showOnlyActiveEntry(activeIdx);
       }, 50);
     }
-  }, [loading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry]);
+  }, [ffLoading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry]);
 
   // ============================================
   // SETUP INPUT LISTENERS
@@ -629,7 +625,7 @@ export default function FactFindSMSF() {
     navigate(createPageUrl('FactFindTrusts') + `?id=${factFind?.id || ''}`);
   };
 
-  if (loading) {
+  if (ffLoading) {
     return (
       <FactFindLayout currentSection="smsf" factFind={factFind}>
         <div className="flex items-center justify-center h-full">

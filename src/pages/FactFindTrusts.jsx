@@ -504,11 +504,7 @@ export default function FactFindTrusts() {
   // ============================================
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    if (!loading && factFind?.id) {
+    if (!ffLoading && factFind?.id) {
       setTimeout(() => {
         const trustsWrap = document.getElementById('trustsWrap');
         const companiesWrap = document.getElementById('companiesWrap');
@@ -534,7 +530,7 @@ export default function FactFindTrusts() {
         showOnlyActiveEntry(currentTab, activeIdx);
       }, 50);
     }
-  }, [loading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
+  }, [ffLoading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
 
   // ============================================
   // SETUP INPUT LISTENERS
@@ -647,7 +643,7 @@ export default function FactFindTrusts() {
     navigate(createPageUrl('FactFindDependants') + `?id=${factFind?.id || ''}`);
   };
 
-  if (loading) {
+  if (ffLoading) {
     return (
       <FactFindLayout currentSection="trusts" factFind={factFind}>
         <div className="flex items-center justify-center h-full">

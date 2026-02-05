@@ -570,11 +570,7 @@ export default function FactFindSuperannuation() {
   }, [factFind?.id]);
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    if (!loading && factFind?.id) {
+    if (!ffLoading && factFind?.id) {
       setTimeout(() => {
         const superWrap = document.getElementById('superWrap');
         const pensionWrap = document.getElementById('pensionWrap');
@@ -608,7 +604,7 @@ export default function FactFindSuperannuation() {
         showOnlyActiveEntry(currentTab, activeIdx);
       }, 50);
     }
-  }, [loading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
+  }, [ffLoading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
 
   useEffect(() => {
     const updateTableVisibility = (card, type) => {
@@ -733,7 +729,7 @@ export default function FactFindSuperannuation() {
     navigate(createPageUrl('FactFindSMSF') + `?id=${factFind?.id || ''}`);
   };
 
-  if (loading) {
+  if (ffLoading) {
     return (
       <FactFindLayout currentSection="superannuation" factFind={factFind}>
         <div className="flex items-center justify-center h-full">

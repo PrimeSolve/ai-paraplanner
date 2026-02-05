@@ -43,27 +43,15 @@ export default function FactFindReview() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadUser = async () => {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-
-        if (id) {
-          const finds = await base44.entities.FactFind.filter({ id });
-          if (finds[0]) {
-            setFactFind(finds[0]);
-          }
-        }
       } catch (error) {
-        console.error('Error loading fact find:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error loading user:', error);
       }
     };
-    loadData();
+    loadUser();
   }, []);
 
   const handleSubmit = async () => {
@@ -92,7 +80,7 @@ export default function FactFindReview() {
     navigate(createPageUrl('FactFindRiskProfile') + `?id=${factFind?.id || ''}`);
   };
 
-  if (loading) {
+  if (ffLoading) {
     return (
       <FactFindLayout currentSection="review" factFind={factFind}>
         <div className="flex items-center justify-center h-full">

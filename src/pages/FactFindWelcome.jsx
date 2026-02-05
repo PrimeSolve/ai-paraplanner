@@ -29,28 +29,12 @@ export default function FactFindWelcome() {
   }, []);
 
   const handleBegin = async () => {
-    setLoading(true);
-    try {
-      let currentFactFind = factFind;
-      
-      if (!currentFactFind) {
-        currentFactFind = await base44.entities.FactFind.create({
-          status: 'in_progress',
-          current_section: 'about_you',
-          completion_percentage: 0
-        });
-        setFactFind(currentFactFind);
-      }
-
-      navigate(createPageUrl('FactFindPersonal') + `?id=${currentFactFind.id}`);
-    } catch (error) {
-      console.error('Error starting fact find:', error);
-    } finally {
-      setLoading(false);
+    if (factFind?.id) {
+      navigate(createPageUrl('FactFindPersonal') + `?id=${factFind.id}`);
     }
   };
 
-  if (loading) {
+  if (ffLoading) {
     return (
       <FactFindLayout currentSection="welcome" factFind={factFind}>
         <div className="flex items-center justify-center h-full">
@@ -187,21 +171,12 @@ export default function FactFindWelcome() {
               <div className="mt-8 pt-6 border-t border-slate-200 flex justify-center">
                 <Button
                   onClick={handleBegin}
-                  disabled={loading}
+                  disabled={ffLoading}
                   size="lg"
                   className="bg-blue-600 hover:bg-blue-700 text-white px-8 shadow-lg shadow-blue-600/30"
                 >
-                  {loading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      Starting...
-                    </>
-                  ) : (
-                    <>
-                      {factFind ? 'Continue Fact Find' : 'Get Started'}
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </>
-                  )}
+                  {factFind ? 'Continue Fact Find' : 'Get Started'}
+                  <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </div>
             </CardContent>

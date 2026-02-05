@@ -73,9 +73,7 @@ export default function FactFindIncomeExpenses() {
     }
   }, [factFind]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+
 
   const handleAddPartner = () => {
     setHasPartner(true);
@@ -203,7 +201,7 @@ export default function FactFindIncomeExpenses() {
     navigate(createPageUrl('FactFindAssetsLiabilities') + `?id=${factFind?.id || ''}`);
   };
 
-  if (loading) {
+  if (ffLoading) {
     return (
       <FactFindLayout currentSection="income_expenses" factFind={factFind}>
         <div className="flex items-center justify-center h-full">

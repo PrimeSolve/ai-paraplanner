@@ -92,9 +92,7 @@ export default function FactFindAssetsLiabilities() {
     }
   }, [factFind]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+
 
   // ASSETS
   const addAsset = useCallback(() => {
@@ -171,7 +169,7 @@ export default function FactFindAssetsLiabilities() {
     navigate(createPageUrl('FactFindInvestment') + `?id=${factFind?.id || ''}`);
   };
 
-  if (loading) {
+  if (ffLoading) {
     return (
       <FactFindLayout currentSection="assets_liabilities" factFind={factFind}>
         <div className="flex items-center justify-center h-full">

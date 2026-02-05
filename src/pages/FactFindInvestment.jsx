@@ -308,11 +308,7 @@ export default function FactFindInvestment() {
   }, [factFind?.id]);
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    if (!loading && factFind?.id) {
+    if (!ffLoading && factFind?.id) {
       setTimeout(() => {
         const wrapWrap = document.getElementById('wrapWrap');
         const bondsWrap = document.getElementById('bondsWrap');
@@ -338,7 +334,7 @@ export default function FactFindInvestment() {
         showOnlyActiveEntry(currentTab, activeIdx);
       }, 50);
     }
-  }, [loading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
+  }, [ffLoading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
 
   useEffect(() => {
     const clickHandler = (e) => {
@@ -426,7 +422,7 @@ export default function FactFindInvestment() {
     navigate(createPageUrl('FactFindSuperannuation') + `?id=${factFind?.id || ''}`);
   };
 
-  if (loading) {
+  if (ffLoading) {
     return (
       <FactFindLayout currentSection="investment" factFind={factFind}>
         <div className="flex items-center justify-center h-full">
