@@ -25,8 +25,7 @@ const subSections = [
 
 export default function FactFindPersonal() {
   const navigate = useNavigate();
-  const [factFind, setFactFind] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { factFind, loading: ffLoading, setFactFind } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('client');
   const [activeSubSection, setActiveSubSection] = useState('basic');
@@ -78,35 +77,29 @@ export default function FactFindPersonal() {
   const setFormData = activeTab === 'client' ? setClientData : setPartnerData;
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadUser = async () => {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-
-        if (id) {
-          const finds = await base44.entities.FactFind.filter({ id });
-          if (finds[0]) {
-            setFactFind(finds[0]);
-            if (finds[0].personal?.client) {
-              setClientData({ ...initialFormState, ...finds[0].personal.client });
-            }
-            if (finds[0].personal?.partner) {
-              setPartnerData({ ...initialFormState, ...finds[0].personal.partner });
-              setHasPartner(true);
-            }
-          }
-        }
       } catch (error) {
-        console.error('Error loading fact find:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error loading user:', error);
       }
     };
-    loadData();
+    loadUser();
   }, []);
+
+  // Load existing data from FactFind when it's loaded
+  useEffect(() => {
+    if (factFind) {
+      if (factFind.personal?.client) {
+        setClientData({ ...initialFormState, ...factFind.personal.client });
+      }
+      if (factFind.personal?.partner) {
+        setPartnerData({ ...initialFormState, ...factFind.personal.partner });
+        setHasPartner(true);
+      }
+    }
+  }, [factFind]);
 
   // Auto-save when data changes (debounced)
   useEffect(() => {
