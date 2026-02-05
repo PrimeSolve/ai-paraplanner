@@ -77,6 +77,8 @@ export default function AppHeader({ pageActions, pageTitle }) {
       navigate(createPageUrl('AdviceGroupDashboard'));
     } else if (level.type === 'adviser') {
       navigate(createPageUrl('AdviserDashboard'));
+    } else if (level.type === 'client') {
+      navigate(createPageUrl('ClientDashboard') + `?client_email=${level.email}`);
     }
   };
 
