@@ -142,6 +142,7 @@ export default function FactFindPersonal() {
       } else {
         // Completed all sub-sections - mark section complete and navigate
         await base44.entities.FactFind.update(factFind.id, {
+          ...factFind,
           personal: personalData,
           current_section: 'dependants',
           sections_completed: [...(factFind.sections_completed || []), 'personal'].filter((v, i, a) => a.indexOf(v) === i),
