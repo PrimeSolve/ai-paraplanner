@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useRole } from '@/components/RoleContext';
 
@@ -7,12 +7,14 @@ import { useRole } from '@/components/RoleContext';
  * - Loads existing FactFind from URL params or Client record
  * - Creates new FactFind if none exists
  * - Links FactFind to Client via fact_find_id
+ * - Provides updateSection() for auto-saving section data
  */
 export function useFactFind() {
   const [factFind, setFactFind] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { navigationChain } = useRole();
+  const saveTimeoutRef = useRef({});
 
   useEffect(() => {
     const initFactFind = async () => {
@@ -89,5 +91,41 @@ export function useFactFind() {
     initFactFind();
   }, [navigationChain]);
 
-  return { factFind, loading, error, setFactFind };
+  /**
+   * Update a section of the FactFind
+   * Auto-saves after 1 second of inactivity (debounced)
+   * Marks section as completed
+   */
+  const updateSection = async (sectionName, sectionData) => {
+    if (!factFind?.id) return;
+
+    // Clear existing timeout for this section
+    if (saveTimeoutRef.current[sectionName]) {
+      clearTimeout(saveTimeoutRef.current[sectionName]);
+    }
+
+    // Debounce the save
+    saveTimeoutRef.current[sectionName] = setTimeout(async () => {
+      try {
+        const updateData = {
+          [sectionName]: sectionData
+        };
+
+        // Mark section as completed if not already
+        const sectionsCompleted = [...(factFind.sections_completed || [])];
+        if (!sectionsCompleted.includes(sectionName)) {
+          sectionsCompleted.push(sectionName);
+          updateData.sections_completed = sectionsCompleted;
+          updateData.completion_percentage = Math.round((sectionsCompleted.length / 14) * 100);
+        }
+
+        const updated = await base44.entities.FactFind.update(factFind.id, updateData);
+        setFactFind(updated);
+      } catch (err) {
+        console.error(`Error saving ${sectionName}:`, err);
+      }
+    }, 1000);
+  };
+
+  return { factFind, loading, error, setFactFind, updateSection };
 }
