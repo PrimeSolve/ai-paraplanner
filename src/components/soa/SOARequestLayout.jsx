@@ -117,22 +117,23 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
   return (
     <div className="flex bg-slate-50 overflow-hidden" style={{ height: 'calc(100vh - 64px)' }}>
       {/* Sidebar Navigation */}
-      <div className="w-80 bg-gray-800 text-gray-200 flex flex-col border-r border-gray-900 fixed left-0 bottom-0 z-50" style={{ top: '64px' }}>
-        {/* Header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '12px 16px',
-          borderBottom: '1px solid #374151',
-          height: '64px',
-          flexShrink: 0,
-          gap: '12px',
-        }}>
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-            <FileText className="w-5 h-5 text-white" />
+      <div className="bg-slate-800 text-slate-200 flex flex-col border-r border-slate-900 z-40" style={{ position: 'fixed', left: 0, top: '64px', bottom: 0, width: '320px' }}>
+        {/* Brand */}
+        <Link to={createPageUrl('Home')}>
+          <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-700 flex-shrink-0 cursor-pointer hover:bg-slate-700/50 transition-colors">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-600 flex flex-col justify-center px-2 py-1.5 gap-1 shadow-lg">
+              <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '70%'}}></div>
+              <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '55%'}}></div>
+              <div className="h-0.5 rounded-full bg-blue-100 opacity-95" style={{width: '80%'}}></div>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <div className="text-lg font-extrabold text-slate-50">SOA Request</div>
+              <div className="text-xs text-slate-400">
+                Client: {navigationChain?.find(n => n.type === 'client')?.name || 'Unknown Client'}
+              </div>
+            </div>
           </div>
-          <div className="text-sm font-extrabold text-slate-50">SOA Request</div>
-        </div>
+        </Link>
 
         {/* Navigation Links */}
         <div className="flex-1 overflow-y-auto px-3 py-4">
