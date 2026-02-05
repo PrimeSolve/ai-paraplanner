@@ -207,7 +207,7 @@ export default function FactFindPersonal() {
     }
   };
 
-  if (loading) {
+  if (ffLoading) {
     return (
       <FactFindLayout currentSection="personal" factFind={factFind}>
         <div className="flex items-center justify-center h-full">
