@@ -432,7 +432,7 @@ export default function FactFindDependants() {
     navigate(createPageUrl('FactFindAboutYou') + `?id=${factFind?.id || ''}`);
   };
 
-  if (loading) {
+  if (ffLoading) {
     return (
       <FactFindLayout currentSection="dependants" factFind={factFind}>
         <div className="flex items-center justify-center h-full">
