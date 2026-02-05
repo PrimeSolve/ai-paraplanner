@@ -194,7 +194,7 @@ export default function AppShell({ children, pageActions, pageTitle }) {
           minHeight: '100vh'
         }}>
          <AppHeader pageActions={pageActions} pageTitle={pageTitle} />
-         <main className="flex-1" style={{ paddingTop: '64px' }}>
+         <main className="flex-1">
            {children}
          </main>
        </div>
