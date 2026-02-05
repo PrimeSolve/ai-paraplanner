@@ -216,8 +216,7 @@ export default function AdviserClients() {
                         <button
                           onClick={() => {
                             const clientName = `${client.first_name || ''} ${client.last_name || ''}`.trim() || client.email;
-                            console.log('Switching to client:', client.id, clientName, client);
-                            switchRole('client', client.id, clientName);
+                            switchRole('client', client.email, clientName);
                             navigate(createPageUrl(`ClientDashboard?client_email=${client.email}`));
                           }}
                           className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
