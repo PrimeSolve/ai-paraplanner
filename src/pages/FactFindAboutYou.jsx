@@ -106,44 +106,15 @@ export default function FactFindPersonal() {
     }
   }, [factFind, dataLoaded]);
 
-  // Create refs to hold current data
-  const clientDataRef = useRef(clientData);
-  const partnerDataRef = useRef(partnerData);
-  const hasPartnerRef = useRef(hasPartner);
-
-  // Update refs whenever state changes (no re-render triggered)
-  useEffect(() => {
-    clientDataRef.current = clientData;
-    partnerDataRef.current = partnerData;
-    hasPartnerRef.current = hasPartner;
-  }, [clientData, partnerData, hasPartner]);
-
-  // Auto-save on unmount using refs (always has current values)
-  useEffect(() => {
-    return () => {
-      if (factFind?.id && clientDataRef.current.first_name) {
-        updateSection('personal', {
-          ...clientDataRef.current,
-          partner: hasPartnerRef.current ? partnerDataRef.current : null
-        });
-      }
-    };
-  }, [factFind?.id, updateSection]);
-
   const handleSaveAndContinue = async () => {
-    console.log('=== SAVE START ===');
-    console.log('factFind:', factFind);
-    console.log('factFind?.id:', factFind?.id);
-    
     if (!factFind?.id) {
-      alert('ERROR: No FactFind ID! factFind is: ' + JSON.stringify(factFind));
+      alert('ERROR: No FactFind ID!');
       return;
     }
 
     // Validation for basic section
     if (activeSubSection === 'basic') {
       if (!clientData.first_name || !clientData.last_name) {
-        alert('VALIDATION: Missing first or last name');
         toast.error('Please fill in client first and last name');
         return;
       }
@@ -151,39 +122,27 @@ export default function FactFindPersonal() {
 
     setSaving(true);
     try {
-      // Save flat structure - spread client fields directly, plus partner as nested object
+      // Build the data object with ALL fields
       const personalData = {
         ...clientData,
         partner: hasPartner ? partnerData : null
       };
       
-      console.log('=== SAVING PERSONAL DATA ===');
-      console.log('clientData:', clientData);
-      console.log('partnerData:', partnerData);
-      console.log('hasPartner:', hasPartner);
-      console.log('personalData to save:', personalData);
+      // Debug - show what we're saving
+      alert('Saving: ' + JSON.stringify(personalData).substring(0, 500));
 
       // Move to next sub-section or complete
       const currentIndex = subSections.findIndex(s => s.id === activeSubSection);
       
       if (currentIndex < subSections.length - 1) {
-        console.log('Calling updateSection...');
         const result = await updateSection('personal', personalData);
-        console.log('Save result:', result);
-        alert('Save result: ' + result);
-        setActiveSubSection(subSections[currentIndex + 1].id);
-        setActiveTab('client');
-        toast.success('Progress saved');
+        if (result) {
+          setActiveSubSection(subSections[currentIndex + 1].id);
+          setActiveTab('client');
+          toast.success('Progress saved');
+        }
       } else {
-        console.log('Completed all sub-sections, updating FactFind...');
-        const updateResult = await base44.entities.FactFind.update(factFind.id, {
-          ...factFind,
-          personal: personalData,
-          current_section: 'dependants',
-          sections_completed: [...(factFind.sections_completed || []), 'personal'].filter((v, i, a) => a.indexOf(v) === i),
-          completion_percentage: Math.round(((factFind.sections_completed?.length || 0) + 1) / 14 * 100)
-        });
-        alert('Final save complete, navigating...');
+        await updateSection('personal', personalData);
         navigate(createPageUrl('FactFindDependants') + `?id=${factFind.id}`);
       }
     } catch (error) {
@@ -910,11 +869,8 @@ export default function FactFindPersonal() {
                 </Button>
 
                 <Button
-                  onClick={() => {
-                    alert('CLICKED!');
-                    handleSaveAndContinue();
-                  }}
-                  disabled={false}
+                  onClick={handleSaveAndContinue}
+                  disabled={saving}
                   className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
                 >
                   {saving ? (
