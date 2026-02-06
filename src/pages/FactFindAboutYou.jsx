@@ -132,7 +132,11 @@ export default function FactFindPersonal() {
         // Note: Partner support to be added later
       };
       
+      console.log('=== SAVING PERSONAL DATA ===');
+      console.log('clientData:', clientData);
       console.log('personalData to save:', personalData);
+      console.log('living_status:', clientData.living_status);
+      console.log('resident_status:', clientData.resident_status);
 
       // Move to next sub-section or complete
       const currentIndex = subSections.findIndex(s => s.id === activeSubSection);
