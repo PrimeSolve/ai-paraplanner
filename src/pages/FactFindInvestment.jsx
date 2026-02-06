@@ -21,12 +21,9 @@ export default function FactFindInvestment() {
   const [bondCount, setBondCount] = useState(0);
 
   const globalStateRef = React.useRef({
-    investment: {
-      currentTab: 'wrap',
-      activeIdx: { wrap: 0, bonds: 0 },
-      wraps: [],
-      bonds: []
-    }
+    investments: [],
+    currentTab: 'wrap',
+    activeIdx: { wrap: 0, bonds: 0 }
   });
 
   const wrapForTab = useCallback((tab) => {
@@ -299,11 +296,9 @@ export default function FactFindInvestment() {
 
   useEffect(() => {
     if (factFind?.id && factFind.investment) {
-      globalStateRef.current.investment = {
-        ...factFind.investment,
-        currentTab: factFind.investment.currentTab || 'wrap',
-        activeIdx: factFind.investment.activeIdx || { wrap: 0, bonds: 0 }
-      };
+      globalStateRef.current.investments = factFind.investment.investments || [];
+      globalStateRef.current.currentTab = factFind.investment.currentTab || 'wrap';
+      globalStateRef.current.activeIdx = factFind.investment.activeIdx || { wrap: 0, bonds: 0 };
     }
   }, [factFind?.id]);
 
@@ -316,19 +311,22 @@ export default function FactFindInvestment() {
         if (wrapWrap) wrapWrap.innerHTML = '';
         if (bondsWrap) bondsWrap.innerHTML = '';
 
-        if (globalStateRef.current.investment.wraps?.length > 0) {
-          globalStateRef.current.investment.wraps.forEach((data) => {
+        const wraps = globalStateRef.current.investments.filter(i => i.investment_type === 'wrap');
+        const bonds = globalStateRef.current.investments.filter(i => i.investment_type === 'bond');
+
+        if (wraps.length > 0) {
+          wraps.forEach((data) => {
             addEntry('wrap', data);
           });
         }
 
-        if (globalStateRef.current.investment.bonds?.length > 0) {
-          globalStateRef.current.investment.bonds.forEach((data) => {
+        if (bonds.length > 0) {
+          bonds.forEach((data) => {
             addEntry('bonds', data);
           });
         }
 
-        const activeIdx = globalStateRef.current.investment.activeIdx?.[currentTab] || 0;
+        const activeIdx = globalStateRef.current.activeIdx?.[currentTab] || 0;
         setActiveIndex(activeIdx);
         updatePills(currentTab, activeIdx);
         showOnlyActiveEntry(currentTab, activeIdx);
@@ -375,16 +373,22 @@ export default function FactFindInvestment() {
     if (!factFind?.id) return;
 
     try {
-      globalStateRef.current.investment.wraps = readTabToArray('wrap');
-      globalStateRef.current.investment.bonds = readTabToArray('bonds');
-      globalStateRef.current.investment.currentTab = currentTab;
-      globalStateRef.current.investment.activeIdx = {
-        wrap: currentTab === 'wrap' ? activeIndex : globalStateRef.current.investment.activeIdx?.wrap || 0,
-        bonds: currentTab === 'bonds' ? activeIndex : globalStateRef.current.investment.activeIdx?.bonds || 0
+      const wraps = readTabToArray('wrap').map(i => ({ ...i, investment_type: 'wrap' }));
+      const bonds = readTabToArray('bonds').map(i => ({ ...i, investment_type: 'bond' }));
+      
+      globalStateRef.current.investments = [...wraps, ...bonds];
+      globalStateRef.current.currentTab = currentTab;
+      globalStateRef.current.activeIdx = {
+        wrap: currentTab === 'wrap' ? activeIndex : globalStateRef.current.activeIdx?.wrap || 0,
+        bonds: currentTab === 'bonds' ? activeIndex : globalStateRef.current.activeIdx?.bonds || 0
       };
 
       await base44.entities.FactFind.update(factFind.id, {
-        investment: globalStateRef.current.investment
+        investment: {
+          investments: globalStateRef.current.investments,
+          currentTab: globalStateRef.current.currentTab,
+          activeIdx: globalStateRef.current.activeIdx
+        }
       });
     } catch (error) {
       console.error('Save failed:', error);
@@ -405,7 +409,11 @@ export default function FactFindInvestment() {
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        investment: globalStateRef.current.investment,
+        investment: {
+          investments: globalStateRef.current.investments,
+          currentTab: globalStateRef.current.currentTab,
+          activeIdx: globalStateRef.current.activeIdx
+        },
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
