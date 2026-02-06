@@ -241,6 +241,30 @@ export default function FactFindIncomeExpenses() {
         user={user}
       />
 
+      {/* DEBUG BUTTON */}
+      {factFind?.id && (
+        <div style={{ padding: '10px', background: '#fee', borderBottom: '2px solid red' }}>
+          <button 
+            onClick={async () => {
+              try {
+                const current = await base44.entities.FactFind.filter({ id: factFind.id });
+                alert('Current income_expenses: ' + JSON.stringify(current[0]?.income_expenses, null, 2));
+                console.log('FULL FACTFIND:', current[0]);
+                console.log('INCOME_EXPENSES:', current[0]?.income_expenses);
+              } catch (err) {
+                alert('ERROR: ' + err.message);
+              }
+            }}
+            style={{ background: 'red', color: 'white', padding: '10px', margin: '10px', cursor: 'pointer', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}
+          >
+            🔍 CHECK INCOME SCHEMA
+          </button>
+          <span style={{ color: '#666', fontSize: '12px', marginLeft: '10px' }}>
+            Check console for full output. Alert shows income_expenses structure.
+          </span>
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
            {/* Tabs - Part of form content */}
