@@ -82,6 +82,39 @@ export default function FactFindIncomeExpenses() {
     }
   }, [factFind]);
 
+  // Save-before-nav listener
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      if (!factFind?.id) return;
+
+      try {
+        const incomeSources = [
+          { person: 'client', fields: clientFields, adjustments: clientAdjustments }
+        ];
+        
+        if (hasPartner) {
+          incomeSources.push({ person: 'partner', fields: partnerFields, adjustments: partnerAdjustments });
+        }
+        
+        const expenses = [
+          { fields: expenseFields, adjustments: expenseAdjustments }
+        ];
+
+        await base44.entities.FactFind.update(factFind.id, {
+          income_expenses: {
+            income_sources: incomeSources,
+            expenses: expenses
+          }
+        });
+      } catch (error) {
+        console.error('Failed to save income/expenses before nav:', error);
+      }
+    };
+
+    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+  }, [factFind?.id, clientFields, partnerFields, expenseFields, clientAdjustments, partnerAdjustments, expenseAdjustments, hasPartner]);
+
 
 
   const handleAddPartner = () => {
