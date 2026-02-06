@@ -115,22 +115,19 @@ export default function FactFindPersonal() {
   }, [factFind?.id, clientData, partnerData, hasPartner, updateSection]);
 
   const handleSaveAndContinue = async () => {
-    console.log('=== SAVE CLICKED ===');
+    console.log('=== SAVE START ===');
     console.log('factFind:', factFind);
     console.log('factFind?.id:', factFind?.id);
-    console.log('activeSubSection:', activeSubSection);
-    console.log('clientData.first_name:', clientData.first_name);
-    console.log('clientData.last_name:', clientData.last_name);
-
+    
     if (!factFind?.id) {
-      console.log('EARLY RETURN: No factFind.id');
+      alert('ERROR: No FactFind ID! factFind is: ' + JSON.stringify(factFind));
       return;
     }
 
     // Validation for basic section
     if (activeSubSection === 'basic') {
       if (!clientData.first_name || !clientData.last_name) {
-        console.log('VALIDATION FAILED: Missing first or last name');
+        alert('VALIDATION: Missing first or last name');
         toast.error('Please fill in client first and last name');
         return;
       }
@@ -147,18 +144,17 @@ export default function FactFindPersonal() {
 
       // Move to next sub-section or complete
       const currentIndex = subSections.findIndex(s => s.id === activeSubSection);
-      console.log('currentIndex:', currentIndex, 'subSections.length:', subSections.length);
       
       if (currentIndex < subSections.length - 1) {
-        console.log('Moving to next sub-section, calling updateSection...');
+        console.log('Calling updateSection...');
         const result = await updateSection('personal', personalData);
-        console.log('updateSection result:', result);
+        console.log('Save result:', result);
+        alert('Save result: ' + result);
         setActiveSubSection(subSections[currentIndex + 1].id);
         setActiveTab('client');
         toast.success('Progress saved');
       } else {
-        console.log('Completed all sub-sections, updating FactFind and navigating...');
-        // Completed all sub-sections - mark section complete and navigate
+        console.log('Completed all sub-sections, updating FactFind...');
         const updateResult = await base44.entities.FactFind.update(factFind.id, {
           ...factFind,
           personal: personalData,
@@ -166,14 +162,12 @@ export default function FactFindPersonal() {
           sections_completed: [...(factFind.sections_completed || []), 'personal'].filter((v, i, a) => a.indexOf(v) === i),
           completion_percentage: Math.round(((factFind.sections_completed?.length || 0) + 1) / 14 * 100)
         });
-        console.log('FactFind update result:', updateResult);
-
+        alert('Final save complete, navigating...');
         navigate(createPageUrl('FactFindDependants') + `?id=${factFind.id}`);
       }
     } catch (error) {
-      console.error('ERROR in handleSaveAndContinue:', error);
-      console.error('Error stack:', error.stack);
-      toast.error('Failed to save data');
+      alert('Save ERROR: ' + error.message);
+      console.error('Save error:', error);
     } finally {
       setSaving(false);
     }
