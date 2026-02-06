@@ -203,7 +203,9 @@ export default function FactFindPersonal() {
             <hr style={{ margin: '8px 0' }} />
             <strong>Current Form State:</strong><br/>
             <pre style={{ fontSize: '11px', whiteSpace: 'pre-wrap' }}>
+              Saved living_status: {factFind?.personal?.living_status || 'EMPTY'}<br/>
               clientData.living_status: {clientData.living_status || 'EMPTY'}<br/>
+              Saved resident_status: {factFind?.personal?.resident_status || 'EMPTY'}<br/>
               clientData.resident_status: {clientData.resident_status || 'EMPTY'}<br/>
               hasPartner: {hasPartner ? 'YES' : 'NO'}<br/>
               partnerData.first_name: {partnerData.first_name || 'EMPTY'}
