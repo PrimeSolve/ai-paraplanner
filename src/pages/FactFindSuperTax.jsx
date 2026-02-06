@@ -40,12 +40,14 @@ export default function FactFindSuperTax() {
   
   const [currentTab, setCurrentTab] = useState('super');
   const [activePerson, setActivePerson] = useState('c1');
-  const [hasPartner, setHasPartner] = useState(false);
 
   const [data, setData] = useState({
     client: { super: { ...EMPTY_SUPER }, tax: { ...EMPTY_TAX } },
     partner: { super: { ...EMPTY_SUPER }, tax: { ...EMPTY_TAX } }
   });
+
+  // Determine if partner exists from Personal section (read-only)
+  const hasPartner = factFind?.personal?.partner?.first_name ? true : false;
 
   // Get principal names for pill labels
   const principalNames = useMemo(() => {
@@ -57,13 +59,6 @@ export default function FactFindSuperTax() {
       : 'Partner';
 
     return { client: clientName, partner: partnerName };
-  }, [factFind]);
-
-  // Check if partner exists
-  useEffect(() => {
-    if (factFind?.personal?.partner?.first_name) {
-      setHasPartner(true);
-    }
   }, [factFind]);
 
   useEffect(() => {
@@ -93,9 +88,31 @@ export default function FactFindSuperTax() {
       });
       if (st.currentTab) setCurrentTab(st.currentTab);
       if (st.activePerson) setActivePerson(st.activePerson);
-      if (st.hasPartner !== undefined) setHasPartner(st.hasPartner);
     }
   }, [factFind]);
+
+  // Save-before-nav listener
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      if (!factFind?.id) return;
+
+      try {
+        await base44.entities.FactFind.update(factFind.id, {
+          super_tax: {
+            currentTab,
+            activePerson,
+            client: data.client,
+            partner: data.partner
+          }
+        });
+      } catch (error) {
+        console.error('Failed to save super_tax before nav:', error);
+      }
+    };
+
+    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+  }, [factFind?.id, currentTab, activePerson, data]);
 
   // Get current person key
   const personKey = activePerson === 'c1' ? 'client' : 'partner';
@@ -141,15 +158,14 @@ export default function FactFindSuperTax() {
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        super_tax: {
-          currentTab,
-          activePerson,
-          hasPartner,
-          client: data.client,
-          partner: data.partner
-        },
-        sections_completed: sectionsCompleted,
-        completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
+       super_tax: {
+         currentTab,
+         activePerson,
+         client: data.client,
+         partner: data.partner
+       },
+       sections_completed: sectionsCompleted,
+       completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
 
       navigate(createPageUrl('FactFindAdviceReason') + `?id=${factFind.id}`);
