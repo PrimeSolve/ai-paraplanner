@@ -220,6 +220,20 @@ export default function FactFindPersonal() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
         <div className="w-full">
+          <div style={{ background: 'yellow', padding: '10px', marginBottom: '10px', maxHeight: '300px', overflow: 'auto' }}>
+            <strong>DEBUG - Database Content:</strong><br/>
+            <pre style={{ fontSize: '11px', whiteSpace: 'pre-wrap' }}>
+              {JSON.stringify(factFind?.personal, null, 2)}
+            </pre>
+            <hr style={{ margin: '8px 0' }} />
+            <strong>Current Form State:</strong><br/>
+            <pre style={{ fontSize: '11px', whiteSpace: 'pre-wrap' }}>
+              clientData.living_status: {clientData.living_status || 'EMPTY'}<br/>
+              clientData.resident_status: {clientData.resident_status || 'EMPTY'}<br/>
+              hasPartner: {hasPartner ? 'YES' : 'NO'}<br/>
+              partnerData.first_name: {partnerData.first_name || 'EMPTY'}
+            </pre>
+          </div>
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-6 space-y-6">
               {/* Client Information Bar */}
