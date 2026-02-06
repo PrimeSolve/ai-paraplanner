@@ -124,7 +124,7 @@ export default function FactFindPersonal() {
 
   const handleSaveAndContinue = async () => {
     if (!factFind?.id) {
-      alert('ERROR: No FactFind ID!');
+      toast.error('Unable to save data');
       return;
     }
 
@@ -144,8 +144,7 @@ export default function FactFindPersonal() {
         partner: hasPartner ? partnerData : null
       };
       
-      // Debug - show what we're saving
-      alert('Saving: ' + JSON.stringify(personalData).substring(0, 500));
+
 
       // Move to next sub-section or complete
       const currentIndex = subSections.findIndex(s => s.id === activeSubSection);
@@ -162,7 +161,7 @@ export default function FactFindPersonal() {
         navigate(createPageUrl('FactFindDependants') + `?id=${factFind.id}`);
       }
     } catch (error) {
-      alert('Save ERROR: ' + error.message);
+      toast.error('Failed to save data');
       console.error('Save error:', error);
     } finally {
       setSaving(false);
@@ -211,55 +210,6 @@ export default function FactFindPersonal() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
         <div className="w-full">
-          <div style={{ background: 'yellow', padding: '10px', marginBottom: '10px', maxHeight: '300px', overflow: 'auto' }}>
-            <strong>DEBUG - Database Content:</strong><br/>
-            <pre style={{ fontSize: '11px', whiteSpace: 'pre-wrap' }}>
-              {JSON.stringify(factFind?.personal, null, 2)}
-            </pre>
-            <hr style={{ margin: '8px 0' }} />
-            <strong>Current Form State:</strong><br/>
-            <pre style={{ fontSize: '11px', whiteSpace: 'pre-wrap' }}>
-              Saved living_status: {factFind?.personal?.living_status || 'EMPTY'}<br/>
-              clientData.living_status: {clientData.living_status || 'EMPTY'}<br/>
-              Saved resident_status: {factFind?.personal?.resident_status || 'EMPTY'}<br/>
-              clientData.resident_status: {clientData.resident_status || 'EMPTY'}<br/>
-              hasPartner: {hasPartner ? 'YES' : 'NO'}<br/>
-              partnerData.first_name: {partnerData.first_name || 'EMPTY'}
-            </pre>
-            <button 
-              onClick={async () => {
-                const testData = {
-                  living_status: 'TEST_LIVING',
-                  resident_status: 'TEST_RESIDENT'
-                };
-                
-                alert('Saving test data directly...');
-                
-                try {
-                  const current = await base44.entities.FactFind.filter({ id: factFind.id });
-                  alert('Current personal: ' + JSON.stringify(current[0]?.personal));
-                  
-                  await base44.entities.FactFind.update(factFind.id, {
-                    personal: {
-                      ...current[0]?.personal,
-                      ...testData
-                    }
-                  });
-                  
-                  alert('Saved! Now fetching to verify...');
-                  
-                  const after = await base44.entities.FactFind.filter({ id: factFind.id });
-                  alert('After save personal: ' + JSON.stringify(after[0]?.personal));
-                  
-                } catch (err) {
-                  alert('ERROR: ' + err.message);
-                }
-              }}
-              style={{ background: 'red', color: 'white', padding: '10px', margin: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-            >
-              TEST DIRECT SAVE
-            </button>
-          </div>
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-6 space-y-6">
               {/* Client Information Bar */}

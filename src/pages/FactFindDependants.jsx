@@ -589,42 +589,6 @@ export default function FactFindDependants() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
        <div className="w-full space-y-6">
-         {/* DEBUG TEST BUTTON */}
-         <div style={{ background: 'yellow', padding: '10px', marginBottom: '10px' }}>
-           <strong>DEBUG - Test Dependants Save:</strong>
-           <button 
-             onClick={async () => {
-               const testDependant = {
-                 first_name: 'TEST_CHILD',
-                 last_name: 'TEST_LAST',
-                 relationship: 'child'
-               };
-               
-               alert('Saving test dependant directly...');
-               
-               try {
-                 const current = await base44.entities.FactFind.filter({ id: factFind.id });
-                 alert('Current dependants: ' + JSON.stringify(current[0]?.dependants));
-                 
-                 await base44.entities.FactFind.update(factFind.id, {
-                   dependants: [testDependant]
-                 });
-                 
-                 alert('Saved! Now fetching to verify...');
-                 
-                 const after = await base44.entities.FactFind.filter({ id: factFind.id });
-                 alert('After save dependants: ' + JSON.stringify(after[0]?.dependants));
-                 
-               } catch (err) {
-                 alert('ERROR: ' + err.message);
-               }
-             }}
-             style={{ background: 'red', color: 'white', padding: '10px', margin: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-           >
-             TEST DIRECT SAVE DEPENDANT
-           </button>
-         </div>
-
          {/* Tabs - Part of form content */}
          <div className="flex gap-2">
            <button
