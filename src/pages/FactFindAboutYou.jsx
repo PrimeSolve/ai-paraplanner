@@ -90,11 +90,17 @@ export default function FactFindPersonal() {
 
   // Load existing data from FactFind when it's loaded
   useEffect(() => {
+    console.log('=== LOAD DATA useEffect ===');
+    console.log('factFind:', factFind);
+    console.log('factFind.personal:', factFind?.personal);
+    
     if (factFind) {
       if (factFind.personal?.client) {
+        console.log('Loading client data:', factFind.personal.client);
         setClientData({ ...initialFormState, ...factFind.personal.client });
       }
       if (factFind.personal?.partner) {
+        console.log('Loading partner data:', factFind.personal.partner);
         setPartnerData({ ...initialFormState, ...factFind.personal.partner });
         setHasPartner(true);
       }
