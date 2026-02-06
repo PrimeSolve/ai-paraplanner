@@ -344,11 +344,14 @@ export default function FactFindTrusts() {
       ?.map((d, i) => `<option value="dependent-${i}">${d.dep_name || `Dependant ${i + 1}`}</option>`)
       .join('') || '';
 
-    const trustOptions = globalStateRef.current.trusts.trusts
+    const trusts = globalStateRef.current.entities.filter(e => e.type === 'trust');
+    const companies = globalStateRef.current.entities.filter(e => e.type === 'company');
+
+    const trustOptions = trusts
       .map((t, i) => `<option value="trust-${i}">${t.trust_name || `Trust ${i + 1}`}</option>`)
       .join('');
 
-    const companyOptions = globalStateRef.current.trusts.companies
+    const companyOptions = companies
       .map((c, i) => `<option value="company-${i}">${c.company_name || `Company ${i + 1}`}</option>`)
       .join('');
 
