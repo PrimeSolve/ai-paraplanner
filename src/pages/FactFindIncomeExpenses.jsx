@@ -59,17 +59,26 @@ export default function FactFindIncomeExpenses() {
   useEffect(() => {
     if (factFind?.income_expenses) {
       const incomeData = factFind.income_expenses;
-      setCurrentTab(incomeData.currentTab || 'inc');
-      setActivePerson(incomeData.activePerson || 'c1');
-      setHasPartner(incomeData.hasPartner || false);
-
-      setClientFields(incomeData.client?.fields || {});
-      setPartnerFields(incomeData.partner?.fields || {});
-      setExpenseFields(incomeData.expenses?.fields || {});
-
-      setClientAdjustments(incomeData.client?.adjustments || []);
-      setPartnerAdjustments(incomeData.partner?.adjustments || []);
-      setExpenseAdjustments(incomeData.expenses?.adjustments || []);
+      
+      // Load from new schema structure
+      const incomeSources = incomeData.income_sources || [];
+      const expensesList = incomeData.expenses || [];
+      
+      const clientIncome = incomeSources.find(s => s.person === 'client') || {};
+      const partnerIncome = incomeSources.find(s => s.person === 'partner') || {};
+      const expensesData = expensesList[0] || {};
+      
+      setClientFields(clientIncome.fields || {});
+      setPartnerFields(partnerIncome.fields || {});
+      setExpenseFields(expensesData.fields || {});
+      
+      setClientAdjustments(clientIncome.adjustments || []);
+      setPartnerAdjustments(partnerIncome.adjustments || []);
+      setExpenseAdjustments(expensesData.adjustments || []);
+      
+      setHasPartner(incomeSources.some(s => s.person === 'partner'));
+      setCurrentTab('inc');
+      setActivePerson('c1');
     }
   }, [factFind]);
 
@@ -176,14 +185,22 @@ export default function FactFindIncomeExpenses() {
         sectionsCompleted.push('income_expenses');
       }
 
+      const incomeSources = [
+        { person: 'client', fields: clientFields, adjustments: clientAdjustments }
+      ];
+      
+      if (hasPartner) {
+        incomeSources.push({ person: 'partner', fields: partnerFields, adjustments: partnerAdjustments });
+      }
+      
+      const expenses = [
+        { fields: expenseFields, adjustments: expenseAdjustments }
+      ];
+
       await base44.entities.FactFind.update(factFind.id, {
         income_expenses: {
-          currentTab,
-          activePerson,
-          hasPartner,
-          client: { fields: clientFields, adjustments: clientAdjustments },
-          partner: { fields: partnerFields, adjustments: partnerAdjustments },
-          expenses: { fields: expenseFields, adjustments: expenseAdjustments }
+          income_sources: incomeSources,
+          expenses: expenses
         },
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
