@@ -284,8 +284,8 @@ export default function FactFindAdviceReason() {
   }, []);
 
   useEffect(() => {
-    if (factFind?.reason) {
-      const r = factFind.reason;
+    if (factFind?.advice_reason) {
+      const r = factFind.advice_reason;
       if (r.reasons) setReasons(r.reasons);
       if (r.quick) setQuick(r.quick);
       if (r.objectives) setObjectives(r.objectives);
@@ -354,7 +354,7 @@ export default function FactFindAdviceReason() {
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        reason: {
+        advice_reason: {
           reasons,
           quick,
           objectives

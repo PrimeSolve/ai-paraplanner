@@ -57,8 +57,8 @@ export default function FactFindIncomeExpenses() {
   }, []);
 
   useEffect(() => {
-    if (factFind?.income) {
-      const incomeData = factFind.income;
+    if (factFind?.income_expenses) {
+      const incomeData = factFind.income_expenses;
       setCurrentTab(incomeData.currentTab || 'inc');
       setActivePerson(incomeData.activePerson || 'c1');
       setHasPartner(incomeData.hasPartner || false);
@@ -177,7 +177,7 @@ export default function FactFindIncomeExpenses() {
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        income: {
+        income_expenses: {
           currentTab,
           activePerson,
           hasPartner,

@@ -411,7 +411,7 @@ export default function FactFindRiskProfile() {
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        riskProfile: {
+        risk_profile: {
           currentPerson: activeOwner,
           currentTab: activeTab,
           mode,

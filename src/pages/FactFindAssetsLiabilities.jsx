@@ -84,11 +84,11 @@ export default function FactFindAssetsLiabilities() {
   }, []);
 
   useEffect(() => {
-    if (factFind?.assets?.assetsList) {
-      setAssetsList(factFind.assets.assetsList);
+    if (factFind?.assets_liabilities?.assetsList) {
+      setAssetsList(factFind.assets_liabilities.assetsList);
     }
-    if (factFind?.assets?.debtsList) {
-      setDebtsList(factFind.assets.debtsList);
+    if (factFind?.assets_liabilities?.debtsList) {
+      setDebtsList(factFind.assets_liabilities.debtsList);
     }
   }, [factFind]);
 
@@ -152,7 +152,7 @@ export default function FactFindAssetsLiabilities() {
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        assets: { currentTab, activeAssetIndex, activeDebtIndex, assetsList, debtsList },
+        assets_liabilities: { currentTab, activeAssetIndex, activeDebtIndex, assetsList, debtsList },
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });

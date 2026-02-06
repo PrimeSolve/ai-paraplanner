@@ -141,7 +141,7 @@ export default function FactFindSuperTax() {
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        supertax: {
+        super_tax: {
           currentTab,
           activePerson,
           hasPartner,
