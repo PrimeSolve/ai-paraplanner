@@ -22,16 +22,12 @@ export default function FactFindSuperannuation() {
   const [annuityCount, setAnnuityCount] = useState(0);
 
   const globalStateRef = React.useRef({
-    superannuation: {
-      currentTab: 'super',
-      activeIdx: {
-        super: 0,
-        pension: 0,
-        annuities: 0
-      },
-      superFunds: [],
-      pensions: [],
-      annuities: []
+    super_accounts: [],
+    currentTab: 'super',
+    activeIdx: {
+      super: 0,
+      pension: 0,
+      annuities: 0
     }
   });
 
@@ -561,11 +557,9 @@ export default function FactFindSuperannuation() {
 
   useEffect(() => {
     if (factFind?.id && factFind.superannuation) {
-      globalStateRef.current.superannuation = {
-        ...factFind.superannuation,
-        currentTab: factFind.superannuation.currentTab || 'super',
-        activeIdx: factFind.superannuation.activeIdx || { super: 0, pension: 0, annuities: 0 }
-      };
+      globalStateRef.current.super_accounts = factFind.superannuation.super_accounts || [];
+      globalStateRef.current.currentTab = factFind.superannuation.currentTab || 'super';
+      globalStateRef.current.activeIdx = factFind.superannuation.activeIdx || { super: 0, pension: 0, annuities: 0 };
     }
   }, [factFind?.id]);
 
@@ -580,25 +574,30 @@ export default function FactFindSuperannuation() {
         if (pensionWrap) pensionWrap.innerHTML = '';
         if (annuitiesWrap) annuitiesWrap.innerHTML = '';
 
-        if (globalStateRef.current.superannuation.superFunds?.length > 0) {
-          globalStateRef.current.superannuation.superFunds.forEach((data) => {
+        // Load accounts by type
+        const superAccounts = globalStateRef.current.super_accounts.filter(a => a.account_type === 'super');
+        const pensions = globalStateRef.current.super_accounts.filter(a => a.account_type === 'pension');
+        const annuities = globalStateRef.current.super_accounts.filter(a => a.account_type === 'annuity');
+
+        if (superAccounts.length > 0) {
+          superAccounts.forEach((data) => {
             addEntry('super', data);
           });
         }
 
-        if (globalStateRef.current.superannuation.pensions?.length > 0) {
-          globalStateRef.current.superannuation.pensions.forEach((data) => {
+        if (pensions.length > 0) {
+          pensions.forEach((data) => {
             addEntry('pension', data);
           });
         }
 
-        if (globalStateRef.current.superannuation.annuities?.length > 0) {
-          globalStateRef.current.superannuation.annuities.forEach((data) => {
+        if (annuities.length > 0) {
+          annuities.forEach((data) => {
             addEntry('annuities', data);
           });
         }
 
-        const activeIdx = globalStateRef.current.superannuation.activeIdx?.[currentTab] || 0;
+        const activeIdx = globalStateRef.current.activeIdx?.[currentTab] || 0;
         setActiveIndex(activeIdx);
         updatePills(currentTab, activeIdx);
         showOnlyActiveEntry(currentTab, activeIdx);
@@ -680,18 +679,24 @@ export default function FactFindSuperannuation() {
     if (!factFind?.id) return;
 
     try {
-      globalStateRef.current.superannuation.superFunds = readTabToArray('super');
-      globalStateRef.current.superannuation.pensions = readTabToArray('pension');
-      globalStateRef.current.superannuation.annuities = readTabToArray('annuities');
-      globalStateRef.current.superannuation.currentTab = currentTab;
-      globalStateRef.current.superannuation.activeIdx = {
-        super: currentTab === 'super' ? activeIndex : globalStateRef.current.superannuation.activeIdx?.super || 0,
-        pension: currentTab === 'pension' ? activeIndex : globalStateRef.current.superannuation.activeIdx?.pension || 0,
-        annuities: currentTab === 'annuities' ? activeIndex : globalStateRef.current.superannuation.activeIdx?.annuities || 0
+      const superFunds = readTabToArray('super').map(a => ({ ...a, account_type: 'super' }));
+      const pensions = readTabToArray('pension').map(a => ({ ...a, account_type: 'pension' }));
+      const annuities = readTabToArray('annuities').map(a => ({ ...a, account_type: 'annuity' }));
+      
+      globalStateRef.current.super_accounts = [...superFunds, ...pensions, ...annuities];
+      globalStateRef.current.currentTab = currentTab;
+      globalStateRef.current.activeIdx = {
+        super: currentTab === 'super' ? activeIndex : globalStateRef.current.activeIdx?.super || 0,
+        pension: currentTab === 'pension' ? activeIndex : globalStateRef.current.activeIdx?.pension || 0,
+        annuities: currentTab === 'annuities' ? activeIndex : globalStateRef.current.activeIdx?.annuities || 0
       };
 
       await base44.entities.FactFind.update(factFind.id, {
-        superannuation: globalStateRef.current.superannuation
+        superannuation: {
+          super_accounts: globalStateRef.current.super_accounts,
+          currentTab: globalStateRef.current.currentTab,
+          activeIdx: globalStateRef.current.activeIdx
+        }
       });
     } catch (error) {
       console.error('Save failed:', error);
@@ -712,7 +717,11 @@ export default function FactFindSuperannuation() {
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        superannuation: globalStateRef.current.superannuation,
+        superannuation: {
+          super_accounts: globalStateRef.current.super_accounts,
+          currentTab: globalStateRef.current.currentTab,
+          activeIdx: globalStateRef.current.activeIdx
+        },
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
