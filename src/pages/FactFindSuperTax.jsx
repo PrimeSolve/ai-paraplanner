@@ -91,28 +91,30 @@ export default function FactFindSuperTax() {
     }
   }, [factFind]);
 
+  // Auto-save on any changes
+  const autoSave = useCallback(async () => {
+    if (!factFind?.id) return;
+
+    try {
+      await base44.entities.FactFind.update(factFind.id, {
+        super_tax: {
+          currentTab,
+          activePerson,
+          client: data.client,
+          partner: data.partner
+        }
+      });
+    } catch (error) {
+      console.error('Failed to auto-save super_tax:', error);
+    }
+  }, [factFind?.id, currentTab, activePerson, data]);
+
   // Save-before-nav listener
   useEffect(() => {
-    const handleSaveBeforeNav = async () => {
-      if (!factFind?.id) return;
-
-      try {
-        await base44.entities.FactFind.update(factFind.id, {
-          super_tax: {
-            currentTab,
-            activePerson,
-            client: data.client,
-            partner: data.partner
-          }
-        });
-      } catch (error) {
-        console.error('Failed to save super_tax before nav:', error);
-      }
-    };
-
+    const handleSaveBeforeNav = autoSave;
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, currentTab, activePerson, data]);
+  }, [autoSave]);
 
   // Get current person key
   const personKey = activePerson === 'c1' ? 'client' : 'partner';
