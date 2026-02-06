@@ -89,8 +89,10 @@ export default function FactFindPersonal() {
   }, []);
 
   // Load existing data from FactFind when it's loaded
+  const [dataLoaded, setDataLoaded] = useState(false);
+  
   useEffect(() => {
-    if (factFind?.personal) {
+    if (factFind?.personal && !dataLoaded) {
       // Load flat structure directly
       setClientData({ ...initialFormState, ...factFind.personal });
       
@@ -99,10 +101,13 @@ export default function FactFindPersonal() {
         setPartnerData({ ...initialFormState, ...factFind.personal.partner });
         setHasPartner(true);
       }
+      
+      setDataLoaded(true);
     }
-  }, [factFind]);
+  }, [factFind, dataLoaded]);
 
   // Auto-save on unmount (when navigating away)
+  // Only depend on factFind.id - not on clientData/partnerData to avoid infinite loop
   useEffect(() => {
     return () => {
       if (factFind?.id && clientData.first_name) {
@@ -112,7 +117,7 @@ export default function FactFindPersonal() {
         });
       }
     };
-  }, [factFind?.id, clientData, partnerData, hasPartner, updateSection]);
+  }, []); // Empty deps - only runs on unmount
 
   const handleSaveAndContinue = async () => {
     console.log('=== SAVE START ===');
