@@ -291,8 +291,8 @@ export default function FactFindTrusts() {
       <td class="py-2 px-2">
         <select name="benef_entity" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select entity…</option>
-          <option value="client">${clientName}</option>
-          ${partnerName ? `<option value="partner">${partnerName}</option>` : ''}
+          <option value="client">${clientName} (Principal)</option>
+          ${partnerName ? `<option value="partner">${partnerName} (Principal)</option>` : ''}
           ${childrenOptions}
           ${dependantsOptions}
           ${trustOptions}
@@ -340,30 +340,30 @@ export default function FactFindTrusts() {
       : null;
 
     const childrenOptions = factFind?.dependants?.children
-      ?.map((c, i) => `<option value="child-${i}">${c.child_name || `Child ${i + 1}`}</option>`)
+      ?.map((c, i) => `<option value="child-${i}">${c.child_name || `Child ${i + 1}`} (Child)</option>`)
       .join('') || '';
 
     const dependantsOptions = factFind?.dependants?.dependants_list
-      ?.map((d, i) => `<option value="dependent-${i}">${d.dep_name || `Dependant ${i + 1}`}</option>`)
+      ?.map((d, i) => `<option value="dependent-${i}">${d.dep_name || `Dependant ${i + 1}`} (Dependant)</option>`)
       .join('') || '';
 
     const trusts = globalStateRef.current.entities.filter(e => e.type === 'trust');
     const companies = globalStateRef.current.entities.filter(e => e.type === 'company');
 
     const trustOptions = trusts
-      .map((t, i) => `<option value="trust-${i}">${t.trust_name || `Trust ${i + 1}`}</option>`)
+      .map((t, i) => `<option value="trust-${i}">${t.trust_name || `Trust ${i + 1}`} (Trust)</option>`)
       .join('');
 
     const companyOptions = companies
-      .map((c, i) => `<option value="company-${i}">${c.company_name || `Company ${i + 1}`}</option>`)
+      .map((c, i) => `<option value="company-${i}">${c.company_name || `Company ${i + 1}`} (Company)</option>`)
       .join('');
 
     row.innerHTML = `
       <td class="py-2 px-2">
         <select name="sh_entity" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select entity…</option>
-          <option value="client">${clientName}</option>
-          ${partnerName ? `<option value="partner">${partnerName}</option>` : ''}
+          <option value="client">${clientName} (Principal)</option>
+          ${partnerName ? `<option value="partner">${partnerName} (Principal)</option>` : ''}
           ${childrenOptions}
           ${dependantsOptions}
           ${trustOptions}
