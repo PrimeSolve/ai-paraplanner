@@ -14,11 +14,15 @@ export function useFactFind() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  console.log('=== useFactFind HOOK ===');
+  console.log('navigationChain:', navigationChain);
+  
   // Extract clientEmail at render time
   const clientNav = navigationChain?.find(n => n.type === 'client');
+  console.log('clientNav:', clientNav);
+  
   const clientEmail = clientNav?.id;
-
-  console.log('useFactFind render - clientEmail:', clientEmail, 'navigationChain length:', navigationChain?.length);
+  console.log('clientEmail:', clientEmail);
 
   useEffect(() => {
     // Don't run until we have a client email
