@@ -207,12 +207,6 @@ export default function FactFindPersonal() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
         <div className="w-full">
-          <div style={{ background: 'yellow', padding: '10px', marginBottom: '10px' }}>
-            <strong>DEBUG:</strong><br/>
-            factFind exists: {factFind ? 'YES' : 'NO'}<br/>
-            factFind.id: {factFind?.id || 'none'}<br/>
-            factFind.personal: {JSON.stringify(factFind?.personal)?.substring(0, 200) || 'none'}
-          </div>
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-6 space-y-6">
               {/* Client Information Bar */}
