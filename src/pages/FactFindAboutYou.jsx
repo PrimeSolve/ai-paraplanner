@@ -106,18 +106,7 @@ export default function FactFindPersonal() {
     }
   }, [factFind, dataLoaded]);
 
-  // Auto-save on unmount (when navigating away)
-  // Only depend on factFind.id - not on clientData/partnerData to avoid infinite loop
-  useEffect(() => {
-    return () => {
-      if (factFind?.id && clientData.first_name) {
-        updateSection('personal', { 
-          ...clientData,
-          partner: hasPartner ? partnerData : null
-        });
-      }
-    };
-  }, []); // Empty deps - only runs on unmount
+  // No auto-save - only save on button click to avoid complexity
 
   const handleSaveAndContinue = async () => {
     console.log('=== SAVE START ===');
