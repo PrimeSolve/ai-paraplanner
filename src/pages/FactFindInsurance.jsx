@@ -25,6 +25,8 @@ const INSURANCE_TYPE_CONFIG = {
   '13': { sumInsured: ['ip', 'ip2'], premium: ['ip', 'ip2'], showTaxEnv: false, showIPFields: true }
 };
 
+import { useFactFind } from '@/components/factfind/useFactFind';
+
 export default function FactFindInsurance() {
   const navigate = useNavigate();
   const { factFind, loading: ffLoading } = useFactFind();
