@@ -362,46 +362,46 @@ export default function FactFindPersonal() {
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Living status</Label>
-                        <Select 
-                          value={formData.living_status} 
-                          onValueChange={(value) => {
-                            console.log('Living status changed to:', value);
-                            setFormData({ ...formData, living_status: value });
-                          }}
-                        >
-                          <SelectTrigger className="border-slate-300">
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">Own home</SelectItem>
-                            <SelectItem value="2">Renting</SelectItem>
-                            <SelectItem value="3">Live if aged care</SelectItem>
-                            <SelectItem value="4">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
+                       <Label className="text-slate-700 font-semibold text-sm">Living status</Label>
+                       <Select 
+                         value={formData.living_status} 
+                         onValueChange={(value) => {
+                           console.log('Living status changed to:', value);
+                           setFormData({ ...formData, living_status: value });
+                         }}
+                       >
+                         <SelectTrigger className="border-slate-300">
+                           <SelectValue placeholder="Select..." />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="1">Own home</SelectItem>
+                           <SelectItem value="2">Renting</SelectItem>
+                           <SelectItem value="3">Live if aged care</SelectItem>
+                           <SelectItem value="4">Other</SelectItem>
+                         </SelectContent>
+                       </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Resident status</Label>
-                        <div className="flex gap-3">
-                          {[{label: 'Permanent resident', value: '1'}, {label: 'Temporary resident', value: '2'}, {label: 'Other', value: '3'}].map(option => (
-                            <button
-                              key={option.value}
-                              onClick={() => {
-                                console.log('Resident status changed to:', option.value);
-                                setFormData({ ...formData, resident_status: option.value });
-                              }}
-                              className={cn(
-                                "px-3 py-2 rounded-lg border text-xs font-medium transition-all",
-                                formData.resident_status === option.value
-                                  ? "bg-blue-600 text-white border-blue-600"
-                                  : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
-                              )}
-                            >
-                              {option.label}
-                            </button>
-                          ))}
-                        </div>
+                       <Label className="text-slate-700 font-semibold text-sm">Resident status</Label>
+                       <div className="flex gap-3">
+                         {[{label: 'Permanent resident', value: '1'}, {label: 'Temporary resident', value: '2'}, {label: 'Other', value: '3'}].map(option => (
+                           <button
+                             key={option.value}
+                             onClick={() => {
+                               console.log('Resident status changed to:', option.value);
+                               setFormData({ ...formData, resident_status: option.value });
+                             }}
+                             className={cn(
+                               "px-3 py-2 rounded-lg border text-xs font-medium transition-all",
+                               formData.resident_status === option.value
+                                 ? "bg-blue-600 text-white border-blue-600"
+                                 : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
+                             )}
+                           >
+                             {option.label}
+                           </button>
+                         ))}
+                       </div>
                       </div>
                     </div>
                   </>
