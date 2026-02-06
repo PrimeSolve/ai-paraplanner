@@ -90,35 +90,20 @@ export default function FactFindPersonal() {
 
   // Load existing data from FactFind when it's loaded
   useEffect(() => {
-    console.log('=== LOAD DATA useEffect ===');
-    console.log('factFind:', factFind);
-    console.log('factFind.personal:', factFind?.personal);
-    
-    if (factFind) {
-      if (factFind.personal?.client) {
-        console.log('Loading client data:', factFind.personal.client);
-        setClientData({ ...initialFormState, ...factFind.personal.client });
-      }
-      if (factFind.personal?.partner) {
-        console.log('Loading partner data:', factFind.personal.partner);
-        setPartnerData({ ...initialFormState, ...factFind.personal.partner });
-        setHasPartner(true);
-      }
+    if (factFind?.personal) {
+      // Load flat structure directly
+      setClientData({ ...initialFormState, ...factFind.personal });
     }
   }, [factFind]);
 
   // Auto-save on unmount (when navigating away)
   useEffect(() => {
     return () => {
-      if (factFind?.id && (clientData.first_name || partnerData.first_name)) {
-        const personalData = {
-          client: clientData,
-          ...(hasPartner && { partner: partnerData })
-        };
-        updateSection('personal', personalData);
+      if (factFind?.id && clientData.first_name) {
+        updateSection('personal', { ...clientData });
       }
     };
-  }, [factFind?.id, clientData, partnerData, hasPartner, updateSection]);
+  }, [factFind?.id, clientData, updateSection]);
 
   const handleSaveAndContinue = async () => {
     console.log('=== SAVE START ===');
@@ -141,9 +126,10 @@ export default function FactFindPersonal() {
 
     setSaving(true);
     try {
+      // Save flat structure - spread client fields directly
       const personalData = {
-        client: clientData,
-        ...(hasPartner && { partner: partnerData })
+        ...clientData
+        // Note: Partner support to be added later
       };
       
       console.log('personalData to save:', personalData);
