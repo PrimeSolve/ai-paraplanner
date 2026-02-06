@@ -106,7 +106,9 @@ export function useFactFind() {
 
     try {
       console.log(`Saving section "${sectionName}":`, data);
+      // Preserve all existing data when updating
       await base44.entities.FactFind.update(factFind.id, {
+        ...factFind,  // Keep all existing data
         [sectionName]: data
       });
       
@@ -122,7 +124,7 @@ export function useFactFind() {
       console.error(`Failed to save section "${sectionName}":`, err);
       return false;
     }
-  }, [factFind?.id]);
+  }, [factFind]);
 
   return {
     factFind,
