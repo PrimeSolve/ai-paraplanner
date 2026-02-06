@@ -210,6 +210,39 @@ export default function FactFindPersonal() {
               hasPartner: {hasPartner ? 'YES' : 'NO'}<br/>
               partnerData.first_name: {partnerData.first_name || 'EMPTY'}
             </pre>
+            <button 
+              onClick={async () => {
+                const testData = {
+                  living_status: 'TEST_LIVING',
+                  resident_status: 'TEST_RESIDENT'
+                };
+                
+                alert('Saving test data directly...');
+                
+                try {
+                  const current = await base44.entities.FactFind.filter({ id: factFind.id });
+                  alert('Current personal: ' + JSON.stringify(current[0]?.personal));
+                  
+                  await base44.entities.FactFind.update(factFind.id, {
+                    personal: {
+                      ...current[0]?.personal,
+                      ...testData
+                    }
+                  });
+                  
+                  alert('Saved! Now fetching to verify...');
+                  
+                  const after = await base44.entities.FactFind.filter({ id: factFind.id });
+                  alert('After save personal: ' + JSON.stringify(after[0]?.personal));
+                  
+                } catch (err) {
+                  alert('ERROR: ' + err.message);
+                }
+              }}
+              style={{ background: 'red', color: 'white', padding: '10px', margin: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              TEST DIRECT SAVE
+            </button>
           </div>
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-6 space-y-6">
