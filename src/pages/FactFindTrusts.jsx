@@ -21,14 +21,11 @@ export default function FactFindTrusts() {
   const [companiesCount, setCompaniesCount] = useState(0);
 
   const globalStateRef = React.useRef({
-    trusts: {
-      trusts: [],
-      companies: [],
-      currentTab: 'trust',
-      activeIndex: {
-        trust: 0,
-        company: 0
-      }
+    entities: [],
+    currentTab: 'trust',
+    activeIndex: {
+      trust: 0,
+      company: 0
     }
   });
 
@@ -62,7 +59,7 @@ export default function FactFindTrusts() {
 
     const cards = [...wrap.querySelectorAll('.entry')];
     return cards.map((card) => {
-      const data = {};
+      const data = { type: tab }; // Add type field
 
       // Get all inputs/selects
       const inputs = card.querySelectorAll('input:not([type="button"]), select, textarea');
@@ -469,15 +466,21 @@ export default function FactFindTrusts() {
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
       if (factFind?.id) {
-        globalStateRef.current.trusts.trusts = readTabToArray('trust');
-        globalStateRef.current.trusts.companies = readTabToArray('company');
-        globalStateRef.current.trusts.currentTab = currentTab;
-        globalStateRef.current.trusts.activeIndex = {
-          trust: currentTab === 'trust' ? activeIndex : globalStateRef.current.trusts.activeIndex?.trust || 0,
-          company: currentTab === 'company' ? activeIndex : globalStateRef.current.trusts.activeIndex?.company || 0
+        const trustEntities = readTabToArray('trust');
+        const companyEntities = readTabToArray('company');
+        
+        globalStateRef.current.entities = [...trustEntities, ...companyEntities];
+        globalStateRef.current.currentTab = currentTab;
+        globalStateRef.current.activeIndex = {
+          trust: currentTab === 'trust' ? activeIndex : globalStateRef.current.activeIndex?.trust || 0,
+          company: currentTab === 'company' ? activeIndex : globalStateRef.current.activeIndex?.company || 0
         };
         
-        await updateSection('trusts_companies', globalStateRef.current.trusts);
+        await updateSection('trusts_companies', {
+          entities: globalStateRef.current.entities,
+          currentTab: globalStateRef.current.currentTab,
+          activeIndex: globalStateRef.current.activeIndex
+        });
       }
     };
     
@@ -487,11 +490,9 @@ export default function FactFindTrusts() {
 
   useEffect(() => {
     if (factFind?.id && factFind.trusts_companies) {
-      globalStateRef.current.trusts = {
-        ...factFind.trusts_companies,
-        currentTab: factFind.trusts_companies.currentTab || 'trust',
-        activeIndex: factFind.trusts_companies.activeIndex || { trust: 0, company: 0 }
-      };
+      globalStateRef.current.entities = factFind.trusts_companies.entities || [];
+      globalStateRef.current.currentTab = factFind.trusts_companies.currentTab || 'trust';
+      globalStateRef.current.activeIndex = factFind.trusts_companies.activeIndex || { trust: 0, company: 0 };
     }
   }, [factFind?.id]);
 
@@ -503,15 +504,21 @@ export default function FactFindTrusts() {
     if (!factFind?.id) return;
 
     try {
-      globalStateRef.current.trusts.trusts = readTabToArray('trust');
-      globalStateRef.current.trusts.companies = readTabToArray('company');
-      globalStateRef.current.trusts.currentTab = currentTab;
-      globalStateRef.current.trusts.activeIndex = {
-        trust: currentTab === 'trust' ? activeIndex : globalStateRef.current.trusts.activeIndex?.trust || 0,
-        company: currentTab === 'company' ? activeIndex : globalStateRef.current.trusts.activeIndex?.company || 0
+      const trustEntities = readTabToArray('trust');
+      const companyEntities = readTabToArray('company');
+      
+      globalStateRef.current.entities = [...trustEntities, ...companyEntities];
+      globalStateRef.current.currentTab = currentTab;
+      globalStateRef.current.activeIndex = {
+        trust: currentTab === 'trust' ? activeIndex : globalStateRef.current.activeIndex?.trust || 0,
+        company: currentTab === 'company' ? activeIndex : globalStateRef.current.activeIndex?.company || 0
       };
 
-      await updateSection('trusts_companies', globalStateRef.current.trusts);
+      await updateSection('trusts_companies', {
+        entities: globalStateRef.current.entities,
+        currentTab: globalStateRef.current.currentTab,
+        activeIndex: globalStateRef.current.activeIndex
+      });
     } catch (error) {
       console.error('Save failed:', error);
     }
@@ -530,19 +537,22 @@ export default function FactFindTrusts() {
         if (trustsWrap) trustsWrap.innerHTML = '';
         if (companiesWrap) companiesWrap.innerHTML = '';
 
-        if (globalStateRef.current.trusts.trusts?.length > 0) {
-          globalStateRef.current.trusts.trusts.forEach((trustData) => {
+        const trusts = globalStateRef.current.entities.filter(e => e.type === 'trust');
+        const companies = globalStateRef.current.entities.filter(e => e.type === 'company');
+
+        if (trusts.length > 0) {
+          trusts.forEach((trustData) => {
             addEntry('trust', trustData);
           });
         }
 
-        if (globalStateRef.current.trusts.companies?.length > 0) {
-          globalStateRef.current.trusts.companies.forEach((companyData) => {
+        if (companies.length > 0) {
+          companies.forEach((companyData) => {
             addEntry('company', companyData);
           });
         }
 
-        const activeIdx = globalStateRef.current.trusts.activeIndex?.[currentTab] || 0;
+        const activeIdx = globalStateRef.current.activeIndex?.[currentTab] || 0;
         setActiveIndex(activeIdx);
         updatePills(currentTab, activeIdx);
         showOnlyActiveEntry(currentTab, activeIdx);
@@ -643,7 +653,15 @@ export default function FactFindTrusts() {
         sectionsCompleted.push('trusts');
       }
 
-      await updateSection('trusts_companies', globalStateRef.current.trusts);
+      const trustEntities = readTabToArray('trust');
+      const companyEntities = readTabToArray('company');
+      globalStateRef.current.entities = [...trustEntities, ...companyEntities];
+
+      await updateSection('trusts_companies', {
+        entities: globalStateRef.current.entities,
+        currentTab: globalStateRef.current.currentTab,
+        activeIndex: globalStateRef.current.activeIndex
+      });
       
       // Update sections completed separately
       await base44.entities.FactFind.update(factFind.id, {
@@ -868,41 +886,6 @@ export default function FactFindTrusts() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
-          {/* DEBUG TEST BUTTON */}
-          <div style={{ background: 'yellow', padding: '10px', marginBottom: '10px' }}>
-            <strong>DEBUG - Test Trusts Save:</strong>
-            <button 
-              onClick={async () => {
-                try {
-                  alert('Step 1: Starting...');
-                  
-                  const current = await base44.entities.FactFind.filter({ id: factFind.id });
-                  alert('Step 2: Current trusts_companies: ' + JSON.stringify(current[0]?.trusts_companies));
-                  
-                  alert('Step 3: About to save...');
-                  
-                  await base44.entities.FactFind.update(factFind.id, {
-                    trusts_companies: { 
-                      trusts: [{ name: 'TEST_TRUST', type: 'family' }],
-                      companies: [{ name: 'TEST_COMPANY' }]
-                    }
-                  });
-                  
-                  alert('Step 4: Save completed, now verifying...');
-                  
-                  const after = await base44.entities.FactFind.filter({ id: factFind.id });
-                  alert('Step 5: After save trusts_companies: ' + JSON.stringify(after[0]?.trusts_companies));
-                  
-                } catch (err) {
-                  alert('ERROR: ' + err.message);
-                }
-              }}
-              style={{ background: 'red', color: 'white', padding: '10px', margin: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-            >
-              TEST DIRECT SAVE TRUSTS
-            </button>
-          </div>
-
           {/* Tabs - Part of form content */}
           <div className="flex gap-2">
             <button
