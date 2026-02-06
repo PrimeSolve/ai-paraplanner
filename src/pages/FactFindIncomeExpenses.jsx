@@ -17,7 +17,7 @@ export default function FactFindIncomeExpenses() {
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('inc');
   const [activePerson, setActivePerson] = useState('c1');
-  const [hasPartner, setHasPartner] = useState(false);
+
 
   const [clientFields, setClientFields] = useState({});
   const [partnerFields, setPartnerFields] = useState({});
@@ -30,6 +30,9 @@ export default function FactFindIncomeExpenses() {
   const [editingIncomeAdj, setEditingIncomeAdj] = useState(null);
   const [editingExpenseAdj, setEditingExpenseAdj] = useState(null);
 
+  // Determine if partner exists from Personal section (read-only)
+  const hasPartner = factFind?.personal?.partner?.first_name ? true : false;
+  
   const getClientName = useCallback(() => {
     if (factFind?.personal?.client?.first_name) {
       return `${factFind.personal.client.first_name} ${factFind.personal.client.last_name || ''}`.trim();
@@ -76,7 +79,6 @@ export default function FactFindIncomeExpenses() {
       setPartnerAdjustments(partnerIncome.adjustments || []);
       setExpenseAdjustments(expensesData.adjustments || []);
       
-      setHasPartner(incomeSources.some(s => s.person === 'partner'));
       setCurrentTab('inc');
       setActivePerson('c1');
     }
@@ -116,11 +118,6 @@ export default function FactFindIncomeExpenses() {
   }, [factFind?.id, clientFields, partnerFields, expenseFields, clientAdjustments, partnerAdjustments, expenseAdjustments, hasPartner]);
 
 
-
-  const handleAddPartner = () => {
-    setHasPartner(true);
-    setActivePerson('c2');
-  };
 
   const updateClientField = useCallback((field, value) => {
     setClientFields(prev => ({ ...prev, [field]: value }));
@@ -274,30 +271,6 @@ export default function FactFindIncomeExpenses() {
         user={user}
       />
 
-      {/* DEBUG BUTTON */}
-      {factFind?.id && (
-        <div style={{ padding: '10px', background: '#fee', borderBottom: '2px solid red' }}>
-          <button 
-            onClick={async () => {
-              try {
-                const current = await base44.entities.FactFind.filter({ id: factFind.id });
-                alert('Current income_expenses: ' + JSON.stringify(current[0]?.income_expenses, null, 2));
-                console.log('FULL FACTFIND:', current[0]);
-                console.log('INCOME_EXPENSES:', current[0]?.income_expenses);
-              } catch (err) {
-                alert('ERROR: ' + err.message);
-              }
-            }}
-            style={{ background: 'red', color: 'white', padding: '10px', margin: '10px', cursor: 'pointer', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}
-          >
-            🔍 CHECK INCOME SCHEMA
-          </button>
-          <span style={{ color: '#666', fontSize: '12px', marginLeft: '10px' }}>
-            Check console for full output. Alert shows income_expenses structure.
-          </span>
-        </div>
-      )}
-
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
            {/* Tabs - Part of form content */}
@@ -342,25 +315,20 @@ export default function FactFindIncomeExpenses() {
                       >
                         {getClientName()}
                       </button>
-                      <button
-                        onClick={() => setActivePerson('c2')}
-                        disabled={!hasPartner}
-                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
-                          activePerson === 'c2'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                        } disabled:opacity-50 disabled:cursor-not-allowed`}
-                      >
-                        {getPartnerName()}
-                      </button>
+                      {hasPartner && (
+                        <button
+                          onClick={() => setActivePerson('c2')}
+                          className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                            activePerson === 'c2'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {getPartnerName()}
+                        </button>
+                      )}
                     </div>
                   </div>
-                  {!hasPartner && (
-                    <Button onClick={handleAddPartner} variant="outline" size="sm" className="border-slate-300">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                      Add Partner
-                    </Button>
-                  )}
                 </div>
               </CardContent>
             </Card>
