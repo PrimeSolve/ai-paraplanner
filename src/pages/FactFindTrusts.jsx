@@ -868,6 +868,41 @@ export default function FactFindTrusts() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
+          {/* DEBUG TEST BUTTON */}
+          <div style={{ background: 'yellow', padding: '10px', marginBottom: '10px' }}>
+            <strong>DEBUG - Test Trusts Save:</strong>
+            <button 
+              onClick={async () => {
+                try {
+                  alert('Step 1: Starting...');
+                  
+                  const current = await base44.entities.FactFind.filter({ id: factFind.id });
+                  alert('Step 2: Current trusts_companies: ' + JSON.stringify(current[0]?.trusts_companies));
+                  
+                  alert('Step 3: About to save...');
+                  
+                  await base44.entities.FactFind.update(factFind.id, {
+                    trusts_companies: { 
+                      trusts: [{ name: 'TEST_TRUST', type: 'family' }],
+                      companies: [{ name: 'TEST_COMPANY' }]
+                    }
+                  });
+                  
+                  alert('Step 4: Save completed, now verifying...');
+                  
+                  const after = await base44.entities.FactFind.filter({ id: factFind.id });
+                  alert('Step 5: After save trusts_companies: ' + JSON.stringify(after[0]?.trusts_companies));
+                  
+                } catch (err) {
+                  alert('ERROR: ' + err.message);
+                }
+              }}
+              style={{ background: 'red', color: 'white', padding: '10px', margin: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              TEST DIRECT SAVE TRUSTS
+            </button>
+          </div>
+
           {/* Tabs - Part of form content */}
           <div className="flex gap-2">
             <button
