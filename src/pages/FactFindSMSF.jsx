@@ -21,10 +21,8 @@ export default function FactFindSMSF() {
   const [smsfCount, setSmsfCount] = useState(0);
 
   const globalStateRef = React.useRef({
-    smsf: {
-      funds: [],
-      activeIndex: 0
-    }
+    smsf_details: [],
+    activeIndex: 0
   });
 
   // ============================================
@@ -465,10 +463,8 @@ export default function FactFindSMSF() {
 
   useEffect(() => {
     if (factFind?.id && factFind.smsf) {
-      globalStateRef.current.smsf = {
-        ...factFind.smsf,
-        activeIndex: factFind.smsf.activeIndex || 0
-      };
+      globalStateRef.current.smsf_details = factFind.smsf.smsf_details || [];
+      globalStateRef.current.activeIndex = factFind.smsf.activeIndex || 0;
     }
   }, [factFind?.id]);
 
@@ -482,13 +478,13 @@ export default function FactFindSMSF() {
         const wrap = wrapForTab();
         if (wrap) wrap.innerHTML = '';
 
-        if (globalStateRef.current.smsf.funds?.length > 0) {
-          globalStateRef.current.smsf.funds.forEach((smsfData) => {
+        if (globalStateRef.current.smsf_details?.length > 0) {
+          globalStateRef.current.smsf_details.forEach((smsfData) => {
             addEntry(smsfData);
           });
         }
 
-        const activeIdx = globalStateRef.current.smsf.activeIndex || 0;
+        const activeIdx = globalStateRef.current.activeIndex || 0;
         setActiveIndex(activeIdx);
         updatePills(activeIdx);
         showOnlyActiveEntry(activeIdx);
@@ -579,11 +575,14 @@ export default function FactFindSMSF() {
     if (!factFind?.id) return;
 
     try {
-      globalStateRef.current.smsf.funds = readTabToArray();
-      globalStateRef.current.smsf.activeIndex = activeIndex;
+      globalStateRef.current.smsf_details = readTabToArray();
+      globalStateRef.current.activeIndex = activeIndex;
 
       await base44.entities.FactFind.update(factFind.id, {
-        smsf: globalStateRef.current.smsf
+        smsf: {
+          smsf_details: globalStateRef.current.smsf_details,
+          activeIndex: globalStateRef.current.activeIndex
+        }
       });
     } catch (error) {
       console.error('Save failed:', error);
@@ -608,7 +607,10 @@ export default function FactFindSMSF() {
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        smsf: globalStateRef.current.smsf,
+        smsf: {
+          smsf_details: globalStateRef.current.smsf_details,
+          activeIndex: globalStateRef.current.activeIndex
+        },
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
