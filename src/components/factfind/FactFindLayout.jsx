@@ -79,6 +79,19 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
   const { navigationChain } = useRole();
   const [showDashboard, setShowDashboard] = useState(false);
 
+  const handleNavClick = async (e, targetPath) => {
+    e.preventDefault();
+    
+    // Trigger save event for current page
+    window.dispatchEvent(new CustomEvent('factfind-save-before-nav'));
+    
+    // Brief delay to let save complete
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Navigate to target
+    navigate(targetPath);
+  };
+
   const getCompletionForSection = (sectionId) => {
     if (!factFind) return 0;
     const completed = factFind.sections_completed || [];
@@ -127,6 +140,7 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
                      <Link
                        key={section.id}
                        to={createPageUrl(section.path) + (factFind?.id ? `?id=${factFind.id}` : '')}
+                       onClick={(e) => handleNavClick(e, createPageUrl(section.path) + (factFind?.id ? `?id=${factFind.id}` : ''))}
                        className={cn(
                          "flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all text-sm",
                          isActive 
