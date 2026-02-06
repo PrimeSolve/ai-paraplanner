@@ -93,6 +93,12 @@ export default function FactFindPersonal() {
     if (factFind?.personal) {
       // Load flat structure directly
       setClientData({ ...initialFormState, ...factFind.personal });
+      
+      // Load partner data if exists
+      if (factFind.personal.partner) {
+        setPartnerData({ ...initialFormState, ...factFind.personal.partner });
+        setHasPartner(true);
+      }
     }
   }, [factFind]);
 
@@ -100,10 +106,13 @@ export default function FactFindPersonal() {
   useEffect(() => {
     return () => {
       if (factFind?.id && clientData.first_name) {
-        updateSection('personal', { ...clientData });
+        updateSection('personal', { 
+          ...clientData,
+          partner: hasPartner ? partnerData : null
+        });
       }
     };
-  }, [factFind?.id, clientData, updateSection]);
+  }, [factFind?.id, clientData, partnerData, hasPartner, updateSection]);
 
   const handleSaveAndContinue = async () => {
     console.log('=== SAVE START ===');
@@ -126,17 +135,17 @@ export default function FactFindPersonal() {
 
     setSaving(true);
     try {
-      // Save flat structure - spread client fields directly
+      // Save flat structure - spread client fields directly, plus partner as nested object
       const personalData = {
-        ...clientData
-        // Note: Partner support to be added later
+        ...clientData,
+        partner: hasPartner ? partnerData : null
       };
       
       console.log('=== SAVING PERSONAL DATA ===');
       console.log('clientData:', clientData);
+      console.log('partnerData:', partnerData);
+      console.log('hasPartner:', hasPartner);
       console.log('personalData to save:', personalData);
-      console.log('living_status:', clientData.living_status);
-      console.log('resident_status:', clientData.resident_status);
 
       // Move to next sub-section or complete
       const currentIndex = subSections.findIndex(s => s.id === activeSubSection);
