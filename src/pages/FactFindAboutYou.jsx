@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
@@ -106,7 +106,29 @@ export default function FactFindPersonal() {
     }
   }, [factFind, dataLoaded]);
 
-  // No auto-save - only save on button click to avoid complexity
+  // Create refs to hold current data
+  const clientDataRef = useRef(clientData);
+  const partnerDataRef = useRef(partnerData);
+  const hasPartnerRef = useRef(hasPartner);
+
+  // Update refs whenever state changes (no re-render triggered)
+  useEffect(() => {
+    clientDataRef.current = clientData;
+    partnerDataRef.current = partnerData;
+    hasPartnerRef.current = hasPartner;
+  }, [clientData, partnerData, hasPartner]);
+
+  // Auto-save on unmount using refs (always has current values)
+  useEffect(() => {
+    return () => {
+      if (factFind?.id && clientDataRef.current.first_name) {
+        updateSection('personal', {
+          ...clientDataRef.current,
+          partner: hasPartnerRef.current ? partnerDataRef.current : null
+        });
+      }
+    };
+  }, [factFind?.id, updateSection]);
 
   const handleSaveAndContinue = async () => {
     console.log('=== SAVE START ===');
