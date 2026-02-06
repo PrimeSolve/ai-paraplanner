@@ -12,7 +12,7 @@ import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 export default function FactFindDependants() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('children');
@@ -306,6 +306,23 @@ export default function FactFindDependants() {
     loadUser();
   }, []);
 
+  // Listen for save-before-nav event from sidebar
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      if (factFind?.id) {
+        globalStateRef.current.dependants.children = readTabToArray('children');
+        globalStateRef.current.dependants.dependants_list = readTabToArray('dependants');
+        globalStateRef.current.dependants.currentTab = currentTab;
+        globalStateRef.current.dependants.activeIndex = activeIndex;
+        
+        await updateSection('dependants', globalStateRef.current.dependants);
+      }
+    };
+    
+    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+  }, [factFind?.id, currentTab, activeIndex, updateSection, readTabToArray]);
+
   // When FactFind loads, sync its dependants data
   useEffect(() => {
     if (factFind?.id && factFind.dependants) {
@@ -347,13 +364,11 @@ export default function FactFindDependants() {
       globalStateRef.current.dependants.currentTab = currentTab;
       globalStateRef.current.dependants.activeIndex = activeIndex;
 
-      await base44.entities.FactFind.update(factFind.id, {
-        dependants: globalStateRef.current.dependants
-      });
+      await updateSection('dependants', globalStateRef.current.dependants);
     } catch (error) {
       console.error('Save failed:', error);
     }
-  }, [factFind?.id, readTabToArray, currentTab, activeIndex]);
+  }, [factFind?.id, readTabToArray, currentTab, activeIndex, updateSection]);
 
   // ============================================
   // INITIALIZE DOM
@@ -410,8 +425,10 @@ export default function FactFindDependants() {
         sectionsCompleted.push('dependants');
       }
 
+      await updateSection('dependants', globalStateRef.current.dependants);
+      
+      // Update sections completed separately
       await base44.entities.FactFind.update(factFind.id, {
-        dependants: globalStateRef.current.dependants,
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
