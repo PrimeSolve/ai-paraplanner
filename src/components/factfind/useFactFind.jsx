@@ -106,11 +106,31 @@ export function useFactFind() {
 
     try {
       console.log(`Saving section "${sectionName}":`, data);
-      // Preserve all existing data when updating
-      await base44.entities.FactFind.update(factFind.id, {
-        ...factFind,  // Keep all existing data
+      
+      // FETCH CURRENT DATA FROM DATABASE (not local state)
+      const current = await base44.entities.FactFind.filter({ id: factFind.id });
+      const currentData = current[0];
+      
+      // Merge new data with current database data
+      const updatedData = {
+        ...currentData,
         [sectionName]: data
-      });
+      };
+      
+      // Remove any metadata fields that shouldn't be in the update
+      delete updatedData.id;
+      delete updatedData.created_date;
+      delete updatedData.updated_date;
+      delete updatedData.created_by;
+      delete updatedData.created_by_id;
+      delete updatedData.entity_name;
+      delete updatedData.app_id;
+      delete updatedData.is_sample;
+      delete updatedData.is_deleted;
+      delete updatedData.deleted_date;
+      delete updatedData.environment;
+      
+      await base44.entities.FactFind.update(factFind.id, updatedData);
       
       // Update local state
       setFactFind(prev => ({
@@ -124,7 +144,7 @@ export function useFactFind() {
       console.error(`Failed to save section "${sectionName}":`, err);
       return false;
     }
-  }, [factFind]);
+  }, [factFind?.id]);
 
   return {
     factFind,
