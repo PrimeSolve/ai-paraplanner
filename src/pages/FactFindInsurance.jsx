@@ -90,6 +90,24 @@ export default function FactFindInsurance() {
     }
   }, [factFind]);
 
+  // Save-before-nav listener
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      if (!factFind?.id) return;
+
+      try {
+        await base44.entities.FactFind.update(factFind.id, {
+          insurance: { activeIdx, policies }
+        });
+      } catch (error) {
+        console.error('Failed to save insurance before nav:', error);
+      }
+    };
+
+    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+  }, [factFind?.id, activeIdx, policies]);
+
 
 
   const addPolicy = () => {
