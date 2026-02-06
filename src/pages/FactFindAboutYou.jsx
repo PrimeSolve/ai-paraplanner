@@ -88,6 +88,22 @@ export default function FactFindPersonal() {
     loadUser();
   }, []);
 
+  // Listen for save-before-nav event from sidebar
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      if (factFind?.id) {
+        const personalData = {
+          ...clientData,
+          partner: hasPartner ? partnerData : null
+        };
+        await updateSection('personal', personalData);
+      }
+    };
+    
+    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+  }, [factFind?.id, clientData, partnerData, hasPartner, updateSection]);
+
   // Load existing data from FactFind when it's loaded
   const [dataLoaded, setDataLoaded] = useState(false);
   
