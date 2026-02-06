@@ -12,7 +12,7 @@ import { ArrowRight, ArrowLeft, Trash2 } from 'lucide-react';
 
 export default function FactFindTrusts() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('trust');
@@ -465,6 +465,26 @@ export default function FactFindTrusts() {
     loadUser();
   }, []);
 
+  // Listen for save-before-nav event from sidebar
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      if (factFind?.id) {
+        globalStateRef.current.trusts.trusts = readTabToArray('trust');
+        globalStateRef.current.trusts.companies = readTabToArray('company');
+        globalStateRef.current.trusts.currentTab = currentTab;
+        globalStateRef.current.trusts.activeIndex = {
+          trust: currentTab === 'trust' ? activeIndex : globalStateRef.current.trusts.activeIndex?.trust || 0,
+          company: currentTab === 'company' ? activeIndex : globalStateRef.current.trusts.activeIndex?.company || 0
+        };
+        
+        await updateSection('trusts_companies', globalStateRef.current.trusts);
+      }
+    };
+    
+    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+  }, [factFind?.id, currentTab, activeIndex, updateSection, readTabToArray]);
+
   useEffect(() => {
     if (factFind?.id && factFind.trusts_companies) {
       globalStateRef.current.trusts = {
@@ -491,13 +511,11 @@ export default function FactFindTrusts() {
         company: currentTab === 'company' ? activeIndex : globalStateRef.current.trusts.activeIndex?.company || 0
       };
 
-      await base44.entities.FactFind.update(factFind.id, {
-        trusts: globalStateRef.current.trusts
-      });
+      await updateSection('trusts_companies', globalStateRef.current.trusts);
     } catch (error) {
       console.error('Save failed:', error);
     }
-  }, [factFind?.id, readTabToArray, currentTab, activeIndex]);
+  }, [factFind?.id, readTabToArray, currentTab, activeIndex, updateSection]);
 
   // ============================================
   // INITIALIZE DOM
@@ -625,8 +643,10 @@ export default function FactFindTrusts() {
         sectionsCompleted.push('trusts');
       }
 
+      await updateSection('trusts_companies', globalStateRef.current.trusts);
+      
+      // Update sections completed separately
       await base44.entities.FactFind.update(factFind.id, {
-        trusts: globalStateRef.current.trusts,
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
