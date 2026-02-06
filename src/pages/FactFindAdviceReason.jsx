@@ -242,7 +242,9 @@ export default function FactFindAdviceReason() {
     protection: 'c1',
     products: 'c1'
   });
-  const [hasPartner, setHasPartner] = useState(false);
+
+  // Determine if partner exists from Personal section (read-only)
+  const hasPartner = factFind?.personal?.partner?.first_name ? true : false;
 
   const [reasons, setReasons] = useState([]);
   const [quick, setQuick] = useState({
@@ -264,12 +266,7 @@ export default function FactFindAdviceReason() {
     return { client: clientName, partner: partnerName };
   }, [factFind]);
 
-  // Check if partner exists
-  useEffect(() => {
-    if (factFind?.personal?.partner?.first_name) {
-      setHasPartner(true);
-    }
-  }, [factFind]);
+
 
   useEffect(() => {
     const loadUser = async () => {
@@ -291,6 +288,28 @@ export default function FactFindAdviceReason() {
       if (r.objectives) setObjectives(r.objectives);
     }
   }, [factFind]);
+
+  // Save-before-nav listener
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      if (!factFind?.id) return;
+
+      try {
+        await base44.entities.FactFind.update(factFind.id, {
+          advice_reason: {
+            reasons,
+            quick,
+            objectives
+          }
+        });
+      } catch (error) {
+        console.error('Failed to save advice_reason before nav:', error);
+      }
+    };
+
+    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+  }, [factFind?.id, reasons, quick, objectives]);
 
   const toggleReason = useCallback((value) => {
     setReasons(prev =>
@@ -375,7 +394,7 @@ export default function FactFindAdviceReason() {
     navigate(createPageUrl('FactFindSuperTax') + `?id=${factFind?.id || ''}`);
   };
 
-  if (loading) {
+  if (ffLoading) {
     return (
       <FactFindLayout currentSection="advice_reason" factFind={factFind}>
         <div className="flex items-center justify-center h-full">
