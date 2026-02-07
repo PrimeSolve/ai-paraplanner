@@ -76,6 +76,71 @@ export default function FactFindPersonal() {
   const formData = activeTab === 'client' ? clientData : partnerData;
   const setFormData = activeTab === 'client' ? setClientData : setPartnerData;
 
+  // Calculate completion percentage
+  const calculateCompletion = (clientData, partnerData, hasPartner) => {
+    const textFields = [
+      'first_name', 'last_name', 'date_of_birth', 'marital_status', 'living_status',
+      'address', 'suburb', 'state', 'country', 'postcode', 'mobile', 'email',
+      'health_issues',
+      'employment_status', 'occupation', 'hours_per_week', 'occupation_type', 
+      'annual_leave', 'sick_leave', 'long_service_leave', 'employer_name', 'employment_length',
+      'will_updated', 'power_of_attorney', 'benefit_type'
+    ];
+    
+    const radioFields = [
+      'gender', 'resident_status', 'health_status', 'smoker_status', 'health_insurance',
+      'has_will', 'testamentary_trust', 'centrelink_benefits', 'concession_cards'
+    ];
+    
+    const countFilled = (personData) => {
+      let filled = 0;
+      let total = 0;
+      
+      // Check conditional hiding
+      const empStatus = personData.employment_status;
+      const hideEmpFields = ['4', '6', '7'].includes(empStatus); // Home duties, Unemployed, Retired
+      
+      const clBenefits = personData.centrelink_benefits;
+      const hideCentrelinkFields = clBenefits === '2'; // No
+      
+      const conditionalEmpFields = ['occupation', 'hours_per_week', 'occupation_type', 'annual_leave', 'sick_leave', 'long_service_leave', 'employer_name', 'employment_length'];
+      const conditionalCentrelinkFields = ['benefit_type', 'concession_cards'];
+      
+      textFields.forEach(field => {
+        if (hideEmpFields && conditionalEmpFields.includes(field)) return;
+        if (hideCentrelinkFields && conditionalCentrelinkFields.includes(field)) return;
+        
+        total++;
+        if (personData[field] && personData[field].toString().trim() !== '') {
+          filled++;
+        }
+      });
+      
+      radioFields.forEach(field => {
+        if (hideCentrelinkFields && field === 'concession_cards') return;
+        
+        total++;
+        if (personData[field] && personData[field].toString().trim() !== '') {
+          filled++;
+        }
+      });
+      
+      return { filled, total };
+    };
+    
+    const clientCount = countFilled(clientData);
+    let totalFields = clientCount.total;
+    let filledFields = clientCount.filled;
+    
+    if (hasPartner) {
+      const partnerCount = countFilled(partnerData);
+      totalFields += partnerCount.total;
+      filledFields += partnerCount.filled;
+    }
+    
+    return totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
+  };
+
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -138,13 +203,15 @@ export default function FactFindPersonal() {
 
     setSaving(true);
     try {
+      // Calculate completion percentage
+      const completionPct = calculateCompletion(clientData, partnerData, hasPartner);
+      
       // Build the data object with ALL fields
       const personalData = {
         ...clientData,
-        partner: hasPartner ? partnerData : null
+        partner: hasPartner ? partnerData : null,
+        completionPct
       };
-      
-
 
       // Move to next sub-section or complete
       const currentIndex = subSections.findIndex(s => s.id === activeSubSection);

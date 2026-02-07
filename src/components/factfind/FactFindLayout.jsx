@@ -94,6 +94,13 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
 
   const getCompletionForSection = (sectionId) => {
     if (!factFind) return 0;
+    
+    // Check for section-specific completion percentage
+    if (sectionId === 'personal' && factFind.personal?.completionPct !== undefined) {
+      return factFind.personal.completionPct;
+    }
+    
+    // Fall back to binary completion
     const completed = factFind.sections_completed || [];
     return completed.includes(sectionId) ? 100 : 0;
   };
