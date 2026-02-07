@@ -268,9 +268,10 @@ export default function FactFindDependants() {
   // REMOVE ENTRY
   // ============================================
 
-  const removeEntry = useCallback((node, tab) => {
+  const removeEntry = useCallback(async (node, tab) => {
     node.remove();
     const wrap = wrapForTab(tab);
+    if (!wrap) return;
     const remaining = wrap.querySelectorAll('.entry').length;
     renumber(tab);
     
@@ -288,7 +289,17 @@ export default function FactFindDependants() {
     } else {
       setActiveIndex(0);
     }
-  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
+
+    // Save to database immediately
+    if (factFind?.id) {
+      globalStateRef.current.dependants.children = readTabToArray('children');
+      globalStateRef.current.dependants.dependants_list = readTabToArray('dependants');
+      globalStateRef.current.dependants.currentTab = currentTab;
+      globalStateRef.current.dependants.activeIndex = activeIndex;
+      
+      await updateSection('dependants', globalStateRef.current.dependants);
+    }
+  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills, factFind?.id, readTabToArray, currentTab, activeIndex, updateSection]);
 
   // ============================================
   // LOAD USER AND SYNC FACTFIND
