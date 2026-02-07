@@ -25,7 +25,7 @@ const subSections = [
 
 export default function FactFindPersonal() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading, updateSection, clientId } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection, clientId, clientEmail } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('client');
   const [activeSubSection, setActiveSubSection] = useState('basic');
@@ -329,13 +329,23 @@ export default function FactFindPersonal() {
       <button 
         onClick={async () => {
           try {
+            if (!clientEmail) {
+              alert('clientEmail is not available: ' + clientEmail);
+              return;
+            }
+            
             // 1. Show current Client data
             const clients = await base44.entities.Client.filter({ email: clientEmail });
+            if (clients.length === 0) {
+              alert('No client found with email: ' + clientEmail);
+              return;
+            }
             const client = clients[0];
             alert('Current Client: ' + JSON.stringify({
               id: client.id,
               first_name: client.first_name,
-              last_name: client.last_name
+              last_name: client.last_name,
+              email: client.email
             }));
             
             // 2. Try to update it
