@@ -463,13 +463,15 @@ export default function FactFindSMSF() {
   // ============================================
 
   const addEntry = useCallback((existingData = null) => {
-    if (smsfCount >= MAX_SMSF) {
+    const wrap = wrapForTab();
+    if (!wrap) return;
+
+    const currentCount = wrap.querySelectorAll('.entry').length;
+    
+    if (currentCount >= MAX_SMSF) {
       toast.error(`Maximum ${MAX_SMSF} SMSFs allowed`);
       return;
     }
-
-    const wrap = wrapForTab();
-    if (!wrap) return;
 
     const node = cloneTemplateDiv('smsfTemplate');
     if (!node) return;
@@ -486,9 +488,13 @@ export default function FactFindSMSF() {
 
     const newIndex = newCount - 1;
     setActiveIndex(newIndex);
-    updatePills(newIndex);
-    showOnlyActiveEntry(newIndex);
-  }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry, smsfCount]);
+    
+    // Use setTimeout to ensure state updates before showing entry
+    setTimeout(() => {
+      updatePills(newIndex);
+      showOnlyActiveEntry(newIndex);
+    }, 0);
+  }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry]);
 
   // ============================================
   // REMOVE ENTRY
