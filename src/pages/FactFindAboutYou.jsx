@@ -92,9 +92,10 @@ export default function FactFindPersonal() {
       'has_will', 'testamentary_trust', 'centrelink_benefits', 'concession_cards'
     ];
     
-    const countFilled = (personData) => {
+    const countFilled = (personData, personLabel) => {
       let filled = 0;
       let total = 0;
+      const missing = [];
       
       // Check conditional hiding
       const empStatus = personData.employment_status;
@@ -113,6 +114,8 @@ export default function FactFindPersonal() {
         total++;
         if (personData[field] && personData[field].toString().trim() !== '') {
           filled++;
+        } else {
+          missing.push(`${personLabel}: ${field}`);
         }
       });
       
@@ -122,21 +125,30 @@ export default function FactFindPersonal() {
         total++;
         if (personData[field] && personData[field].toString().trim() !== '') {
           filled++;
+        } else {
+          missing.push(`${personLabel}: ${field}`);
         }
       });
       
-      return { filled, total };
+      return { filled, total, missing };
     };
     
-    const clientCount = countFilled(clientData);
+    const clientCount = countFilled(clientData, 'Client');
     let totalFields = clientCount.total;
     let filledFields = clientCount.filled;
+    let allMissing = [...clientCount.missing];
     
     if (hasPartner) {
-      const partnerCount = countFilled(partnerData);
+      const partnerCount = countFilled(partnerData, 'Partner');
       totalFields += partnerCount.total;
       filledFields += partnerCount.filled;
+      allMissing = [...allMissing, ...partnerCount.missing];
     }
+    
+    console.log('=== PERSONAL COMPLETION DEBUG ===');
+    console.log(`Filled: ${filledFields} / Total: ${totalFields}`);
+    console.log('Missing fields:', allMissing);
+    console.log('Percentage:', totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0);
     
     return totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
   };
