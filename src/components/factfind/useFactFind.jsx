@@ -152,6 +152,7 @@ export function useFactFind() {
     error,
     updateSection,
     setFactFind,
-    clientEmail
+    clientEmail,
+    clientId: factFind?.client_id // Add clientId for syncing with Client entity
   };
 }
