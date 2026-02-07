@@ -532,10 +532,10 @@ export default function FactFindRiskProfile() {
                <button
                  key={tab.id}
                  onClick={() => setActiveTab(tab.id)}
-                 className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${
+                 className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
                    activeTab === tab.id
-                     ? 'bg-blue-600 text-white'
-                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                     ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                  }`}
                >
                  <span>{tab.icon}</span>
@@ -569,10 +569,10 @@ export default function FactFindRiskProfile() {
                       <button
                         onClick={() => setMode('calculate')}
                         className={cn(
-                          "px-4 py-2 rounded-lg text-sm font-bold border transition-all",
+                          "px-4 py-2 rounded-lg text-sm font-medium border transition-colors",
                           mode === 'calculate'
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
+                            ? "bg-blue-50 text-blue-700 border-blue-200"
+                            : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                         )}
                       >
                         Calculate
@@ -580,10 +580,10 @@ export default function FactFindRiskProfile() {
                       <button
                         onClick={() => setMode('specify')}
                         className={cn(
-                          "px-4 py-2 rounded-lg text-sm font-bold border transition-all",
+                          "px-4 py-2 rounded-lg text-sm font-medium border transition-colors",
                           mode === 'specify'
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
+                            ? "bg-blue-50 text-blue-700 border-blue-200"
+                            : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                         )}
                       >
                         Specify risk profile
@@ -605,10 +605,10 @@ export default function FactFindRiskProfile() {
                             key={owner}
                             onClick={() => setActiveOwner(owner)}
                             className={cn(
-                              "px-3 py-1.5 rounded-full text-xs font-bold border transition-all capitalize",
+                              "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors capitalize",
                               activeOwner === owner
-                                ? "bg-blue-600 text-white border-blue-600"
-                                : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
+                                ? "bg-blue-50 text-blue-700 border-blue-200"
+                                : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                             )}
                           >
                             {owner}

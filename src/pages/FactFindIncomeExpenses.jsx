@@ -277,20 +277,20 @@ export default function FactFindIncomeExpenses() {
            <div className="flex gap-2">
              <button
                onClick={() => setCurrentTab('inc')}
-               className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                  currentTab === 'inc'
-                   ? 'bg-blue-600 text-white'
-                   : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                   ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                }`}
              >
                Income
              </button>
              <button
                onClick={() => setCurrentTab('exp')}
-               className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                  currentTab === 'exp'
-                   ? 'bg-blue-600 text-white'
-                   : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                   ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                }`}
              >
                Expenses
@@ -307,10 +307,10 @@ export default function FactFindIncomeExpenses() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setActivePerson('c1')}
-                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                           activePerson === 'c1'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                       >
                         {getClientName()}
@@ -318,10 +318,10 @@ export default function FactFindIncomeExpenses() {
                       {hasPartner && (
                         <button
                           onClick={() => setActivePerson('c2')}
-                          className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                             activePerson === 'c2'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           }`}
                         >
                           {getPartnerName()}
@@ -490,10 +490,10 @@ export default function FactFindIncomeExpenses() {
                     <div className="text-6xl mb-6">📊</div>
                     <h3 className="text-2xl font-bold text-slate-900 mb-2">No income adjustments yet</h3>
                     <p className="text-slate-600 mb-8">Add future changes to income like salary increases, bonuses, career breaks, or parental leave.</p>
-                    <Button onClick={addIncomeAdjustment} className="bg-blue-600 hover:bg-blue-700 text-white">
-                      <Plus className="w-4 h-4 mr-2" />
+                    <button onClick={addIncomeAdjustment} className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors">
+                      <Plus className="w-4 h-4" />
                       Add First Adjustment
-                    </Button>
+                    </button>
                   </CardContent>
                 </Card>
               ) : (
@@ -622,10 +622,10 @@ export default function FactFindIncomeExpenses() {
                   )}
 
                   {!editingIncomeAdj && (
-                    <Button onClick={addIncomeAdjustment} className="bg-blue-600 hover:bg-blue-700 text-white w-full">
-                      <Plus className="w-4 h-4 mr-2" />
+                    <button onClick={addIncomeAdjustment} className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors w-full">
+                      <Plus className="w-4 h-4" />
                       Add Another Adjustment
-                    </Button>
+                    </button>
                   )}
                 </>
               )}
@@ -706,10 +706,10 @@ export default function FactFindIncomeExpenses() {
                     <div className="text-6xl mb-6">💰</div>
                     <h3 className="text-2xl font-bold text-slate-900 mb-2">No expense adjustments yet</h3>
                     <p className="text-slate-600 mb-8">Add future changes to expenses like major purchases, lifestyle changes, or planned reductions.</p>
-                    <Button onClick={addExpenseAdjustment} className="bg-blue-600 hover:bg-blue-700 text-white">
-                      <Plus className="w-4 h-4 mr-2" />
+                    <button onClick={addExpenseAdjustment} className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors">
+                      <Plus className="w-4 h-4" />
                       Add First Adjustment
-                    </Button>
+                    </button>
                   </CardContent>
                 </Card>
               ) : (
@@ -841,10 +841,10 @@ export default function FactFindIncomeExpenses() {
                   )}
 
                   {!editingExpenseAdj && (
-                    <Button onClick={addExpenseAdjustment} className="bg-blue-600 hover:bg-blue-700 text-white w-full">
-                      <Plus className="w-4 h-4 mr-2" />
+                    <button onClick={addExpenseAdjustment} className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors w-full">
+                      <Plus className="w-4 h-4" />
                       Add Another Adjustment
-                    </Button>
+                    </button>
                   )}
                 </>
               )}

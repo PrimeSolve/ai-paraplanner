@@ -424,10 +424,10 @@ export default function FactFindAdviceReason() {
                <button
                  key={tab.id}
                  onClick={() => setCurrentTab(tab.id)}
-                 className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${
+                 className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
                    currentTab === tab.id
-                     ? 'bg-blue-600 text-white'
-                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                     ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                  }`}
                >
                  <span>{tab.icon}</span>
@@ -485,10 +485,10 @@ export default function FactFindAdviceReason() {
                         key={tab.id}
                         onClick={() => setObjectiveSubTab(tab.id)}
                         className={cn(
-                          "px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2",
+                          "px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2",
                           objectiveSubTab === tab.id
-                            ? "bg-blue-600 text-white"
-                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            ? "bg-blue-50 text-blue-700 border border-blue-200"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         )}
                       >
                         <span>{tab.icon}</span>
@@ -508,10 +508,10 @@ export default function FactFindAdviceReason() {
                         <button
                           onClick={() => setActivePerson({ ...activePerson, retirement: 'c1' })}
                           className={cn(
-                            "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                            "px-4 py-2 rounded-full text-sm font-medium transition-colors",
                             activePerson.retirement === 'c1'
-                              ? "bg-blue-600 text-white"
-                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                              ? "bg-blue-50 text-blue-700 border border-blue-200"
+                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                           )}
                         >
                           {principalNames.client}
@@ -520,10 +520,10 @@ export default function FactFindAdviceReason() {
                           <button
                             onClick={() => setActivePerson({ ...activePerson, retirement: 'c2' })}
                             className={cn(
-                              "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                              "px-4 py-2 rounded-full text-sm font-medium transition-colors",
                               activePerson.retirement === 'c2'
-                                ? "bg-blue-600 text-white"
-                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                             )}
                           >
                             {principalNames.partner}
@@ -605,10 +605,10 @@ export default function FactFindAdviceReason() {
                         <button
                           onClick={() => setActivePerson({ ...activePerson, estate: 'c1' })}
                           className={cn(
-                            "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                            "px-4 py-2 rounded-full text-sm font-medium transition-colors",
                             activePerson.estate === 'c1'
-                              ? "bg-blue-600 text-white"
-                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                              ? "bg-blue-50 text-blue-700 border border-blue-200"
+                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                           )}
                         >
                           {principalNames.client}
@@ -617,10 +617,10 @@ export default function FactFindAdviceReason() {
                           <button
                             onClick={() => setActivePerson({ ...activePerson, estate: 'c2' })}
                             className={cn(
-                              "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                              "px-4 py-2 rounded-full text-sm font-medium transition-colors",
                               activePerson.estate === 'c2'
-                                ? "bg-blue-600 text-white"
-                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                             )}
                           >
                             {principalNames.partner}
@@ -714,10 +714,10 @@ export default function FactFindAdviceReason() {
                         <button
                           onClick={() => setActivePerson({ ...activePerson, protection: 'c1' })}
                           className={cn(
-                            "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                            "px-4 py-2 rounded-full text-sm font-medium transition-colors",
                             activePerson.protection === 'c1'
-                              ? "bg-blue-600 text-white"
-                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                              ? "bg-blue-50 text-blue-700 border border-blue-200"
+                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                           )}
                         >
                           {principalNames.client}
@@ -726,10 +726,10 @@ export default function FactFindAdviceReason() {
                           <button
                             onClick={() => setActivePerson({ ...activePerson, protection: 'c2' })}
                             className={cn(
-                              "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                              "px-4 py-2 rounded-full text-sm font-medium transition-colors",
                               activePerson.protection === 'c2'
-                                ? "bg-blue-600 text-white"
-                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                             )}
                           >
                             {principalNames.partner}
@@ -785,10 +785,10 @@ export default function FactFindAdviceReason() {
                         <button
                           onClick={() => setActivePerson({ ...activePerson, products: 'c1' })}
                           className={cn(
-                            "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                            "px-4 py-2 rounded-full text-sm font-medium transition-colors",
                             activePerson.products === 'c1'
-                              ? "bg-blue-600 text-white"
-                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                              ? "bg-blue-50 text-blue-700 border border-blue-200"
+                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                           )}
                         >
                           {principalNames.client}
@@ -797,10 +797,10 @@ export default function FactFindAdviceReason() {
                           <button
                             onClick={() => setActivePerson({ ...activePerson, products: 'c2' })}
                             className={cn(
-                              "px-4 py-2 rounded-full text-sm font-bold transition-all",
+                              "px-4 py-2 rounded-full text-sm font-medium transition-colors",
                               activePerson.products === 'c2'
-                                ? "bg-blue-600 text-white"
-                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                             )}
                           >
                             {principalNames.partner}
@@ -863,13 +863,13 @@ export default function FactFindAdviceReason() {
                         <p className="text-sm text-slate-600 mb-6">
                           Start by adding your first financial objective to track your goals
                         </p>
-                        <Button
+                        <button
                           onClick={addObjective}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors"
                         >
-                          <Plus className="w-4 h-4 mr-2" />
+                          <Plus className="w-4 h-4" />
                           Add First Objective
-                        </Button>
+                        </button>
                       </CardContent>
                     </Card>
                   ) : (
@@ -1116,10 +1116,10 @@ export default function FactFindAdviceReason() {
                       )}
 
                       {/* Add Button */}
-                      <Button onClick={addObjective} className="bg-blue-600 hover:bg-blue-700 text-white w-full">
-                        <Plus className="w-4 h-4 mr-2" />
+                      <button onClick={addObjective} className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors w-full">
+                        <Plus className="w-4 h-4" />
                         Add Another Objective
-                      </Button>
+                      </button>
                     </>
                   )}
                 </>

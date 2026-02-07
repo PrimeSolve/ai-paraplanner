@@ -220,20 +220,20 @@ export default function FactFindAssetsLiabilities() {
            <div className="flex gap-2">
              <button
                onClick={() => setCurrentTab('assets')}
-               className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                  currentTab === 'assets'
-                   ? 'bg-blue-600 text-white'
-                   : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                   ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                }`}
              >
                Assets
              </button>
              <button
                onClick={() => setCurrentTab('debts')}
-               className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                  currentTab === 'debts'
-                   ? 'bg-blue-600 text-white'
-                   : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                   ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                }`}
              >
                Liabilities
@@ -249,10 +249,10 @@ export default function FactFindAssetsLiabilities() {
                     <div className="text-6xl mb-6">🏠</div>
                     <h3 className="text-2xl font-bold text-slate-900 mb-2">Do you have any assets?</h3>
                     <p className="text-slate-600 mb-8">Add details about your property, vehicles, investments, cash, and other assets.</p>
-                    <Button onClick={addAsset} className="bg-blue-600 hover:bg-blue-700 text-white">
-                      <Plus className="w-4 h-4 mr-2" />
+                    <button onClick={addAsset} className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors">
+                      <Plus className="w-4 h-4" />
                       Add First Asset
-                    </Button>
+                    </button>
                   </CardContent>
                 </Card>
               ) : (
@@ -394,10 +394,10 @@ export default function FactFindAssetsLiabilities() {
                   )}
 
                   {/* ADD BUTTON */}
-                  <Button onClick={addAsset} className="bg-blue-600 hover:bg-blue-700 text-white w-full">
-                    <Plus className="w-4 h-4 mr-2" />
+                  <button onClick={addAsset} className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors w-full">
+                    <Plus className="w-4 h-4" />
                     Add Another Asset
-                  </Button>
+                  </button>
                 </>
               )}
             </>
@@ -410,10 +410,10 @@ export default function FactFindAssetsLiabilities() {
                     <div className="text-6xl mb-6">💳</div>
                     <h3 className="text-2xl font-bold text-slate-900 mb-2">Do you have any debts or liabilities?</h3>
                     <p className="text-slate-600 mb-8">Add details about your loans, mortgages, credit cards, and other debts.</p>
-                    <Button onClick={addDebt} className="bg-blue-600 hover:bg-blue-700 text-white">
-                      <Plus className="w-4 h-4 mr-2" />
+                    <button onClick={addDebt} className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors">
+                      <Plus className="w-4 h-4" />
                       Add First Liability
-                    </Button>
+                    </button>
                   </CardContent>
                 </Card>
               ) : (
@@ -604,10 +604,10 @@ export default function FactFindAssetsLiabilities() {
                   )}
 
                   {/* ADD BUTTON */}
-                  <Button onClick={addDebt} className="bg-blue-600 hover:bg-blue-700 text-white w-full">
-                    <Plus className="w-4 h-4 mr-2" />
+                  <button onClick={addDebt} className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors w-full">
+                    <Plus className="w-4 h-4" />
                     Add Another Liability
-                  </Button>
+                  </button>
                 </>
               )}
             </>
