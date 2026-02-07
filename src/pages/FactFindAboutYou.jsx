@@ -187,6 +187,28 @@ export default function FactFindPersonal() {
     }
   }, [factFind, dataLoaded]);
 
+  // Auto-save completion percentage whenever data changes
+  useEffect(() => {
+    if (!factFind?.id || !dataLoaded) return;
+    
+    const saveCompletion = async () => {
+      const completionPct = calculateCompletion(clientData, partnerData, hasPartner);
+      
+      // Only update if percentage changed
+      if (completionPct !== factFind.personal?.completionPct) {
+        await updateSection('personal', {
+          ...clientData,
+          partner: hasPartner ? partnerData : null,
+          completionPct
+        });
+      }
+    };
+    
+    // Debounce to avoid too many saves
+    const timeoutId = setTimeout(saveCompletion, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [clientData, partnerData, hasPartner, dataLoaded, factFind?.id]);
+
   const handleSaveAndContinue = async () => {
     if (!factFind?.id) {
       toast.error('Unable to save data');
