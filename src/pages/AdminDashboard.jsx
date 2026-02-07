@@ -123,6 +123,23 @@ export default function AdminDashboard() {
         </div>
         <div className="flex items-center gap-3">
           <MockTestMode />
+          <button 
+            onClick={async () => {
+              try {
+                await base44.entities.Client.update('697a1a328c8a715a90fc6c02', {
+                  first_name: 'First',
+                  last_name: 'Client', 
+                  email: 'firstclient@hotmail'
+                });
+                alert('Client restored! Refresh the page.');
+              } catch (err) {
+                alert('ERROR: ' + err.message);
+              }
+            }}
+            style={{ background: 'green', color: 'white', padding: '10px 16px', fontSize: '14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
+          >
+            🔧 Restore Client
+          </button>
         </div>
       </div>
 
