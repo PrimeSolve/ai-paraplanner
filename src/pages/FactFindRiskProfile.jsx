@@ -364,6 +364,32 @@ export default function FactFindRiskProfile() {
     }
   }, [factFind]);
 
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      if (factFind?.id) {
+        try {
+          await base44.entities.FactFind.update(factFind.id, {
+            risk_profile: {
+              currentPerson: activeOwner,
+              currentTab: activeTab,
+              mode,
+              adjustRisk,
+              client: clientData,
+              partner: partnerData,
+              otherInfo,
+              completionPct: 0
+            }
+          });
+        } catch (error) {
+          console.error('Failed to save risk profile before nav:', error);
+        }
+      }
+    };
+    
+    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+  }, [factFind?.id, activeOwner, activeTab, mode, adjustRisk, clientData, partnerData, otherInfo]);
+
   const currentData = activeOwner === 'client' ? clientData : partnerData;
   const setCurrentData = activeOwner === 'client' ? setClientData : setPartnerData;
 
