@@ -25,7 +25,7 @@ const subSections = [
 
 export default function FactFindPersonal() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading, updateSection } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection, clientId } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('client');
   const [activeSubSection, setActiveSubSection] = useState('basic');
@@ -174,12 +174,20 @@ export default function FactFindPersonal() {
           partner: hasPartner ? partnerData : null
         };
         await updateSection('personal', personalData);
+        
+        // Sync client name to Client entity for breadcrumb
+        if (clientId && clientData.first_name && clientData.last_name) {
+          await base44.entities.Client.update(clientId, {
+            first_name: clientData.first_name,
+            last_name: clientData.last_name
+          });
+        }
       }
     };
     
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, clientData, partnerData, hasPartner, updateSection]);
+  }, [factFind?.id, clientData, partnerData, hasPartner, updateSection, clientId]);
 
   // Load existing data from FactFind when it's loaded
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -254,18 +262,27 @@ export default function FactFindPersonal() {
         completionPct
       };
 
+      // 1. Save to FactFind
+      const result = await updateSection('personal', personalData);
+      
+      // 2. Sync client name to Client entity (for breadcrumb)
+      if (clientId && clientData.first_name && clientData.last_name) {
+        await base44.entities.Client.update(clientId, {
+          first_name: clientData.first_name,
+          last_name: clientData.last_name
+        });
+      }
+
       // Move to next sub-section or complete
       const currentIndex = subSections.findIndex(s => s.id === activeSubSection);
       
       if (currentIndex < subSections.length - 1) {
-        const result = await updateSection('personal', personalData);
         if (result) {
           setActiveSubSection(subSections[currentIndex + 1].id);
           setActiveTab('client');
           toast.success('Progress saved');
         }
       } else {
-        await updateSection('personal', personalData);
         navigate(createPageUrl('FactFindDependants') + `?id=${factFind.id}`);
       }
     } catch (error) {
