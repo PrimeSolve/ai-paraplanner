@@ -353,6 +353,39 @@ export default function FactFindPersonal() {
         RESTORE CLIENT
       </button>
 
+      {/* DEBUG BUTTON - TEST NAME SYNC */}
+      <button 
+        onClick={async () => {
+          try {
+            // 1. Get current client
+            const clients = await base44.entities.Client.filter({ email: 'firstclient@hotmail' });
+            if (clients.length === 0) {
+              alert('No client found');
+              return;
+            }
+            const client = clients[0];
+            alert('Before: ' + client.first_name + ' ' + client.last_name);
+            
+            // 2. Update ONLY the name fields (no spread!)
+            await base44.entities.Client.update(client.id, {
+              first_name: 'Jake',
+              last_name: 'Jones'
+            });
+            
+            // 3. Verify
+            const afterClients = await base44.entities.Client.filter({ email: 'firstclient@hotmail' });
+            const after = afterClients[0];
+            alert('After: ' + after.first_name + ' ' + after.last_name);
+            
+          } catch (err) {
+            alert('ERROR: ' + err.message);
+          }
+        }}
+        style={{ background: 'blue', color: 'white', padding: '10px', margin: '10px' }}
+      >
+        TEST NAME SYNC
+      </button>
+
       {/* DEBUG BUTTON - TEMPORARY */}
       <button 
         onClick={async () => {
