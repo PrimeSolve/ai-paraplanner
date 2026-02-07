@@ -325,6 +325,41 @@ export default function FactFindPersonal() {
 
   return (
     <FactFindLayout currentSection="personal" factFind={factFind}>
+      {/* DEBUG BUTTON - TEMPORARY */}
+      <button 
+        onClick={async () => {
+          try {
+            // 1. Show current Client data
+            const clients = await base44.entities.Client.filter({ email: clientEmail });
+            const client = clients[0];
+            alert('Current Client: ' + JSON.stringify({
+              id: client.id,
+              first_name: client.first_name,
+              last_name: client.last_name
+            }));
+            
+            // 2. Try to update it
+            await base44.entities.Client.update(client.id, {
+              first_name: 'TEST_NAME',
+              last_name: 'TEST_LAST'
+            });
+            
+            // 3. Fetch again to verify
+            const after = await base44.entities.Client.get(client.id);
+            alert('After update: ' + JSON.stringify({
+              first_name: after.first_name,
+              last_name: after.last_name
+            }));
+            
+          } catch (err) {
+            alert('ERROR: ' + err.message);
+          }
+        }}
+        style={{ background: 'red', color: 'white', padding: '10px', margin: '10px' }}
+      >
+        TEST CLIENT UPDATE
+      </button>
+
       <FactFindHeader
         title="Personal Details"
         description="Please provide basic information about you and your partner."
