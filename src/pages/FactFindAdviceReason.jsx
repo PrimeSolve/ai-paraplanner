@@ -256,8 +256,8 @@ export default function FactFindAdviceReason() {
 
   // Get principal names
   const principalNames = useMemo(() => {
-    const clientName = factFind?.personal?.client?.first_name
-      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name || ''}`.trim()
+    const clientName = factFind?.personal?.first_name
+      ? `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim()
       : 'Client';
     const partnerName = factFind?.personal?.partner?.first_name
       ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim()

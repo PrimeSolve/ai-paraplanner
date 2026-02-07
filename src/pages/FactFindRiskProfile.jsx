@@ -496,35 +496,7 @@ export default function FactFindRiskProfile() {
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
         <div className="w-full space-y-4">
            {/* Test Button for Risk Profile Save */}
-           <button 
-             onClick={async () => {
-               try {
-                 const current = await base44.entities.FactFind.get('6985256223a391fa4355b0f3');
-                 alert('Current risk_profile: ' + JSON.stringify(current.risk_profile));
-                 
-                 const testData = {
-                   client: { 
-                     answers: { q1: 'test' }, 
-                     score: 50, 
-                     profile: 'balanced' 
-                   }
-                 };
-                 
-                 await base44.entities.FactFind.update('6985256223a391fa4355b0f3', {
-                   risk_profile: testData
-                 });
-                 
-                 const after = await base44.entities.FactFind.get('6985256223a391fa4355b0f3');
-                 alert('After save risk_profile: ' + JSON.stringify(after.risk_profile));
-                 
-               } catch (err) {
-                 alert('ERROR: ' + err.message);
-               }
-             }}
-             style={{ background: 'red', color: 'white', padding: '10px', margin: '10px' }}
-           >
-             TEST RISK PROFILE SAVE
-           </button>
+
 
            {/* Tabs - Part of form content */}
            <div className="flex gap-2">

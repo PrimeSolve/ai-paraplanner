@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
@@ -33,18 +33,14 @@ export default function FactFindIncomeExpenses() {
   // Determine if partner exists from Personal section (read-only)
   const hasPartner = factFind?.personal?.partner?.first_name ? true : false;
   
-  const getClientName = useCallback(() => {
-    if (factFind?.personal?.client?.first_name) {
-      return `${factFind.personal.client.first_name} ${factFind.personal.client.last_name || ''}`.trim();
-    }
-    return 'Client';
-  }, [factFind]);
-
-  const getPartnerName = useCallback(() => {
-    if (factFind?.personal?.partner?.first_name) {
-      return `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim();
-    }
-    return 'Partner';
+  const principalNames = useMemo(() => {
+    const clientName = factFind?.personal?.first_name
+      ? `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim()
+      : 'Client';
+    const partnerName = factFind?.personal?.partner?.first_name
+      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim()
+      : 'Partner';
+    return { client: clientName, partner: partnerName };
   }, [factFind]);
 
   useEffect(() => {
@@ -313,7 +309,7 @@ export default function FactFindIncomeExpenses() {
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                       >
-                        {getClientName()}
+                        {principalNames.client}
                       </button>
                       {hasPartner && (
                         <button
@@ -324,7 +320,7 @@ export default function FactFindIncomeExpenses() {
                               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           }`}
                         >
-                          {getPartnerName()}
+                          {principalNames.partner}
                         </button>
                       )}
                     </div>

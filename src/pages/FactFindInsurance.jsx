@@ -41,8 +41,8 @@ export default function FactFindInsurance() {
     if (!factFind) return [];
     const opts = [];
 
-    const clientName = factFind?.personal?.client?.first_name
-      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name || ''}`.trim()
+    const clientName = factFind?.personal?.first_name
+      ? `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim()
       : null;
     const partnerName = factFind?.personal?.partner?.first_name
       ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim()
