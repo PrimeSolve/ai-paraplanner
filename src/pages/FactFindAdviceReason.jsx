@@ -461,9 +461,9 @@ export default function FactFindAdviceReason() {
                             className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 p-1 rounded transition-colors"
                           >
                             <Checkbox
-                              checked={reasons.includes(item.value)}
-                              onCheckedChange={() => toggleReason(item.value)}
-                              className="h-[18px] w-[18px]"
+                             checked={reasons.includes(item.value)}
+                             onCheckedChange={() => toggleReason(item.value)}
+                             className="h-[18px] w-[18px] border-2 border-slate-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                             />
                             <span className="text-sm text-slate-700">{item.label}</span>
                           </label>
@@ -749,8 +749,9 @@ export default function FactFindAdviceReason() {
                         {PROTECTION_CHECKBOXES.map((item) => (
                           <label key={item.field} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer">
                             <Checkbox
-                              checked={quick[personKey][`${prefix}${item.field.replace('ins_', 'ins_')}`] === item.value}
-                              onCheckedChange={(checked) => updateQuick(personKey, `${prefix}${item.field.replace('ins_', 'ins_')}`, checked ? item.value : '')}
+                             checked={quick[personKey][`${prefix}${item.field.replace('ins_', 'ins_')}`] === item.value}
+                             onCheckedChange={(checked) => updateQuick(personKey, `${prefix}${item.field.replace('ins_', 'ins_')}`, checked ? item.value : '')}
+                             className="h-[18px] w-[18px] border-2 border-slate-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                             />
                             <span className="text-sm text-slate-700">{item.label}</span>
                           </label>
@@ -820,8 +821,9 @@ export default function FactFindAdviceReason() {
                           {SUPER_FEATURES.map((item) => (
                             <label key={item.field} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer">
                               <Checkbox
-                                checked={quick[personKey][`${prefix}${item.field.replace('super_', 'super_')}`] === item.value}
-                                onCheckedChange={(checked) => updateQuick(personKey, `${prefix}${item.field.replace('super_', 'super_')}`, checked ? item.value : '')}
+                               checked={quick[personKey][`${prefix}${item.field.replace('super_', 'super_')}`] === item.value}
+                               onCheckedChange={(checked) => updateQuick(personKey, `${prefix}${item.field.replace('super_', 'super_')}`, checked ? item.value : '')}
+                               className="h-[18px] w-[18px] border-2 border-slate-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                               />
                               <span className="text-sm text-slate-700">{item.label}</span>
                             </label>
