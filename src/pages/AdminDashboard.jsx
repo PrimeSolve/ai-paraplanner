@@ -126,6 +126,34 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Test Button for Super Tax Save */}
+      <button 
+        onClick={async () => {
+          try {
+            const current = await base44.entities.FactFind.get('6985256223a391fa4355b0f3');
+            alert('Current super_tax: ' + JSON.stringify(current.super_tax));
+            
+            const testData = {
+              client: { test_field: 'TEST_VALUE' },
+              partner: null
+            };
+            
+            await base44.entities.FactFind.update('6985256223a391fa4355b0f3', {
+              super_tax: testData
+            });
+            
+            const after = await base44.entities.FactFind.get('6985256223a391fa4355b0f3');
+            alert('After save super_tax: ' + JSON.stringify(after.super_tax));
+            
+          } catch (err) {
+            alert('ERROR: ' + err.message);
+          }
+        }}
+        style={{ background: 'red', color: 'white', padding: '10px', margin: '10px' }}
+      >
+        TEST SUPER TAX SAVE
+      </button>
+
          {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           {/* Total Advice Groups */}
