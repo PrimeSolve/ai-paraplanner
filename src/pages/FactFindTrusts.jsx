@@ -262,11 +262,9 @@ export default function FactFindTrusts() {
     const row = document.createElement('tr');
     row.className = 'benef-row border-b border-slate-100 hover:bg-purple-50/50';
 
-    console.log('createBeneficiaryRow - entityList:', entityList);
-    
-    const entityOptions = entityList
-      .map(entity => `<option value="${entity.id}">${entity.label} (${entity.type})</option>`)
-      .join('');
+    const entityOptions = entityList && entityList.length > 0
+      ? entityList.map(entity => `<option value="${entity.id}">${entity.label} (${entity.type})</option>`).join('')
+      : '';
 
     row.innerHTML = `
       <td class="py-2 px-2">
@@ -311,11 +309,9 @@ export default function FactFindTrusts() {
     const row = document.createElement('tr');
     row.className = 'sh-row border-b border-slate-100 hover:bg-orange-50/50';
 
-    console.log('createShareholderRow - entityList:', entityList);
-    
-    const entityOptions = entityList
-      .map(entity => `<option value="${entity.id}">${entity.label} (${entity.type})</option>`)
-      .join('');
+    const entityOptions = entityList && entityList.length > 0
+      ? entityList.map(entity => `<option value="${entity.id}">${entity.label} (${entity.type})</option>`).join('')
+      : '';
 
     row.innerHTML = `
       <td class="py-2 px-2">
