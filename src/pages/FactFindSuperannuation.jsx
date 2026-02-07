@@ -519,9 +519,10 @@ export default function FactFindSuperannuation() {
     showOnlyActiveEntry(tab, newIndex);
   }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry]);
 
-  const removeEntry = useCallback((node, tab) => {
+  const removeEntry = useCallback(async (node, tab) => {
     node.remove();
     const wrap = wrapForTab(tab);
+    if (!wrap) return;
     const remaining = wrap.querySelectorAll('.entry').length;
     renumber(tab);
 
@@ -541,7 +542,30 @@ export default function FactFindSuperannuation() {
     } else {
       setActiveIndex(0);
     }
-  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
+
+    // Save to database immediately
+    if (factFind?.id) {
+      const superFunds = readTabToArray('super').map(a => ({ ...a, account_type: 'super' }));
+      const pensions = readTabToArray('pension').map(a => ({ ...a, account_type: 'pension' }));
+      const annuities = readTabToArray('annuities').map(a => ({ ...a, account_type: 'annuity' }));
+      
+      globalStateRef.current.super_accounts = [...superFunds, ...pensions, ...annuities];
+      globalStateRef.current.currentTab = tab;
+      globalStateRef.current.activeIdx = {
+        super: tab === 'super' ? (remaining > 0 ? Math.max(0, remaining - 1) : 0) : globalStateRef.current.activeIdx?.super || 0,
+        pension: tab === 'pension' ? (remaining > 0 ? Math.max(0, remaining - 1) : 0) : globalStateRef.current.activeIdx?.pension || 0,
+        annuities: tab === 'annuities' ? (remaining > 0 ? Math.max(0, remaining - 1) : 0) : globalStateRef.current.activeIdx?.annuities || 0
+      };
+
+      await base44.entities.FactFind.update(factFind.id, {
+        superannuation: {
+          super_accounts: globalStateRef.current.super_accounts,
+          currentTab: globalStateRef.current.currentTab,
+          activeIdx: globalStateRef.current.activeIdx
+        }
+      });
+    }
+  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills, factFind?.id, readTabToArray]);
 
   useEffect(() => {
     const loadUser = async () => {
