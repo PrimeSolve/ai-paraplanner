@@ -135,8 +135,9 @@ export default function FactFindInsurance() {
       pol_freq: '',
       pol_structure: ''
     };
-    setPolicies(prev => [...prev, newPolicy]);
-    setActiveIdx(policies.length);
+    const newPolicies = [...policies, newPolicy];
+    setPolicies(newPolicies);
+    setActiveIdx(newPolicies.length - 1);
   };
 
   const removePolicy = () => {

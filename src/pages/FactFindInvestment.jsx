@@ -256,8 +256,12 @@ export default function FactFindInvestment() {
 
     const newIndex = newCount - 1;
     setActiveIndex(newIndex);
-    updatePills(tab, newIndex);
-    showOnlyActiveEntry(tab, newIndex);
+    
+    // Use setTimeout to ensure state updates before showing entry
+    setTimeout(() => {
+      updatePills(tab, newIndex);
+      showOnlyActiveEntry(tab, newIndex);
+    }, 0);
   }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry]);
 
   const removeEntry = useCallback(async (node, tab) => {
