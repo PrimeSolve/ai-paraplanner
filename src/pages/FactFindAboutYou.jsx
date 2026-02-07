@@ -325,26 +325,26 @@ export default function FactFindPersonal() {
 
   return (
     <FactFindLayout currentSection="personal" factFind={factFind}>
-      {/* DEBUG BUTTON - LIST ALL CLIENTS */}
+      {/* DEBUG BUTTON - RESTORE CLIENT DATA */}
       <button 
         onClick={async () => {
           try {
-            // 1. Try to get ALL clients to see what exists
-            const allClients = await base44.entities.Client.list();
-            alert('Total clients: ' + allClients.length + '\n\nFirst 3: ' + JSON.stringify(allClients.slice(0, 3).map(c => ({
-              id: c.id,
-              first_name: c.first_name,
-              last_name: c.last_name,
-              email: c.email
-            })), null, 2));
+            await base44.entities.Client.update('697a1a328c8a715a90fc6c02', {
+              first_name: 'First',
+              last_name: 'Client',
+              email: 'firstclient@hotmail'
+            });
+            
+            const after = await base44.entities.Client.filter({ email: 'firstclient@hotmail' });
+            alert('Restored: ' + JSON.stringify(after[0]));
             
           } catch (err) {
             alert('ERROR: ' + err.message);
           }
         }}
-        style={{ background: 'orange', color: 'white', padding: '10px', margin: '10px' }}
+        style={{ background: 'green', color: 'white', padding: '10px', margin: '10px' }}
       >
-        LIST ALL CLIENTS
+        RESTORE CLIENT DATA
       </button>
 
       {/* DEBUG BUTTON - TEMPORARY */}
