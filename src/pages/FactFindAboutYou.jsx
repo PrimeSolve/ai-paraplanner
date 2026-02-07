@@ -201,13 +201,20 @@ export default function FactFindPersonal() {
 
   // Auto-save completion percentage whenever data changes
   useEffect(() => {
-    if (!factFind?.id || !dataLoaded) return;
+    if (!factFind?.id || !dataLoaded) {
+      console.log('Skipping completion calc:', { hasFactFind: !!factFind?.id, dataLoaded });
+      return;
+    }
     
     const saveCompletion = async () => {
       const completionPct = calculateCompletion(clientData, partnerData, hasPartner);
       
+      console.log('Current completionPct in factFind:', factFind.personal?.completionPct);
+      console.log('New calculated completionPct:', completionPct);
+      
       // Only update if percentage changed
       if (completionPct !== factFind.personal?.completionPct) {
+        console.log('Updating completionPct from', factFind.personal?.completionPct, 'to', completionPct);
         await updateSection('personal', {
           ...clientData,
           partner: hasPartner ? partnerData : null,
@@ -219,7 +226,7 @@ export default function FactFindPersonal() {
     // Debounce to avoid too many saves
     const timeoutId = setTimeout(saveCompletion, 1000);
     return () => clearTimeout(timeoutId);
-  }, [clientData, partnerData, hasPartner, dataLoaded, factFind?.id]);
+  }, [clientData, partnerData, hasPartner, dataLoaded, factFind?.id, factFind?.personal?.completionPct]);
 
   const handleSaveAndContinue = async () => {
     if (!factFind?.id) {
