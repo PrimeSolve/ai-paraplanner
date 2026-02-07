@@ -14,6 +14,7 @@ import { ArrowRight, ArrowLeft, Trash2, Plus, Landmark, UserPlus, Building } fro
 export default function FactFindTrusts() {
   const navigate = useNavigate();
   const { factFind, loading: ffLoading, updateSection } = useFactFind();
+  const entityList = useFactFindEntities(factFind);
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('trust');
@@ -257,12 +258,12 @@ export default function FactFindTrusts() {
   // CREATE BENEFICIARY ROW
   // ============================================
 
-  const entityList = useFactFindEntities(factFind);
-
   const createBeneficiaryRow = useCallback((card, data = {}) => {
     const row = document.createElement('tr');
     row.className = 'benef-row border-b border-slate-100 hover:bg-purple-50/50';
 
+    console.log('createBeneficiaryRow - entityList:', entityList);
+    
     const entityOptions = entityList
       .map(entity => `<option value="${entity.id}">${entity.label} (${entity.type})</option>`)
       .join('');
@@ -310,6 +311,8 @@ export default function FactFindTrusts() {
     const row = document.createElement('tr');
     row.className = 'sh-row border-b border-slate-100 hover:bg-orange-50/50';
 
+    console.log('createShareholderRow - entityList:', entityList);
+    
     const entityOptions = entityList
       .map(entity => `<option value="${entity.id}">${entity.label} (${entity.type})</option>`)
       .join('');
