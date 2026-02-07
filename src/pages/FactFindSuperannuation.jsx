@@ -8,7 +8,7 @@ import { useFactFind } from '@/components/factfind/useFactFind';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, Plus, Landmark, DollarSign, Wallet, UserPlus, BarChart3 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Plus, Landmark, DollarSign, Wallet, UserPlus, BarChart3, Settings } from 'lucide-react';
 
 export default function FactFindSuperannuation() {
   const navigate = useNavigate();
@@ -1196,7 +1196,6 @@ export default function FactFindSuperannuation() {
               </div>
               <div className="mt-4"><label className="block text-sm font-semibold text-slate-700 mb-2">Reversionary?</label><label className="flex items-center gap-2"><input type="radio" name="a_rev__1" value="1" className="w-4 h-4" /><span className="text-sm">Yes</span></label><label className="flex items-center gap-2"><input type="radio" name="a_rev__1" value="2" className="w-4 h-4" /><span className="text-sm">No</span></label></div>
             </div>
-          </div>
           </div>
         </div>
       </div>
