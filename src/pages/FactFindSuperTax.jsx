@@ -34,7 +34,7 @@ const EMPTY_TAX = {
 
 export default function FactFindSuperTax() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading } = useFactFind();
+  const { factFind, updateSection, loading: ffLoading } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   
@@ -91,30 +91,22 @@ export default function FactFindSuperTax() {
     }
   }, [factFind]);
 
-  // Auto-save on any changes
-  const autoSave = useCallback(async () => {
-    if (!factFind?.id) return;
-
-    try {
-      await base44.entities.FactFind.update(factFind.id, {
-        super_tax: {
+  // Save-before-nav listener
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      if (factFind?.id) {
+        await updateSection('super_tax', {
           currentTab,
           activePerson,
           client: data.client,
           partner: data.partner
-        }
-      });
-    } catch (error) {
-      console.error('Failed to auto-save super_tax:', error);
-    }
-  }, [factFind?.id, currentTab, activePerson, data]);
+        });
+      }
+    };
 
-  // Save-before-nav listener
-  useEffect(() => {
-    const handleSaveBeforeNav = autoSave;
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [autoSave]);
+  }, [factFind?.id, currentTab, activePerson, data, updateSection]);
 
   // Get current person key
   const personKey = activePerson === 'c1' ? 'client' : 'partner';
@@ -154,21 +146,24 @@ export default function FactFindSuperTax() {
 
     setSaving(true);
     try {
+      // Save current section data
+      await updateSection('super_tax', {
+        currentTab,
+        activePerson,
+        client: data.client,
+        partner: data.partner
+      });
+
+      // Mark section as complete
       const sectionsCompleted = [...(factFind.sections_completed || [])];
       if (!sectionsCompleted.includes('super_tax')) {
         sectionsCompleted.push('super_tax');
+        
+        await base44.entities.FactFind.update(factFind.id, {
+          sections_completed: sectionsCompleted,
+          completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
+        });
       }
-
-      await base44.entities.FactFind.update(factFind.id, {
-       super_tax: {
-         currentTab,
-         activePerson,
-         client: data.client,
-         partner: data.partner
-       },
-       sections_completed: sectionsCompleted,
-       completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
-      });
 
       navigate(createPageUrl('FactFindAdviceReason') + `?id=${factFind.id}`);
     } catch (error) {
