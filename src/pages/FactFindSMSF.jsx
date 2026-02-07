@@ -138,10 +138,10 @@ export default function FactFindSMSF() {
       const nameInput = card.querySelector('input[name="smsf_name"]');
       const displayName = nameInput?.value?.trim() || `SMSF ${i + 1}`;
 
-      pill.className = `px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+      pill.className = `px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
         isActive
-          ? 'bg-blue-600 text-white shadow-md'
-          : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+          ? 'bg-white border-blue-500 text-blue-700 shadow-sm'
+          : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
       }`;
       pill.textContent = displayName;
 
@@ -867,7 +867,7 @@ export default function FactFindSMSF() {
                 </div>
 
                 {/* Add button - only show if accounts exist */}
-                <button type="button" className="add-acct hidden inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <button type="button" className="add-acct hidden inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                   <Plus className="w-4 h-4" />
                   Add Account
                 </button>
@@ -911,7 +911,7 @@ export default function FactFindSMSF() {
                 </div>
 
                 {/* Add button - only show if beneficiaries exist */}
-                <button type="button" className="add-benef hidden inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <button type="button" className="add-benef hidden inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                   <Plus className="w-4 h-4" />
                   Add Beneficiary
                 </button>
@@ -937,25 +937,26 @@ export default function FactFindSMSF() {
               <p className="text-gray-500 mb-6 max-w-md mx-auto">
                 Add details about your SMSF, including accounts, balances, and beneficiaries.
               </p>
-              <Button
+              <button
                 onClick={() => addEntry()}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors"
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="w-4 h-4" />
                 Add First SMSF
-              </Button>
+              </button>
             </div>
           ) : (
             <>
-              {/* Pills Navigation */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                <div id="smsfPills" className="flex gap-2" />
+              {/* Pills Navigation - SEPARATED: Items left, Add right */}
+              <div className="flex items-center justify-between mb-4">
+                <div id="smsfPills" className="flex items-center gap-2" />
                 {smsfCount < MAX_SMSF && (
                   <button
                     onClick={() => addEntry()}
-                    className="ml-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0 shadow-sm"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors"
                   >
-                    + Add SMSF
+                    <Plus className="w-4 h-4" />
+                    Add SMSF
                   </button>
                 )}
               </div>

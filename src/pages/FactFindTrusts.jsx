@@ -146,10 +146,10 @@ export default function FactFindTrusts() {
         displayName = nameInput?.value?.trim() || `Company ${i + 1}`;
       }
 
-      pill.className = `px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+      pill.className = `px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
         isActive
-          ? 'bg-blue-600 text-white shadow-md'
-          : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+          ? 'bg-white border-blue-500 text-blue-700 shadow-sm'
+          : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
       }`;
       pill.textContent = displayName;
 
@@ -812,7 +812,7 @@ export default function FactFindTrusts() {
                   </div>
 
                   {/* Add button */}
-                  <button type="button" className="add-benef inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  <button type="button" className="add-benef inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                     <Plus className="w-4 h-4" />
                     Add Beneficiary
                   </button>
@@ -944,7 +944,7 @@ export default function FactFindTrusts() {
                 </div>
 
                 {/* Add button */}
-                <button type="button" className="add-shareholder inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <button type="button" className="add-shareholder inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                   <Plus className="w-4 h-4" />
                   Add Shareholder
                 </button>
@@ -968,7 +968,7 @@ export default function FactFindTrusts() {
               }}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 currentTab === 'trust'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -982,7 +982,7 @@ export default function FactFindTrusts() {
               }}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 currentTab === 'company'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -1007,24 +1007,25 @@ export default function FactFindTrusts() {
                   ? 'Add details about family trusts, unit trusts, or other trust structures you control.'
                   : 'Add details about private companies, Pty Ltd structures, or corporate entities you own.'}
               </p>
-              <Button
+              <button
                 onClick={() => addEntry(currentTab)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors"
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="w-4 h-4" />
                 Add First {currentTab === 'trust' ? 'Trust' : 'Company'}
-              </Button>
+              </button>
             </div>
           ) : (
             <>
-              {/* Pills Navigation */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                <div id={currentTab === 'trust' ? 'trustPills' : 'companyPills'} className="flex gap-2" />
+              {/* Pills Navigation - SEPARATED: Items left, Add right */}
+              <div className="flex items-center justify-between mb-4">
+                <div id={currentTab === 'trust' ? 'trustPills' : 'companyPills'} className="flex items-center gap-2" />
                 <button
                   onClick={() => addEntry(currentTab)}
-                  className="ml-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0 shadow-sm"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors"
                 >
-                  + Add {currentTab === 'trust' ? 'Trust' : 'Company'}
+                  <Plus className="w-4 h-4" />
+                  Add {currentTab === 'trust' ? 'Trust' : 'Company'}
                 </button>
               </div>
             </>

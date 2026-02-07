@@ -105,10 +105,10 @@ export default function FactFindInvestment() {
         displayName = tab === 'wrap' ? `Wrap ${i + 1}` : `Bond ${i + 1}`;
       }
 
-      pill.className = `px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+      pill.className = `px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
         isActive
-          ? 'bg-blue-600 text-white shadow-md'
-          : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+          ? 'bg-white border-blue-500 text-blue-700 shadow-sm'
+          : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
       }`;
       pill.textContent = displayName;
 
@@ -621,7 +621,7 @@ export default function FactFindInvestment() {
               }}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 currentTab === 'wrap'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -635,7 +635,7 @@ export default function FactFindInvestment() {
               }}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 currentTab === 'bonds'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -657,23 +657,24 @@ export default function FactFindInvestment() {
                   ? 'Add details about your investment platform accounts and portfolios.'
                   : 'Add details about your investment bond accounts and contributions.'}
               </p>
-              <Button
+              <button
                 onClick={() => addEntry(currentTab)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors"
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="w-4 h-4" />
                 Add First {currentTab === 'wrap' ? 'Wrap / Mastertrust' : 'Investment Bond'}
-              </Button>
+              </button>
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                <div id={currentTab === 'wrap' ? 'wrapPills' : 'bondsPills'} className="flex gap-2" />
+              <div className="flex items-center justify-between mb-4">
+                <div id={currentTab === 'wrap' ? 'wrapPills' : 'bondsPills'} className="flex items-center gap-2" />
                 <button
                   onClick={() => addEntry(currentTab)}
-                  className="ml-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0 shadow-sm"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors"
                 >
-                  + Add {currentTab === 'wrap' ? 'Wrap' : 'Bond'}
+                  <Plus className="w-4 h-4" />
+                  Add {currentTab === 'wrap' ? 'Wrap' : 'Bond'}
                 </button>
               </div>
             </>

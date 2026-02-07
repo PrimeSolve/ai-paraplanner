@@ -139,10 +139,10 @@ export default function FactFindSuperannuation() {
         displayName = tab === 'super' ? `Super ${i + 1}` : tab === 'pension' ? `Pension ${i + 1}` : `Annuity ${i + 1}`;
       }
 
-      pill.className = `px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+      pill.className = `px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
         isActive
-          ? 'bg-blue-600 text-white shadow-md'
-          : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+          ? 'bg-white border-blue-500 text-blue-700 shadow-sm'
+          : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
       }`;
       pill.textContent = displayName;
 
@@ -918,7 +918,10 @@ export default function FactFindSuperannuation() {
                 </div>
                 <div className="benef-list-empty text-center py-4">
                   <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
-                  <button type="button" className="add-first-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First Beneficiary</button>
+                  <button type="button" className="add-first-benef inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                    <Plus className="w-4 h-4" />
+                    Add First Beneficiary
+                  </button>
                 </div>
                 <button type="button" className="add-benef hidden inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                   <Plus className="w-4 h-4" />
@@ -945,7 +948,10 @@ export default function FactFindSuperannuation() {
                 </div>
                 <div className="portfolio-list-empty text-center py-4">
                   <p className="text-sm text-slate-600 mb-3">No portfolio assets added yet</p>
-                  <button type="button" className="add-first-portfolio px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First Asset</button>
+                  <button type="button" className="add-first-portfolio inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                    <Plus className="w-4 h-4" />
+                    Add First Asset
+                  </button>
                 </div>
                 <button type="button" className="add-portfolio hidden inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                   <Plus className="w-4 h-4" />
@@ -1213,7 +1219,7 @@ export default function FactFindSuperannuation() {
               }}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 currentTab === 'super'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -1227,7 +1233,7 @@ export default function FactFindSuperannuation() {
               }}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 currentTab === 'pension'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -1241,7 +1247,7 @@ export default function FactFindSuperannuation() {
               }}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 currentTab === 'annuities'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -1264,15 +1270,18 @@ export default function FactFindSuperannuation() {
                  currentTab === 'pension' ? 'Add details about your pension accounts and income streams.' :
                  'Add details about your annuity products and payment structures.'}
               </p>
-              <Button onClick={() => addEntry(currentTab)} className="bg-blue-600 hover:bg-blue-700 text-white">
-                <Plus className="w-4 h-4 mr-2" />
+              <button onClick={() => addEntry(currentTab)} className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors">
+                <Plus className="w-4 h-4" />
                 Add First {tabLabels[currentTab]}
-              </Button>
+              </button>
             </div>
           ) : (
-            <div className="flex items-center gap-2 overflow-x-auto pb-2">
-              <div id={currentTab === 'super' ? 'superPills' : currentTab === 'pension' ? 'pensionPills' : 'annuitiesPills'} className="flex gap-2" />
-              <button onClick={() => addEntry(currentTab)} className="ml-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex-shrink-0">+ Add {tabLabels[currentTab]}</button>
+            <div className="flex items-center justify-between mb-4">
+              <div id={currentTab === 'super' ? 'superPills' : currentTab === 'pension' ? 'pensionPills' : 'annuitiesPills'} className="flex items-center gap-2" />
+              <button onClick={() => addEntry(currentTab)} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors">
+                <Plus className="w-4 h-4" />
+                Add {tabLabels[currentTab]}
+              </button>
             </div>
           )}
 

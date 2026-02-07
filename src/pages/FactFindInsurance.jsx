@@ -223,47 +223,42 @@ export default function FactFindInsurance() {
               <p className="text-gray-500 mb-6 max-w-md mx-auto">
                 Add details about your life, TPD, trauma, income protection, and other insurance coverage.
               </p>
-              <Button onClick={addPolicy} className="bg-blue-600 hover:bg-blue-700 text-white">
-                <Plus className="w-4 h-4 mr-2" />
+              <button onClick={addPolicy} className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors">
+                <Plus className="w-4 h-4" />
                 Add First Policy
-              </Button>
+              </button>
             </div>
           ) : (
             <>
-              {/* PILL NAVIGATION */}
-              <Card className="border-slate-200 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {policies.map((pol, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setActiveIdx(idx)}
-                          className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
-                            activeIdx === idx
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                          }`}
-                        >
-                          {pol.pol_name || `Policy ${idx + 1}`}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button onClick={addPolicy} size="sm" className="bg-green-600 hover:bg-green-700 text-white">
-                        <Plus className="w-3 h-3 mr-1" />
-                        Add
-                      </Button>
-                      {policies.length > 0 && (
-                        <Button onClick={removePolicy} size="sm" variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">
-                          <Trash2 className="w-3 h-3 mr-1" />
-                          Remove
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* PILL NAVIGATION - SEPARATED: Items left, Add/Remove right */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {policies.map((pol, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveIdx(idx)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                        activeIdx === idx
+                          ? 'bg-white border-blue-500 text-blue-700 shadow-sm'
+                          : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      {pol.pol_name || `Policy ${idx + 1}`}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={addPolicy} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors">
+                    <Plus className="w-4 h-4" />
+                    Add Policy
+                  </button>
+                  {policies.length > 0 && (
+                    <button onClick={removePolicy} className="text-red-500 hover:text-red-700 text-sm font-medium transition-colors px-3 py-2">
+                      Remove
+                    </button>
+                  )}
+                </div>
+              </div>
 
               {/* POLICY EDITOR */}
               <Card className="border-slate-200 shadow-sm">
