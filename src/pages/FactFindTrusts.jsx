@@ -308,16 +308,20 @@ export default function FactFindTrusts() {
     `;
 
     const removeBtn = row.querySelector('.remove-benef');
-    removeBtn.onclick = (e) => {
-      e.preventDefault();
-      row.remove();
-    };
+    if (removeBtn) {
+      removeBtn.onclick = (e) => {
+        e.preventDefault();
+        row.remove();
+      };
+    }
 
     if (data?.benef_entity) {
-      row.querySelector('select[name="benef_entity"]').value = data.benef_entity;
+      const el = row.querySelector('select[name="benef_entity"]');
+      if (el) el.value = data.benef_entity;
     }
     if (data?.benef_entitlement) {
-      row.querySelector('input[name="benef_entitlement"]').value = data.benef_entitlement;
+      const el = row.querySelector('input[name="benef_entitlement"]');
+      if (el) el.value = data.benef_entitlement;
     }
 
     return row;
@@ -379,16 +383,20 @@ export default function FactFindTrusts() {
     `;
 
     const removeBtn = row.querySelector('.remove-sh');
-    removeBtn.onclick = (e) => {
-      e.preventDefault();
-      row.remove();
-    };
+    if (removeBtn) {
+      removeBtn.onclick = (e) => {
+        e.preventDefault();
+        row.remove();
+      };
+    }
 
     if (data?.sh_entity) {
-      row.querySelector('select[name="sh_entity"]').value = data.sh_entity;
+      const el = row.querySelector('select[name="sh_entity"]');
+      if (el) el.value = data.sh_entity;
     }
     if (data?.sh_pct) {
-      row.querySelector('input[name="sh_pct"]').value = data.sh_pct;
+      const el = row.querySelector('input[name="sh_pct"]');
+      if (el) el.value = data.sh_pct;
     }
 
     return row;
@@ -430,9 +438,10 @@ export default function FactFindTrusts() {
   // REMOVE ENTRY
   // ============================================
 
-  const removeEntry = useCallback((node, tab) => {
+  const removeEntry = useCallback(async (node, tab) => {
     node.remove();
     const wrap = wrapForTab(tab);
+    if (!wrap) return;
     const remaining = wrap.querySelectorAll('.entry').length;
     renumber(tab);
 
@@ -450,7 +459,26 @@ export default function FactFindTrusts() {
     } else {
       setActiveIndex(0);
     }
-  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
+
+    // Save to database immediately
+    if (factFind?.id) {
+      const trustEntities = readTabToArray('trust');
+      const companyEntities = readTabToArray('company');
+      
+      globalStateRef.current.entities = [...trustEntities, ...companyEntities];
+      globalStateRef.current.currentTab = currentTab;
+      globalStateRef.current.activeIndex = {
+        trust: currentTab === 'trust' ? activeIndex : globalStateRef.current.activeIndex?.trust || 0,
+        company: currentTab === 'company' ? activeIndex : globalStateRef.current.activeIndex?.company || 0
+      };
+      
+      await updateSection('trusts_companies', {
+        entities: globalStateRef.current.entities,
+        currentTab: globalStateRef.current.currentTab,
+        activeIndex: globalStateRef.current.activeIndex
+      });
+    }
+  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills, factFind?.id, readTabToArray, currentTab, activeIndex, updateSection]);
 
   // ============================================
   // LOAD USER AND SYNC FACTFIND
