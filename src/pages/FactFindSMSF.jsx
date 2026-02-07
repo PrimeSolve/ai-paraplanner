@@ -307,19 +307,45 @@ export default function FactFindSMSF() {
    `;
 
    const removeBtn = row.querySelector('.remove-acct');
-   removeBtn.onclick = (e) => {
-     e.preventDefault();
-     row.remove();
-   };
+   if (removeBtn) {
+     removeBtn.onclick = (e) => {
+       e.preventDefault();
+       row.remove();
+     };
+   }
 
-   if (data?.acct_owner) row.querySelector('select[name="acct_owner"]').value = data.acct_owner;
-   if (data?.tax_env) row.querySelector('select[name="tax_env"]').value = data.tax_env;
-   if (data?.tax_free_amt) row.querySelector('input[name="tax_free_amt"]').value = data.tax_free_amt;
-   if (data?.tax_free_pct) row.querySelector('input[name="tax_free_pct"]').value = data.tax_free_pct;
-   if (data?.unp_amt) row.querySelector('input[name="unp_amt"]').value = data.unp_amt;
-   if (data?.super_guarantee) row.querySelector('select[name="super_guarantee"]').value = data.super_guarantee;
-   if (data?.salary_sacrifice) row.querySelector('input[name="salary_sacrifice"]').value = data.salary_sacrifice;
-   if (data?.after_tax) row.querySelector('input[name="after_tax"]').value = data.after_tax;
+   if (data?.acct_owner) {
+     const el = row.querySelector('select[name="acct_owner"]');
+     if (el) el.value = data.acct_owner;
+   }
+   if (data?.tax_env) {
+     const el = row.querySelector('select[name="tax_env"]');
+     if (el) el.value = data.tax_env;
+   }
+   if (data?.tax_free_amt) {
+     const el = row.querySelector('input[name="tax_free_amt"]');
+     if (el) el.value = data.tax_free_amt;
+   }
+   if (data?.tax_free_pct) {
+     const el = row.querySelector('input[name="tax_free_pct"]');
+     if (el) el.value = data.tax_free_pct;
+   }
+   if (data?.unp_amt) {
+     const el = row.querySelector('input[name="unp_amt"]');
+     if (el) el.value = data.unp_amt;
+   }
+   if (data?.super_guarantee) {
+     const el = row.querySelector('select[name="super_guarantee"]');
+     if (el) el.value = data.super_guarantee;
+   }
+   if (data?.salary_sacrifice) {
+     const el = row.querySelector('input[name="salary_sacrifice"]');
+     if (el) el.value = data.salary_sacrifice;
+   }
+   if (data?.after_tax) {
+     const el = row.querySelector('input[name="after_tax"]');
+     if (el) el.value = data.after_tax;
+   }
 
    return row;
   }, [factFind]);
@@ -379,15 +405,29 @@ export default function FactFindSMSF() {
     `;
 
     const removeBtn = row.querySelector('.remove-benef');
-    removeBtn.onclick = (e) => {
-      e.preventDefault();
-      row.remove();
-    };
+    if (removeBtn) {
+      removeBtn.onclick = (e) => {
+        e.preventDefault();
+        row.remove();
+      };
+    }
 
-    if (data?.benef_account) row.querySelector('select[name="benef_account"]').value = data.benef_account;
-    if (data?.benef_who) row.querySelector('select[name="benef_who"]').value = data.benef_who;
-    if (data?.benef_type) row.querySelector('select[name="benef_type"]').value = data.benef_type;
-    if (data?.benef_entitlement) row.querySelector('input[name="benef_entitlement"]').value = data.benef_entitlement;
+    if (data?.benef_account) {
+      const el = row.querySelector('select[name="benef_account"]');
+      if (el) el.value = data.benef_account;
+    }
+    if (data?.benef_who) {
+      const el = row.querySelector('select[name="benef_who"]');
+      if (el) el.value = data.benef_who;
+    }
+    if (data?.benef_type) {
+      const el = row.querySelector('select[name="benef_type"]');
+      if (el) el.value = data.benef_type;
+    }
+    if (data?.benef_entitlement) {
+      const el = row.querySelector('input[name="benef_entitlement"]');
+      if (el) el.value = data.benef_entitlement;
+    }
 
     return row;
   }, [factFind]);
