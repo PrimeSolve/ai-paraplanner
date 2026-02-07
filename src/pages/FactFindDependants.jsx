@@ -8,7 +8,7 @@ import { useFactFind } from '../components/factfind/useFactFind';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Plus } from 'lucide-react';
 
 export default function FactFindDependants() {
   const navigate = useNavigate();
@@ -191,10 +191,10 @@ export default function FactFindDependants() {
           : `Dependant ${i + 1}`;
       }
 
-      pill.className = `px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+      pill.className = `px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
         isActive
-          ? 'bg-blue-600 text-white shadow-md'
-          : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
+          ? 'bg-white border-blue-500 text-blue-700 shadow-sm'
+          : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
       }`;
       pill.textContent = displayName;
 
@@ -260,8 +260,12 @@ export default function FactFindDependants() {
 
     const newIndex = newCount - 1;
     setActiveIndex(newIndex);
-    updatePills(tab, newIndex);
-    showOnlyActiveEntry(tab, newIndex);
+    
+    // Use setTimeout to ensure state updates before showing entry
+    setTimeout(() => {
+      updatePills(tab, newIndex);
+      showOnlyActiveEntry(tab, newIndex);
+    }, 0);
   }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry]);
 
   // ============================================
@@ -610,7 +614,7 @@ export default function FactFindDependants() {
              }}
              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                currentTab === 'children'
-                 ? 'bg-blue-600 text-white'
+                 ? 'bg-blue-50 text-blue-700 border border-blue-200'
                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
              }`}
            >
@@ -624,7 +628,7 @@ export default function FactFindDependants() {
              }}
              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                currentTab === 'dependants'
-                 ? 'bg-blue-600 text-white'
+                 ? 'bg-blue-50 text-blue-700 border border-blue-200'
                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
              }`}
            >
@@ -650,23 +654,25 @@ export default function FactFindDependants() {
                   ? 'Add information about your children to help us understand your family situation better.'
                   : 'Add information about your dependants so we can factor them into your financial plan.'}
               </p>
-              <Button
+              <button
                 onClick={() => addEntry(currentTab)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors"
               >
+                <Plus className="w-4 h-4" />
                 Add {currentTab === 'children' ? 'child' : 'dependant'}
-              </Button>
+              </button>
             </div>
           ) : (
             <>
-              {/* Pills Navigation */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                <div id={currentTab === 'children' ? 'childPills' : 'dependantPills'} className="flex gap-2" />
+              {/* Pills Navigation - SEPARATED: Items left, Add right */}
+              <div className="flex items-center justify-between mb-4">
+                <div id={currentTab === 'children' ? 'childPills' : 'dependantPills'} className="flex items-center gap-2" />
                 <button
                   onClick={() => addEntry(currentTab)}
-                  className="ml-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0 shadow-sm"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors"
                 >
-                  + Add {currentTab === 'children' ? 'Child' : 'Dependant'}
+                  <Plus className="w-4 h-4" />
+                  Add {currentTab === 'children' ? 'Child' : 'Dependant'}
                 </button>
               </div>
             </>

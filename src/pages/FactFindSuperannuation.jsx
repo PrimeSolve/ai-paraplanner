@@ -1084,7 +1084,10 @@ export default function FactFindSuperannuation() {
                 </div>
                 <div className="benef-list-empty text-center py-4">
                   <p className="text-sm text-slate-600 mb-3">No beneficiaries added</p>
-                  <button type="button" className="add-first-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First</button>
+                  <button type="button" className="add-first-benef inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                    <Plus className="w-4 h-4" />
+                    Add First
+                  </button>
                 </div>
                 <button type="button" className="add-benef hidden inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                   <Plus className="w-4 h-4" />
@@ -1110,7 +1113,10 @@ export default function FactFindSuperannuation() {
                 </div>
                 <div className="portfolio-list-empty text-center py-4">
                   <p className="text-sm text-slate-600 mb-3">No assets added</p>
-                  <button type="button" className="add-first-portfolio px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First</button>
+                  <button type="button" className="add-first-portfolio inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                    <Plus className="w-4 h-4" />
+                    Add First
+                  </button>
                 </div>
                 <button type="button" className="add-portfolio hidden inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                   <Plus className="w-4 h-4" />

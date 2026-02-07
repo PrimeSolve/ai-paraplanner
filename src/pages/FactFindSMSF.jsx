@@ -863,7 +863,10 @@ export default function FactFindSMSF() {
                 {/* Empty state */}
                 <div className="acct-list-empty text-center py-6">
                   <p className="text-sm text-slate-600 mb-3">No accounts added yet</p>
-                  <button type="button" className="add-first-acct px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First Account</button>
+                  <button type="button" className="add-first-acct inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                    <Plus className="w-4 h-4" />
+                    Add First Account
+                  </button>
                 </div>
 
                 {/* Add button - only show if accounts exist */}
@@ -907,7 +910,10 @@ export default function FactFindSMSF() {
                 {/* Empty state */}
                 <div className="benef-list-empty text-center py-6">
                   <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
-                  <button type="button" className="add-first-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First Beneficiary</button>
+                  <button type="button" className="add-first-benef inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                    <Plus className="w-4 h-4" />
+                    Add First Beneficiary
+                  </button>
                 </div>
 
                 {/* Add button - only show if beneficiaries exist */}
