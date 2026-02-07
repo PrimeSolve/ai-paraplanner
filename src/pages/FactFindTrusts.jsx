@@ -8,7 +8,7 @@ import { useFactFind } from '../components/factfind/useFactFind';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, Trash2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Trash2, Plus } from 'lucide-react';
 
 export default function FactFindTrusts() {
   const navigate = useNavigate();
@@ -957,23 +957,24 @@ export default function FactFindTrusts() {
 
           {/* Welcome Screen */}
           {(currentTab === 'trust' ? trustsCount : companiesCount) === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <div className="text-5xl mb-6">
+            <div className="border border-gray-200 rounded-lg p-12 text-center bg-white">
+              <div className="text-5xl mb-4">
                 {currentTab === 'trust' ? '🏛️' : '🏢'}
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 {currentTab === 'trust' ? 'Do you have any trusts?' : 'Do you have any companies?'}
               </h3>
-              <p className="text-slate-600 text-center mb-8 max-w-md">
+              <p className="text-gray-500 mb-6 max-w-md mx-auto">
                 {currentTab === 'trust'
-                  ? 'Add details about family trusts, unit trusts, or other trust structures.'
-                  : 'Add details about private companies, Pty Ltd structures, or corporate entities.'}
+                  ? 'Add details about family trusts, unit trusts, or other trust structures you control.'
+                  : 'Add details about private companies, Pty Ltd structures, or corporate entities you own.'}
               </p>
               <Button
                 onClick={() => addEntry(currentTab)}
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
-                Add {currentTab === 'trust' ? 'Trust' : 'Company'}
+                <Plus className="w-4 h-4 mr-2" />
+                Add First {currentTab === 'trust' ? 'Trust' : 'Company'}
               </Button>
             </div>
           ) : (

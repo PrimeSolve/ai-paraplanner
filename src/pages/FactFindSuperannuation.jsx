@@ -8,7 +8,7 @@ import { useFactFind } from '@/components/factfind/useFactFind';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Plus } from 'lucide-react';
 
 export default function FactFindSuperannuation() {
   const navigate = useNavigate();
@@ -1158,10 +1158,20 @@ export default function FactFindSuperannuation() {
           <div id="annuitiesWrap" style={{ display: currentTab === 'annuities' ? 'block' : 'none' }} className="space-y-4" />
 
           {currentCount === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <div className="text-5xl mb-6">{currentTab === 'super' ? '🏦' : currentTab === 'pension' ? '🕰️' : '📈'}</div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Do you have any {tabLabels[currentTab].toLowerCase()}?</h3>
-              <Button onClick={() => addEntry(currentTab)} className="bg-blue-600 hover:bg-blue-700 text-white mt-4">+ Add {tabLabels[currentTab]}</Button>
+            <div className="border border-gray-200 rounded-lg p-12 text-center bg-white">
+              <div className="text-5xl mb-4">{currentTab === 'super' ? '🏦' : currentTab === 'pension' ? '🕰️' : '📈'}</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Do you have any {tabLabels[currentTab].toLowerCase()}?
+              </h3>
+              <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                {currentTab === 'super' ? 'Add details about your superannuation funds, balances, and contributions.' : 
+                 currentTab === 'pension' ? 'Add details about your pension accounts and income streams.' :
+                 'Add details about your annuity products and payment structures.'}
+              </p>
+              <Button onClick={() => addEntry(currentTab)} className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Plus className="w-4 h-4 mr-2" />
+                Add First {tabLabels[currentTab]}
+              </Button>
             </div>
           ) : (
             <div className="flex items-center gap-2 overflow-x-auto pb-2">

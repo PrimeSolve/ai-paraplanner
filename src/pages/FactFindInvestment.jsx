@@ -8,7 +8,7 @@ import { useFactFind } from '@/components/factfind/useFactFind';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Plus } from 'lucide-react';
 
 export default function FactFindInvestment() {
   const navigate = useNavigate();
@@ -643,21 +643,22 @@ export default function FactFindInvestment() {
           <div id="bondsWrap" style={{ display: currentTab === 'bonds' ? 'block' : 'none' }} className="space-y-4" />
 
           {currentCount === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <div className="text-5xl mb-6">{currentTab === 'wrap' ? '📊' : '💰'}</div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">
+            <div className="border border-gray-200 rounded-lg p-12 text-center bg-white">
+              <div className="text-5xl mb-4">{currentTab === 'wrap' ? '📊' : '💰'}</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 Do you have any {currentTab === 'wrap' ? 'Wrap or Mastertrust accounts?' : 'Investment bonds?'}
               </h3>
-              <p className="text-slate-600 text-center mb-8 max-w-md">
+              <p className="text-gray-500 mb-6 max-w-md mx-auto">
                 {currentTab === 'wrap'
                   ? 'Add details about your investment platform accounts and portfolios.'
                   : 'Add details about your investment bond accounts and contributions.'}
               </p>
               <Button
                 onClick={() => addEntry(currentTab)}
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
-                + Add {currentTab === 'wrap' ? 'Wrap / Mastertrust' : 'Investment Bond'}
+                <Plus className="w-4 h-4 mr-2" />
+                Add First {currentTab === 'wrap' ? 'Wrap / Mastertrust' : 'Investment Bond'}
               </Button>
             </div>
           ) : (

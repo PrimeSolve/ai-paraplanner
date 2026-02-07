@@ -8,7 +8,7 @@ import { useFactFind } from '../components/factfind/useFactFind';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Plus } from 'lucide-react';
 
 const MAX_SMSF = 2;
 
@@ -896,15 +896,20 @@ export default function FactFindSMSF() {
 
           {/* Welcome Screen */}
           {smsfCount === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <div className="text-5xl mb-6">💰</div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Do you have a Self-Managed Super Fund?</h3>
-              <p className="text-slate-600 text-center mb-8 max-w-md">Add details about your SMSF, including trustees, members, and pension accounts.</p>
+            <div className="border border-gray-200 rounded-lg p-12 text-center bg-white">
+              <div className="text-5xl mb-4">🏦</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Do you have a Self-Managed Super Fund?
+              </h3>
+              <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                Add details about your SMSF, including accounts, balances, and beneficiaries.
+              </p>
               <Button
                 onClick={() => addEntry()}
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
-                + Add SMSF
+                <Plus className="w-4 h-4 mr-2" />
+                Add First SMSF
               </Button>
             </div>
           ) : (
