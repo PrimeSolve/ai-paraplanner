@@ -325,6 +325,28 @@ export default function FactFindPersonal() {
 
   return (
     <FactFindLayout currentSection="personal" factFind={factFind}>
+      {/* DEBUG BUTTON - LIST ALL CLIENTS */}
+      <button 
+        onClick={async () => {
+          try {
+            // 1. Try to get ALL clients to see what exists
+            const allClients = await base44.entities.Client.list();
+            alert('Total clients: ' + allClients.length + '\n\nFirst 3: ' + JSON.stringify(allClients.slice(0, 3).map(c => ({
+              id: c.id,
+              first_name: c.first_name,
+              last_name: c.last_name,
+              email: c.email
+            })), null, 2));
+            
+          } catch (err) {
+            alert('ERROR: ' + err.message);
+          }
+        }}
+        style={{ background: 'orange', color: 'white', padding: '10px', margin: '10px' }}
+      >
+        LIST ALL CLIENTS
+      </button>
+
       {/* DEBUG BUTTON - TEMPORARY */}
       <button 
         onClick={async () => {
