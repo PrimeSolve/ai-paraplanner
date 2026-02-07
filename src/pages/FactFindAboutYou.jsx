@@ -241,30 +241,7 @@ export default function FactFindPersonal() {
     }
   }, [factFind?.personal?.first_name, factFind?.personal?.last_name, clientId, updateNavigationName]);
 
-  // Test button to verify Client update works
-  const handleClientUpdateTest = async () => {
-    try {
-      console.log('=== CLIENT UPDATE TEST START ===');
-      
-      // Step 1: Check current state
-      const clients = await base44.entities.Client.filter({ email: clientEmail });
-      console.log('BEFORE:', clients[0]?.first_name, clients[0]?.last_name);
-      
-      // Step 2: Update
-      const result = await base44.entities.Client.update(clients[0].id, {
-        first_name: 'TestPeter',
-        last_name: 'TestJones'
-      });
-      console.log('UPDATE RESULT:', result);
-      
-      // Step 3: Read back
-      const after = await base44.entities.Client.filter({ email: clientEmail });
-      console.log('AFTER:', after[0]?.first_name, after[0]?.last_name);
-      console.log('=== CLIENT UPDATE TEST END ===');
-    } catch (error) {
-      console.error('TEST ERROR:', error);
-    }
-  };
+
 
   // Auto-save completion percentage whenever data changes
   useEffect(() => {
@@ -404,15 +381,6 @@ export default function FactFindPersonal() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
         <div className="w-full">
-          {/* DEBUG: Test button */}
-          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <button
-              onClick={handleClientUpdateTest}
-              className="px-3 py-1.5 text-xs bg-yellow-600 text-white rounded hover:bg-yellow-700"
-            >
-              🔧 Test Client Update
-            </button>
-          </div>
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-6 space-y-6">
               {/* Client Information Bar */}
