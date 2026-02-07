@@ -588,11 +588,11 @@ export default function FactFindSMSF() {
       }
       if (e.target.closest('.remove-acct')) {
         const card = e.target.closest('.entry');
-        setTimeout(() => updateTableVisibility(card, 'acct'), 0);
+        if (card) setTimeout(() => updateTableVisibility(card, 'acct'), 0);
       }
       if (e.target.closest('.remove-benef')) {
         const card = e.target.closest('.entry');
-        setTimeout(() => updateTableVisibility(card, 'benef'), 0);
+        if (card) setTimeout(() => updateTableVisibility(card, 'benef'), 0);
       }
     };
 
