@@ -260,9 +260,10 @@ export default function FactFindInvestment() {
     showOnlyActiveEntry(tab, newIndex);
   }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry]);
 
-  const removeEntry = useCallback((node, tab) => {
+  const removeEntry = useCallback(async (node, tab) => {
     node.remove();
     const wrap = wrapForTab(tab);
+    if (!wrap) return;
     const remaining = wrap.querySelectorAll('.entry').length;
     renumber(tab);
 
@@ -280,7 +281,28 @@ export default function FactFindInvestment() {
     } else {
       setActiveIndex(0);
     }
-  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
+
+    // Save to database immediately
+    if (factFind?.id) {
+      const wraps = readTabToArray('wrap').map(i => ({ ...i, investment_type: 'wrap' }));
+      const bonds = readTabToArray('bonds').map(i => ({ ...i, investment_type: 'bond' }));
+      
+      globalStateRef.current.investments = [...wraps, ...bonds];
+      globalStateRef.current.currentTab = tab;
+      globalStateRef.current.activeIdx = {
+        wrap: tab === 'wrap' ? (remaining > 0 ? Math.max(0, remaining - 1) : 0) : globalStateRef.current.activeIdx?.wrap || 0,
+        bonds: tab === 'bonds' ? (remaining > 0 ? Math.max(0, remaining - 1) : 0) : globalStateRef.current.activeIdx?.bonds || 0
+      };
+
+      await base44.entities.FactFind.update(factFind.id, {
+        investment: {
+          investments: globalStateRef.current.investments,
+          currentTab: globalStateRef.current.currentTab,
+          activeIdx: globalStateRef.current.activeIdx
+        }
+      });
+    }
+  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills, factFind?.id, readTabToArray]);
 
   useEffect(() => {
     const loadUser = async () => {
