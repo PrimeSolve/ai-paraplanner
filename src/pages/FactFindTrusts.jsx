@@ -301,7 +301,7 @@ export default function FactFindTrusts() {
     }
 
     return row;
-  }, [factFind]);
+  }, [entityList]);
 
   // ============================================
   // CREATE SHAREHOLDER ROW
@@ -350,7 +350,7 @@ export default function FactFindTrusts() {
     }
 
     return row;
-  }, [factFind]);
+  }, [entityList]);
 
   // ============================================
   // ADD ENTRY
