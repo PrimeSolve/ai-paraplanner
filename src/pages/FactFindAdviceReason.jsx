@@ -418,34 +418,6 @@ export default function FactFindAdviceReason() {
 
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
-           {/* Test Button for Advice Reason Save */}
-           <button 
-             onClick={async () => {
-               try {
-                 const current = await base44.entities.FactFind.get('6985256223a391fa4355b0f3');
-                 alert('Current advice_reason: ' + JSON.stringify(current.advice_reason));
-                 
-                 const testData = {
-                   goals: ['TEST_GOAL_1'],
-                   concerns: ['TEST_CONCERN_1']
-                 };
-                 
-                 await base44.entities.FactFind.update('6985256223a391fa4355b0f3', {
-                   advice_reason: testData
-                 });
-                 
-                 const after = await base44.entities.FactFind.get('6985256223a391fa4355b0f3');
-                 alert('After save advice_reason: ' + JSON.stringify(after.advice_reason));
-                 
-               } catch (err) {
-                 alert('ERROR: ' + err.message);
-               }
-             }}
-             style={{ background: 'red', color: 'white', padding: '10px', margin: '10px' }}
-           >
-             TEST ADVICE REASON SAVE
-           </button>
-
            {/* Tabs - Part of form content */}
            <div className="flex gap-2">
              {TABS.map(tab => (
