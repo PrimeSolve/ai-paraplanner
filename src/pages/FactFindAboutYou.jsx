@@ -329,37 +329,25 @@ export default function FactFindPersonal() {
       <button 
         onClick={async () => {
           try {
-            if (!clientEmail) {
-              alert('clientEmail is not available: ' + clientEmail);
-              return;
-            }
-            
-            // 1. Show current Client data
-            const clients = await base44.entities.Client.filter({ email: clientEmail });
-            if (clients.length === 0) {
-              alert('No client found with email: ' + clientEmail);
-              return;
-            }
+            const clients = await base44.entities.Client.filter({ email: 'firstclient@hotmail' });
             const client = clients[0];
-            alert('Current Client: ' + JSON.stringify({
-              id: client.id,
-              first_name: client.first_name,
-              last_name: client.last_name,
-              email: client.email
-            }));
             
-            // 2. Try to update it
-            await base44.entities.Client.update(client.id, {
+            alert('Before update: ' + client.first_name + ' ' + client.last_name);
+            
+            // Try update with spread to preserve other fields
+            const updateResult = await base44.entities.Client.update(client.id, {
+              ...client,
               first_name: 'TEST_NAME',
               last_name: 'TEST_LAST'
             });
             
-            // 3. Fetch again to verify
-            const after = await base44.entities.Client.get(client.id);
-            alert('After update: ' + JSON.stringify({
-              first_name: after.first_name,
-              last_name: after.last_name
-            }));
+            alert('Update result: ' + JSON.stringify(updateResult));
+            
+            // Re-fetch using filter instead of get
+            const afterClients = await base44.entities.Client.filter({ email: 'firstclient@hotmail' });
+            const after = afterClients[0];
+            
+            alert('After update (re-filtered): ' + after.first_name + ' ' + after.last_name);
             
           } catch (err) {
             alert('ERROR: ' + err.message);
@@ -367,7 +355,7 @@ export default function FactFindPersonal() {
         }}
         style={{ background: 'red', color: 'white', padding: '10px', margin: '10px' }}
       >
-        TEST CLIENT UPDATE
+        TEST CLIENT UPDATE v2
       </button>
 
       <FactFindHeader
