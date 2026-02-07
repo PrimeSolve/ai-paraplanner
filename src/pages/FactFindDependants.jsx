@@ -638,21 +638,21 @@ export default function FactFindDependants() {
 
           {/* Welcome Screen */}
           {(currentTab === 'children' ? childrenCount : dependantsCount) === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <div className="text-5xl mb-6">
+            <div className="border border-gray-200 rounded-lg p-12 text-center bg-white">
+              <div className="text-5xl mb-4">
                 {currentTab === 'children' ? '👨‍👩‍👧‍👦' : '👥'}
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 {currentTab === 'children' ? 'Do you have any children?' : 'Do you have any dependants?'}
               </h3>
-              <p className="text-slate-600 text-center mb-8 max-w-md">
+              <p className="text-gray-500 mb-6 max-w-md mx-auto">
                 {currentTab === 'children' 
                   ? 'Add information about your children to help us understand your family situation better.'
                   : 'Add information about your dependants so we can factor them into your financial plan.'}
               </p>
               <Button
                 onClick={() => addEntry(currentTab)}
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 Add {currentTab === 'children' ? 'child' : 'dependant'}
               </Button>
