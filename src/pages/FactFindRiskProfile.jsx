@@ -572,18 +572,21 @@ export default function FactFindRiskProfile() {
                     <div className="flex items-center gap-3">
                       <span className="font-bold text-slate-800 text-sm">Applies to:</span>
                       <div className="flex gap-2">
-                        {['client', 'partner'].map(owner => (
+                        {[
+                          { key: 'client', label: factFind?.personal?.first_name ? `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim() : 'Client' },
+                          factFind?.personal?.partner?.first_name ? { key: 'partner', label: `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim() } : null
+                        ].filter(Boolean).map(owner => (
                           <button
-                            key={owner}
-                            onClick={() => setActiveOwner(owner)}
+                            key={owner.key}
+                            onClick={() => setActiveOwner(owner.key)}
                             className={cn(
-                              "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors capitalize",
-                              activeOwner === owner
+                              "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                              activeOwner === owner.key
                                 ? "bg-blue-50 text-blue-700 border-blue-200"
                                 : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                             )}
                           >
-                            {owner}
+                            {owner.label}
                           </button>
                         ))}
                       </div>
