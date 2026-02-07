@@ -1197,6 +1197,7 @@ export default function FactFindSuperannuation() {
               <div className="mt-4"><label className="block text-sm font-semibold text-slate-700 mb-2">Reversionary?</label><label className="flex items-center gap-2"><input type="radio" name="a_rev__1" value="1" className="w-4 h-4" /><span className="text-sm">Yes</span></label><label className="flex items-center gap-2"><input type="radio" name="a_rev__1" value="2" className="w-4 h-4" /><span className="text-sm">No</span></label></div>
             </div>
           </div>
+          </div>
         </div>
       </div>
 
