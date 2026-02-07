@@ -11,6 +11,7 @@ import { useRole } from '@/components/RoleContext';
 export function useFactFind() {
   const { navigationChain } = useRole();
   const [factFind, setFactFind] = useState(null);
+  const [clientId, setClientId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -49,6 +50,10 @@ export function useFactFind() {
         
         const client = clients[0];
         console.log('Client found:', client);
+        
+        // Store the Client ID for syncing
+        setClientId(client.id);
+        console.log('Stored clientId:', client.id);
 
         // 2. Check if Client has existing FactFind
         if (client.fact_find_id) {
@@ -153,6 +158,6 @@ export function useFactFind() {
     updateSection,
     setFactFind,
     clientEmail,
-    clientId: factFind?.client_id // Add clientId for syncing with Client entity
+    clientId // Return the stored Client.id
   };
 }
