@@ -214,17 +214,19 @@ export default function FactFindInsurance() {
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
           {policies.length === 0 ? (
-            <Card className="border-slate-200 shadow-sm">
-              <CardContent className="p-12 text-center">
-                <div className="text-6xl mb-6">🛡️</div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">Do you have any insurance policies?</h3>
-                <p className="text-slate-600 mb-8">Add details about your life, TPD, trauma, income protection, and other insurance coverage.</p>
-                <Button onClick={addPolicy} className="bg-blue-600 hover:bg-blue-700 text-white">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add First Policy
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="border border-gray-200 rounded-lg p-12 text-center bg-white">
+              <div className="text-5xl mb-4">🛡️</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Do you have any insurance policies?
+              </h3>
+              <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                Add details about your life, TPD, trauma, income protection, and other insurance coverage.
+              </p>
+              <Button onClick={addPolicy} className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Plus className="w-4 h-4 mr-2" />
+                Add First Policy
+              </Button>
+            </div>
           ) : (
             <>
               {/* PILL NAVIGATION */}
