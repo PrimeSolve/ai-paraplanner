@@ -109,12 +109,23 @@ export default function FactFindAssetsLiabilities() {
     });
   }, []);
 
-  const deleteAsset = useCallback((index) => {
-    setAssetsList(prev => prev.filter((_, i) => i !== index));
+  const deleteAsset = useCallback(async (index) => {
+    const updatedAssets = assetsList.filter((_, i) => i !== index);
+    setAssetsList(updatedAssets);
     if (activeAssetIndex >= index && activeAssetIndex > 0) {
       setActiveAssetIndex(prev => prev - 1);
     }
-  }, [activeAssetIndex]);
+
+    // Save to database immediately
+    if (factFind?.id) {
+      await base44.entities.FactFind.update(factFind.id, {
+        assets_liabilities: {
+          ...factFind.assets_liabilities,
+          assets: updatedAssets
+        }
+      });
+    }
+  }, [activeAssetIndex, assetsList, factFind]);
 
   // DEBTS
   const addDebt = useCallback(() => {
@@ -131,12 +142,23 @@ export default function FactFindAssetsLiabilities() {
     });
   }, []);
 
-  const deleteDebt = useCallback((index) => {
-    setDebtsList(prev => prev.filter((_, i) => i !== index));
+  const deleteDebt = useCallback(async (index) => {
+    const updatedDebts = debtsList.filter((_, i) => i !== index);
+    setDebtsList(updatedDebts);
     if (activeDebtIndex >= index && activeDebtIndex > 0) {
       setActiveDebtIndex(prev => prev - 1);
     }
-  }, [activeDebtIndex]);
+
+    // Save to database immediately
+    if (factFind?.id) {
+      await base44.entities.FactFind.update(factFind.id, {
+        assets_liabilities: {
+          ...factFind.assets_liabilities,
+          liabilities: updatedDebts
+        }
+      });
+    }
+  }, [activeDebtIndex, debtsList, factFind]);
 
   const handleNext = async () => {
     if (!factFind?.id) {
