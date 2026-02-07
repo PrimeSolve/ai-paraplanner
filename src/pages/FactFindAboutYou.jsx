@@ -209,6 +209,22 @@ export default function FactFindPersonal() {
     }
   }, [factFind, dataLoaded]);
 
+  // Sync Client entity and RoleContext when FactFind data loads
+  useEffect(() => {
+    if (factFind?.personal?.first_name && clientId && dataLoaded) {
+      const fullName = `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim();
+      
+      // Update breadcrumb/sidebar immediately
+      updateNavigationName('client', fullName);
+      
+      // Sync Client entity in background
+      base44.entities.Client.update(clientId, {
+        first_name: factFind.personal.first_name,
+        last_name: factFind.personal.last_name || ''
+      }).catch(err => console.error('Client sync failed:', err));
+    }
+  }, [factFind?.personal?.first_name, factFind?.personal?.last_name, clientId, dataLoaded, updateNavigationName]);
+
   // Auto-save completion percentage whenever data changes
   useEffect(() => {
     if (!factFind?.id || !dataLoaded) {
