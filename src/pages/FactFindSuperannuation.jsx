@@ -8,7 +8,7 @@ import { useFactFind } from '@/components/factfind/useFactFind';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, Plus } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Plus, Landmark, DollarSign, Wallet, UserPlus, BarChart3 } from 'lucide-react';
 
 export default function FactFindSuperannuation() {
   const navigate = useNavigate();
@@ -796,8 +796,14 @@ export default function FactFindSuperannuation() {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <h4 className="text-sm font-semibold text-blue-700 mb-4">🏦 Fund Details</h4>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-3">
+                <h3 className="text-blue-700 font-semibold flex items-center gap-2">
+                  <Landmark className="w-5 h-5" />
+                  Fund Details
+                </h3>
+              </div>
+              <div className="p-4">
               <div className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
@@ -828,9 +834,16 @@ export default function FactFindSuperannuation() {
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-              <h4 className="text-sm font-semibold text-green-700 mb-4">💰 Contributions</h4>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-green-50 border-l-4 border-green-500 p-3">
+                <h3 className="text-green-700 font-semibold flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  Contributions
+                </h3>
+              </div>
+              <div className="p-4">
               <div className="grid md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Super guarantee?</label>
@@ -861,9 +874,16 @@ export default function FactFindSuperannuation() {
                 <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="concessional" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
               </div>
             </div>
+          </div>
 
-            <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-              <h4 className="text-sm font-semibold text-yellow-700 mb-4">📋 Tax Components</h4>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-amber-50 border-l-4 border-amber-500 p-3">
+                <h3 className="text-amber-700 font-semibold flex items-center gap-2">
+                  <Wallet className="w-5 h-5" />
+                  Tax Components
+                </h3>
+              </div>
+              <div className="p-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">UNP amount</label>
@@ -879,10 +899,17 @@ export default function FactFindSuperannuation() {
                 <div className="flex items-center"><span className="text-slate-500 mr-2">$</span><input type="number" name="tax_free" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm" /></div>
               </div>
             </div>
+          </div>
 
-            <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-              <h4 className="text-sm font-semibold text-purple-700 mb-4">👥 Beneficiaries</h4>
-              <div className="benef-container">
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-amber-50 border-l-4 border-amber-500 p-3">
+                <h3 className="text-amber-700 font-semibold flex items-center gap-2">
+                  <UserPlus className="w-5 h-5" />
+                  Beneficiaries
+                </h3>
+              </div>
+              <div className="p-4">
+                <div className="benef-container">
                 <div className="benef-list-table hidden mb-3 overflow-x-auto">
                   <table className="w-full text-xs border-collapse min-w-[600px]">
                     <thead><tr className="border-b border-purple-200"><th className="text-left py-2 px-2">Who</th><th className="text-left py-2 px-2">%</th><th className="text-left py-2 px-2">Type</th><th className="w-16"></th></tr></thead>
@@ -893,13 +920,23 @@ export default function FactFindSuperannuation() {
                   <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
                   <button type="button" className="add-first-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First Beneficiary</button>
                 </div>
-                <button type="button" className="add-benef hidden mt-3 px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
+                <button type="button" className="add-benef hidden inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  <Plus className="w-4 h-4" />
+                  Add Beneficiary
+                </button>
+                </div>
               </div>
             </div>
 
-            <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-              <h4 className="text-sm font-semibold text-orange-700 mb-4">📊 Portfolio</h4>
-              <div className="portfolio-container">
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-amber-50 border-l-4 border-amber-500 p-3">
+                <h3 className="text-amber-700 font-semibold flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5" />
+                  Portfolio
+                </h3>
+              </div>
+              <div className="p-4">
+                <div className="portfolio-container">
                 <div className="portfolio-list-table hidden mb-3 overflow-x-auto">
                   <table className="w-full text-xs border-collapse min-w-[600px]">
                     <thead><tr className="border-b border-orange-200"><th className="text-left py-2 px-2">Asset Type</th><th className="text-left py-2 px-2">Desc</th><th className="text-left py-2 px-2">%</th><th className="w-16"></th></tr></thead>
@@ -910,7 +947,11 @@ export default function FactFindSuperannuation() {
                   <p className="text-sm text-slate-600 mb-3">No portfolio assets added yet</p>
                   <button type="button" className="add-first-portfolio px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First Asset</button>
                 </div>
-                <button type="button" className="add-portfolio hidden mt-3 px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add asset</button>
+                <button type="button" className="add-portfolio hidden inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  <Plus className="w-4 h-4" />
+                  Add Asset
+                </button>
+                </div>
               </div>
             </div>
           </div>
@@ -924,8 +965,14 @@ export default function FactFindSuperannuation() {
             <button type="button" className="entry-remove px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">Remove</button>
           </div>
           <div className="space-y-6">
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <h4 className="text-sm font-semibold text-blue-700 mb-4">🕰️ Pension Details</h4>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-3">
+                <h3 className="text-blue-700 font-semibold flex items-center gap-2">
+                  <Landmark className="w-5 h-5" />
+                  Pension Details
+                </h3>
+              </div>
+              <div className="p-4">
               <div className="grid md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Pension name</label>
@@ -953,8 +1000,15 @@ export default function FactFindSuperannuation() {
                 </div>
               </div>
             </div>
-            <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-              <h4 className="text-sm font-semibold text-green-700 mb-4">💵 Income</h4>
+          </div>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-green-50 border-l-4 border-green-500 p-3">
+                <h3 className="text-green-700 font-semibold flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  Income
+                </h3>
+              </div>
+              <div className="p-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Income</label>
@@ -976,8 +1030,15 @@ export default function FactFindSuperannuation() {
                 </div>
               </div>
             </div>
-            <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-              <h4 className="text-sm font-semibold text-yellow-700 mb-4">⚙️ Settings</h4>
+          </div>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-amber-50 border-l-4 border-amber-500 p-3">
+                <h3 className="text-amber-700 font-semibold flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  Settings
+                </h3>
+              </div>
+              <div className="p-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Index rate</label>
@@ -999,9 +1060,16 @@ export default function FactFindSuperannuation() {
                 </div>
               </div>
             </div>
-            <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-              <h4 className="text-sm font-semibold text-purple-700 mb-4">👥 Beneficiaries</h4>
-              <div className="benef-container">
+          </div>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-amber-50 border-l-4 border-amber-500 p-3">
+                <h3 className="text-amber-700 font-semibold flex items-center gap-2">
+                  <UserPlus className="w-5 h-5" />
+                  Beneficiaries
+                </h3>
+              </div>
+              <div className="p-4">
+                <div className="benef-container">
                 <div className="benef-list-table hidden mb-3 overflow-x-auto">
                   <table className="w-full text-xs border-collapse min-w-[600px]">
                     <thead><tr className="border-b border-purple-200"><th className="text-left py-2 px-2">Who</th><th className="text-left py-2 px-2">%</th><th className="text-left py-2 px-2">Type</th><th className="w-16"></th></tr></thead>
@@ -1012,12 +1080,22 @@ export default function FactFindSuperannuation() {
                   <p className="text-sm text-slate-600 mb-3">No beneficiaries added</p>
                   <button type="button" className="add-first-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First</button>
                 </div>
-                <button type="button" className="add-benef hidden mt-3 px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add</button>
+                <button type="button" className="add-benef hidden inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  <Plus className="w-4 h-4" />
+                  Add Beneficiary
+                </button>
+                </div>
               </div>
             </div>
-            <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-              <h4 className="text-sm font-semibold text-orange-700 mb-4">📊 Portfolio</h4>
-              <div className="portfolio-container">
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-amber-50 border-l-4 border-amber-500 p-3">
+                <h3 className="text-amber-700 font-semibold flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5" />
+                  Portfolio
+                </h3>
+              </div>
+              <div className="p-4">
+                <div className="portfolio-container">
                 <div className="portfolio-list-table hidden mb-3 overflow-x-auto">
                   <table className="w-full text-xs border-collapse min-w-[600px]">
                     <thead><tr className="border-b border-orange-200"><th className="text-left py-2 px-2">Asset</th><th className="text-left py-2 px-2">Desc</th><th className="text-left py-2 px-2">%</th><th className="w-16"></th></tr></thead>
@@ -1028,7 +1106,11 @@ export default function FactFindSuperannuation() {
                   <p className="text-sm text-slate-600 mb-3">No assets added</p>
                   <button type="button" className="add-first-portfolio px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add First</button>
                 </div>
-                <button type="button" className="add-portfolio hidden mt-3 px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add</button>
+                <button type="button" className="add-portfolio hidden inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  <Plus className="w-4 h-4" />
+                  Add Asset
+                </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1042,8 +1124,14 @@ export default function FactFindSuperannuation() {
             <button type="button" className="entry-remove px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">Remove</button>
           </div>
           <div className="space-y-6">
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <h4 className="text-sm font-semibold text-blue-700 mb-4">📈 Annuity Details</h4>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-3">
+                <h3 className="text-blue-700 font-semibold flex items-center gap-2">
+                  <Landmark className="w-5 h-5" />
+                  Annuity Details
+                </h3>
+              </div>
+              <div className="p-4">
               <div className="mb-4">
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Annuity name</label>
                 <input type="text" name="fund_name" placeholder="e.g. ABC Annuity" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" />
@@ -1077,8 +1165,15 @@ export default function FactFindSuperannuation() {
                 </div>
               </div>
             </div>
-            <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-              <h4 className="text-sm font-semibold text-green-700 mb-4">💵 Payments</h4>
+          </div>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-green-50 border-l-4 border-green-500 p-3">
+                <h3 className="text-green-700 font-semibold flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  Payments
+                </h3>
+              </div>
+              <div className="p-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Income</label>
@@ -1115,10 +1210,10 @@ export default function FactFindSuperannuation() {
                 setActiveIndex(0);
                 setTimeout(() => updatePills('super', 0), 0);
               }}
-              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 currentTab === 'super'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               Superannuation
@@ -1129,10 +1224,10 @@ export default function FactFindSuperannuation() {
                 setActiveIndex(0);
                 setTimeout(() => updatePills('pension', 0), 0);
               }}
-              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 currentTab === 'pension'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               Pension
@@ -1143,10 +1238,10 @@ export default function FactFindSuperannuation() {
                 setActiveIndex(0);
                 setTimeout(() => updatePills('annuities', 0), 0);
               }}
-              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 currentTab === 'annuities'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               Annuities

@@ -615,10 +615,10 @@ export default function FactFindInvestment() {
                 setActiveIndex(0);
                 setTimeout(() => updatePills('wrap', 0), 0);
               }}
-              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 currentTab === 'wrap'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               Wrap / Mastertrust
@@ -629,10 +629,10 @@ export default function FactFindInvestment() {
                 setActiveIndex(0);
                 setTimeout(() => updatePills('bonds', 0), 0);
               }}
-              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 currentTab === 'bonds'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               Investment bonds

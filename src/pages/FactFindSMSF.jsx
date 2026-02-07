@@ -8,7 +8,7 @@ import { useFactFind } from '../components/factfind/useFactFind';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, Plus } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Plus, Landmark, Wallet, UserPlus } from 'lucide-react';
 
 const MAX_SMSF = 2;
 
@@ -745,8 +745,14 @@ export default function FactFindSMSF() {
 
           <div className="space-y-6">
             {/* SMSF Details Section */}
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <h4 className="text-sm font-semibold text-blue-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-blue-600 rounded"></span>💰 SMSF Details</h4>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-3">
+                <h3 className="text-blue-700 font-semibold flex items-center gap-2">
+                  <Landmark className="w-5 h-5" />
+                  SMSF Details
+                </h3>
+              </div>
+              <div className="p-4">
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">SMSF name</label>
@@ -813,10 +819,17 @@ export default function FactFindSMSF() {
                 </div>
               </div>
             </div>
+          </div>
 
             {/* Account Information Section */}
-            <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-              <h4 className="text-sm font-semibold text-orange-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-orange-600 rounded"></span>📊 Account Information</h4>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-amber-50 border-l-4 border-amber-500 p-3">
+                <h3 className="text-amber-700 font-semibold flex items-center gap-2">
+                  <Wallet className="w-5 h-5" />
+                  Account Information
+                </h3>
+              </div>
+              <div className="p-4">
               
               <div className="acct-container">
                 {/* Table with headers */}
@@ -848,13 +861,23 @@ export default function FactFindSMSF() {
                 </div>
 
                 {/* Add button - only show if accounts exist */}
-                <button type="button" className="add-acct hidden px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add account</button>
+                <button type="button" className="add-acct hidden inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  <Plus className="w-4 h-4" />
+                  Add Account
+                </button>
               </div>
             </div>
+          </div>
 
             {/* Beneficiaries Section */}
-            <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-              <h4 className="text-sm font-semibold text-purple-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-purple-600 rounded"></span>👥 Beneficiaries</h4>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-amber-50 border-l-4 border-amber-500 p-3">
+                <h3 className="text-amber-700 font-semibold flex items-center gap-2">
+                  <UserPlus className="w-5 h-5" />
+                  Beneficiaries
+                </h3>
+              </div>
+              <div className="p-4">
               
               <div className="benef-container">
                 {/* Table with headers */}
@@ -882,9 +905,13 @@ export default function FactFindSMSF() {
                 </div>
 
                 {/* Add button - only show if beneficiaries exist */}
-                <button type="button" className="add-benef hidden px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
+                <button type="button" className="add-benef hidden inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  <Plus className="w-4 h-4" />
+                  Add Beneficiary
+                </button>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </div>

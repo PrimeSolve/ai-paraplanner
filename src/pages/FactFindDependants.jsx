@@ -608,10 +608,10 @@ export default function FactFindDependants() {
                setActiveIndex(0);
                setTimeout(() => updatePills('children', 0), 0);
              }}
-             className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+             className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                currentTab === 'children'
                  ? 'bg-blue-600 text-white'
-                 : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
              }`}
            >
              Children
@@ -622,10 +622,10 @@ export default function FactFindDependants() {
                setActiveIndex(0);
                setTimeout(() => updatePills('dependants', 0), 0);
              }}
-             className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+             className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                currentTab === 'dependants'
                  ? 'bg-blue-600 text-white'
-                 : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
              }`}
            >
              Dependants

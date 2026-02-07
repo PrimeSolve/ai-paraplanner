@@ -8,7 +8,7 @@ import { useFactFind } from '../components/factfind/useFactFind';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, Trash2, Plus } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Trash2, Plus, Landmark, UserPlus, Building } from 'lucide-react';
 
 export default function FactFindTrusts() {
   const navigate = useNavigate();
@@ -747,8 +747,14 @@ export default function FactFindTrusts() {
 
           <div className="space-y-6">
             {/* Trust Details Section */}
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <h4 className="text-sm font-semibold text-blue-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-blue-600 rounded"></span>🏛️ Trust Details</h4>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-3">
+                <h3 className="text-blue-700 font-semibold flex items-center gap-2">
+                  <Landmark className="w-5 h-5" />
+                  Trust Details
+                </h3>
+              </div>
+              <div className="p-4">
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Trust name</label>
@@ -766,11 +772,18 @@ export default function FactFindTrusts() {
                   </select>
                 </div>
                 </div>
-                </div>
+              </div>
+            </div>
 
                 {/* Beneficiaries Section */}
-                <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                <h4 className="text-sm font-semibold text-purple-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-purple-600 rounded"></span>👥 Trustee Beneficiaries</h4>
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="bg-amber-50 border-l-4 border-amber-500 p-3">
+                    <h3 className="text-amber-700 font-semibold flex items-center gap-2">
+                      <UserPlus className="w-5 h-5" />
+                      Trustee Beneficiaries
+                    </h3>
+                  </div>
+                  <div className="p-4">
                 
                 <div className="benef-container">
                   {/* Table with headers */}
@@ -795,8 +808,12 @@ export default function FactFindTrusts() {
                   </div>
 
                   {/* Add button */}
-                  <button type="button" className="add-benef px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add beneficiary</button>
+                  <button type="button" className="add-benef inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <Plus className="w-4 h-4" />
+                    Add Beneficiary
+                  </button>
                 </div>
+              </div>
             </div>
           </div>
         </div>
@@ -814,8 +831,14 @@ export default function FactFindTrusts() {
 
           <div className="space-y-6">
             {/* Company Details Section */}
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <h4 className="text-sm font-semibold text-blue-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-blue-600 rounded"></span>🏢 Company Details</h4>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-3">
+                <h3 className="text-blue-700 font-semibold flex items-center gap-2">
+                  <Building className="w-5 h-5" />
+                  Company Details
+                </h3>
+              </div>
+              <div className="p-4">
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Company name</label>
@@ -881,11 +904,18 @@ export default function FactFindTrusts() {
                   </div>
                 </div>
               </div>
-              </div>
+            </div>
+          </div>
 
               {/* Shareholders Section */}
-              <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-              <h4 className="text-sm font-semibold text-orange-700 mb-4 flex items-center gap-2"><span className="w-1 h-5 bg-orange-600 rounded"></span>📊 Shareholders</h4>
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className="bg-amber-50 border-l-4 border-amber-500 p-3">
+                  <h3 className="text-amber-700 font-semibold flex items-center gap-2">
+                    <UserPlus className="w-5 h-5" />
+                    Shareholders
+                  </h3>
+                </div>
+                <div className="p-4">
 
               <div className="sh-container">
                 {/* Table with headers */}
@@ -910,9 +940,13 @@ export default function FactFindTrusts() {
                 </div>
 
                 {/* Add button */}
-                <button type="button" className="add-shareholder px-3 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ Add shareholder</button>
+                <button type="button" className="add-shareholder inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  <Plus className="w-4 h-4" />
+                  Add Shareholder
+                </button>
               </div>
-              </div>
+            </div>
+          </div>
           </div>
         </div>
       </div>
@@ -928,10 +962,10 @@ export default function FactFindTrusts() {
                 setActiveIndex(0);
                 setTimeout(() => updatePills('trust', 0), 0);
               }}
-              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 currentTab === 'trust'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               Trusts
@@ -942,10 +976,10 @@ export default function FactFindTrusts() {
                 setActiveIndex(0);
                 setTimeout(() => updatePills('company', 0), 0);
               }}
-              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 currentTab === 'company'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               Companies
