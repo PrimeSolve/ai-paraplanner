@@ -124,10 +124,10 @@ export default function FactFindSMSF() {
     const pillsContainer = document.getElementById('smsfPills');
     if (!pillsContainer) return;
 
-    pillsContainer.innerHTML = '';
     const wrap = wrapForTab();
     if (!wrap) return;
 
+    pillsContainer.innerHTML = '';
     const cards = [...wrap.querySelectorAll('.entry')];
 
     cards.forEach((card, i) => {
@@ -431,6 +431,7 @@ export default function FactFindSMSF() {
   const removeEntry = useCallback((node) => {
     node.remove();
     const wrap = wrapForTab();
+    if (!wrap) return;
     const remaining = wrap.querySelectorAll('.entry').length;
     renumber();
     setSmsfCount(remaining);
@@ -476,7 +477,9 @@ export default function FactFindSMSF() {
     if (!ffLoading && factFind?.id) {
       setTimeout(() => {
         const wrap = wrapForTab();
-        if (wrap) wrap.innerHTML = '';
+        if (!wrap) return; // Exit early if wrap not ready
+        
+        wrap.innerHTML = '';
 
         if (globalStateRef.current.smsf_details?.length > 0) {
           globalStateRef.current.smsf_details.forEach((smsfData) => {
