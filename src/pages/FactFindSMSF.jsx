@@ -308,9 +308,22 @@ export default function FactFindSMSF() {
 
    const removeBtn = row.querySelector('.remove-acct');
    if (removeBtn) {
-     removeBtn.onclick = (e) => {
+     removeBtn.onclick = async (e) => {
        e.preventDefault();
        row.remove();
+       
+       // Save to database immediately
+       if (factFind?.id) {
+         const updatedDetails = readTabToArray();
+         globalStateRef.current.smsf_details = updatedDetails;
+         
+         await base44.entities.FactFind.update(factFind.id, {
+           smsf: {
+             smsf_details: globalStateRef.current.smsf_details,
+             activeIndex: globalStateRef.current.activeIndex
+           }
+         });
+       }
      };
    }
 
@@ -406,9 +419,22 @@ export default function FactFindSMSF() {
 
     const removeBtn = row.querySelector('.remove-benef');
     if (removeBtn) {
-      removeBtn.onclick = (e) => {
+      removeBtn.onclick = async (e) => {
         e.preventDefault();
         row.remove();
+        
+        // Save to database immediately
+        if (factFind?.id) {
+          const updatedDetails = readTabToArray();
+          globalStateRef.current.smsf_details = updatedDetails;
+          
+          await base44.entities.FactFind.update(factFind.id, {
+            smsf: {
+              smsf_details: globalStateRef.current.smsf_details,
+              activeIndex: globalStateRef.current.activeIndex
+            }
+          });
+        }
       };
     }
 
@@ -468,7 +494,7 @@ export default function FactFindSMSF() {
   // REMOVE ENTRY
   // ============================================
 
-  const removeEntry = useCallback((node) => {
+  const removeEntry = useCallback(async (node) => {
     node.remove();
     const wrap = wrapForTab();
     if (!wrap) return;
@@ -484,7 +510,20 @@ export default function FactFindSMSF() {
     } else {
       setActiveIndex(0);
     }
-  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
+
+    // Save to database immediately
+    if (factFind?.id) {
+      const updatedDetails = readTabToArray();
+      globalStateRef.current.smsf_details = updatedDetails;
+      
+      await base44.entities.FactFind.update(factFind.id, {
+        smsf: {
+          smsf_details: globalStateRef.current.smsf_details,
+          activeIndex: remaining > 0 ? Math.max(0, remaining - 1) : 0
+        }
+      });
+    }
+  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills, factFind?.id, readTabToArray]);
 
   // ============================================
   // LOAD USER AND SYNC FACTFIND
