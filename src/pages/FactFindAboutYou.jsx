@@ -211,29 +211,35 @@ export default function FactFindPersonal() {
 
   // Sync Client entity and RoleContext when FactFind data loads
   useEffect(() => {
-    console.log('=== SYNC USEEFFECT FIRED ===', {
-      personalFirstName: factFind?.personal?.first_name,
-      personalLastName: factFind?.personal?.last_name,
+    console.log('=== SYNC EFFECT CHECK ===', {
+      hasPersonal: !!factFind?.personal,
+      firstName: factFind?.personal?.first_name,
+      lastName: factFind?.personal?.last_name,
       clientId: clientId,
-      dataLoaded: dataLoaded
+      clientEmail: clientEmail,
+      dataLoaded: dataLoaded,
+      hasUpdateNav: typeof updateNavigationName === 'function'
     });
     
-    if (factFind?.personal?.first_name && clientId && dataLoaded) {
+    if (factFind?.personal?.first_name && clientId) {
+      console.log('=== SYNC EXECUTING ===');
       const fullName = `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim();
-      console.log('SYNC: Updating to', fullName);
+      console.log('Updating to:', fullName);
       
-      // Update breadcrumb/sidebar immediately
       updateNavigationName('client', fullName);
       
-      // Sync Client entity in background
       base44.entities.Client.update(clientId, {
         first_name: factFind.personal.first_name,
         last_name: factFind.personal.last_name || ''
       })
-        .then(result => console.log('SYNC: Client update success', result))
-        .catch(err => console.error('SYNC: Client sync failed', err));
+        .then(() => console.log('=== CLIENT ENTITY UPDATED ==='))
+        .catch(err => console.error('=== CLIENT UPDATE FAILED ===', err));
+    } else {
+      console.log('=== SYNC SKIPPED ===', {
+        reason: !factFind?.personal?.first_name ? 'no firstName' : !clientId ? 'no clientId' : 'unknown'
+      });
     }
-  }, [factFind?.personal?.first_name, factFind?.personal?.last_name, clientId, dataLoaded, updateNavigationName]);
+  }, [factFind?.personal?.first_name, factFind?.personal?.last_name, clientId, updateNavigationName]);
 
   // Test button to verify Client update works
   const handleClientUpdateTest = async () => {
