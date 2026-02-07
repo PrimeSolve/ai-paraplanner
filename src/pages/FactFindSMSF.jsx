@@ -547,7 +547,7 @@ export default function FactFindSMSF() {
       const addBtn = type === 'acct' ? card.querySelector('.add-acct') : card.querySelector('.add-benef');
       const list = type === 'acct' ? card.querySelector('.acct-list') : card.querySelector('.benef-list');
 
-      const hasRows = list.querySelectorAll(type === 'acct' ? '.acct-row' : '.benef-row').length > 0;
+      const hasRows = list ? list.querySelectorAll(type === 'acct' ? '.acct-row' : '.benef-row').length > 0 : false;
 
       if (hasRows) {
         table?.classList.remove('hidden');
@@ -564,7 +564,9 @@ export default function FactFindSMSF() {
       if (e.target.closest('.add-first-acct') || e.target.closest('.add-acct')) {
         e.preventDefault();
         const card = e.target.closest('.entry');
+        if (!card) return;
         const list = card.querySelector('.acct-list');
+        if (!list) return;
         const row = createAccountRow(card);
         list.appendChild(row);
         updateTableVisibility(card, 'acct');
@@ -572,7 +574,9 @@ export default function FactFindSMSF() {
       if (e.target.closest('.add-first-benef') || e.target.closest('.add-benef')) {
         e.preventDefault();
         const card = e.target.closest('.entry');
+        if (!card) return;
         const list = card.querySelector('.benef-list');
+        if (!list) return;
         const row = createBeneficiaryRow(card);
         list.appendChild(row);
         updateTableVisibility(card, 'benef');
