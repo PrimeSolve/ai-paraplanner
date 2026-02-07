@@ -5,6 +5,7 @@ import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 import { useFactFind } from '../components/factfind/useFactFind';
+import { useRole } from '../components/RoleContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,7 @@ const subSections = [
 export default function FactFindPersonal() {
   const navigate = useNavigate();
   const { factFind, loading: ffLoading, updateSection, clientId, clientEmail } = useFactFind();
+  const { updateNavigationName } = useRole();
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('client');
   const [activeSubSection, setActiveSubSection] = useState('basic');
@@ -271,6 +273,9 @@ export default function FactFindPersonal() {
           first_name: clientData.first_name,
           last_name: clientData.last_name
         });
+        // Update navigation context so sidebar/breadcrumb refresh
+        const fullName = `${clientData.first_name} ${clientData.last_name}`;
+        updateNavigationName('client', fullName);
       }
 
       // Move to next sub-section or complete
@@ -299,6 +304,13 @@ export default function FactFindPersonal() {
       setActiveSubSection(subSections[currentIndex - 1].id);
     } else {
       navigate(createPageUrl('FactFindWelcome') + `?id=${factFind?.id || ''}`);
+    }
+  };
+
+  const handleNameBlur = () => {
+    const fullName = `${clientData.first_name} ${clientData.last_name}`.trim();
+    if (fullName && fullName !== 'undefined undefined') {
+      updateNavigationName('client', fullName);
     }
   };
 
@@ -501,22 +513,24 @@ export default function FactFindPersonal() {
                   <>
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">First name</Label>
-                        <Input
-                          value={formData.first_name}
-                          onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                          placeholder="Enter first name"
-                          className="border-slate-300"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-slate-700 font-semibold text-sm">Last name</Label>
-                        <Input
-                          value={formData.last_name}
-                          onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                          placeholder="Enter last name"
-                          className="border-slate-300"
-                        />
+                             <Label className="text-slate-700 font-semibold text-sm">First name</Label>
+                             <Input
+                               value={formData.first_name}
+                               onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                               onBlur={handleNameBlur}
+                               placeholder="Enter first name"
+                               className="border-slate-300"
+                             />
+                           </div>
+                           <div className="space-y-2">
+                             <Label className="text-slate-700 font-semibold text-sm">Last name</Label>
+                             <Input
+                               value={formData.last_name}
+                               onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                               onBlur={handleNameBlur}
+                               placeholder="Enter last name"
+                               className="border-slate-300"
+                             />
                       </div>
                     </div>
 

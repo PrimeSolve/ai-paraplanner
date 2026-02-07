@@ -122,10 +122,7 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
             <div className="flex flex-col gap-0.5">
               <div className="text-lg font-extrabold text-slate-50">Fact Find</div>
               <div className="text-xs text-slate-400">
-                Client: {navigationChain?.find(n => n.type === 'client')?.name 
-                  || (factFind?.personal?.first_name 
-                    ? `${factFind.personal.first_name} ${factFind.personal.last_name}` 
-                    : 'Unknown Client')}
+               Client: {navigationChain?.find(n => n.type === 'client')?.name || 'Unknown Client'}
               </div>
             </div>
           </div>

@@ -119,6 +119,15 @@ export function RoleProvider({ children }) {
     setNavigationChain([]);
   };
 
+  // Update the name of an item in the navigation chain
+  const updateNavigationName = useCallback((type, newName) => {
+    setNavigationChain(prev => 
+      prev.map(item => 
+        item.type === type ? { ...item, name: newName } : item
+      )
+    );
+  }, []);
+
   // Helper getters
   const currentLevel = navigationChain.length > 0 
     ? navigationChain[navigationChain.length - 1] 
@@ -152,6 +161,7 @@ export function RoleProvider({ children }) {
       navigateToLevel,
       resetToOriginal,
       getIdForType,
+      updateNavigationName,
     }}>
       {children}
     </RoleContext.Provider>
