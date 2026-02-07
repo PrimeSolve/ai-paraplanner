@@ -47,7 +47,6 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import AdminAdviceGroupDetail from './pages/AdminAdviceGroupDetail';
 import AdminAdviceGroups from './pages/AdminAdviceGroups';
 import AdminAdvisers from './pages/AdminAdvisers';
 import AdminClients from './pages/AdminClients';
@@ -142,7 +141,6 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "AdminAdviceGroupDetail": AdminAdviceGroupDetail,
     "AdminAdviceGroups": AdminAdviceGroups,
     "AdminAdvisers": AdminAdvisers,
     "AdminClients": AdminClients,
@@ -236,7 +234,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "AdminAdviceGroupDetail",
+    mainPage: "AdminAdviceGroups",
     Pages: PAGES,
     Layout: __Layout,
 };
