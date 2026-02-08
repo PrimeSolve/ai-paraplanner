@@ -81,7 +81,7 @@ export default function FactFindWelcome() {
           </Card>
 
           {/* Tools Section */}
-          <div>
+          <div className="text-center">
             <h2 className="text-lg font-bold text-slate-800 mb-3">Tools to help you along the way</h2>
             <div className="grid md:grid-cols-3 gap-4">
               <Card className="border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer">
