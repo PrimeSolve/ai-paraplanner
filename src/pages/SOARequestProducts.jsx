@@ -106,20 +106,8 @@ export default function SOARequestProducts() {
     return () => window.removeEventListener('soa-save-before-nav', handleSaveBeforeNav);
   }, [soaRequest?.id, newTrusts, newCompanies, newSMSFs, products, mainTab, entityTab, activeTrustIdx, activeCompanyIdx, activeSMSFIdx, activeProductIdx]);
 
-  // Auto-save on any change
-  useEffect(() => {
-    if (!soaRequest?.id) return;
-    
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      saveProductsEntities();
-    }, 500);
-
-    return () => clearTimeout(debounceRef.current);
-  }, [newTrusts, newCompanies, newSMSFs, products, mainTab, entityTab, activeTrustIdx, activeCompanyIdx, activeSMSFIdx, activeProductIdx]);
-
-  const saveProductsEntities = async () => {
-    if (!soaRequest?.id) return;
+  const handleSaveAndContinue = async () => {
+    setSaving(true);
     try {
       await base44.entities.SOARequest.update(soaRequest.id, {
         products_entities: {
@@ -137,8 +125,12 @@ export default function SOARequestProducts() {
           }
         }
       });
+      navigate(createPageUrl('SOARequestInsurance') + `?id=${soaRequest.id}`);
     } catch (error) {
-      console.error('Error saving:', error);
+      console.error('Save failed:', error);
+      toast.error('Failed to save');
+    } finally {
+      setSaving(false);
     }
   };
 
