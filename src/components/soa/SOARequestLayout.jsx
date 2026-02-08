@@ -127,6 +127,26 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
     }
   }, [soaRequest?.client_id]);
 
+  const handleNavigation = async (targetPath) => {
+    const savePromise = new Promise((resolve) => {
+      const handler = () => {
+        window.removeEventListener('soa-save-complete', handler);
+        resolve();
+      };
+      window.addEventListener('soa-save-complete', handler);
+      window.dispatchEvent(new Event('soa-save-before-nav'));
+      
+      // Safety timeout
+      setTimeout(() => {
+        window.removeEventListener('soa-save-complete', handler);
+        resolve();
+      }, 2000);
+    });
+    
+    await savePromise;
+    navigate(targetPath);
+  };
+
   const getCompletionForSection = (sectionId) => {
     // TODO: Implement completion tracking
     return 0;
