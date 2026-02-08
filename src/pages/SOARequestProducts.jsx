@@ -189,14 +189,25 @@ export default function SOARequestProducts() {
           new_trusts: newTrusts,
           new_companies: newCompanies,
           new_smsf: newSMSFs,
-          products: products,
+          products: {
+            superannuation: superProducts,
+            pension: pensionProducts,
+            annuity: annuityProducts,
+            wrap: wrapProducts,
+            investment_bond: bondProducts
+          },
           currentMainTab: mainTab,
           currentEntityTab: entityTab,
+          currentProductTab: productTab,
           activeIndex: {
             trust: activeTrustIdx,
             company: activeCompanyIdx,
             smsf: activeSMSFIdx,
-            product: activeProductIdx
+            super: activeSuperIdx,
+            pension: activePensionIdx,
+            annuity: activeAnnuityIdx,
+            wrap: activeWrapIdx,
+            bond: activeBondIdx
           }
         }
       });
