@@ -89,8 +89,8 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
      alert('Step 2: Client = ' + client?.name + ', fact_find_id = ' + client?.fact_find_id);
 
      const soaRequest = await base44.entities.SOARequest.create({
-       client_id: client.id,
-       fact_find_id: client.fact_find_id || null,
+       client_id: selectedClient,
+       fact_find_id: client?.fact_find_id || null,
        status: 'draft',
        completion_percentage: 0,
        sections_completed: [],
@@ -105,18 +105,18 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
      });
 
      alert('Step 3: SOA Request created! ID = ' + soaRequest.id);
-     alert('Step 4: About to navigate to SOARequestDetails with id=' + soaRequest.id);
      
-     onSuccess(soaRequest.id);
-     setSelectedClient('');
+     // Close modal
      onClose();
+     
+     alert('Step 4: Modal closed, navigating to SOARequestDetails');
      
      // Navigate to the SOA Request
      navigate(createPageUrl('SOARequestDetails') + '?id=' + soaRequest.id);
      
     } catch (error) {
      console.error('Failed to create SOA request:', error);
-     alert('ERROR: ' + error.message + '\n\nFull error: ' + JSON.stringify(error));
+     alert('ERROR: ' + error.message);
     } finally {
      setLoading(false);
     }
