@@ -678,7 +678,7 @@ export default function FactFindInvestment() {
                           >
                             <option value="">Select owner…</option>
                             {bondOwnerEntities.map(entity => (
-                              <option key={entity.id} value={entity.id}>{entity.label} ({entity.type})</option>
+                              <option key={entity.id} value={entity.id}>{'\u25CF'} {entity.label} ({entity.type})</option>
                             ))}
                           </select>
                         </div>

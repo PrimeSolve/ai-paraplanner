@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft, Edit2, Trash2, Plus } from 'lucide-react';
+import EntityDot from '../components/factfind/EntityDot';
 
 export default function FactFindAssetsLiabilities() {
   const navigate = useNavigate();
@@ -303,7 +304,7 @@ export default function FactFindAssetsLiabilities() {
                             <select value={activeAsset.a_owner} onChange={(e) => updateAsset(activeAssetIndex, 'a_owner', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                               <option value="">Select owner…</option>
                               {assetEntities.map(entity => (
-                                <option key={entity.id} value={entity.id}>{entity.label} ({entity.type})</option>
+                                <option key={entity.id} value={entity.id}>{'\u25CF'} {entity.label} ({entity.type})</option>
                               ))}
                             </select>
                           </div>
@@ -471,7 +472,7 @@ export default function FactFindAssetsLiabilities() {
                             <select value={activeDebt.d_owner} onChange={(e) => updateDebt(activeDebtIndex, 'd_owner', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                               <option value="">Select owner…</option>
                               {assetEntities.map(entity => (
-                                <option key={entity.id} value={entity.id}>{entity.label} ({entity.type})</option>
+                                <option key={entity.id} value={entity.id}>{'\u25CF'} {entity.label} ({entity.type})</option>
                               ))}
                             </select>
                           </div>
