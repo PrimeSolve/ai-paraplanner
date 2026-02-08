@@ -182,55 +182,65 @@ export default function SOARequestProducts() {
   }, [soaRequest?.id, newTrusts, newCompanies, newSMSFs, superProducts, pensionProducts, annuityProducts, wrapProducts, bondProducts, mainTab, entityTab, productTab, activeTrustIdx, activeCompanyIdx, activeSMSFIdx, activeSuperIdx, activePensionIdx, activeAnnuityIdx, activeWrapIdx, activeBondIdx]);
 
   const handleSaveAndContinue = async () => {
-    alert('BUTTON CLICKED - soaRequest is: ' + (soaRequest ? soaRequest.id : 'NULL'));
+    alert('STEP 1: Starting save');
     
     if (!soaRequest?.id) {
-      alert('SOA REQUEST IS NULL - cannot save');
+      alert('SOA REQUEST IS NULL');
       return;
     }
+
+    const payload = {
+      products_entities: {
+        new_trusts: newTrusts,
+        new_companies: newCompanies,
+        new_smsf: newSMSFs,
+        products: {
+          superannuation: superProducts,
+          pension: pensionProducts,
+          annuity: annuityProducts,
+          wrap: wrapProducts,
+          investment_bond: bondProducts
+        },
+        currentMainTab: mainTab,
+        currentEntityTab: entityTab,
+        currentProductTab: productTab,
+        activeIndex: {
+          trust: activeTrustIdx,
+          company: activeCompanyIdx,
+          smsf: activeSMSFIdx,
+          super: activeSuperIdx,
+          pension: activePensionIdx,
+          annuity: activeAnnuityIdx,
+          wrap: activeWrapIdx,
+          bond: activeBondIdx
+        }
+      }
+    };
+
+    alert('STEP 2: Payload keys = ' + Object.keys(payload.products_entities).join(', ') + 
+      '\nnew_trusts: ' + newTrusts.length + 
+      '\nnew_companies: ' + newCompanies.length + 
+      '\nnew_smsf: ' + newSMSFs.length);
+
     setSaving(true);
     try {
-      await base44.entities.SOARequest.update(soaRequest.id, {
-        products_entities: {
-          new_trusts: newTrusts,
-          new_companies: newCompanies,
-          new_smsf: newSMSFs,
-          products: {
-            superannuation: superProducts,
-            pension: pensionProducts,
-            annuity: annuityProducts,
-            wrap: wrapProducts,
-            investment_bond: bondProducts
-          },
-          currentMainTab: mainTab,
-          currentEntityTab: entityTab,
-          currentProductTab: productTab,
-          activeIndex: {
-            trust: activeTrustIdx,
-            company: activeCompanyIdx,
-            smsf: activeSMSFIdx,
-            super: activeSuperIdx,
-            pension: activePensionIdx,
-            annuity: activeAnnuityIdx,
-            wrap: activeWrapIdx,
-            bond: activeBondIdx
-          }
-        }
-      });
-      
-      // DEBUG: Read back immediately to verify save worked
+      await base44.entities.SOARequest.update(soaRequest.id, payload);
+      alert('STEP 3: Save succeeded');
+    } catch (err) {
+      alert('STEP 3: Save FAILED - ' + err.message);
+      console.error('Save error:', err);
+      setSaving(false);
+      return;
+    }
+
+    try {
       const check = await base44.entities.SOARequest.get(soaRequest.id);
-      alert('SAVE CHECK:\n' +
-        'new_trusts: ' + JSON.stringify(check.products_entities?.new_trusts?.length || 0) + '\n' +
-        'new_companies: ' + JSON.stringify(check.products_entities?.new_companies?.length || 0) + '\n' +
-        'new_smsf: ' + JSON.stringify(check.products_entities?.new_smsf?.length || 0) + '\n' +
-        'products: ' + JSON.stringify(check.products_entities?.products || 'EMPTY')
-      );
-      
+      alert('STEP 4: Read back - new_trusts: ' + (check.products_entities?.new_trusts?.length || 0) + 
+        ', new_companies: ' + (check.products_entities?.new_companies?.length || 0) + 
+        ', new_smsf: ' + (check.products_entities?.new_smsf?.length || 0));
       navigate(createPageUrl('SOARequestInsurance') + `?id=${soaRequest.id}`);
-    } catch (error) {
-      console.error('Save failed:', error);
-      toast.error('Failed to save');
+    } catch (err) {
+      alert('STEP 4: Read back FAILED - ' + err.message);
     } finally {
       setSaving(false);
     }
