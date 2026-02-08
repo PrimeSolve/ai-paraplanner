@@ -18,9 +18,16 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
   const loadClients = async () => {
     try {
       setClientsLoading(true);
+      
+      // Get current user's email
+      const currentUser = await base44.auth.me();
+      console.log('Current adviser email:', currentUser.email);
+      
       const clientData = await base44.entities.Client.filter({
-        adviser_email: adviserEmail
+        adviser_email: currentUser.email
       });
+      
+      console.log('Clients loaded:', clientData);
       
       // Fetch FactFind status for each client
       const clientsWithFactFind = await Promise.all(
@@ -51,7 +58,9 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
         })
       );
       
+      console.log('Clients with FactFind data:', clientsWithFactFind);
       setClients(clientsWithFactFind);
+      console.log('State updated, clients:', clientsWithFactFind.length);
     } catch (error) {
       console.error('Failed to load clients:', error);
     } finally {
