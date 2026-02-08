@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
+import { useSOAEntities } from '../components/soa/useSOAEntities';
 import { Settings, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -19,9 +20,9 @@ export default function SOARequestInsurance() {
   const [soaRequest, setSOARequest] = useState(null);
   const [factFind, setFactFind] = useState(null);
   const [currentPerson, setCurrentPerson] = useState('client');
-  const [clientName, setClientName] = useState('Client');
-  const [partnerName, setPartnerName] = useState('Partner');
-  const [clientId, setClientId] = useState(null);
+  const [soaId, setSOAId] = useState(null);
+  const { getByTypes } = useSOAEntities(soaId);
+  const principals = getByTypes(['principal']);
   
   // Modals state
   const [showAssumptionsModal, setShowAssumptionsModal] = useState(false);
@@ -102,28 +103,12 @@ export default function SOARequestInsurance() {
         const id = urlParams.get('id');
         
         if (id) {
+          setSOAId(id);
           const requests = await base44.entities.SOARequest.filter({ id });
           if (requests[0]) {
             setSOARequest(requests[0]);
-            setClientId(requests[0].client_id);
             const insurance = requests[0].insurance || { client: getDefaultPersonData(), partner: getDefaultPersonData() };
             setInsuranceData(insurance);
-
-            // Load client and fact find for names
-            if (requests[0].client_id) {
-              const clients = await base44.entities.Client.filter({ id: requests[0].client_id });
-              if (clients[0]) {
-                setClientName(`${clients[0].first_name || ''} ${clients[0].last_name || ''}`.trim() || 'Client');
-              }
-            }
-
-            // Load principal records for partner name
-            if (requests[0].client_id) {
-              const partners = await base44.entities.Principal.filter({ client_id: requests[0].client_id, role: 'partner' });
-              if (partners[0]) {
-                setPartnerName(`${partners[0].first_name || ''} ${partners[0].last_name || ''}`.trim() || 'Partner');
-              }
-            }
           }
         }
       } catch (error) {
@@ -638,26 +623,30 @@ export default function SOARequestInsurance() {
               <div className="flex items-center justify-between">
                 {/* Person Switcher */}
                 <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-1">
-                  <button
-                    className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
-                      currentPerson === 'client' 
-                        ? 'bg-white text-slate-900 shadow-sm' 
-                        : 'text-slate-500 hover:text-slate-700'
-                    }`}
-                    onClick={() => setCurrentPerson('client')}
-                  >
-                    {clientName}
-                  </button>
-                  <button
-                    className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
-                      currentPerson === 'partner' 
-                        ? 'bg-white text-slate-900 shadow-sm' 
-                        : 'text-slate-500 hover:text-slate-700'
-                    }`}
-                    onClick={() => setCurrentPerson('partner')}
-                  >
-                    {partnerName}
-                  </button>
+                  {principals[0] && (
+                    <button
+                      className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
+                        currentPerson === 'client' 
+                          ? 'bg-white text-slate-900 shadow-sm' 
+                          : 'text-slate-500 hover:text-slate-700'
+                      }`}
+                      onClick={() => setCurrentPerson('client')}
+                    >
+                      {principals[0].label || 'Client'}
+                    </button>
+                  )}
+                  {principals[1] && (
+                    <button
+                      className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
+                        currentPerson === 'partner' 
+                          ? 'bg-white text-slate-900 shadow-sm' 
+                          : 'text-slate-500 hover:text-slate-700'
+                      }`}
+                      onClick={() => setCurrentPerson('partner')}
+                    >
+                      {principals[1].label || 'Partner'}
+                    </button>
+                  )}
                 </div>
                 
                 {/* Key Assumptions Button */}
@@ -1436,7 +1425,7 @@ export default function SOARequestInsurance() {
           <div className="space-y-6">
             {/* Info Note */}
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-              Configure key assumptions for {currentPerson === 'client' ? clientName : partnerName}
+             Configure key assumptions for {currentPerson === 'client' ? (principals[0]?.label || 'Client') : (principals[1]?.label || 'Partner')}
             </div>
             
             {/* Personal Details Section */}
