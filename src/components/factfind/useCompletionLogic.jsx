@@ -460,11 +460,12 @@ export function useCompletionLogic() {
         percentage,
         isManuallyComplete,
         isComplete,
-        displayValue: isManuallyComplete && percentage < 100 ? '✓' : `${percentage}%`,
-        color: isComplete ? '#10b981'
-          : percentage >= 50 ? '#f59e0b'
-            : percentage > 0 ? '#ef4444'
-              : '#9ca3af'
+        displayValue: `${percentage}%`,
+        color: percentage === 100 ? '#10b981'
+          : isManuallyComplete ? '#10b981'
+            : percentage >= 50 ? '#f59e0b'
+              : percentage > 0 ? '#ef4444'
+                : '#9ca3af'
       };
     });
 
