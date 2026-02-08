@@ -181,7 +181,7 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
         </button>
 
         <div style={{ background: '#fef08a', padding: '10px', fontSize: '12px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #fcd34d' }}>
-         <strong>DEBUG STATE:</strong> clients.length = {clients?.length || 0} | clients = {JSON.stringify(clients?.map(c => c.first_name) || [])}
+          <strong>DEBUG STATE:</strong> clients.length = {clients?.length || 0} | clients = {JSON.stringify(clients?.map(c => c.name) || [])}
         </div>
 
         <div style={{ marginBottom: '32px' }}>
