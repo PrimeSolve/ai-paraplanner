@@ -26,7 +26,7 @@ const subSections = [
 
 export default function FactFindPersonal() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading, updateSection, clientId, clientEmail } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection, setFactFind, clientId, clientEmail } = useFactFind();
   const { updateNavigationName } = useRole();
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('client');
@@ -259,11 +259,22 @@ export default function FactFindPersonal() {
       // Always update (first load or when percentage changed)
       if (completionPct !== factFind.personal?.completionPct) {
         console.log('Updating completionPct from', factFind.personal?.completionPct, 'to', completionPct);
-        await updateSection('personal', {
+        const result = await updateSection('personal', {
           ...clientData,
           partner: hasPartner ? partnerData : null,
           completionPct
         });
+        
+        // Update local factFind state so sidebar sees the new completion percentage
+        if (result) {
+          setFactFind(prev => ({
+            ...prev,
+            personal: {
+              ...prev.personal,
+              completionPct
+            }
+          }));
+        }
       }
     };
     
