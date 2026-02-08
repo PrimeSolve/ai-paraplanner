@@ -177,7 +177,7 @@ export default function FactFindSuperannuation() {
 
     if (tab === 'super') {
       const ownerSelect = card.querySelector('select[name="owner"]');
-      if (ownerSelect) {
+      if (ownerSelect && principalsOnly) {
         // Populate with principals using useFactFindEntities
         ownerSelect.innerHTML = '<option value="">Select owner…</option>';
         principalsOnly.forEach(entity => {
@@ -226,7 +226,7 @@ export default function FactFindSuperannuation() {
 
     if (tab === 'pension') {
       const ownerSelect = card.querySelector('select[name="owner"]');
-      if (ownerSelect) {
+      if (ownerSelect && principalsOnly) {
         // Populate with principals using useFactFindEntities
         ownerSelect.innerHTML = '<option value="">Select owner…</option>';
         principalsOnly.forEach(entity => {
@@ -272,7 +272,7 @@ export default function FactFindSuperannuation() {
 
     if (tab === 'annuities') {
       const ownersSelect = card.querySelector('select[name="owners"]');
-      if (ownersSelect) {
+      if (ownersSelect && principalsOnly) {
         // Populate with principals using useFactFindEntities
         ownersSelect.innerHTML = '';
         principalsOnly.forEach(entity => {
@@ -372,9 +372,9 @@ export default function FactFindSuperannuation() {
     row.className = 'benef-row border-b border-slate-100 hover:bg-purple-50/50';
 
     // Build entity options using useFactFindEntities
-    const entityOptions = beneficiaryEntities
-      .map(entity => `<option value="${entity.id}">${entity.label} (${entity.type})</option>`)
-      .join('');
+    const entityOptions = beneficiaryEntities && beneficiaryEntities.length > 0
+      ? beneficiaryEntities.map(entity => `<option value="${entity.id}">${entity.label} (${entity.type})</option>`).join('')
+      : '';
     
     // Add Estate as static option
     const estateOption = '<option value="estate">Estate</option>';
@@ -468,7 +468,8 @@ export default function FactFindSuperannuation() {
     wrap.appendChild(node);
 
     if (existingData) {
-      fillCardFromData(node, tab, existingData);
+      // Delay filling to ensure hook data is ready
+      setTimeout(() => fillCardFromData(node, tab, existingData), 50);
     }
 
     renumber(tab);
