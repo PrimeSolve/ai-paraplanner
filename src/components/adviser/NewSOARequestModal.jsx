@@ -16,18 +16,21 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
   }, [isOpen]);
 
   const loadClients = async () => {
+    console.log('1. loadClients called');
+    
     try {
       setClientsLoading(true);
+      console.log('1.5. setClientsLoading set to true');
       
       // Get current user's email
       const currentUser = await base44.auth.me();
-      console.log('Current adviser email:', currentUser.email);
+      console.log('2. currentUser:', currentUser.email);
       
       const clientData = await base44.entities.Client.filter({
         adviser_email: currentUser.email
       });
       
-      console.log('Clients loaded:', clientData);
+      console.log('3. myClients:', clientData.length, clientData);
       
       // Fetch FactFind status for each client
       const clientsWithFactFind = await Promise.all(
@@ -58,11 +61,11 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
         })
       );
       
-      console.log('Clients with FactFind data:', clientsWithFactFind);
+      console.log('3.5. clientsWithFactFind:', clientsWithFactFind.length, clientsWithFactFind);
       setClients(clientsWithFactFind);
-      console.log('State updated, clients:', clientsWithFactFind.length);
+      console.log('4. setClients called with', clientsWithFactFind.length, 'clients');
     } catch (error) {
-      console.error('Failed to load clients:', error);
+      console.error('ERROR in loadClients:', error);
     } finally {
       setClientsLoading(false);
     }
