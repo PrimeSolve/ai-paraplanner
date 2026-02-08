@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import EntityDot from '../components/factfind/EntityDot';
+import EntitySelect from '../components/factfind/EntitySelect';
 
 // Insurance type configuration
 const INSURANCE_TYPE_CONFIG = {
@@ -346,30 +347,22 @@ export default function FactFindInsurance() {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-2">Policy owner</label>
-                      <select
+                      <EntitySelect
                         value={currentPolicy.pol_owner}
-                        onChange={(e) => updatePolicy('pol_owner', e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">Select…</option>
-                        {principalEntities.map(entity => (
-                          <option key={entity.id} value={entity.id}>{'\u25CF'} {entity.label}</option>
-                        ))}
-                      </select>
+                        onChange={(id) => updatePolicy('pol_owner', id)}
+                        entities={principalEntities}
+                        placeholder="Select…"
+                      />
                     </div>
 
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-2">Life insured</label>
-                      <select
+                      <EntitySelect
                         value={currentPolicy.pol_insured}
-                        onChange={(e) => updatePolicy('pol_insured', e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">Select…</option>
-                        {principalEntities.map(entity => (
-                          <option key={entity.id} value={entity.id}>{'\u25CF'} {entity.label}</option>
-                        ))}
-                      </select>
+                        onChange={(id) => updatePolicy('pol_insured', id)}
+                        entities={principalEntities}
+                        placeholder="Select…"
+                      />
                     </div>
                   </div>
 
@@ -395,18 +388,12 @@ export default function FactFindInsurance() {
                           <label className="block text-sm font-semibold text-slate-700 mb-2">Which fund?</label>
                           {currentPolicy.pol_owner ? (
                             ownerFunds.length > 0 ? (
-                              <select
+                              <EntitySelect
                                 value={currentPolicy.linked_fund_id || ''}
-                                onChange={(e) => updatePolicy('linked_fund_id', e.target.value)}
-                                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              >
-                                <option value="">Select fund…</option>
-                                {ownerFunds.map(fund => (
-                                  <option key={fund.id} value={fund.id}>
-                                    {'\u25CF'} {fund.label} ({fund.type})
-                                  </option>
-                                ))}
-                              </select>
+                                onChange={(id) => updatePolicy('linked_fund_id', id)}
+                                entities={ownerFunds}
+                                placeholder="Select fund…"
+                              />
                             ) : (
                               <div className="w-full px-3 py-2 border border-amber-300 bg-amber-50 rounded-md text-sm text-amber-700">
                                 No superannuation funds found for {getOwnerName(currentPolicy.pol_owner)}. Add funds on the Superannuation or SMSF page first.
