@@ -637,10 +637,8 @@ export default function FactFindRiskProfile() {
 
                   {questions.map((question, qIndex) => (
                     <Card key={question.id} className="border-slate-200 shadow-sm">
-                      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3 rounded-t-lg">
-                        <h4 className="font-bold text-white">Q{qIndex + 1}</h4>
-                      </div>
                       <CardContent className="p-6 space-y-3">
+                        <div className="text-xs font-bold text-slate-500 mb-2">QUESTION {qIndex + 1}</div>
                         <div>
                           <h5 className="font-bold text-slate-800 mb-1">{question.text}</h5>
                           <p className="text-sm text-slate-600">{question.subtext}</p>
@@ -684,10 +682,8 @@ export default function FactFindRiskProfile() {
 
               {((mode === 'calculate' && currentData.profile) || (mode === 'specify' && currentData.specifiedProfile)) && (
                 <Card className="border-slate-200 shadow-sm">
-                  <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-3">
-                    <h4 className="font-bold text-white">Risk Profile Result</h4>
-                  </div>
                   <CardContent className="p-6 space-y-4">
+                    <h4 className="font-bold text-slate-800 text-lg mb-4">Risk Profile Result</h4>
                     {mode === 'calculate' && (
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
@@ -805,10 +801,8 @@ export default function FactFindRiskProfile() {
               {/* Comments Section - After Results */}
               {((mode === 'calculate' && currentData.profile) || (mode === 'specify' && currentData.specifiedProfile)) && (
                 <Card className="border-slate-200 shadow-sm">
-                  <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 rounded-t-lg">
-                    <h4 className="font-bold text-white">Comments & calculated profile - {activeOwner}</h4>
-                  </div>
                   <CardContent className="p-6 space-y-4">
+                    <h4 className="font-bold text-slate-800 text-lg mb-4">Comments & Adjustments</h4>
                     <div className="space-y-2">
                       <Label className="text-slate-700 font-semibold text-sm">Adviser comments</Label>
                       <Textarea
@@ -887,10 +881,8 @@ export default function FactFindRiskProfile() {
               <div className="grid md:grid-cols-2 gap-4">
                 {PROFILE_DEFINITIONS.map((profile) => (
                   <Card key={profile.name} className="border-slate-200 shadow-sm">
-                    <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-4 py-2 rounded-t-lg">
-                      <h5 className="font-bold text-white text-sm">{profile.name}</h5>
-                    </div>
                     <CardContent className="p-4 space-y-3">
+                      <h5 className="font-bold text-slate-800 text-sm">{profile.name}</h5>
                       <div className="text-xs text-slate-600 mb-2">
                         Growth {profile.growth}% / Defensive {profile.defensive}%
                       </div>
@@ -908,10 +900,8 @@ export default function FactFindRiskProfile() {
 
               {/* Portfolio Historical Returns */}
               <Card className="border-slate-200 shadow-sm">
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 rounded-t-lg">
-                  <h4 className="font-bold text-white">Portfolio Historical Returns</h4>
-                </div>
                 <CardContent className="p-6">
+                  <h4 className="font-bold text-slate-800 text-lg mb-4">Portfolio Historical Returns</h4>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
@@ -943,10 +933,8 @@ export default function FactFindRiskProfile() {
 
               {/* Asset Classes Historical Returns */}
               <Card className="border-slate-200 shadow-sm">
-                <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3 rounded-t-lg">
-                  <h4 className="font-bold text-white">Asset Classes Historical Returns</h4>
-                </div>
                 <CardContent className="p-6">
+                  <h4 className="font-bold text-slate-800 text-lg mb-4">Asset Classes Historical Returns</h4>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>

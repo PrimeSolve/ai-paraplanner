@@ -438,9 +438,6 @@ export default function FactFindAdviceReason() {
 
            {currentTab === 'reasons' ? (
             <Card className="border-slate-200 shadow-sm">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 rounded-t-lg">
-                <h4 className="font-bold text-white text-lg">📋 Specify your reasons for seeking advice</h4>
-              </div>
               <CardContent className="p-6">
                 {/* 3-COLUMN GRID OF GROUP CARDS */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -534,9 +531,6 @@ export default function FactFindAdviceReason() {
                   </Card>
 
                   <Card className="border-slate-200 shadow-sm">
-                    <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3 rounded-t-lg">
-                      <h4 className="font-bold text-white">🎯 Retirement - {activePerson.retirement === 'c1' ? principalNames.client : principalNames.partner}</h4>
-                    </div>
                     <CardContent className="p-6 space-y-4">
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
@@ -631,9 +625,6 @@ export default function FactFindAdviceReason() {
                   </Card>
 
                   <Card className="border-slate-200 shadow-sm">
-                    <div className="bg-gradient-to-r from-amber-600 to-orange-600 px-6 py-3 rounded-t-lg">
-                      <h4 className="font-bold text-white">🏛️ Estate - {activePerson.estate === 'c1' ? principalNames.client : principalNames.partner}</h4>
-                    </div>
                     <CardContent className="p-6 space-y-4">
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
@@ -740,9 +731,6 @@ export default function FactFindAdviceReason() {
                   </Card>
 
                   <Card className="border-slate-200 shadow-sm">
-                    <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 rounded-t-lg">
-                      <h4 className="font-bold text-white">🛡️ Wealth Protection - {activePerson.protection === 'c1' ? principalNames.client : principalNames.partner}</h4>
-                    </div>
                     <CardContent className="p-6 space-y-4">
                       <div className="space-y-3">
                         <label className="block text-sm font-semibold text-slate-700">Specify what insurance you want to protect your family against:</label>
@@ -811,9 +799,6 @@ export default function FactFindAdviceReason() {
                   </Card>
 
                   <Card className="border-slate-200 shadow-sm">
-                    <div className="bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-3 rounded-t-lg">
-                      <h4 className="font-bold text-white">💼 Financial Products - {activePerson.products === 'c1' ? principalNames.client : principalNames.partner}</h4>
-                    </div>
                     <CardContent className="p-6 space-y-4">
                       <div className="space-y-3">
                         <label className="block text-sm font-semibold text-slate-700">Select superannuation features that are important:</label>
@@ -926,9 +911,6 @@ export default function FactFindAdviceReason() {
                       {/* Editor */}
                       {activeObjectiveIndex !== null && objectives[activeObjectiveIndex] && (
                         <Card className="border-slate-200 shadow-sm border-blue-300 bg-blue-50/50">
-                          <div className="bg-blue-600 px-6 py-3 rounded-t-lg">
-                            <h4 className="font-bold text-white">✏️ Edit Objective</h4>
-                          </div>
                           <CardContent className="p-6 space-y-4">
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
