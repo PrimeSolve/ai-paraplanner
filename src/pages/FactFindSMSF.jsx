@@ -17,7 +17,7 @@ export default function FactFindSMSF() {
   const navigate = useNavigate();
   const { factFind, loading: ffLoading } = useFactFind();
   const principalsOnly = useFactFindEntities(factFind, { types: ['Principal'] });
-  const allEntities = useFactFindEntities(factFind);
+  const beneficiaryEntities = useFactFindEntities(factFind, { types: ['Principal', 'Dependant'] });
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -358,7 +358,7 @@ export default function FactFindSMSF() {
    }
 
    return row;
-   }, [allEntities]);
+   }, [beneficiaryEntities]);
 
   // ============================================
   // CREATE BENEFICIARY ROW
@@ -368,10 +368,13 @@ export default function FactFindSMSF() {
     const row = document.createElement('tr');
     row.className = 'benef-row border-b border-slate-100 hover:bg-purple-50/50';
 
-    // Build entity options from allEntities (beneficiaries can be anyone)
-    const entityOptions = allEntities.map(entity => 
-      `<option value="${entity.id}">${entity.label}</option>`
+    // Build entity options from beneficiaryEntities (principals and dependants only)
+    const entityOptions = beneficiaryEntities.map(entity => 
+      `<option value="${entity.id}">${entity.label} (${entity.type})</option>`
     ).join('');
+    
+    // Add Estate as a static option
+    const estateOption = '<option value="estate">Estate</option>';
 
     // Get account count from the card
     const acctList = card.querySelector('.acct-list');
@@ -391,6 +394,7 @@ export default function FactFindSMSF() {
         <select name="benef_who" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select entity…</option>
           ${entityOptions}
+          ${estateOption}
         </select>
       </td>
       <td class="py-2 px-2">
