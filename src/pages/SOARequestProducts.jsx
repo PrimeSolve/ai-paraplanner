@@ -237,8 +237,11 @@ export default function SOARequestProducts() {
 
   const trustBeneficiaryOptions = getFullEntityList(`new_trust_${activeTrustIdx}`);
   const companyShareholderOptions = getFullEntityList(`new_company_${activeCompanyIdx}`);
-  const smsfAccountOwnerOptions = getFullEntityList();
-  const smsfBeneficiaryOptions = getFullEntityList();
+  const smsfAccountOwnerOptions = getByTypes(['principal']);
+  const smsfBeneficiaryOptions = [
+    ...getByTypes(['principal', 'child', 'dependant']),
+    { id: 'estate', label: 'Estate', type: 'estate', color: '#6b7280' }
+  ];
 
   // Product owner options by type
   const superOwnerOptions = getByTypes(['principal']);
@@ -246,13 +249,6 @@ export default function SOARequestProducts() {
   const annuityOwnerOptions = getByTypes(['principal']);
   const wrapOwnerOptions = getByTypes(['principal', 'trust', 'company', 'smsf']);
   const bondOwnerOptions = getByTypes(['principal', 'trust']);
-
-  // SMSF specific options
-  const smsfAccountOwnerOptions = getByTypes(['principal']);
-  const smsfBeneficiaryOptions = [
-    ...getByTypes(['principal', 'child', 'dependant']),
-    { id: 'estate', label: 'Estate', type: 'estate', color: '#6b7280' }
-  ];
 
   // ============ RENDER HELPERS ============
 
