@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft, Edit2, Trash2, Plus } from 'lucide-react';
 import EntityDot from '../components/factfind/EntityDot';
+import EntitySelect from '../components/factfind/EntitySelect';
 
 export default function FactFindAssetsLiabilities() {
   const navigate = useNavigate();
@@ -301,12 +302,12 @@ export default function FactFindAssetsLiabilities() {
                           </div>
                           <div>
                             <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
-                            <select value={activeAsset.a_owner} onChange={(e) => updateAsset(activeAssetIndex, 'a_owner', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                              <option value="">Select owner…</option>
-                              {assetEntities.map(entity => (
-                                <option key={entity.id} value={entity.id}>{'\u25CF'} {entity.label} ({entity.type})</option>
-                              ))}
-                            </select>
+                            <EntitySelect
+                              value={activeAsset.a_owner}
+                              onChange={(id) => updateAsset(activeAssetIndex, 'a_owner', id)}
+                              entities={assetEntities}
+                              placeholder="Select owner…"
+                            />
                           </div>
                         </div>
 
@@ -469,12 +470,12 @@ export default function FactFindAssetsLiabilities() {
                           </div>
                           <div>
                             <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
-                            <select value={activeDebt.d_owner} onChange={(e) => updateDebt(activeDebtIndex, 'd_owner', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                              <option value="">Select owner…</option>
-                              {assetEntities.map(entity => (
-                                <option key={entity.id} value={entity.id}>{'\u25CF'} {entity.label} ({entity.type})</option>
-                              ))}
-                            </select>
+                            <EntitySelect
+                              value={activeDebt.d_owner}
+                              onChange={(id) => updateDebt(activeDebtIndex, 'd_owner', id)}
+                              entities={assetEntities}
+                              placeholder="Select owner…"
+                            />
                           </div>
                         </div>
 
