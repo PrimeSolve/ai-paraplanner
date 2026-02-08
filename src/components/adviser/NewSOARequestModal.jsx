@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { X } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviserEmail }) {
   const navigate = useNavigate();
