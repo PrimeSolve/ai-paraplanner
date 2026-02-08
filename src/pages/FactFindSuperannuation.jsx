@@ -586,8 +586,8 @@ export default function FactFindSuperannuation() {
                 {mainTab === 'super' && (
                   <>
                     {activeTab === 'fund_details' && (
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div>
+                     <div className="grid md:grid-cols-2 gap-4">
+                       <div>
                           <label className="block text-sm font-semibold text-slate-700 mb-2">Fund name</label>
                           <input
                             type="text"
