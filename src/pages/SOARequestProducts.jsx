@@ -134,12 +134,7 @@ export default function SOARequestProducts() {
     }
   };
 
-  const handleContinue = async () => {
-    setSaving(true);
-    await saveProductsEntities();
-    setSaving(false);
-    navigate(createPageUrl('SOARequestInsurance') + `?id=${soaRequest.id}`);
-  };
+
 
   if (loading) {
     return (
