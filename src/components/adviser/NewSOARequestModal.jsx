@@ -66,26 +66,33 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
     }
 
     try {
-      setLoading(true);
-      const client = clients.find(c => c.id === selectedClient);
-      
-      await base44.entities.SOARequest.create({
-        client_name: `${client.first_name} ${client.last_name}`,
-        client_email: client.email,
-        fact_find_id: client.fact_find_id,
-        status: 'draft',
-        completion_percentage: 0,
-        sections_completed: []
-      });
+     setLoading(true);
+     const client = clients.find(c => c.id === selectedClient);
 
-      onSuccess();
-      setSelectedClient('');
-      onClose();
+     const soaRequest = await base44.entities.SOARequest.create({
+       client_id: client.id,
+       fact_find_id: client.fact_find_id || null,
+       status: 'draft',
+       completion_percentage: 0,
+       sections_completed: [],
+       scope_of_advice: {},
+       products_entities: { products: [], entities: [] },
+       transactions: { buy: [], sell: [], debts: [] },
+       portfolio: { transactions: [] },
+       strategy: { models: [], strategies: [] },
+       assumptions: {},
+       soa_details: {},
+       review_status: { sections: {}, submitted: false }
+     });
+
+     onSuccess(soaRequest.id);
+     setSelectedClient('');
+     onClose();
     } catch (error) {
-      console.error('Failed to create SOA request:', error);
-      alert('Failed to create SOA request');
+     console.error('Failed to create SOA request:', error);
+     alert('Failed to create SOA request');
     } finally {
-      setLoading(false);
+     setLoading(false);
     }
   };
 
