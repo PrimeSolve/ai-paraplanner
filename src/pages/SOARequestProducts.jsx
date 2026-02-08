@@ -1518,8 +1518,49 @@ export default function SOARequestProducts() {
               )}
 
               {mainTab === 'entities' && entityTab === 'smsf' && (
-                <div className="text-center py-12">
-                  <p className="text-slate-600">SMSF implementation coming soon</p>
+                <div className="space-y-6">
+                  {newSMSFs.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-300 rounded-lg">
+                      <div className="text-5xl mb-4">🏦</div>
+                      <h3 className="text-lg font-semibold text-slate-800 mb-2">Are you recommending a new SMSF?</h3>
+                      <p className="text-slate-600 text-center mb-6">Add details about new Self-Managed Super Funds being set up or recommended.</p>
+                      <Button onClick={() => setNewSMSFs([...newSMSFs, { smsf_name: '', fund_type: '', trustee_type: '', acct_type: '', smsf_balance: '', individual_trustee: '', accounts: [], beneficiaries: [] }])} className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add New SMSF
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {newSMSFs.length > 1 && (
+                        <div className="flex gap-2">
+                          {newSMSFs.map((_, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setActiveSMSFIdx(idx)}
+                              style={{
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                backgroundColor: activeSMSFIdx === idx ? '#2563eb' : '#e2e8f0',
+                                color: activeSMSFIdx === idx ? '#fff' : '#64748b',
+                                fontSize: '12px',
+                                fontWeight: 500,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              SMSF {idx + 1}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {renderNewSMSFCard(newSMSFs[activeSMSFIdx], activeSMSFIdx)}
+                      {newSMSFs.length < 2 && (
+                        <Button onClick={() => setNewSMSFs([...newSMSFs, { smsf_name: '', fund_type: '', trustee_type: '', acct_type: '', smsf_balance: '', individual_trustee: '', accounts: [], beneficiaries: [] }])} className="bg-blue-600 hover:bg-blue-700">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Another SMSF
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
