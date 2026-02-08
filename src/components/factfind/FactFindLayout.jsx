@@ -79,6 +79,7 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
   const navigate = useNavigate();
   const { navigationChain } = useRole();
   const [showDashboard, setShowDashboard] = useState(false);
+  const { calculateAllSectionCompletion, calculateOverallCompletion } = useCompletionLogic();
 
   const handleNavClick = async (e, targetPath) => {
     e.preventDefault();
