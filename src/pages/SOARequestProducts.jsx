@@ -35,6 +35,43 @@ export default function SOARequestProducts() {
   // Entity dropdown
   const { entities, getByTypes } = useSOAEntities(soaRequest?.id);
 
+  // Helper to build full entity list including new entities from this page
+  const getFullEntityList = (excludeId = null) => {
+    // Start with all FactFind entities
+    let allEntities = [...entities];
+    
+    // Add new trusts from this page
+    newTrusts.forEach((t, i) => {
+      if (t.trust_name) {
+        allEntities.push({
+          id: `new_trust_${i}`,
+          label: t.trust_name,
+          type: 'trust',
+          color: '#ef4444'
+        });
+      }
+    });
+    
+    // Add new companies from this page
+    newCompanies.forEach((c, i) => {
+      if (c.company_name) {
+        allEntities.push({
+          id: `new_company_${i}`,
+          label: c.company_name,
+          type: 'company',
+          color: '#f97316'
+        });
+      }
+    });
+    
+    // Exclude current entity if specified
+    if (excludeId) {
+      allEntities = allEntities.filter(e => e.id !== excludeId);
+    }
+    
+    return allEntities;
+  };
+
   useEffect(() => {
     const loadData = async () => {
       try {
