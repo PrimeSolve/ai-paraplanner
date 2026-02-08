@@ -24,13 +24,24 @@ export default function SOARequestProducts() {
   const [newTrusts, setNewTrusts] = useState([]);
   const [newCompanies, setNewCompanies] = useState([]);
   const [newSMSFs, setNewSMSFs] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [superProducts, setSuperProducts] = useState([]);
+  const [pensionProducts, setPensionProducts] = useState([]);
+  const [annuityProducts, setAnnuityProducts] = useState([]);
+  const [wrapProducts, setWrapProducts] = useState([]);
+  const [bondProducts, setBondProducts] = useState([]);
 
   // Active indices
   const [activeTrustIdx, setActiveTrustIdx] = useState(0);
   const [activeCompanyIdx, setActiveCompanyIdx] = useState(0);
   const [activeSMSFIdx, setActiveSMSFIdx] = useState(0);
-  const [activeProductIdx, setActiveProductIdx] = useState(0);
+  const [activeSuperIdx, setActiveSuperIdx] = useState(0);
+  const [activePensionIdx, setActivePensionIdx] = useState(0);
+  const [activeAnnuityIdx, setActiveAnnuityIdx] = useState(0);
+  const [activeWrapIdx, setActiveWrapIdx] = useState(0);
+  const [activeBondIdx, setActiveBondIdx] = useState(0);
+
+  // Product sub-tab
+  const [productTab, setProductTab] = useState('superannuation');
 
   // Entity dropdown
   const { entities, getByTypes } = useSOAEntities(soaRequest?.id);
