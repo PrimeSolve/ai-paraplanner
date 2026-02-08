@@ -1,31 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import { Plus, Trash2 } from 'lucide-react';
+import { useSOAEntities } from '../components/soa/useSOAEntities';
+import EntitySelect from '../components/factfind/EntitySelect';
+import { Plus, Trash2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SOARequestProducts() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [soaRequest, setSOARequest] = useState(null);
-  const [factFind, setFactFind] = useState(null);
-  const [products, setProducts] = useState([]);
-  const [entities, setEntities] = useState([]);
-  const [principals, setPrincipals] = useState([]);
-  const [children, setChildren] = useState([]);
-  const [adultDependants, setAdultDependants] = useState([]);
-  const [existingEntities, setExistingEntities] = useState([]);
-  const [existingSMSFs, setExistingSMSFs] = useState([]);
-  const [activeTab, setActiveTab] = useState('entities');
+  const [mainTab, setMainTab] = useState('entities');
+  const [entityTab, setEntityTab] = useState('trust');
   const navigate = useNavigate();
+  const debounceRef = useRef(null);
+
+  // Data state
+  const [newTrusts, setNewTrusts] = useState([]);
+  const [newCompanies, setNewCompanies] = useState([]);
+  const [newSMSFs, setNewSMSFs] = useState([]);
+  const [products, setProducts] = useState([]);
+
+  // Active indices
+  const [activeTrustIdx, setActiveTrustIdx] = useState(0);
+  const [activeCompanyIdx, setActiveCompanyIdx] = useState(0);
+  const [activeSMSFIdx, setActiveSMSFIdx] = useState(0);
+  const [activeProductIdx, setActiveProductIdx] = useState(0);
+
+  // Entity dropdown
+  const { entities, getByTypes } = useSOAEntities(soaRequest?.id);
 
   useEffect(() => {
     const loadData = async () => {
@@ -37,77 +46,21 @@ export default function SOARequestProducts() {
           const requests = await base44.entities.SOARequest.filter({ id });
           if (requests[0]) {
             setSOARequest(requests[0]);
-            const productsEntities = requests[0].products_entities || {};
-            setProducts((productsEntities.products || []).map(p => ({
-              ...p,
-              id: p.id || crypto.randomUUID()
-            })));
-            setEntities((productsEntities.entities || []).map(e => ({
-              ...e,
-              id: e.id || crypto.randomUUID()
-            })));
-
-            // Load fact find data
-            if (requests[0].fact_find_id) {
-              const factFinds = await base44.entities.FactFind.filter({ id: requests[0].fact_find_id });
-              if (factFinds[0]) {
-                setFactFind(factFinds[0]);
-                const ff = factFinds[0];
-                
-                // Extract principals from personal data
-                const personal = ff.personal || {};
-                const principalsList = [];
-                if (personal.first_name || personal.last_name) {
-                  principalsList.push({
-                    id: 'principal_1',
-                    name: `${personal.first_name || ''} ${personal.last_name || ''}`.trim(),
-                    role: 'Client'
-                  });
-                }
-                setPrincipals(principalsList);
-                
-                // Extract dependants (split into children and adults)
-                const dependantsList = ff.dependants?.dependants_list || [];
-                const childrenList = [];
-                const adultsList = [];
-                
-                dependantsList.forEach((d, i) => {
-                  const dep = {
-                    id: `dependant_${i}`,
-                    name: d.name || d.full_name || `Dependant ${i + 1}`,
-                    relationship: d.relationship || 'Dependant'
-                  };
-                  
-                  // Determine if child or adult based on relationship or age
-                  if (d.relationship?.toLowerCase().includes('child') || d.relationship?.toLowerCase().includes('son') || d.relationship?.toLowerCase().includes('daughter')) {
-                    childrenList.push(dep);
-                  } else {
-                    adultsList.push(dep);
-                  }
-                });
-                
-                setChildren(childrenList);
-                setAdultDependants(adultsList);
-                
-                // Extract existing trusts and companies
-                const entitiesFromFF = ff.trusts_companies?.entities || [];
-                const existingEntitiesList = entitiesFromFF.map((e, i) => ({
-                  id: `existing_entity_${i}`,
-                  name: e.name || e.entity_name || `Entity ${i + 1}`,
-                  type: e.type || e.entity_type || 'Entity'
-                }));
-                setExistingEntities(existingEntitiesList);
-                
-                // Extract existing SMSFs
-                const smsfsFromFF = ff.smsf?.smsf_details || [];
-                const smsfsList = smsfsFromFF.map((s, i) => ({
-                  id: `existing_smsf_${i}`,
-                  name: s.name || s.fund_name || `SMSF ${i + 1}`,
-                  type: 'SMSF'
-                }));
-                setExistingSMSFs(smsfsList);
-              }
-            }
+            const pe = requests[0].products_entities || {};
+            
+            setNewTrusts(pe.new_trusts || []);
+            setNewCompanies(pe.new_companies || []);
+            setNewSMSFs(pe.new_smsf || []);
+            setProducts(pe.products || []);
+            
+            // Restore UI state
+            setMainTab(pe.currentMainTab || 'entities');
+            setEntityTab(pe.currentEntityTab || 'trust');
+            const activeIdx = pe.activeIndex || {};
+            setActiveTrustIdx(activeIdx.trust || 0);
+            setActiveCompanyIdx(activeIdx.company || 0);
+            setActiveSMSFIdx(activeIdx.smsf || 0);
+            setActiveProductIdx(activeIdx.product || 0);
           }
         }
       } catch (error) {
@@ -119,73 +72,47 @@ export default function SOARequestProducts() {
     loadData();
   }, []);
 
-  const addProduct = () => {
-    setProducts([...products, { 
-      id: crypto.randomUUID(),
-      description: '',
-      product_type: '', 
-      owner_id: '',
-      provider: '',
-      pension_type: '',
-      annuity_tax_env: '',
-      annuity_joint: '',
-      annuity_lifetime: false,
-      annuity_term: '',
-      annuity_purchase_price: '',
-      annuity_purchase_date: '',
-      annuity_income: '',
-      annuity_index_rate: '',
-      annuity_residual_value: '',
-      annuity_deductible_income: ''
-    }]);
-  };
+  // Auto-save on any change
+  useEffect(() => {
+    if (!soaRequest?.id) return;
+    
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      saveProductsEntities();
+    }, 500);
 
-  const addEntity = () => {
-    setEntities([...entities, { 
-      id: crypto.randomUUID(),
-      name: '',
-      entity_type: '', 
-      holders: []
-    }]);
-  };
+    return () => clearTimeout(debounceRef.current);
+  }, [newTrusts, newCompanies, newSMSFs, products, mainTab, entityTab, activeTrustIdx, activeCompanyIdx, activeSMSFIdx, activeProductIdx]);
 
-  const removeProduct = (index) => {
-    setProducts(products.filter((_, i) => i !== index));
-  };
-
-  const removeEntity = (index) => {
-    setEntities(entities.filter((_, i) => i !== index));
-  };
-
-  const updateProduct = (index, field, value) => {
-    const updated = [...products];
-    updated[index][field] = value;
-    setProducts(updated);
-  };
-
-  const updateEntity = (index, field, value) => {
-    const updated = [...entities];
-    updated[index][field] = value;
-    setEntities(updated);
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
+  const saveProductsEntities = async () => {
+    if (!soaRequest?.id) return;
     try {
       await base44.entities.SOARequest.update(soaRequest.id, {
         products_entities: {
-          products,
-          entities
+          new_trusts: newTrusts,
+          new_companies: newCompanies,
+          new_smsf: newSMSFs,
+          products: products,
+          currentMainTab: mainTab,
+          currentEntityTab: entityTab,
+          activeIndex: {
+            trust: activeTrustIdx,
+            company: activeCompanyIdx,
+            smsf: activeSMSFIdx,
+            product: activeProductIdx
+          }
         }
       });
-      toast.success('Products & entities saved');
-      navigate(createPageUrl('SOARequestInsurance') + `?id=${soaRequest.id}`);
     } catch (error) {
       console.error('Error saving:', error);
-      toast.error('Failed to save');
-    } finally {
-      setSaving(false);
     }
+  };
+
+  const handleContinue = async () => {
+    setSaving(true);
+    await saveProductsEntities();
+    setSaving(false);
+    navigate(createPageUrl('SOARequestInsurance') + `?id=${soaRequest.id}`);
   };
 
   if (loading) {
@@ -196,456 +123,696 @@ export default function SOARequestProducts() {
     );
   }
 
-  const getAvailableHolders = (excludeSMSF = false) => {
-    const holders = [];
-    
-    // Principals
-    principals.forEach(p => {
-      holders.push({ ...p, group: 'Principals', displayName: `${p.name} (${p.role})` });
-    });
-    
-    // Children
-    children.forEach(c => {
-      holders.push({ ...c, group: 'Dependants', displayName: `${c.name} (${c.relationship})` });
-    });
-    
-    // Adult Dependants
-    adultDependants.forEach(a => {
-      holders.push({ ...a, group: 'Dependants', displayName: `${a.name} (${a.relationship})` });
-    });
-    
-    // Existing Entities from Fact Find
-    if (!excludeSMSF) {
-      existingEntities.forEach(e => {
-        holders.push({ ...e, group: 'Existing Entities', displayName: `${e.name} (${e.type})` });
-      });
-      
-      existingSMSFs.forEach(s => {
-        holders.push({ ...s, group: 'Existing Entities', displayName: `${s.name} (${s.type})` });
-      });
-    }
-    
-    // New Entities created on this page
-    entities.forEach(e => {
-      if (excludeSMSF && e.entity_type === 'SMSF') return;
-      holders.push({ 
-        ...e, 
-        group: 'New Entities', 
-        displayName: `${e.name || '(Unnamed)'} (${e.entity_type || 'Entity'})` 
-      });
-    });
-    
-    return holders;
-  };
+  const trustBeneficiaryOptions = getByTypes(['principal', 'child', 'dependant']);
+  const companyShareholderOptions = getByTypes(['principal', 'trust', 'company']);
+  const smsfAccountOwnerOptions = getByTypes(['principal']);
+  const smsfBeneficiaryOptions = getByTypes(['principal', 'child', 'dependant']);
 
-  const getOwnerOptions = () => {
-    const options = [];
-    
-    principals.forEach(p => {
-      options.push({ id: p.id, name: p.name });
-    });
-    
-    entities.forEach(e => {
-      options.push({ id: e.id, name: e.name || '(Unnamed entity)' });
-    });
-    
-    return options;
-  };
+  // ============ RENDER HELPERS ============
+
+  const renderNewTrustCard = (trust, idx) => (
+    <div key={idx} className="border border-slate-200 rounded-lg p-6 space-y-4">
+      {/* Trust Details */}
+      <div className="border-l-4 border-blue-500 bg-blue-50 px-4 py-3 rounded">
+        <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
+          🏛 New Trust Details
+        </h4>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Trust name</label>
+            <Input
+              value={trust.trust_name || ''}
+              onChange={(e) => {
+                const updated = [...newTrusts];
+                updated[idx].trust_name = e.target.value;
+                setNewTrusts(updated);
+              }}
+              placeholder="e.g., The Smith Family Trust"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Trust type</label>
+            <select
+              value={trust.trust_type || ''}
+              onChange={(e) => {
+                const updated = [...newTrusts];
+                updated[idx].trust_type = e.target.value;
+                setNewTrusts(updated);
+              }}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #e2e8f0',
+                fontSize: '14px'
+              }}
+            >
+              <option value="">Select…</option>
+              <option value="1">Discretionary Family Trust</option>
+              <option value="2">Unit Trust</option>
+              <option value="3">Hybrid Trust</option>
+              <option value="4">Testamentary Trust</option>
+              <option value="5">Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Beneficiaries */}
+      <div className="border-l-4 border-amber-500 bg-amber-50 px-4 py-3 rounded">
+        <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
+          👤 Trustee Beneficiaries
+        </h4>
+        <table style={{ width: '100%', marginBottom: '12px' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+              <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Beneficiary</th>
+              <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Entitlement</th>
+              <th style={{ textAlign: 'right', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(trust.beneficiaries || []).map((benef, bidx) => (
+              <tr key={bidx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <td style={{ padding: '8px 0' }}>
+                  <EntitySelect
+                    value={benef.benef_entity}
+                    onChange={(val) => {
+                      const updated = [...newTrusts];
+                      updated[idx].beneficiaries[bidx].benef_entity = val;
+                      setNewTrusts(updated);
+                    }}
+                    options={trustBeneficiaryOptions}
+                  />
+                </td>
+                <td style={{ padding: '8px 0' }}>
+                  <Input
+                    value={benef.benef_entitlement || ''}
+                    onChange={(e) => {
+                      const updated = [...newTrusts];
+                      updated[idx].beneficiaries[bidx].benef_entitlement = e.target.value;
+                      setNewTrusts(updated);
+                    }}
+                    placeholder="e.g., 25%"
+                    style={{ maxWidth: '100px' }}
+                  />
+                </td>
+                <td style={{ textAlign: 'right', padding: '8px 0' }}>
+                  <button
+                    onClick={() => {
+                      const updated = [...newTrusts];
+                      updated[idx].beneficiaries = updated[idx].beneficiaries.filter((_, i) => i !== bidx);
+                      setNewTrusts(updated);
+                    }}
+                    className="p-1 text-red-600 hover:bg-red-50 rounded"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <Button
+          onClick={() => {
+            const updated = [...newTrusts];
+            if (!updated[idx].beneficiaries) updated[idx].beneficiaries = [];
+            updated[idx].beneficiaries.push({ benef_entity: '', benef_entitlement: '' });
+            setNewTrusts(updated);
+          }}
+          size="sm"
+          variant="outline"
+        >
+          <Plus className="w-3 h-3 mr-1" />
+          Add Beneficiary
+        </Button>
+      </div>
+
+      {/* Remove */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => setNewTrusts(newTrusts.filter((_, i) => i !== idx))}
+          className="p-2 text-red-600 hover:bg-red-50 rounded"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderNewCompanyCard = (company, idx) => (
+    <div key={idx} className="border border-slate-200 rounded-lg p-6 space-y-4">
+      {/* Company Details */}
+      <div className="border-l-4 border-blue-500 bg-blue-50 px-4 py-3 rounded">
+        <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
+          🏢 New Company Details
+        </h4>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2">
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Company name</label>
+            <Input
+              value={company.company_name || ''}
+              onChange={(e) => {
+                const updated = [...newCompanies];
+                updated[idx].company_name = e.target.value;
+                setNewCompanies(updated);
+              }}
+              placeholder="e.g., Smith Investments Pty Ltd"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Purpose of company</label>
+            <select
+              value={company.co_purpose || ''}
+              onChange={(e) => {
+                const updated = [...newCompanies];
+                updated[idx].co_purpose = e.target.value;
+                setNewCompanies(updated);
+              }}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #e2e8f0',
+                fontSize: '14px'
+              }}
+            >
+              <option value="">Select…</option>
+              <option value="1">Operating business</option>
+              <option value="2">Investment</option>
+              <option value="3">Beneficiary of trust</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Company type</label>
+            <select
+              value={company.co_type || ''}
+              onChange={(e) => {
+                const updated = [...newCompanies];
+                updated[idx].co_type = e.target.value;
+                setNewCompanies(updated);
+              }}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #e2e8f0',
+                fontSize: '14px'
+              }}
+            >
+              <option value="">Select…</option>
+              <option value="1">Pty Ltd</option>
+              <option value="2">Partnership</option>
+              <option value="3">Sole trader</option>
+              <option value="4">Charity</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Pre-existing losses ($)</label>
+            <Input
+              type="number"
+              value={company.co_losses || ''}
+              onChange={(e) => {
+                const updated = [...newCompanies];
+                updated[idx].co_losses = e.target.value;
+                setNewCompanies(updated);
+              }}
+              placeholder="0"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Annual profit ($)</label>
+            <Input
+              type="number"
+              value={company.co_profit || ''}
+              onChange={(e) => {
+                const updated = [...newCompanies];
+                updated[idx].co_profit = e.target.value;
+                setNewCompanies(updated);
+              }}
+              placeholder="0"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Shareholders */}
+      <div className="border-l-4 border-amber-500 bg-amber-50 px-4 py-3 rounded">
+        <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
+          👤 Shareholders
+        </h4>
+        <table style={{ width: '100%', marginBottom: '12px' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+              <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Shareholder</th>
+              <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Percentage</th>
+              <th style={{ textAlign: 'right', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(company.shareholders || []).map((sh, sidx) => (
+              <tr key={sidx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <td style={{ padding: '8px 0' }}>
+                  <EntitySelect
+                    value={sh.sh_entity}
+                    onChange={(val) => {
+                      const updated = [...newCompanies];
+                      updated[idx].shareholders[sidx].sh_entity = val;
+                      setNewCompanies(updated);
+                    }}
+                    options={companyShareholderOptions}
+                  />
+                </td>
+                <td style={{ padding: '8px 0' }}>
+                  <Input
+                    value={sh.sh_pct || ''}
+                    onChange={(e) => {
+                      const updated = [...newCompanies];
+                      updated[idx].shareholders[sidx].sh_pct = e.target.value;
+                      setNewCompanies(updated);
+                    }}
+                    placeholder="e.g., 25%"
+                    style={{ maxWidth: '100px' }}
+                  />
+                </td>
+                <td style={{ textAlign: 'right', padding: '8px 0' }}>
+                  <button
+                    onClick={() => {
+                      const updated = [...newCompanies];
+                      updated[idx].shareholders = updated[idx].shareholders.filter((_, i) => i !== sidx);
+                      setNewCompanies(updated);
+                    }}
+                    className="p-1 text-red-600 hover:bg-red-50 rounded"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <Button
+          onClick={() => {
+            const updated = [...newCompanies];
+            if (!updated[idx].shareholders) updated[idx].shareholders = [];
+            updated[idx].shareholders.push({ sh_entity: '', sh_pct: '' });
+            setNewCompanies(updated);
+          }}
+          size="sm"
+          variant="outline"
+        >
+          <Plus className="w-3 h-3 mr-1" />
+          Add Shareholder
+        </Button>
+      </div>
+
+      {/* Remove */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => setNewCompanies(newCompanies.filter((_, i) => i !== idx))}
+          className="p-2 text-red-600 hover:bg-red-50 rounded"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderProductCard = (product, idx) => (
+    <div key={idx} className="border border-slate-200 rounded-lg p-6 space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="text-xs font-semibold text-slate-600 mb-1 block">Product Type</label>
+          <select
+            value={product.product_type || ''}
+            onChange={(e) => {
+              const updated = [...products];
+              updated[idx].product_type = e.target.value;
+              setProducts(updated);
+            }}
+            style={{
+              width: '100%',
+              padding: '10px 12px',
+              borderRadius: '6px',
+              border: '1px solid #e2e8f0',
+              fontSize: '14px'
+            }}
+          >
+            <option value="">Select…</option>
+            <option value="super_fund">Super Fund</option>
+            <option value="pension">Pension</option>
+            <option value="annuity">Annuity</option>
+            <option value="wrap">Wrap</option>
+            <option value="bond">Bond</option>
+            <option value="insurance">Insurance</option>
+          </select>
+        </div>
+        <div>
+          <label className="text-xs font-semibold text-slate-600 mb-1 block">Product Name</label>
+          <Input
+            value={product.product_name || ''}
+            onChange={(e) => {
+              const updated = [...products];
+              updated[idx].product_name = e.target.value;
+              setProducts(updated);
+            }}
+            placeholder="e.g., AustralianSuper - Balanced"
+          />
+        </div>
+        <div>
+          <label className="text-xs font-semibold text-slate-600 mb-1 block">Provider</label>
+          <Input
+            value={product.provider || ''}
+            onChange={(e) => {
+              const updated = [...products];
+              updated[idx].provider = e.target.value;
+              setProducts(updated);
+            }}
+            placeholder="e.g., AustralianSuper"
+          />
+        </div>
+        <div>
+          <label className="text-xs font-semibold text-slate-600 mb-1 block">Owner</label>
+          <EntitySelect
+            value={product.owner || ''}
+            onChange={(val) => {
+              const updated = [...products];
+              updated[idx].owner = val;
+              setProducts(updated);
+            }}
+            options={entities}
+          />
+        </div>
+        <div>
+          <label className="text-xs font-semibold text-slate-600 mb-1 block">Recommended Action</label>
+          <select
+            value={product.recommended_action || ''}
+            onChange={(e) => {
+              const updated = [...products];
+              updated[idx].recommended_action = e.target.value;
+              setProducts(updated);
+            }}
+            style={{
+              width: '100%',
+              padding: '10px 12px',
+              borderRadius: '6px',
+              border: '1px solid #e2e8f0',
+              fontSize: '14px'
+            }}
+          >
+            <option value="">Select…</option>
+            <option value="new">New</option>
+            <option value="replace_existing">Replace existing</option>
+          </select>
+        </div>
+        <div className="col-span-2">
+          <label className="text-xs font-semibold text-slate-600 mb-1 block">Notes</label>
+          <Textarea
+            value={product.notes || ''}
+            onChange={(e) => {
+              const updated = [...products];
+              updated[idx].notes = e.target.value;
+              setProducts(updated);
+            }}
+            placeholder="Optional notes about this product"
+            className="h-20"
+          />
+        </div>
+      </div>
+      <div className="flex justify-end">
+        <button
+          onClick={() => setProducts(products.filter((_, i) => i !== idx))}
+          className="p-2 text-red-600 hover:bg-red-50 rounded"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+
+  // ============ MAIN RENDER ============
 
   return (
     <SOARequestLayout currentSection="products" soaRequest={soaRequest}>
       <div className="flex-1 overflow-auto bg-slate-50 p-6">
         <div className="w-full">
-          {/* Dark Banner */}
+          {/* Header */}
           <div style={{ backgroundColor: '#1E293B', padding: '24px 32px', borderRadius: '16px 16px 0 0' }}>
-            <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#FFFFFF', margin: '0 0 4px 0', letterSpacing: '-0.01em' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#FFFFFF', margin: '0 0 4px 0' }}>
               Products & Entities
             </h1>
-            <p style={{ fontSize: '14px', fontWeight: 400, color: '#94A3B8', margin: 0 }}>
+            <p style={{ fontSize: '14px', color: '#94A3B8', margin: 0 }}>
               Add the new products or entities you are recommending
             </p>
           </div>
 
-          {/* White Content Card */}
+          {/* Content */}
           <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>
-            {/* Contained Tabs */}
+            {/* Main Tabs */}
             <div style={{ padding: '24px 32px', borderBottom: '1px solid #E2E8F0' }}>
-              <div style={{ 
-                display: 'inline-flex', 
-                padding: '4px', 
-                backgroundColor: '#F8FAFC', 
-                borderRadius: '12px', 
-                border: '1px solid #E2E8F0' 
-              }}>
-                <button 
-                  onClick={() => setActiveTab('entities')}
+              <div style={{ display: 'inline-flex', gap: '8px' }}>
+                <button
+                  onClick={() => setMainTab('entities')}
                   style={{
                     padding: '12px 24px',
                     borderRadius: '8px',
-                    border: 'none',
-                    backgroundColor: activeTab === 'entities' ? '#FFFFFF' : 'transparent',
-                    boxShadow: activeTab === 'entities' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
-                    color: activeTab === 'entities' ? '#1E293B' : '#64748B',
+                    border: mainTab === 'entities' ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                    backgroundColor: mainTab === 'entities' ? '#eff6ff' : '#f8fafc',
+                    color: mainTab === 'entities' ? '#1e40af' : '#64748b',
                     fontSize: '14px',
-                    fontWeight: activeTab === 'entities' ? 600 : 500,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    transition: 'all 0.2s',
+                    fontWeight: 600,
+                    cursor: 'pointer'
                   }}
                 >
-                  🏛️ Entities
+                  📦 Entities
                 </button>
-                <button 
-                  onClick={() => setActiveTab('products')}
+                <button
+                  onClick={() => setMainTab('products')}
                   style={{
                     padding: '12px 24px',
                     borderRadius: '8px',
-                    border: 'none',
-                    backgroundColor: activeTab === 'products' ? '#FFFFFF' : 'transparent',
-                    boxShadow: activeTab === 'products' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
-                    color: activeTab === 'products' ? '#1E293B' : '#64748B',
+                    border: mainTab === 'products' ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                    backgroundColor: mainTab === 'products' ? '#eff6ff' : '#f8fafc',
+                    color: mainTab === 'products' ? '#1e40af' : '#64748b',
                     fontSize: '14px',
-                    fontWeight: activeTab === 'products' ? 600 : 500,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    transition: 'all 0.2s',
+                    fontWeight: 600,
+                    cursor: 'pointer'
                   }}
                 >
-                  📦 Products
+                  💰 Products
                 </button>
               </div>
             </div>
 
-            {/* Tab Content */}
+            {/* Entity Sub-tabs */}
+            {mainTab === 'entities' && (
+              <div style={{ padding: '24px 32px', borderBottom: '1px solid #E2E8F0' }}>
+                <div style={{ display: 'inline-flex', gap: '8px' }}>
+                  <button
+                    onClick={() => setEntityTab('trust')}
+                    style={{
+                      padding: '10px 16px',
+                      borderRadius: '6px',
+                      border: entityTab === 'trust' ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                      backgroundColor: entityTab === 'trust' ? '#eff6ff' : '#f8fafc',
+                      color: entityTab === 'trust' ? '#1e40af' : '#64748b',
+                      fontSize: '13px',
+                      fontWeight: 500,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🏛 New Trusts
+                  </button>
+                  <button
+                    onClick={() => setEntityTab('company')}
+                    style={{
+                      padding: '10px 16px',
+                      borderRadius: '6px',
+                      border: entityTab === 'company' ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                      backgroundColor: entityTab === 'company' ? '#eff6ff' : '#f8fafc',
+                      color: entityTab === 'company' ? '#1e40af' : '#64748b',
+                      fontSize: '13px',
+                      fontWeight: 500,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🏢 New Companies
+                  </button>
+                  <button
+                    onClick={() => setEntityTab('smsf')}
+                    style={{
+                      padding: '10px 16px',
+                      borderRadius: '6px',
+                      border: entityTab === 'smsf' ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                      backgroundColor: entityTab === 'smsf' ? '#eff6ff' : '#f8fafc',
+                      color: entityTab === 'smsf' ? '#1e40af' : '#64748b',
+                      fontSize: '13px',
+                      fontWeight: 500,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🏦 New SMSF
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Content */}
             <div style={{ padding: '24px 32px' }}>
-              {activeTab === 'entities' && (
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle>Entities</CardTitle>
-                      <Button onClick={addEntity} size="sm" style={{ backgroundColor: '#14B8A6', color: '#FFFFFF' }} className="hover:opacity-90">
+              {mainTab === 'entities' && entityTab === 'trust' && (
+                <div className="space-y-6">
+                  {newTrusts.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-300 rounded-lg">
+                      <div className="text-5xl mb-4">🏛</div>
+                      <h3 className="text-lg font-semibold text-slate-800 mb-2">Are you recommending a new trust?</h3>
+                      <p className="text-slate-600 text-center mb-6">Add details about new family trusts, unit trusts, or other trust structures being recommended.</p>
+                      <Button onClick={() => setNewTrusts([...newTrusts, { trust_name: '', trust_type: '', beneficiaries: [] }])} className="bg-blue-600 hover:bg-blue-700">
                         <Plus className="w-4 h-4 mr-2" />
-                        Add Entity
+                        Add New Trust
                       </Button>
                     </div>
-                    <p className="text-sm text-slate-600">Trusts, companies, SMSFs</p>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {entities.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-16">
-                        <div className="text-5xl mb-6">🏛️</div>
-                        <h3 className="text-2xl font-bold text-slate-900 mb-2">Do you have any entities?</h3>
-                        <p className="text-slate-600 text-center mb-8 max-w-md">
-                          Add trusts, companies, or SMSFs that are part of your advice strategy
-                        </p>
-                        <Button onClick={addEntity} style={{ backgroundColor: '#14B8A6', color: '#FFFFFF' }} className="hover:opacity-90 shadow-lg">
-                          Add Entity
-                        </Button>
-                      </div>
-                    ) : (
-                      entities.map((entity, index) => (
-                        <div key={index} className="border border-slate-200 rounded-lg p-4 space-y-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-sm font-semibold text-slate-700">Entity #{index + 1}</h4>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => removeEntity(index)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  ) : (
+                    <div className="space-y-6">
+                      {newTrusts.length > 1 && (
+                        <div className="flex gap-2">
+                          {newTrusts.map((_, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setActiveTrustIdx(idx)}
+                              style={{
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                backgroundColor: activeTrustIdx === idx ? '#2563eb' : '#e2e8f0',
+                                color: activeTrustIdx === idx ? '#fff' : '#64748b',
+                                fontSize: '12px',
+                                fontWeight: 500,
+                                cursor: 'pointer'
+                              }}
                             >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <label className="text-xs font-semibold text-slate-600 mb-1 block">Entity name</label>
-                              <Input 
-                                value={entity.name || ''}
-                                onChange={(e) => updateEntity(index, 'name', e.target.value)}
-                                placeholder="Entity name"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-xs font-semibold text-slate-600 mb-1 block">Entity type</label>
-                              <Select value={entity.entity_type || ''} onValueChange={(v) => updateEntity(index, 'entity_type', v)}>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select…" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Discretionary trust">Discretionary trust</SelectItem>
-                                  <SelectItem value="Unit trust">Unit trust</SelectItem>
-                                  <SelectItem value="Company">Company</SelectItem>
-                                  <SelectItem value="SMSF">SMSF</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="col-span-2">
-                              <label className="text-xs font-semibold text-slate-600 mb-1 block">Shareholders / Beneficiaries</label>
-                              <Select 
-                                value="" 
-                                onValueChange={(v) => {
-                                  const current = entity.holders || [];
-                                  if (v && !current.includes(v)) {
-                                    updateEntity(index, 'holders', [...current, v]);
-                                  }
-                                }}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select shareholders/beneficiaries..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {getAvailableHolders(entity.entity_type === 'SMSF').map(h => (
-                                    <SelectItem key={h.id} value={h.id}>{h.displayName}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              {entity.holders && entity.holders.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                  {entity.holders.map(holderId => {
-                                    const holder = getAvailableHolders(false).find(h => h.id === holderId);
-                                    return holder ? (
-                                      <span key={holderId} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded">
-                                        {holder.displayName}
-                                        <button
-                                          onClick={() => updateEntity(index, 'holders', entity.holders.filter(id => id !== holderId))}
-                                          className="hover:text-blue-900"
-                                        >
-                                          ×
-                                        </button>
-                                      </span>
-                                    ) : null;
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                              Trust {idx + 1}
+                            </button>
+                          ))}
                         </div>
-                      ))
-                    )}
-                  </CardContent>
-                </Card>
+                      )}
+                      {renderNewTrustCard(newTrusts[activeTrustIdx], activeTrustIdx)}
+                      <Button onClick={() => setNewTrusts([...newTrusts, { trust_name: '', trust_type: '', beneficiaries: [] }])} className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Another Trust
+                      </Button>
+                    </div>
+                  )}
+                </div>
               )}
 
-              {activeTab === 'products' && (
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle>Products</CardTitle>
-                      <Button onClick={addProduct} size="sm" style={{ backgroundColor: '#14B8A6', color: '#FFFFFF' }} className="hover:opacity-90">
+              {mainTab === 'entities' && entityTab === 'company' && (
+                <div className="space-y-6">
+                  {newCompanies.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-300 rounded-lg">
+                      <div className="text-5xl mb-4">🏢</div>
+                      <h3 className="text-lg font-semibold text-slate-800 mb-2">Are you recommending a new company?</h3>
+                      <p className="text-slate-600 text-center mb-6">Add details about new private companies or corporate entities being recommended.</p>
+                      <Button onClick={() => setNewCompanies([...newCompanies, { company_name: '', co_purpose: '', co_type: '', co_losses: '', co_profit: '', shareholders: [] }])} className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add New Company
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {newCompanies.length > 1 && (
+                        <div className="flex gap-2">
+                          {newCompanies.map((_, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setActiveCompanyIdx(idx)}
+                              style={{
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                backgroundColor: activeCompanyIdx === idx ? '#2563eb' : '#e2e8f0',
+                                color: activeCompanyIdx === idx ? '#fff' : '#64748b',
+                                fontSize: '12px',
+                                fontWeight: 500,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Company {idx + 1}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {renderNewCompanyCard(newCompanies[activeCompanyIdx], activeCompanyIdx)}
+                      <Button onClick={() => setNewCompanies([...newCompanies, { company_name: '', co_purpose: '', co_type: '', co_losses: '', co_profit: '', shareholders: [] }])} className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Another Company
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {mainTab === 'entities' && entityTab === 'smsf' && (
+                <div className="text-center py-12">
+                  <p className="text-slate-600">SMSF implementation coming soon</p>
+                </div>
+              )}
+
+              {mainTab === 'products' && (
+                <div className="space-y-6">
+                  {products.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-300 rounded-lg">
+                      <div className="text-5xl mb-4">💰</div>
+                      <h3 className="text-lg font-semibold text-slate-800 mb-2">Are you recommending new products?</h3>
+                      <p className="text-slate-600 text-center mb-6">Add superannuation, pensions, wraps, bonds or other financial products being recommended.</p>
+                      <Button onClick={() => setProducts([...products, { product_type: '', product_name: '', provider: '', owner: '', recommended_action: '', notes: '' }])} className="bg-blue-600 hover:bg-blue-700">
                         <Plus className="w-4 h-4 mr-2" />
                         Add Product
                       </Button>
                     </div>
-                    <p className="text-sm text-slate-600">Retirement products and investment platforms</p>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {products.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-16">
-                        <div className="text-5xl mb-6">💼</div>
-                        <h3 className="text-2xl font-bold text-slate-900 mb-2">Do you have any products?</h3>
-                        <p className="text-slate-600 text-center mb-8 max-w-md">
-                          Add retirement products like superannuation, pensions, or investment bonds
-                        </p>
-                        <Button onClick={addProduct} style={{ backgroundColor: '#14B8A6', color: '#FFFFFF' }} className="hover:opacity-90 shadow-lg">
-                          Add Product
-                        </Button>
-                      </div>
-                    ) : (
-                      products.map((product, index) => (
-                        <div key={index} className="border border-slate-200 rounded-lg p-4 space-y-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-sm font-semibold text-slate-700">Product #{index + 1}</h4>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => removeProduct(index)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  ) : (
+                    <div className="space-y-6">
+                      {products.length > 1 && (
+                        <div className="flex gap-2">
+                          {products.map((_, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setActiveProductIdx(idx)}
+                              style={{
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                backgroundColor: activeProductIdx === idx ? '#2563eb' : '#e2e8f0',
+                                color: activeProductIdx === idx ? '#fff' : '#64748b',
+                                fontSize: '12px',
+                                fontWeight: 500,
+                                cursor: 'pointer'
+                              }}
                             >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="col-span-2">
-                              <label className="text-xs font-semibold text-slate-600 mb-1 block">Description</label>
-                              <Input 
-                                value={product.description || ''}
-                                onChange={(e) => updateProduct(index, 'description', e.target.value)}
-                                placeholder="Short description (auto-filled, editable)"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-xs font-semibold text-slate-600 mb-1 block">Retirement product type</label>
-                              <Select value={product.product_type || ''} onValueChange={(v) => updateProduct(index, 'product_type', v)}>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select…" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Superannuation">Superannuation</SelectItem>
-                                  <SelectItem value="Pension">Pension</SelectItem>
-                                  <SelectItem value="Investment bond">Investment bond</SelectItem>
-                                  <SelectItem value="Wrap">Wrap</SelectItem>
-                                  <SelectItem value="Annuity">Annuity</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div>
-                              <label className="text-xs font-semibold text-slate-600 mb-1 block">Owner</label>
-                              <Select value={product.owner_id || ''} onValueChange={(v) => updateProduct(index, 'owner_id', v)}>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select…" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {getOwnerOptions().map(o => (
-                                    <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="col-span-2">
-                              <label className="text-xs font-semibold text-slate-600 mb-1 block">Product provider</label>
-                              <Input 
-                                value={product.provider || ''}
-                                onChange={(e) => updateProduct(index, 'provider', e.target.value)}
-                                placeholder="e.g., Hub24, Macquarie, Netwealth"
-                              />
-                            </div>
-
-                            {product.product_type === 'Pension' && (
-                              <div className="col-span-2">
-                                <label className="text-xs font-semibold text-slate-600 mb-1 block">Type of pension</label>
-                                <Select value={product.pension_type || ''} onValueChange={(v) => updateProduct(index, 'pension_type', v)}>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select…" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="Account based">Account based</SelectItem>
-                                    <SelectItem value="Term allocated">Term allocated</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            )}
-
-                            {product.product_type === 'Annuity' && (
-                              <>
-                                <div>
-                                  <label className="text-xs font-semibold text-slate-600 mb-1 block">Annuity tax environment</label>
-                                  <Select value={product.annuity_tax_env || ''} onValueChange={(v) => updateProduct(index, 'annuity_tax_env', v)}>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select…" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="Superannuation">Superannuation</SelectItem>
-                                      <SelectItem value="Non-superannuation">Non-superannuation</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <div>
-                                  <label className="text-xs font-semibold text-slate-600 mb-1 block">Joint</label>
-                                  <Input 
-                                    value={product.annuity_joint || ''}
-                                    onChange={(e) => updateProduct(index, 'annuity_joint', e.target.value)}
-                                    placeholder="e.g., Joint with spouse"
-                                  />
-                                </div>
-                                <div className="col-span-2">
-                                  <label className="text-xs font-semibold text-slate-600 mb-1 block">Lifetime annuity</label>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <Checkbox
-                                      id={`lifetime_${index}`}
-                                      checked={product.annuity_lifetime || false}
-                                      onCheckedChange={(checked) => updateProduct(index, 'annuity_lifetime', checked)}
-                                    />
-                                    <label htmlFor={`lifetime_${index}`} className="text-sm text-slate-500">
-                                      Check if this is a lifetime annuity
-                                    </label>
-                                  </div>
-                                </div>
-                                {!product.annuity_lifetime && (
-                                  <div>
-                                    <label className="text-xs font-semibold text-slate-600 mb-1 block">Term of annuity (years)</label>
-                                    <Input 
-                                      value={product.annuity_term || ''}
-                                      onChange={(e) => updateProduct(index, 'annuity_term', e.target.value)}
-                                      placeholder="e.g., 10"
-                                    />
-                                  </div>
-                                )}
-                                <div>
-                                  <label className="text-xs font-semibold text-slate-600 mb-1 block">Purchase price</label>
-                                  <Input 
-                                    value={product.annuity_purchase_price || ''}
-                                    onChange={(e) => updateProduct(index, 'annuity_purchase_price', e.target.value)}
-                                    placeholder="0.00"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs font-semibold text-slate-600 mb-1 block">Purchase date</label>
-                                  <Input 
-                                    value={product.annuity_purchase_date || ''}
-                                    onChange={(e) => updateProduct(index, 'annuity_purchase_date', e.target.value)}
-                                    placeholder="dd-mm-yyyy"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs font-semibold text-slate-600 mb-1 block">Annuity income (per period)</label>
-                                  <Input 
-                                    value={product.annuity_income || ''}
-                                    onChange={(e) => updateProduct(index, 'annuity_income', e.target.value)}
-                                    placeholder="0.00"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs font-semibold text-slate-600 mb-1 block">Annuity index rate (%)</label>
-                                  <Input 
-                                    value={product.annuity_index_rate || ''}
-                                    onChange={(e) => updateProduct(index, 'annuity_index_rate', e.target.value)}
-                                    placeholder="e.g., 2.5"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs font-semibold text-slate-600 mb-1 block">Residual value</label>
-                                  <Input 
-                                    value={product.annuity_residual_value || ''}
-                                    onChange={(e) => updateProduct(index, 'annuity_residual_value', e.target.value)}
-                                    placeholder="0.00"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs font-semibold text-slate-600 mb-1 block">Deductible income</label>
-                                  <Input 
-                                    value={product.annuity_deductible_income || ''}
-                                    onChange={(e) => updateProduct(index, 'annuity_deductible_income', e.target.value)}
-                                    placeholder="0.00"
-                                  />
-                                </div>
-                              </>
-                            )}
-                          </div>
+                              Product {idx + 1}
+                            </button>
+                          ))}
                         </div>
-                      ))
-                    )}
-                  </CardContent>
-                </Card>
+                      )}
+                      {renderProductCard(products[activeProductIdx], activeProductIdx)}
+                      <Button onClick={() => setProducts([...products, { product_type: '', product_name: '', provider: '', owner: '', recommended_action: '', notes: '' }])} className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Another Product
+                      </Button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
             {/* Navigation */}
             <div className="flex justify-end gap-3" style={{ padding: '24px 32px', borderTop: '1px solid #E2E8F0' }}>
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => navigate(createPageUrl('SOARequestScope') + `?id=${soaRequest.id}`)}
               >
                 Back
               </Button>
-              <Button 
-                onClick={handleSave}
+              <Button
+                onClick={handleContinue}
                 disabled={saving}
-                style={{ backgroundColor: '#7C3AED', color: '#FFFFFF' }}
-                className="hover:opacity-90"
+                className="bg-purple-600 hover:bg-purple-700 text-white"
               >
                 {saving ? 'Saving...' : 'Save & Continue'}
               </Button>
