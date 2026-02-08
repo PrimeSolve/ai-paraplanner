@@ -944,6 +944,326 @@ export default function SOARequestProducts() {
     </div>
   );
 
+  const renderNewSMSFCard = (smsf, idx) => (
+    <div key={idx} className="border border-slate-200 rounded-lg p-6 space-y-4">
+      {/* SMSF Details */}
+      <div className="border-l-4 border-blue-500 bg-blue-50 px-4 py-3 rounded">
+        <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
+          🏦 New SMSF Details
+        </h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="col-span-2">
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">SMSF name</label>
+            <Input
+              value={smsf.smsf_name || ''}
+              onChange={(e) => {
+                const updated = [...newSMSFs];
+                updated[idx].smsf_name = e.target.value;
+                setNewSMSFs(updated);
+              }}
+              placeholder="e.g., Smith Family SMSF"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Type of fund</label>
+            <select
+              value={smsf.fund_type || ''}
+              onChange={(e) => {
+                const updated = [...newSMSFs];
+                updated[idx].fund_type = e.target.value;
+                setNewSMSFs(updated);
+              }}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #e2e8f0',
+                fontSize: '14px'
+              }}
+            >
+              <option value="">Select…</option>
+              <option value="SMSF">SMSF</option>
+              <option value="SAFT">SAFT</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Trustee type</label>
+            <select
+              value={smsf.trustee_type || ''}
+              onChange={(e) => {
+                const updated = [...newSMSFs];
+                updated[idx].trustee_type = e.target.value;
+                setNewSMSFs(updated);
+              }}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #e2e8f0',
+                fontSize: '14px'
+              }}
+            >
+              <option value="">Select…</option>
+              <option value="corporate">Corporate trustee</option>
+              <option value="individual">Individual trustee</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Account type</label>
+            <select
+              value={smsf.acct_type || ''}
+              onChange={(e) => {
+                const updated = [...newSMSFs];
+                updated[idx].acct_type = e.target.value;
+                setNewSMSFs(updated);
+              }}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #e2e8f0',
+                fontSize: '14px'
+              }}
+            >
+              <option value="">Select…</option>
+              <option value="pooled">Pooled</option>
+              <option value="segregate">Segregate</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">SMSF balance ($)</label>
+            <Input
+              type="number"
+              value={smsf.smsf_balance || ''}
+              onChange={(e) => {
+                const updated = [...newSMSFs];
+                updated[idx].smsf_balance = e.target.value;
+                setNewSMSFs(updated);
+              }}
+              placeholder="0"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Individual trustee</label>
+            <Input
+              value={smsf.individual_trustee || ''}
+              onChange={(e) => {
+                const updated = [...newSMSFs];
+                updated[idx].individual_trustee = e.target.value;
+                setNewSMSFs(updated);
+              }}
+              placeholder="e.g., John Smith"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Account Information */}
+      <div className="border-l-4 border-amber-500 bg-amber-50 px-4 py-3 rounded">
+        <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
+          💰 Account Information
+        </h4>
+        {(smsf.accounts || []).length > 0 && (
+          <div className="mb-4">
+            <table style={{ width: '100%', marginBottom: '12px' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                  <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Owner</th>
+                  <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Tax Env</th>
+                  <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>% of Fund</th>
+                  <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Balance</th>
+                  <th style={{ textAlign: 'right', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {smsf.accounts.map((acct, aidx) => (
+                  <tr key={aidx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '8px 0', fontSize: '12px' }}>{smsfAccountOwnerOptions.find(o => o.id === acct.owner)?.label || acct.owner}</td>
+                    <td style={{ padding: '8px 0', fontSize: '12px' }}>{acct.tax_environment}</td>
+                    <td style={{ padding: '8px 0', fontSize: '12px' }}>{acct.fund_percentage}%</td>
+                    <td style={{ padding: '8px 0', fontSize: '12px' }}>${acct.balance?.toLocaleString()}</td>
+                    <td style={{ textAlign: 'right', padding: '8px 0' }}>
+                      <button
+                        onClick={() => {
+                          const updated = [...newSMSFs];
+                          updated[idx].accounts = updated[idx].accounts.filter((_, i) => i !== aidx);
+                          setNewSMSFs(updated);
+                        }}
+                        className="p-1 text-red-600 hover:bg-red-50 rounded"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <Button
+          onClick={() => {
+            const updated = [...newSMSFs];
+            if (!updated[idx].accounts) updated[idx].accounts = [];
+            updated[idx].accounts.push({
+              owner: '',
+              tax_environment: '',
+              fund_percentage: '',
+              balance: '',
+              tax_free_amt: '',
+              tax_free_pct: '',
+              unp_amt: '',
+              super_guarantee: '',
+              salary_sacrifice: '',
+              after_tax: ''
+            });
+            setNewSMSFs(updated);
+          }}
+          size="sm"
+          variant="outline"
+        >
+          <Plus className="w-3 h-3 mr-1" />
+          Add Account
+        </Button>
+      </div>
+
+      {/* Beneficiaries */}
+      {(smsf.accounts || []).length > 0 && (
+        <div className="border-l-4 border-yellow-500 bg-yellow-50 px-4 py-3 rounded">
+          <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
+            👤 Beneficiaries
+          </h4>
+          <table style={{ width: '100%', marginBottom: '12px' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Account</th>
+                <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Beneficiary</th>
+                <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Type</th>
+                <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Entitlement</th>
+                <th style={{ textAlign: 'right', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(smsf.beneficiaries || []).map((benef, bidx) => (
+                <tr key={bidx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                  <td style={{ padding: '8px 0', fontSize: '12px' }}>
+                    <select
+                      value={benef.benef_account || ''}
+                      onChange={(e) => {
+                        const updated = [...newSMSFs];
+                        updated[idx].beneficiaries[bidx].benef_account = e.target.value;
+                        setNewSMSFs(updated);
+                      }}
+                      style={{
+                        padding: '6px 8px',
+                        borderRadius: '4px',
+                        border: '1px solid #e2e8f0',
+                        fontSize: '12px',
+                        width: '100%'
+                      }}
+                    >
+                      <option value="">Select…</option>
+                      {(smsf.accounts || []).map((acct, aidx) => (
+                        <option key={aidx} value={`account_${aidx}`}>
+                          Account {aidx + 1}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td style={{ padding: '8px 0' }}>
+                    <EntitySelect
+                      value={benef.benef_who}
+                      onChange={(val) => {
+                        const updated = [...newSMSFs];
+                        updated[idx].beneficiaries[bidx].benef_who = val;
+                        setNewSMSFs(updated);
+                      }}
+                      entities={smsfBeneficiaryOptions}
+                    />
+                  </td>
+                  <td style={{ padding: '8px 0', fontSize: '12px' }}>
+                    <select
+                      value={benef.benef_type || ''}
+                      onChange={(e) => {
+                        const updated = [...newSMSFs];
+                        updated[idx].beneficiaries[bidx].benef_type = e.target.value;
+                        setNewSMSFs(updated);
+                      }}
+                      style={{
+                        padding: '6px 8px',
+                        borderRadius: '4px',
+                        border: '1px solid #e2e8f0',
+                        fontSize: '12px',
+                        width: '100%'
+                      }}
+                    >
+                      <option value="">Select…</option>
+                      <option value="binding">Binding</option>
+                      <option value="non_binding">Non-binding</option>
+                      <option value="lapsing_binding">Lapsing binding</option>
+                      <option value="non_lapsing_binding">Non-lapsing binding</option>
+                    </select>
+                  </td>
+                  <td style={{ padding: '8px 0' }}>
+                    <Input
+                      value={benef.benef_entitlement || ''}
+                      onChange={(e) => {
+                        const updated = [...newSMSFs];
+                        updated[idx].beneficiaries[bidx].benef_entitlement = e.target.value;
+                        setNewSMSFs(updated);
+                      }}
+                      placeholder="e.g., 25%"
+                      style={{ maxWidth: '80px', fontSize: '12px' }}
+                    />
+                  </td>
+                  <td style={{ textAlign: 'right', padding: '8px 0' }}>
+                    <button
+                      onClick={() => {
+                        const updated = [...newSMSFs];
+                        updated[idx].beneficiaries = updated[idx].beneficiaries.filter((_, i) => i !== bidx);
+                        setNewSMSFs(updated);
+                      }}
+                      className="p-1 text-red-600 hover:bg-red-50 rounded"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <Button
+            onClick={() => {
+              const updated = [...newSMSFs];
+              if (!updated[idx].beneficiaries) updated[idx].beneficiaries = [];
+              updated[idx].beneficiaries.push({
+                benef_account: '',
+                benef_who: '',
+                benef_type: '',
+                benef_entitlement: ''
+              });
+              setNewSMSFs(updated);
+            }}
+            size="sm"
+            variant="outline"
+          >
+            <Plus className="w-3 h-3 mr-1" />
+            Add Beneficiary
+          </Button>
+        </div>
+      )}
+
+      {/* Remove SMSF */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => setNewSMSFs(newSMSFs.filter((_, i) => i !== idx))}
+          className="p-2 text-red-600 hover:bg-red-50 rounded"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+
   const renderBondProduct = (product, idx) => (
     <div key={idx} className="border border-slate-200 rounded-lg p-6 space-y-4">
       <div className="border-l-4 border-blue-500 bg-blue-50 px-4 py-3 rounded">
