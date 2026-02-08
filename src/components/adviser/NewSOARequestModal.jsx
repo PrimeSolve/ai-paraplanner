@@ -18,10 +18,40 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
   const loadClients = async () => {
     try {
       setClientsLoading(true);
-      const data = await base44.entities.Client.filter({
+      const clientData = await base44.entities.Client.filter({
         adviser_email: adviserEmail
       });
-      setClients(data);
+      
+      // Fetch FactFind status for each client
+      const clientsWithFactFind = await Promise.all(
+        clientData.map(async (client) => {
+          let factFindStatus = 'No Fact Find';
+          let factFindProgress = 0;
+          
+          if (client.fact_find_id) {
+            try {
+              const factFinds = await base44.entities.FactFind.filter({
+                id: client.fact_find_id
+              });
+              if (factFinds && factFinds[0]) {
+                const ff = factFinds[0];
+                factFindProgress = ff.completion_percentage || 0;
+                factFindStatus = `${factFindProgress}% complete`;
+              }
+            } catch (err) {
+              console.error('Failed to load FactFind:', err);
+            }
+          }
+          
+          return {
+            ...client,
+            factFindStatus,
+            factFindProgress
+          };
+        })
+      );
+      
+      setClients(clientsWithFactFind);
     } catch (error) {
       console.error('Failed to load clients:', error);
     } finally {
