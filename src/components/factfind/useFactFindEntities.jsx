@@ -13,9 +13,13 @@ import { useMemo } from 'react';
  * ]
  * 
  * @param {object} factFind - The fact find data object
- * @param {string} [excludeId] - Optional entity ID to exclude (e.g., prevent trust being its own beneficiary)
+ * @param {object} [options] - Optional filters
+ * @param {string} [options.excludeId] - Entity ID to exclude (e.g., prevent trust being its own beneficiary)
+ * @param {string[]} [options.types] - Filter by type: ['Principal', 'Dependant', 'Dependant (Child)', 'Trust', 'Company']
  */
-export function useFactFindEntities(factFind, excludeId) {
+export function useFactFindEntities(factFind, options = {}) {
+  const { excludeId, types } = options;
+  
   return useMemo(() => {
     const entities = [];
 
@@ -97,11 +101,23 @@ export function useFactFindEntities(factFind, excludeId) {
       });
     }
 
-    // Filter out excluded entity if specified
+    // Apply filters
+    let filtered = entities;
+    
+    // Filter by excluded ID
     if (excludeId) {
-      return entities.filter(e => e.id !== excludeId);
+      filtered = filtered.filter(e => e.id !== excludeId);
     }
     
-    return entities;
-  }, [factFind, excludeId]);
+    // Filter by types
+    if (types && types.length > 0) {
+      const normalizedTypes = types.map(t => t.toLowerCase());
+      filtered = filtered.filter(e => {
+        const entityType = e.type.toLowerCase();
+        return normalizedTypes.some(t => entityType.includes(t));
+      });
+    }
+    
+    return filtered;
+  }, [factFind, excludeId, types]);
 }

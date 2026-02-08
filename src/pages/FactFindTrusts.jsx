@@ -35,7 +35,7 @@ export default function FactFindTrusts() {
     return fullIndex >= 0 ? `${currentTab}_${fullIndex}` : null;
   }, [factFind, currentTab, activeIndex]);
   
-  const entityList = useFactFindEntities(factFind, currentEntityId);
+  const entityList = useFactFindEntities(factFind, { excludeId: currentEntityId });
 
   const globalStateRef = React.useRef({
     entities: [],

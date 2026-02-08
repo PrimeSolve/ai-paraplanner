@@ -16,7 +16,8 @@ const MAX_SMSF = 2;
 export default function FactFindSMSF() {
   const navigate = useNavigate();
   const { factFind, loading: ffLoading } = useFactFind();
-  const entityList = useFactFindEntities(factFind);
+  const principalsOnly = useFactFindEntities(factFind, { types: ['Principal'] });
+  const allEntities = useFactFindEntities(factFind);
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -247,8 +248,8 @@ export default function FactFindSMSF() {
    const row = document.createElement('tr');
    row.className = 'acct-row border-b border-slate-100 hover:bg-orange-50/50';
 
-   // Build entity options from entityList
-   const entityOptions = entityList.map(entity => 
+   // Build entity options from principalsOnly (only principals can own SMSF accounts)
+   const entityOptions = principalsOnly.map(entity => 
      `<option value="${entity.id}">${entity.label}</option>`
    ).join('');
 
@@ -357,7 +358,7 @@ export default function FactFindSMSF() {
    }
 
    return row;
-   }, [entityList]);
+   }, [allEntities]);
 
   // ============================================
   // CREATE BENEFICIARY ROW
@@ -367,8 +368,8 @@ export default function FactFindSMSF() {
     const row = document.createElement('tr');
     row.className = 'benef-row border-b border-slate-100 hover:bg-purple-50/50';
 
-    // Build entity options from entityList
-    const entityOptions = entityList.map(entity => 
+    // Build entity options from allEntities (beneficiaries can be anyone)
+    const entityOptions = allEntities.map(entity => 
       `<option value="${entity.id}">${entity.label}</option>`
     ).join('');
 
@@ -448,7 +449,7 @@ export default function FactFindSMSF() {
     }
 
     return row;
-  }, [entityList]);
+  }, [principalsOnly]);
 
   // ============================================
   // ADD ENTRY
