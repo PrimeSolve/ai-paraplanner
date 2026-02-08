@@ -444,9 +444,37 @@ export function useCompletionLogic() {
     return Math.round(totalPercentage / sectionCount);
   };
 
+  /**
+   * Get display state for all sections (combines calculated % + manual marks)
+   */
+  const getDisplayState = (factFind) => {
+    const sections = calculateAllSectionCompletion(factFind);
+    const reviewStatus = factFind?.review_status?.sections || {};
+    const displayState = {};
+
+    Object.entries(sections).forEach(([key, percentage]) => {
+      const isManuallyComplete = reviewStatus[key]?.manually_complete || false;
+      const isComplete = percentage === 100 || isManuallyComplete;
+
+      displayState[key] = {
+        percentage,
+        isManuallyComplete,
+        isComplete,
+        displayValue: isManuallyComplete && percentage < 100 ? '✓' : `${percentage}%`,
+        color: isComplete ? '#10b981'
+          : percentage >= 50 ? '#f59e0b'
+            : percentage > 0 ? '#ef4444'
+              : '#9ca3af'
+      };
+    });
+
+    return displayState;
+  };
+
   return {
     calculateAllSectionCompletion,
     calculateOverallCompletion,
+    getDisplayState,
     getPersonalCompletion,
     getDependantsCompletion,
     getTrustsCompletion,
