@@ -831,7 +831,7 @@ export default function SOARequestProducts() {
                 Back
               </Button>
               <Button
-                onClick={handleContinue}
+                onClick={handleSaveAndContinue}
                 disabled={saving}
                 className="bg-purple-600 hover:bg-purple-700 text-white"
               >
