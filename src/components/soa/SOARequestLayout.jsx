@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
 import { useRole } from '../RoleContext';
+import { base44 } from '@/api/base44Client';
 import {
   Upload, Home, FileText, TrendingUp, Shield, PieChart,
   DollarSign, Building2, CheckCircle2, MessageSquare
@@ -125,9 +126,6 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
       loadClientName();
     }
   }, [soaRequest?.client_id]);
-
-  // Import base44
-  const { base44 } = require('@/api/base44Client');
 
   const getCompletionForSection = (sectionId) => {
     // TODO: Implement completion tracking
