@@ -375,7 +375,7 @@ export default function FactFindReview() {
 
       <FactFindLayout currentSection="review" factFind={factFind}>
         <div className="flex-1 overflow-y-auto p-8 bg-slate-50">
-          <div className="max-w-6xl mx-auto space-y-8">
+          <div className="space-y-8">
             {/* Header */}
             <div className="flex items-start justify-between">
               <div>
