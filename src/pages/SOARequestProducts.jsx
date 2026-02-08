@@ -125,6 +125,11 @@ export default function SOARequestProducts() {
           }
         }
       });
+      
+      // DEBUG: Read back immediately to verify save worked
+      const check = await base44.entities.SOARequest.get(soaRequest.id);
+      alert('SAVE CHECK: products_entities = ' + JSON.stringify(check.products_entities?.new_trusts || 'EMPTY'));
+      
       navigate(createPageUrl('SOARequestInsurance') + `?id=${soaRequest.id}`);
     } catch (error) {
       console.error('Save failed:', error);
