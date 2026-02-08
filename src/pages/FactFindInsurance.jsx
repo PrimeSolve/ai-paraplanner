@@ -302,90 +302,45 @@ export default function FactFindInsurance() {
               {/* POLICY EDITOR */}
               <Card className="border-slate-200 shadow-sm">
                 <div className="bg-blue-50 border-l-4 border-blue-500 px-6 py-3">
-                  <h4 className="font-bold text-blue-700">Policy Details</h4>
+                  <h4 className="font-bold text-blue-700 flex items-center gap-2"><span>🛡️</span> Policy Details</h4>
                 </div>
                 <CardContent className="p-6 space-y-4">
                   {/* Basic Details */}
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Policy name</label>
-                    <input
-                      type="text"
-                      value={currentPolicy.pol_name}
-                      onChange={(e) => updatePolicy('pol_name', e.target.value)}
-                      placeholder="e.g. Life Insurance - XYZ Provider"
-                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Policy type</label>
-                    <select
-                      value={currentPolicy.pol_type}
-                      onChange={(e) => updatePolicy('pol_type', e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">Select policy type…</option>
-                      <option value="1">Life (Stand-alone)</option>
-                      <option value="2">Life with Linked TPD</option>
-                      <option value="3">Life with Linked Trauma</option>
-                      <option value="4">Life with Linked TPD/Trauma</option>
-                      <option value="5">TPD (Stand-alone)</option>
-                      <option value="6">Trauma (Stand alone)</option>
-                      <option value="7">Trauma with Linked TPD</option>
-                      <option value="8">Income protection (Stand-alone)</option>
-                      <option value="10">Life with Super linked TPD</option>
-                      <option value="11">Life with Flexi linked TPD</option>
-                      <option value="12">Life with flexi linked Trauma</option>
-                      <option value="13">Super-Linked IP</option>
-                    </select>
-                  </div>
-
-                  {/* Tax Environment - Conditional */}
-                  {config.showTaxEnv && (
+                  <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">Tax environment</label>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Policy name</label>
+                      <input
+                        type="text"
+                        value={currentPolicy.pol_name}
+                        onChange={(e) => updatePolicy('pol_name', e.target.value)}
+                        placeholder="e.g. Life Insurance - XYZ Provider"
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Policy type</label>
                       <select
-                        value={currentPolicy.pol_tax_env}
-                        onChange={(e) => updatePolicy('pol_tax_env', e.target.value)}
+                        value={currentPolicy.pol_type}
+                        onChange={(e) => updatePolicy('pol_type', e.target.value)}
                         className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="">Select…</option>
-                        <option value="super">Inside Superannuation</option>
-                        <option value="non-super">Outside Superannuation</option>
+                        <option value="">Select policy type…</option>
+                        <option value="1">Life (Stand-alone)</option>
+                        <option value="2">Life with Linked TPD</option>
+                        <option value="3">Life with Linked Trauma</option>
+                        <option value="4">Life with Linked TPD/Trauma</option>
+                        <option value="5">TPD (Stand-alone)</option>
+                        <option value="6">Trauma (Stand alone)</option>
+                        <option value="7">Trauma with Linked TPD</option>
+                        <option value="8">Income protection (Stand-alone)</option>
+                        <option value="10">Life with Super linked TPD</option>
+                        <option value="11">Life with Flexi linked TPD</option>
+                        <option value="12">Life with flexi linked Trauma</option>
+                        <option value="13">Super-Linked IP</option>
                       </select>
                     </div>
-                  )}
-
-                  {/* Which Fund - Conditional on tax environment and owner */}
-                  {showFundDropdown && (
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">Which fund?</label>
-                      {currentPolicy.pol_owner ? (
-                        ownerFunds.length > 0 ? (
-                          <select
-                            value={currentPolicy.linked_fund_id || ''}
-                            onChange={(e) => updatePolicy('linked_fund_id', e.target.value)}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="">Select fund…</option>
-                            {ownerFunds.map(fund => (
-                              <option key={fund.id} value={fund.id}>
-                                {fund.label} ({fund.type})
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <div className="w-full px-3 py-2 border border-amber-300 bg-amber-50 rounded-md text-sm text-amber-700">
-                            No superannuation funds found for {getOwnerName(currentPolicy.pol_owner)}. Add funds on the Superannuation or SMSF page first.
-                          </div>
-                        )
-                      ) : (
-                        <div className="w-full px-3 py-2 border border-slate-300 bg-slate-50 rounded-md text-sm text-slate-500">
-                          Select a policy owner first
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
@@ -416,6 +371,85 @@ export default function FactFindInsurance() {
                       </select>
                     </div>
                   </div>
+
+                  {/* Tax Environment - Conditional */}
+                  {config.showTaxEnv && (
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Tax environment</label>
+                        <select
+                          value={currentPolicy.pol_tax_env}
+                          onChange={(e) => updatePolicy('pol_tax_env', e.target.value)}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Select…</option>
+                          <option value="super">Inside Superannuation</option>
+                          <option value="non-super">Outside Superannuation</option>
+                        </select>
+                      </div>
+
+                      {/* Which Fund - Conditional on tax environment and owner */}
+                      {showFundDropdown && (
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Which fund?</label>
+                          {currentPolicy.pol_owner ? (
+                            ownerFunds.length > 0 ? (
+                              <select
+                                value={currentPolicy.linked_fund_id || ''}
+                                onChange={(e) => updatePolicy('linked_fund_id', e.target.value)}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              >
+                                <option value="">Select fund…</option>
+                                {ownerFunds.map(fund => (
+                                  <option key={fund.id} value={fund.id}>
+                                    {fund.label} ({fund.type})
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <div className="w-full px-3 py-2 border border-amber-300 bg-amber-50 rounded-md text-sm text-amber-700">
+                                No superannuation funds found for {getOwnerName(currentPolicy.pol_owner)}. Add funds on the Superannuation or SMSF page first.
+                              </div>
+                            )
+                          ) : (
+                            <div className="w-full px-3 py-2 border border-slate-300 bg-slate-50 rounded-md text-sm text-slate-500">
+                              Select a policy owner first
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {!config.showTaxEnv && showFundDropdown && (
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Which fund?</label>
+                      {currentPolicy.pol_owner ? (
+                        ownerFunds.length > 0 ? (
+                          <select
+                            value={currentPolicy.linked_fund_id || ''}
+                            onChange={(e) => updatePolicy('linked_fund_id', e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select fund…</option>
+                            {ownerFunds.map(fund => (
+                              <option key={fund.id} value={fund.id}>
+                                {fund.label} ({fund.type})
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <div className="w-full px-3 py-2 border border-amber-300 bg-amber-50 rounded-md text-sm text-amber-700">
+                            No superannuation funds found for {getOwnerName(currentPolicy.pol_owner)}. Add funds on the Superannuation or SMSF page first.
+                          </div>
+                        )
+                      ) : (
+                        <div className="w-full px-3 py-2 border border-slate-300 bg-slate-50 rounded-md text-sm text-slate-500">
+                          Select a policy owner first
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
@@ -489,7 +523,7 @@ export default function FactFindInsurance() {
               {config.sumInsured.length > 0 && (
                 <Card className="border-slate-200 shadow-sm">
                   <div className="bg-green-50 border-l-4 border-green-500 px-6 py-3">
-                    <h4 className="font-bold text-green-700">Sum Insured</h4>
+                    <h4 className="font-bold text-green-700 flex items-center gap-2"><span>💰</span> Sum Insured</h4>
                   </div>
                   <CardContent className="p-6 space-y-4">
                     {config.sumInsured.includes('life') && (
@@ -584,7 +618,7 @@ export default function FactFindInsurance() {
               {config.premium.length > 0 && (
                 <Card className="border-slate-200 shadow-sm">
                   <div className="bg-orange-50 border-l-4 border-orange-500 px-6 py-3">
-                    <h4 className="font-bold text-orange-700">Premium Details</h4>
+                    <h4 className="font-bold text-orange-700 flex items-center gap-2"><span>💵</span> Premium Details</h4>
                   </div>
                   <CardContent className="p-6 space-y-4">
                     {config.premium.includes('life') && (
