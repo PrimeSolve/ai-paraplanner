@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight, LayoutDashboard } from 'lucide-react';
 import { useRole } from '../RoleContext';
 import { useCompletionLogic } from './useCompletionLogic';
+import { useSectionState } from './useSectionState';
 
 const sectionGroups = [
   {
@@ -79,7 +80,8 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
   const navigate = useNavigate();
   const { navigationChain } = useRole();
   const [showDashboard, setShowDashboard] = useState(false);
-  const { calculateAllSectionCompletion, calculateOverallCompletion } = useCompletionLogic();
+  const { calculateAllSectionCompletion, getDisplayState } = useCompletionLogic();
+  const { SECTIONS } = useSectionState();
 
   const handleNavClick = async (e, targetPath) => {
     e.preventDefault();
@@ -113,41 +115,49 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
     navigate(targetPath);
   };
 
-  const sectionCompletionMap = useMemo(() => ({
-    dashboard: 0,
-    welcome: 0,
-    prefill: 0,
-    personal: 'personal',
-    dependants: 'dependants',
-    trusts: 'trusts_companies',
-    smsf: 'smsf',
-    superannuation: 'superannuation',
-    investment: 'investments',
-    assets_liabilities: 'assets_liabilities',
-    income_expenses: 'income_expenses',
-    insurance: 'insurance',
-    super_tax: 'super_tax',
-    advice_reason: 'advice_reason',
-    risk_profile: 'risk_profile',
-    review: 0
-  }), []);
-
-  const sectionPercentages = useMemo(() => {
+  const displayState = useMemo(() => {
     if (!factFind) return {};
-    return calculateAllSectionCompletion(factFind);
-  }, [factFind, calculateAllSectionCompletion]);
+    return getDisplayState(factFind);
+  }, [factFind, getDisplayState]);
 
   const getCompletionForSection = (sectionId) => {
-    const key = sectionCompletionMap[sectionId];
-    if (!key) return 0;
-    if (typeof key === 'number') return key;
-    return sectionPercentages[key] || 0;
+    const sectionKey = sectionId === 'personal' ? 'personal'
+      : sectionId === 'dependants' ? 'dependants'
+        : sectionId === 'trusts' ? 'trusts_companies'
+          : sectionId === 'smsf' ? 'smsf'
+            : sectionId === 'superannuation' ? 'superannuation'
+              : sectionId === 'investment' ? 'investments'
+                : sectionId === 'assets_liabilities' ? 'assets_liabilities'
+                  : sectionId === 'income_expenses' ? 'income_expenses'
+                    : sectionId === 'insurance' ? 'insurance'
+                      : sectionId === 'super_tax' ? 'super_tax'
+                        : sectionId === 'advice_reason' ? 'advice_reason'
+                          : sectionId === 'risk_profile' ? 'risk_profile'
+                            : null;
+    
+    if (!sectionKey || !displayState[sectionKey]) return 0;
+    return displayState[sectionKey].percentage;
   };
 
-  const overallCompletion = useMemo(() => {
-    if (!factFind) return 0;
-    return calculateOverallCompletion(factFind);
-  }, [factFind, calculateOverallCompletion]);
+  const getCompletionDisplay = (sectionId) => {
+    const sectionKey = sectionId === 'personal' ? 'personal'
+      : sectionId === 'dependants' ? 'dependants'
+        : sectionId === 'trusts' ? 'trusts_companies'
+          : sectionId === 'smsf' ? 'smsf'
+            : sectionId === 'superannuation' ? 'superannuation'
+              : sectionId === 'investment' ? 'investments'
+                : sectionId === 'assets_liabilities' ? 'assets_liabilities'
+                  : sectionId === 'income_expenses' ? 'income_expenses'
+                    : sectionId === 'insurance' ? 'insurance'
+                      : sectionId === 'super_tax' ? 'super_tax'
+                        : sectionId === 'advice_reason' ? 'advice_reason'
+                          : sectionId === 'risk_profile' ? 'risk_profile'
+                            : null;
+    
+    if (!sectionKey || !displayState[sectionKey]) return { value: '0%', color: '#9ca3af' };
+    const state = displayState[sectionKey];
+    return { value: state.displayValue, color: state.color };
+  };
 
   return (
     <div className="flex bg-slate-50 overflow-hidden" style={{ height: 'calc(100vh - 64px)' }}>
@@ -199,7 +209,12 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
                          {section.label}
                        </span>
                        {completion > 0 && (
-                         <span className="text-xs text-slate-400 font-semibold">{completion}%</span>
+                         <span 
+                           className="text-xs font-semibold"
+                           style={{ color: getCompletionDisplay(section.id).color }}
+                         >
+                           {getCompletionDisplay(section.id).value}
+                         </span>
                        )}
                      </Link>
                    );
