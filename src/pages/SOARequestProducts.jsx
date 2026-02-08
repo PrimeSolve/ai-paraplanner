@@ -179,7 +179,7 @@ export default function SOARequestProducts() {
 
     window.addEventListener('soa-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('soa-save-before-nav', handleSaveBeforeNav);
-  }, [soaRequest?.id, newTrusts, newCompanies, newSMSFs, products, mainTab, entityTab, activeTrustIdx, activeCompanyIdx, activeSMSFIdx, activeProductIdx]);
+  }, [soaRequest?.id, newTrusts, newCompanies, newSMSFs, superProducts, pensionProducts, annuityProducts, wrapProducts, bondProducts, mainTab, entityTab, productTab, activeTrustIdx, activeCompanyIdx, activeSMSFIdx, activeSuperIdx, activePensionIdx, activeAnnuityIdx, activeWrapIdx, activeBondIdx]);
 
   const handleSaveAndContinue = async () => {
     setSaving(true);
