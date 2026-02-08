@@ -26,13 +26,6 @@ export default function FactFindAssetsLiabilities() {
 
   const getOwnerLabel = useCallback((value) => {
     if (!value) return '-';
-    if (value === 'joint') {
-      if (assetEntities.filter(e => e.type === 'Principal').length >= 2) {
-        const principals = assetEntities.filter(e => e.type === 'Principal');
-        return `${principals[0].label} & ${principals[1].label}`;
-      }
-      return 'Joint';
-    }
     const entity = assetEntities.find(e => e.id === value);
     return entity ? entity.label : value;
   }, [assetEntities]);
@@ -310,7 +303,6 @@ export default function FactFindAssetsLiabilities() {
                               {assetEntities.map(entity => (
                                 <option key={entity.id} value={entity.id}>{entity.label} ({entity.type})</option>
                               ))}
-                              <option value="joint">Joint</option>
                             </select>
                           </div>
                         </div>
@@ -479,7 +471,6 @@ export default function FactFindAssetsLiabilities() {
                               {assetEntities.map(entity => (
                                 <option key={entity.id} value={entity.id}>{entity.label} ({entity.type})</option>
                               ))}
-                              <option value="joint">Joint</option>
                             </select>
                           </div>
                         </div>
