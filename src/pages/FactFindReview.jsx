@@ -167,11 +167,6 @@ export default function FactFindReview() {
     );
   }
 
-  const incompleteSections = SECTIONS.filter(s => {
-    const state = getSectionCardState(s, factFind, reviewStatus);
-    return state.status !== 'complete';
-  });
-
   return (
     <>
       {/* Key Info Modal */}
