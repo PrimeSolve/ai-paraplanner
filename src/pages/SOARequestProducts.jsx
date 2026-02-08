@@ -71,6 +71,41 @@ export default function SOARequestProducts() {
     loadData();
   }, []);
 
+  // Save before navigation event listener
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      if (!soaRequest?.id) {
+        window.dispatchEvent(new Event('soa-save-complete'));
+        return;
+      }
+
+      try {
+        await base44.entities.SOARequest.update(soaRequest.id, {
+          products_entities: {
+            new_trusts: newTrusts,
+            new_companies: newCompanies,
+            new_smsf: newSMSFs,
+            products: products,
+            currentMainTab: mainTab,
+            currentEntityTab: entityTab,
+            activeIndex: {
+              trust: activeTrustIdx,
+              company: activeCompanyIdx,
+              smsf: activeSMSFIdx,
+              product: activeProductIdx
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Save before nav failed:', error);
+      }
+      window.dispatchEvent(new Event('soa-save-complete'));
+    };
+
+    window.addEventListener('soa-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('soa-save-before-nav', handleSaveBeforeNav);
+  }, [soaRequest?.id, newTrusts, newCompanies, newSMSFs, products, mainTab, entityTab, activeTrustIdx, activeCompanyIdx, activeSMSFIdx, activeProductIdx]);
+
   // Auto-save on any change
   useEffect(() => {
     if (!soaRequest?.id) return;
