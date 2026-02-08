@@ -357,7 +357,7 @@ export default function FactFindSMSF() {
    }
 
    return row;
-  }, [factFind]);
+   }, [entityList]);
 
   // ============================================
   // CREATE BENEFICIARY ROW
