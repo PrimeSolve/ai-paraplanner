@@ -500,7 +500,7 @@ export default function SOARequestProducts() {
               updated[idx].owner = val;
               setProducts(updated);
             }}
-            options={entities}
+            entities={entities}
           />
         </div>
         <div>
