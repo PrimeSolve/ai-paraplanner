@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 
 const TABS = [
   { id: 'super', label: 'Superannuation', icon: '💰' },
-  { id: 'tax', label: 'Tax', icon: '📋' }
+  { id: 'tax', label: 'Tax', icon: '🏛️' }
 ];
 
 const EMPTY_SUPER = {
