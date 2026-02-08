@@ -1197,48 +1197,316 @@ export default function SOARequestProducts() {
               )}
 
               {mainTab === 'products' && (
-                <div className="space-y-6">
-                  {products.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-300 rounded-lg">
-                      <div className="text-5xl mb-4">💰</div>
-                      <h3 className="text-lg font-semibold text-slate-800 mb-2">Are you recommending new products?</h3>
-                      <p className="text-slate-600 text-center mb-6">Add superannuation, pensions, wraps, bonds or other financial products being recommended.</p>
-                      <Button onClick={() => setProducts([...products, { product_type: '', product_name: '', provider: '', owner: '', recommended_action: '', notes: '' }])} className="bg-blue-600 hover:bg-blue-700">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Product
-                      </Button>
-                    </div>
-                  ) : (
+                <>
+                  {/* Product sub-tabs */}
+                  <div style={{ display: 'inline-flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
+                    <button
+                      onClick={() => setProductTab('superannuation')}
+                      style={{
+                        padding: '10px 16px',
+                        borderRadius: '6px',
+                        border: productTab === 'superannuation' ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                        backgroundColor: productTab === 'superannuation' ? '#eff6ff' : '#f8fafc',
+                        color: productTab === 'superannuation' ? '#1e40af' : '#64748b',
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      🏦 Superannuation
+                    </button>
+                    <button
+                      onClick={() => setProductTab('pension')}
+                      style={{
+                        padding: '10px 16px',
+                        borderRadius: '6px',
+                        border: productTab === 'pension' ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                        backgroundColor: productTab === 'pension' ? '#eff6ff' : '#f8fafc',
+                        color: productTab === 'pension' ? '#1e40af' : '#64748b',
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      💳 Pension
+                    </button>
+                    <button
+                      onClick={() => setProductTab('annuity')}
+                      style={{
+                        padding: '10px 16px',
+                        borderRadius: '6px',
+                        border: productTab === 'annuity' ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                        backgroundColor: productTab === 'annuity' ? '#eff6ff' : '#f8fafc',
+                        color: productTab === 'annuity' ? '#1e40af' : '#64748b',
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      📋 Annuity
+                    </button>
+                    <button
+                      onClick={() => setProductTab('wrap')}
+                      style={{
+                        padding: '10px 16px',
+                        borderRadius: '6px',
+                        border: productTab === 'wrap' ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                        backgroundColor: productTab === 'wrap' ? '#eff6ff' : '#f8fafc',
+                        color: productTab === 'wrap' ? '#1e40af' : '#64748b',
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      📊 Wrap
+                    </button>
+                    <button
+                      onClick={() => setProductTab('investment_bond')}
+                      style={{
+                        padding: '10px 16px',
+                        borderRadius: '6px',
+                        border: productTab === 'investment_bond' ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                        backgroundColor: productTab === 'investment_bond' ? '#eff6ff' : '#f8fafc',
+                        color: productTab === 'investment_bond' ? '#1e40af' : '#64748b',
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      🔒 Investment Bond
+                    </button>
+                  </div>
+
+                  {/* Superannuation Tab */}
+                  {productTab === 'superannuation' && (
                     <div className="space-y-6">
-                      {products.length > 1 && (
-                        <div className="flex gap-2">
-                          {products.map((_, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => setActiveProductIdx(idx)}
-                              style={{
-                                padding: '6px 12px',
-                                borderRadius: '4px',
-                                backgroundColor: activeProductIdx === idx ? '#2563eb' : '#e2e8f0',
-                                color: activeProductIdx === idx ? '#fff' : '#64748b',
-                                fontSize: '12px',
-                                fontWeight: 500,
-                                cursor: 'pointer'
-                              }}
-                            >
-                              Product {idx + 1}
-                            </button>
-                          ))}
+                      {superProducts.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-300 rounded-lg">
+                          <div className="text-5xl mb-4">🏦</div>
+                          <h3 className="text-lg font-semibold text-slate-800 mb-2">Are you recommending a new superannuation fund?</h3>
+                          <p className="text-slate-600 text-center mb-6">Add details about new super funds being recommended for your client.</p>
+                          <Button onClick={() => setSuperProducts([...superProducts, { product_name: '', provider: '', owner: '' }])} className="bg-blue-600 hover:bg-blue-700">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Superannuation Product
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                          {superProducts.length > 1 && (
+                            <div className="flex gap-2">
+                              {superProducts.map((_, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => setActiveSuperIdx(idx)}
+                                  style={{
+                                    padding: '6px 12px',
+                                    borderRadius: '4px',
+                                    backgroundColor: activeSuperIdx === idx ? '#2563eb' : '#e2e8f0',
+                                    color: activeSuperIdx === idx ? '#fff' : '#64748b',
+                                    fontSize: '12px',
+                                    fontWeight: 500,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Super {idx + 1}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          {renderSuperProduct(superProducts[activeSuperIdx], activeSuperIdx)}
+                          <Button onClick={() => setSuperProducts([...superProducts, { product_name: '', provider: '', owner: '' }])} className="bg-blue-600 hover:bg-blue-700">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Another Superannuation
+                          </Button>
                         </div>
                       )}
-                      {renderProductCard(products[activeProductIdx], activeProductIdx)}
-                      <Button onClick={() => setProducts([...products, { product_type: '', product_name: '', provider: '', owner: '', recommended_action: '', notes: '' }])} className="bg-blue-600 hover:bg-blue-700">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Another Product
-                      </Button>
                     </div>
                   )}
-                </div>
+
+                  {/* Pension Tab */}
+                  {productTab === 'pension' && (
+                    <div className="space-y-6">
+                      {pensionProducts.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-300 rounded-lg">
+                          <div className="text-5xl mb-4">💳</div>
+                          <h3 className="text-lg font-semibold text-slate-800 mb-2">Are you recommending a new pension?</h3>
+                          <p className="text-slate-600 text-center mb-6">Add details about new account-based or allocated pensions being recommended.</p>
+                          <Button onClick={() => setPensionProducts([...pensionProducts, { product_name: '', provider: '', owner: '', pension_type: '' }])} className="bg-blue-600 hover:bg-blue-700">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Pension Product
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                          {pensionProducts.length > 1 && (
+                            <div className="flex gap-2">
+                              {pensionProducts.map((_, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => setActivePensionIdx(idx)}
+                                  style={{
+                                    padding: '6px 12px',
+                                    borderRadius: '4px',
+                                    backgroundColor: activePensionIdx === idx ? '#2563eb' : '#e2e8f0',
+                                    color: activePensionIdx === idx ? '#fff' : '#64748b',
+                                    fontSize: '12px',
+                                    fontWeight: 500,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Pension {idx + 1}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          {renderPensionProduct(pensionProducts[activePensionIdx], activePensionIdx)}
+                          <Button onClick={() => setPensionProducts([...pensionProducts, { product_name: '', provider: '', owner: '', pension_type: '' }])} className="bg-blue-600 hover:bg-blue-700">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Another Pension
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Annuity Tab */}
+                  {productTab === 'annuity' && (
+                    <div className="space-y-6">
+                      {annuityProducts.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-300 rounded-lg">
+                          <div className="text-5xl mb-4">📋</div>
+                          <h3 className="text-lg font-semibold text-slate-800 mb-2">Are you recommending a new annuity?</h3>
+                          <p className="text-slate-600 text-center mb-6">Add details about new annuity products being recommended.</p>
+                          <Button onClick={() => setAnnuityProducts([...annuityProducts, { product_name: '', provider: '', owner: '', annuity_tax_env: '', annuity_joint: '', annuity_lifetime: false, annuity_term: '', annuity_purchase_price: '', annuity_purchase_date: '', annuity_income: '', annuity_index_rate: '', annuity_residual_value: '', annuity_deductible_income: '' }])} className="bg-blue-600 hover:bg-blue-700">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Annuity Product
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                          {annuityProducts.length > 1 && (
+                            <div className="flex gap-2">
+                              {annuityProducts.map((_, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => setActiveAnnuityIdx(idx)}
+                                  style={{
+                                    padding: '6px 12px',
+                                    borderRadius: '4px',
+                                    backgroundColor: activeAnnuityIdx === idx ? '#2563eb' : '#e2e8f0',
+                                    color: activeAnnuityIdx === idx ? '#fff' : '#64748b',
+                                    fontSize: '12px',
+                                    fontWeight: 500,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Annuity {idx + 1}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          {renderAnnuityProduct(annuityProducts[activeAnnuityIdx], activeAnnuityIdx)}
+                          <Button onClick={() => setAnnuityProducts([...annuityProducts, { product_name: '', provider: '', owner: '', annuity_tax_env: '', annuity_joint: '', annuity_lifetime: false, annuity_term: '', annuity_purchase_price: '', annuity_purchase_date: '', annuity_income: '', annuity_index_rate: '', annuity_residual_value: '', annuity_deductible_income: '' }])} className="bg-blue-600 hover:bg-blue-700">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Another Annuity
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Wrap Tab */}
+                  {productTab === 'wrap' && (
+                    <div className="space-y-6">
+                      {wrapProducts.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-300 rounded-lg">
+                          <div className="text-5xl mb-4">📊</div>
+                          <h3 className="text-lg font-semibold text-slate-800 mb-2">Are you recommending a new wrap platform?</h3>
+                          <p className="text-slate-600 text-center mb-6">Add details about new wrap or platform accounts being recommended.</p>
+                          <Button onClick={() => setWrapProducts([...wrapProducts, { product_name: '', provider: '', owner: '' }])} className="bg-blue-600 hover:bg-blue-700">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Wrap Product
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                          {wrapProducts.length > 1 && (
+                            <div className="flex gap-2">
+                              {wrapProducts.map((_, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => setActiveWrapIdx(idx)}
+                                  style={{
+                                    padding: '6px 12px',
+                                    borderRadius: '4px',
+                                    backgroundColor: activeWrapIdx === idx ? '#2563eb' : '#e2e8f0',
+                                    color: activeWrapIdx === idx ? '#fff' : '#64748b',
+                                    fontSize: '12px',
+                                    fontWeight: 500,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Wrap {idx + 1}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          {renderWrapProduct(wrapProducts[activeWrapIdx], activeWrapIdx)}
+                          <Button onClick={() => setWrapProducts([...wrapProducts, { product_name: '', provider: '', owner: '' }])} className="bg-blue-600 hover:bg-blue-700">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Another Wrap
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Investment Bond Tab */}
+                  {productTab === 'investment_bond' && (
+                    <div className="space-y-6">
+                      {bondProducts.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-300 rounded-lg">
+                          <div className="text-5xl mb-4">🔒</div>
+                          <h3 className="text-lg font-semibold text-slate-800 mb-2">Are you recommending a new investment bond?</h3>
+                          <p className="text-slate-600 text-center mb-6">Add details about new investment bond products being recommended.</p>
+                          <Button onClick={() => setBondProducts([...bondProducts, { product_name: '', provider: '', owner: '' }])} className="bg-blue-600 hover:bg-blue-700">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Investment Bond
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                          {bondProducts.length > 1 && (
+                            <div className="flex gap-2">
+                              {bondProducts.map((_, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => setActiveBondIdx(idx)}
+                                  style={{
+                                    padding: '6px 12px',
+                                    borderRadius: '4px',
+                                    backgroundColor: activeBondIdx === idx ? '#2563eb' : '#e2e8f0',
+                                    color: activeBondIdx === idx ? '#fff' : '#64748b',
+                                    fontSize: '12px',
+                                    fontWeight: 500,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Bond {idx + 1}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          {renderBondProduct(bondProducts[activeBondIdx], activeBondIdx)}
+                          <Button onClick={() => setBondProducts([...bondProducts, { product_name: '', provider: '', owner: '' }])} className="bg-blue-600 hover:bg-blue-700">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Another Bond
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
