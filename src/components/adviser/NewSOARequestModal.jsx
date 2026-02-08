@@ -149,36 +149,7 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
           </button>
         </div>
 
-        <button 
-          onClick={async () => {
-            try {
-              // Step 1: Get current user
-              const currentUser = await base44.auth.me();
-              alert('Step 1 - Current user email: ' + currentUser.email);
-              
-              // Step 2: Fetch ALL clients (no filter)
-              const allClients = await base44.entities.Client.list();
-              alert('Step 2 - Total clients in database: ' + allClients.length + '\n' + 
-                    JSON.stringify(allClients.map(c => ({ 
-                      name: c.first_name + ' ' + c.last_name, 
-                      adviser_email: c.adviser_email 
-                    })), null, 2));
-              
-              // Step 3: Fetch filtered clients
-              const myClients = await base44.entities.Client.filter({ 
-                adviser_email: currentUser.email 
-              });
-              alert('Step 3 - My clients: ' + myClients.length + '\n' + 
-                    JSON.stringify(myClients.map(c => c.first_name + ' ' + c.last_name), null, 2));
-              
-            } catch (err) {
-              alert('ERROR: ' + err.message);
-            }
-          }}
-          style={{ background: '#dc2626', color: 'white', padding: '10px 14px', marginBottom: '24px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
-        >
-          DEBUG CLIENT LOADING
-        </button>
+
 
         <div style={{ marginBottom: '32px' }}>
           <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1e293b', marginBottom: '12px' }}>
