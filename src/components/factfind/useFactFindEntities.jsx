@@ -15,7 +15,7 @@ import { useMemo } from 'react';
  * @param {object} factFind - The fact find data object
  * @param {object} [options] - Optional filters
  * @param {string} [options.excludeId] - Entity ID to exclude (e.g., prevent trust being its own beneficiary)
- * @param {string[]} [options.types] - Filter by type: ['Principal', 'Dependant', 'Dependant (Child)', 'Trust', 'Company', 'SMSF']
+ * @param {string[]} [options.types] - Filter by type: ['Principal', 'Dependant', 'Dependant (Child)', 'Trust', 'Company', 'SMSF', 'Wrap', 'Bond']
  */
 export function useFactFindEntities(factFind, options = {}) {
   const { excludeId, types } = options;
@@ -109,6 +109,34 @@ export function useFactFindEntities(factFind, options = {}) {
             id: `smsf_${i}`,
             label: smsf.smsf_name,
             type: 'SMSF',
+            index: i
+          });
+        }
+      });
+    }
+
+    // Add Wraps
+    if (Array.isArray(factFind?.investment?.wraps)) {
+      factFind.investment.wraps.forEach((wrap, i) => {
+        if (wrap.platform_name) {
+          entities.push({
+            id: `wrap_${i}`,
+            label: wrap.platform_name,
+            type: 'Wrap',
+            index: i
+          });
+        }
+      });
+    }
+
+    // Add Bonds
+    if (Array.isArray(factFind?.investment?.bonds)) {
+      factFind.investment.bonds.forEach((bond, i) => {
+        if (bond.product_name) {
+          entities.push({
+            id: `bond_${i}`,
+            label: bond.product_name,
+            type: 'Bond',
             index: i
           });
         }
