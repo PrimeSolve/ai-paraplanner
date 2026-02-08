@@ -182,8 +182,10 @@ export default function SOARequestProducts() {
   }, [soaRequest?.id, newTrusts, newCompanies, newSMSFs, superProducts, pensionProducts, annuityProducts, wrapProducts, bondProducts, mainTab, entityTab, productTab, activeTrustIdx, activeCompanyIdx, activeSMSFIdx, activeSuperIdx, activePensionIdx, activeAnnuityIdx, activeWrapIdx, activeBondIdx]);
 
   const handleSaveAndContinue = async () => {
+    alert('BUTTON CLICKED - soaRequest is: ' + (soaRequest ? soaRequest.id : 'NULL'));
+    
     if (!soaRequest?.id) {
-      toast.error('Error: SOA Request not loaded');
+      alert('SOA REQUEST IS NULL - cannot save');
       return;
     }
     setSaving(true);
