@@ -6,6 +6,7 @@ import { X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviserEmail }) {
+  const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState('');
   const [loading, setLoading] = useState(false);
