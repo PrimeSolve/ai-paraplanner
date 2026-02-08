@@ -69,6 +69,10 @@ export default function SOARequestProducts() {
       allEntities = allEntities.filter(e => e.id !== excludeId);
     }
     
+    console.log('getFullEntityList result:', allEntities);
+    console.log('getFullEntityList count:', allEntities.length);
+    console.log('getFullEntityList types:', allEntities.map(e => e.type));
+    
     return allEntities;
   };
 
