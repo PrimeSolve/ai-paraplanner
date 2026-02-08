@@ -24,7 +24,6 @@ export default function SOARequestInsurance() {
   const [soaId, setSOAId] = useState(null);
   const { getByTypes } = useSOAEntities(soaId);
   const principals = getByTypes(['principal']);
-  const { factFind } = useFactFind();
   
   // Modals state
   const [showAssumptionsModal, setShowAssumptionsModal] = useState(false);
@@ -111,6 +110,12 @@ export default function SOARequestInsurance() {
             setSOARequest(requests[0]);
             const insurance = requests[0].insurance || { client: getDefaultPersonData(), partner: getDefaultPersonData() };
             setInsuranceData(insurance);
+            
+            // Load linked fact find
+            if (requests[0].fact_find_id) {
+              const factFinds = await base44.entities.FactFind.filter({ id: requests[0].fact_find_id });
+              if (factFinds[0]) setFactFind(factFinds[0]);
+            }
           }
         }
       } catch (error) {
