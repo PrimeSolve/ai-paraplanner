@@ -16,6 +16,11 @@ export default function FactFindSuperannuation() {
   const { factFind, loading: ffLoading } = useFactFind();
   const principalsOnly = useFactFindEntities(factFind, { types: ['Principal'] });
   const beneficiaryEntities = useFactFindEntities(factFind, { types: ['Principal', 'Dependant'] });
+  
+  // DEBUG LOG
+  console.log('SUPER PAGE - principalsOnly:', JSON.stringify(principalsOnly));
+  console.log('SUPER PAGE - factFind.personal:', factFind?.personal);
+  
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('super');
@@ -365,7 +370,7 @@ export default function FactFindSuperannuation() {
       portfolioEmpty?.classList.add('hidden');
       portfolioBtn?.classList.remove('hidden');
     }
-  }, []);
+  }, [principalsOnly, beneficiaryEntities]);
 
   const createBeneficiaryRow = useCallback((card, data = {}) => {
     const row = document.createElement('tr');
@@ -414,7 +419,7 @@ export default function FactFindSuperannuation() {
     if (data?.benef_type) row.querySelector('select[name="benef_type"]').value = data.benef_type;
 
     return row;
-  }, [beneficiaryEntities]);
+  }, [beneficiaryEntities, principalsOnly]);
 
   const createPortfolioRow = useCallback((card, data = {}) => {
     const row = document.createElement('tr');
