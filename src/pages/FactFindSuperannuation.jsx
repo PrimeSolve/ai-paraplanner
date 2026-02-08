@@ -1007,71 +1007,72 @@ export default function FactFindSuperannuation() {
                               </select>
                             )}
                           </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-slate-700 mb-2">Balance</label>
-                          <div className="flex items-center">
-                            <span className="text-slate-500 mr-2">$</span>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Balance</label>
+                            <div className="flex items-center">
+                              <span className="text-slate-500 mr-2">$</span>
+                              <input
+                                type="number"
+                                value={currentItem.balance}
+                                onChange={(e) => setCurrentItem({ ...currentItem, balance: e.target.value })}
+                                placeholder="0.00"
+                                step="0.01"
+                                min="0"
+                                className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Pension type</label>
+                            <select
+                              value={currentItem.pension_type}
+                              onChange={(e) => setCurrentItem({ ...currentItem, pension_type: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">Select…</option>
+                              <option value="account-based">Account-based pension</option>
+                              <option value="ttr">Transition to retirement</option>
+                              <option value="term-allocated">Term allocated pension</option>
+                              <option value="lifetime">Lifetime pension</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Commencement date</label>
                             <input
-                              type="number"
-                              value={currentItem.balance}
-                              onChange={(e) => setCurrentItem({ ...currentItem, balance: e.target.value })}
-                              placeholder="0.00"
-                              step="0.01"
-                              min="0"
-                              className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              type="date"
+                              value={currentItem.commencement_date}
+                              onChange={(e) => setCurrentItem({ ...currentItem, commencement_date: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                           </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-slate-700 mb-2">Pension type</label>
-                          <select
-                            value={currentItem.pension_type}
-                            onChange={(e) => setCurrentItem({ ...currentItem, pension_type: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="">Select…</option>
-                            <option value="account-based">Account-based pension</option>
-                            <option value="ttr">Transition to retirement</option>
-                            <option value="term-allocated">Term allocated pension</option>
-                            <option value="lifetime">Lifetime pension</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-slate-700 mb-2">Commencement date</label>
-                          <input
-                            type="date"
-                            value={currentItem.commencement_date}
-                            onChange={(e) => setCurrentItem({ ...currentItem, commencement_date: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-slate-700 mb-2">Purchase price</label>
-                          <div className="flex items-center">
-                            <span className="text-slate-500 mr-2">$</span>
-                            <input
-                              type="number"
-                              value={currentItem.purchase_price}
-                              onChange={(e) => setCurrentItem({ ...currentItem, purchase_price: e.target.value })}
-                              placeholder="0.00"
-                              step="0.01"
-                              min="0"
-                              className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Purchase price</label>
+                            <div className="flex items-center">
+                              <span className="text-slate-500 mr-2">$</span>
+                              <input
+                                type="number"
+                                value={currentItem.purchase_price}
+                                onChange={(e) => setCurrentItem({ ...currentItem, purchase_price: e.target.value })}
+                                placeholder="0.00"
+                                step="0.01"
+                                min="0"
+                                className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
                           </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-slate-700 mb-2">Reversionary nominee</label>
-                          <select
-                            value={currentItem.reversionary_nominee}
-                            onChange={(e) => setCurrentItem({ ...currentItem, reversionary_nominee: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="">Select…</option>
-                            {getAvailableReversionary().map(entity => (
-                              <option key={entity.id} value={entity.id}>{entity.label}</option>
-                            ))}
-                          </select>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Reversionary nominee</label>
+                            <select
+                              value={currentItem.reversionary_nominee}
+                              onChange={(e) => setCurrentItem({ ...currentItem, reversionary_nominee: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">Select…</option>
+                              {getAvailableReversionary().map(entity => (
+                                <option key={entity.id} value={entity.id}>{entity.label}</option>
+                              ))}
+                            </select>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -1500,76 +1501,77 @@ export default function FactFindSuperannuation() {
                               </select>
                             )}
                           </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-slate-700 mb-2">Annuity type</label>
-                          <select
-                            value={currentItem.annuity_type}
-                            onChange={(e) => setCurrentItem({ ...currentItem, annuity_type: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="">Select…</option>
-                            <option value="fixed-term">Fixed term annuity</option>
-                            <option value="lifetime">Lifetime annuity</option>
-                            <option value="market-linked">Market-linked annuity</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-slate-700 mb-2">Purchase price</label>
-                          <div className="flex items-center">
-                            <span className="text-slate-500 mr-2">$</span>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Annuity type</label>
+                            <select
+                              value={currentItem.annuity_type}
+                              onChange={(e) => setCurrentItem({ ...currentItem, annuity_type: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">Select…</option>
+                              <option value="fixed-term">Fixed term annuity</option>
+                              <option value="lifetime">Lifetime annuity</option>
+                              <option value="market-linked">Market-linked annuity</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Purchase price</label>
+                            <div className="flex items-center">
+                              <span className="text-slate-500 mr-2">$</span>
+                              <input
+                                type="number"
+                                value={currentItem.purchase_price}
+                                onChange={(e) => setCurrentItem({ ...currentItem, purchase_price: e.target.value })}
+                                placeholder="0.00"
+                                step="0.01"
+                                min="0"
+                                className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Commencement date</label>
                             <input
-                              type="number"
-                              value={currentItem.purchase_price}
-                              onChange={(e) => setCurrentItem({ ...currentItem, purchase_price: e.target.value })}
-                              placeholder="0.00"
-                              step="0.01"
-                              min="0"
-                              className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              type="date"
+                              value={currentItem.commencement_date}
+                              onChange={(e) => setCurrentItem({ ...currentItem, commencement_date: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                           </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-slate-700 mb-2">Commencement date</label>
-                          <input
-                            type="date"
-                            value={currentItem.commencement_date}
-                            onChange={(e) => setCurrentItem({ ...currentItem, commencement_date: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-slate-700 mb-2">Maturity date</label>
-                          <input
-                            type="date"
-                            value={currentItem.maturity_date}
-                            onChange={(e) => setCurrentItem({ ...currentItem, maturity_date: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-slate-700 mb-2">Guaranteed period (years)</label>
-                          <input
-                            type="number"
-                            value={currentItem.guaranteed_period}
-                            onChange={(e) => setCurrentItem({ ...currentItem, guaranteed_period: e.target.value })}
-                            placeholder="0"
-                            min="0"
-                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-slate-700 mb-2">Residual capital value</label>
-                          <div className="flex items-center">
-                            <span className="text-slate-500 mr-2">$</span>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Maturity date</label>
+                            <input
+                              type="date"
+                              value={currentItem.maturity_date}
+                              onChange={(e) => setCurrentItem({ ...currentItem, maturity_date: e.target.value })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Guaranteed period (years)</label>
                             <input
                               type="number"
-                              value={currentItem.residual_capital_value}
-                              onChange={(e) => setCurrentItem({ ...currentItem, residual_capital_value: e.target.value })}
-                              placeholder="0.00"
-                              step="0.01"
+                              value={currentItem.guaranteed_period}
+                              onChange={(e) => setCurrentItem({ ...currentItem, guaranteed_period: e.target.value })}
+                              placeholder="0"
                               min="0"
-                              className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Residual capital value</label>
+                            <div className="flex items-center">
+                              <span className="text-slate-500 mr-2">$</span>
+                              <input
+                                type="number"
+                                value={currentItem.residual_capital_value}
+                                onChange={(e) => setCurrentItem({ ...currentItem, residual_capital_value: e.target.value })}
+                                placeholder="0.00"
+                                step="0.01"
+                                min="0"
+                                className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
