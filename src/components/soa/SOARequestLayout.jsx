@@ -106,6 +106,28 @@ const sectionGroups = [
 export default function SOARequestLayout({ children, currentSection, soaRequest }) {
   const navigate = useNavigate();
   const { navigationChain } = useRole();
+  const [clientName, setClientName] = React.useState('Unknown Client');
+
+  React.useEffect(() => {
+    if (soaRequest?.client_id) {
+      const loadClientName = async () => {
+        try {
+          const clients = await base44.entities.Client.filter({ id: soaRequest.client_id });
+          const client = clients[0];
+          if (client) {
+            const name = `${client.first_name || ''} ${client.last_name || ''}`.trim();
+            setClientName(name || 'Unknown Client');
+          }
+        } catch (err) {
+          console.error('Failed to load client name:', err);
+        }
+      };
+      loadClientName();
+    }
+  }, [soaRequest?.client_id]);
+
+  // Import base44
+  const { base44 } = require('@/api/base44Client');
 
   const getCompletionForSection = (sectionId) => {
     // TODO: Implement completion tracking
