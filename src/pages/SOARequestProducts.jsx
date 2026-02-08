@@ -1059,43 +1059,93 @@ export default function SOARequestProducts() {
         <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
           💰 Account Information
         </h4>
-        {(smsf.accounts || []).length > 0 && (
-          <div className="mb-4">
-            <table style={{ width: '100%', marginBottom: '12px' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                  <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Owner</th>
-                  <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Tax Env</th>
-                  <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>% of Fund</th>
-                  <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Balance</th>
-                  <th style={{ textAlign: 'right', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {smsf.accounts.map((acct, aidx) => (
-                  <tr key={aidx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '8px 0', fontSize: '12px' }}>{smsfAccountOwnerOptions.find(o => o.id === acct.owner)?.label || acct.owner}</td>
-                    <td style={{ padding: '8px 0', fontSize: '12px' }}>{acct.tax_environment}</td>
-                    <td style={{ padding: '8px 0', fontSize: '12px' }}>{acct.fund_percentage}%</td>
-                    <td style={{ padding: '8px 0', fontSize: '12px' }}>${acct.balance?.toLocaleString()}</td>
-                    <td style={{ textAlign: 'right', padding: '8px 0' }}>
-                      <button
-                        onClick={() => {
-                          const updated = [...newSMSFs];
-                          updated[idx].accounts = updated[idx].accounts.filter((_, i) => i !== aidx);
-                          setNewSMSFs(updated);
-                        }}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <table style={{ width: '100%', marginBottom: '12px' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+              <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Owner</th>
+              <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Tax Environment</th>
+              <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>% of Fund</th>
+              <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Balance ($)</th>
+              <th style={{ textAlign: 'right', padding: '8px 0', fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(smsf.accounts || []).map((acct, aidx) => (
+              <tr key={aidx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <td style={{ padding: '8px 0' }}>
+                  <EntitySelect
+                    value={acct.owner || ''}
+                    onChange={(val) => {
+                      const updated = [...newSMSFs];
+                      updated[idx].accounts[aidx].owner = val;
+                      setNewSMSFs(updated);
+                    }}
+                    entities={smsfAccountOwnerOptions}
+                  />
+                </td>
+                <td style={{ padding: '8px 0' }}>
+                  <select
+                    value={acct.tax_environment || ''}
+                    onChange={(e) => {
+                      const updated = [...newSMSFs];
+                      updated[idx].accounts[aidx].tax_environment = e.target.value;
+                      setNewSMSFs(updated);
+                    }}
+                    style={{
+                      padding: '6px 8px',
+                      borderRadius: '4px',
+                      border: '1px solid #e2e8f0',
+                      fontSize: '12px',
+                      width: '100%'
+                    }}
+                  >
+                    <option value="">Select…</option>
+                    <option value="accumulation">Accumulation</option>
+                    <option value="pension">Pension</option>
+                  </select>
+                </td>
+                <td style={{ padding: '8px 0' }}>
+                  <Input
+                    type="number"
+                    value={acct.fund_percentage || ''}
+                    onChange={(e) => {
+                      const updated = [...newSMSFs];
+                      updated[idx].accounts[aidx].fund_percentage = e.target.value;
+                      setNewSMSFs(updated);
+                    }}
+                    placeholder="0"
+                    style={{ fontSize: '12px', maxWidth: '80px' }}
+                  />
+                </td>
+                <td style={{ padding: '8px 0' }}>
+                  <Input
+                    type="number"
+                    value={acct.balance || ''}
+                    onChange={(e) => {
+                      const updated = [...newSMSFs];
+                      updated[idx].accounts[aidx].balance = e.target.value;
+                      setNewSMSFs(updated);
+                    }}
+                    placeholder="0"
+                    style={{ fontSize: '12px' }}
+                  />
+                </td>
+                <td style={{ textAlign: 'right', padding: '8px 0' }}>
+                  <button
+                    onClick={() => {
+                      const updated = [...newSMSFs];
+                      updated[idx].accounts = updated[idx].accounts.filter((_, i) => i !== aidx);
+                      setNewSMSFs(updated);
+                    }}
+                    className="p-1 text-red-600 hover:bg-red-50 rounded"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
         <Button
           onClick={() => {
             const updated = [...newSMSFs];
@@ -1104,13 +1154,7 @@ export default function SOARequestProducts() {
               owner: '',
               tax_environment: '',
               fund_percentage: '',
-              balance: '',
-              tax_free_amt: '',
-              tax_free_pct: '',
-              unp_amt: '',
-              super_guarantee: '',
-              salary_sacrifice: '',
-              after_tax: ''
+              balance: ''
             });
             setNewSMSFs(updated);
           }}
