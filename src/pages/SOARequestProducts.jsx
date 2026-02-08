@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import SOARequestLayout from '../components/soa/SOARequestLayout';
 import { useSOAEntities } from '../components/soa/useSOAEntities';
 import EntitySelect from '../components/factfind/EntitySelect';
-import { Plus, Trash2, ChevronRight } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SOARequestProducts() {
@@ -19,7 +19,6 @@ export default function SOARequestProducts() {
   const [mainTab, setMainTab] = useState('entities');
   const [entityTab, setEntityTab] = useState('trust');
   const navigate = useNavigate();
-  const debounceRef = useRef(null);
 
   // Data state
   const [newTrusts, setNewTrusts] = useState([]);
