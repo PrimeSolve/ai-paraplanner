@@ -133,45 +133,28 @@ export default function FactFindSuperannuation() {
   // CRITICAL: Save before navigating away
   useEffect(() => {
     console.log('=== SUPER LISTENER REGISTERED ===');
-    console.log('Current state:', { 
-      superFunds: superFunds.length, 
-      pensions: pensions.length, 
-      annuities: annuities.length 
-    });
 
     const handleSaveBeforeNav = async () => {
       console.log('=== SUPER SAVE-BEFORE-NAV FIRED ===');
-      console.log('factFind.id:', factFind?.id);
-      console.log('Data being saved:', JSON.stringify({
-        funds: superFunds,
-        pensions: pensions,
-        annuities: annuities
-      }, null, 2));
-      
-      if (!factFind?.id) {
-        console.log('NO FACTFIND ID - ABORTING SAVE');
-        return;
-      }
       
       try {
-        const result = await updateSection('superannuation', {
-          funds: superFunds,
-          pensions: pensions,
-          annuities: annuities
+        await updateSection('superannuation', {
+          funds: superFunds || [],
+          pensions: pensions || [],
+          annuities: annuities || []
         });
-        console.log('=== SUPER SAVE SUCCESS ===');
-        console.log('Result:', result);
-      } catch (error) {
-        console.error('=== SUPER SAVE FAILED ===', error);
+        console.log('=== SUPER SAVE DONE ===');
+      } catch (err) {
+        console.error('=== SUPER SAVE FAILED ===', err);
       }
+      
+      // Signal that save is complete
+      window.dispatchEvent(new Event('factfind-save-complete'));
     };
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-    return () => {
-      console.log('=== SUPER LISTENER REMOVED ===');
-      window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-    };
-  }, [factFind?.id, superFunds, pensions, annuities, updateSection]);
+    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+  }, [superFunds, pensions, annuities, updateSection]);
 
   const getCurrentList = () => {
     if (mainTab === 'super') return superFunds;
