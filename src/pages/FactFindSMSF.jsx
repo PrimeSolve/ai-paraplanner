@@ -377,7 +377,7 @@ export default function FactFindSMSF() {
     }
 
    return row;
-   }, [principalsOnly]);
+   }, [principalsOnly, factFind?.id, readTabToArray]);
 
   // ============================================
   // CREATE BENEFICIARY ROW
@@ -765,7 +765,7 @@ export default function FactFindSMSF() {
       document.removeEventListener('click', clickHandler);
       document.removeEventListener('input', inputHandler);
     };
-  }, [activeIndex, updatePills, removeEntry, createAccountRow, createBeneficiaryRow]);
+  }, [activeIndex, updatePills, removeEntry, createAccountRow, createBeneficiaryRow, principalsOnly, saveSmsfState]);
 
   // ============================================
   // SAVE STATE
