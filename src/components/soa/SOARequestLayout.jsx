@@ -223,7 +223,7 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
           marginTop: 'auto'
         }}>
           <button
-            onClick={() => navigate(createPageUrl('AdviserSOARequests'))}
+            onClick={() => handleNavigation(createPageUrl('AdviserSOARequests'))}
             style={{
               width: '100%',
               padding: '14px 16px',
