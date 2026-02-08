@@ -460,7 +460,7 @@ export function useCompletionLogic() {
         percentage,
         isManuallyComplete,
         isComplete,
-        displayValue: `${percentage}%`,
+        displayValue: percentage === 100 || isManuallyComplete ? '✓' : `${percentage || 0}%`,
         color: percentage === 100 ? '#10b981'
           : isManuallyComplete ? '#10b981'
             : percentage >= 50 ? '#f59e0b'
