@@ -151,7 +151,7 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
             <div className="flex flex-col gap-0.5">
               <div className="text-lg font-extrabold text-slate-50">SOA Request</div>
               <div className="text-xs text-slate-400">
-                Client: {navigationChain?.find(n => n.type === 'client')?.name || 'Unknown Client'}
+                Client: {clientName}
               </div>
             </div>
           </div>
