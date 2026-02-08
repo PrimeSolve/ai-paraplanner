@@ -23,6 +23,22 @@ export function useFactFindEntities(factFind, options = {}) {
   return useMemo(() => {
     const entities = [];
 
+    const getColorByType = (type) => {
+      const typeKey = type.toLowerCase();
+      if (typeKey.includes('principal')) {
+        // Determine if client or partner - default to blue
+        return '#3B82F6'; // Will be updated per entity below
+      }
+      if (typeKey.includes('child')) return '#22C55E';
+      if (typeKey === 'dependant') return '#F59E0B';
+      if (typeKey.includes('trust')) return '#EF4444';
+      if (typeKey.includes('company')) return '#F97316';
+      if (typeKey.includes('smsf')) return '#92400E';
+      if (typeKey.includes('wrap')) return '#3B82F6';
+      if (typeKey.includes('bond')) return '#3B82F6';
+      return '#6B7280'; // Grey default
+    };
+
     // Add client principal
     if (factFind?.personal?.first_name) {
       const clientName = `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim();
@@ -30,7 +46,8 @@ export function useFactFindEntities(factFind, options = {}) {
         id: 'client',
         label: clientName,
         type: 'Principal',
-        person: 'client'
+        person: 'client',
+        color: '#3B82F6'
       });
     }
 
@@ -41,7 +58,8 @@ export function useFactFindEntities(factFind, options = {}) {
         id: 'partner',
         label: partnerName,
         type: 'Principal',
-        person: 'partner'
+        person: 'partner',
+        color: '#8B5CF6'
       });
     }
 
@@ -53,7 +71,8 @@ export function useFactFindEntities(factFind, options = {}) {
             id: `child_${i}`,
             label: child.child_name,
             type: 'Dependant (Child)',
-            index: i
+            index: i,
+            color: '#22C55E'
           });
         }
       });
@@ -67,7 +86,8 @@ export function useFactFindEntities(factFind, options = {}) {
             id: `dependent_${i}`,
             label: dep.dep_name,
             type: 'Dependant',
-            index: i
+            index: i,
+            color: '#F59E0B'
           });
         }
       });
@@ -81,7 +101,8 @@ export function useFactFindEntities(factFind, options = {}) {
             id: `trust_${i}`,
             label: entity.trust_name,
             type: 'Trust',
-            index: i
+            index: i,
+            color: '#EF4444'
           });
         }
       });
@@ -95,7 +116,8 @@ export function useFactFindEntities(factFind, options = {}) {
             id: `company_${i}`,
             label: entity.company_name,
             type: 'Company',
-            index: i
+            index: i,
+            color: '#F97316'
           });
         }
       });
@@ -109,7 +131,8 @@ export function useFactFindEntities(factFind, options = {}) {
             id: `smsf_${i}`,
             label: smsf.smsf_name,
             type: 'SMSF',
-            index: i
+            index: i,
+            color: '#92400E'
           });
         }
       });
@@ -123,7 +146,8 @@ export function useFactFindEntities(factFind, options = {}) {
             id: `wrap_${i}`,
             label: wrap.platform_name,
             type: 'Wrap',
-            index: i
+            index: i,
+            color: '#3B82F6'
           });
         }
       });
@@ -137,7 +161,8 @@ export function useFactFindEntities(factFind, options = {}) {
             id: `bond_${i}`,
             label: bond.product_name,
             type: 'Bond',
-            index: i
+            index: i,
+            color: '#3B82F6'
           });
         }
       });
