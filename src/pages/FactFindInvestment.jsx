@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft, Plus, ArrowLeftCircle } from 'lucide-react';
 import EntityDot from '../components/factfind/EntityDot';
+import EntitySelect from '../components/factfind/EntitySelect';
 
 export default function FactFindInvestment() {
   const navigate = useNavigate();
@@ -429,16 +430,12 @@ export default function FactFindInvestment() {
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
-                          <select
+                          <EntitySelect
                             value={currentItem.owner}
-                            onChange={(e) => setCurrentItem({ ...currentItem, owner: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="">Select owner…</option>
-                            {wrapOwnerEntities.map(entity => (
-                              <option key={entity.id} value={entity.id}>{'\u25CF'} {entity.label} ({entity.type})</option>
-                            ))}
-                          </select>
+                            onChange={(id) => setCurrentItem({ ...currentItem, owner: id })}
+                            entities={wrapOwnerEntities}
+                            placeholder="Select owner…"
+                          />
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-slate-700 mb-2">Account number</label>
@@ -671,16 +668,12 @@ export default function FactFindInvestment() {
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
-                          <select
+                          <EntitySelect
                             value={currentItem.owner}
-                            onChange={(e) => setCurrentItem({ ...currentItem, owner: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="">Select owner…</option>
-                            {bondOwnerEntities.map(entity => (
-                              <option key={entity.id} value={entity.id}>{'\u25CF'} {entity.label} ({entity.type})</option>
-                            ))}
-                          </select>
+                            onChange={(id) => setCurrentItem({ ...currentItem, owner: id })}
+                            entities={bondOwnerEntities}
+                            placeholder="Select owner…"
+                          />
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-slate-700 mb-2">Policy number</label>
