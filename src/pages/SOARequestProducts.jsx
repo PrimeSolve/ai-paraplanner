@@ -247,6 +247,13 @@ export default function SOARequestProducts() {
   const wrapOwnerOptions = getByTypes(['principal', 'trust', 'company', 'smsf']);
   const bondOwnerOptions = getByTypes(['principal', 'trust']);
 
+  // SMSF specific options
+  const smsfAccountOwnerOptions = getByTypes(['principal']);
+  const smsfBeneficiaryOptions = [
+    ...getByTypes(['principal', 'child', 'dependant']),
+    { id: 'estate', label: 'Estate', type: 'estate', color: '#6b7280' }
+  ];
+
   // ============ RENDER HELPERS ============
 
   const renderNewTrustCard = (trust, idx) => (
