@@ -16,12 +16,12 @@ import { ArrowRight, ArrowLeft, MessageSquare, RefreshCw, Info, User } from 'luc
 import { cn } from '@/lib/utils';
 
 const subSections = [
-  { id: 'basic', label: 'Basic details' },
-  { id: 'contact', label: 'Contact' },
-  { id: 'health', label: 'Health' },
-  { id: 'employment', label: 'Employment' },
-  { id: 'estate', label: 'Estate planning' },
-  { id: 'centrelink', label: 'Centrelink' }
+  { id: 'basic', label: 'Basic details', icon: '🏠' },
+  { id: 'contact', label: 'Contact', icon: '📞' },
+  { id: 'health', label: 'Health', icon: '❤️' },
+  { id: 'employment', label: 'Employment', icon: '💼' },
+  { id: 'estate', label: 'Estate planning', icon: '📋' },
+  { id: 'centrelink', label: 'Centrelink', icon: '🏛️' }
 ];
 
 export default function FactFindPersonal() {
@@ -379,74 +379,79 @@ export default function FactFindPersonal() {
       />
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="w-full">
+      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="w-full space-y-6">
+          {/* Person Toggle */}
           <Card className="border-slate-200 shadow-sm">
-            <CardContent className="p-6 space-y-6">
-              {/* Client Information Bar */}
-              <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <div className="font-semibold text-slate-700 text-sm">Client Information</div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setActiveTab('client')}
-                      className={cn(
-                        "px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
-                        activeTab === 'client'
-                          ? "bg-blue-600 text-white"
-                          : "bg-white border border-slate-300 text-slate-600 hover:bg-slate-50"
-                      )}
-                    >
-                      {clientData.first_name || 'Client'}
-                    </button>
-                    {hasPartner ? (
-                      <button
-                        onClick={() => setActiveTab('partner')}
-                        className={cn(
-                          "px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
-                          activeTab === 'partner'
-                            ? "bg-blue-600 text-white"
-                            : "bg-white border border-slate-300 text-slate-600 hover:bg-slate-50"
-                        )}
-                      >
-                        {partnerData.first_name || 'Partner'}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          setHasPartner(true);
-                          setActiveTab('partner');
-                        }}
-                        className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-1"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
-                        Add Partner
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Sub-section Tabs */}
-              <div className="flex gap-2 flex-wrap">
-                {subSections.map(section => (
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveTab('client')}
+                  className={cn(
+                    "px-4 py-2 rounded-full text-sm font-medium transition-colors",
+                    activeTab === 'client'
+                      ? "bg-blue-50 text-blue-700 border border-blue-200"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  )}
+                >
+                  {clientData.first_name && clientData.last_name 
+                    ? `${clientData.first_name} ${clientData.last_name}`
+                    : clientData.first_name || 'Client'}
+                </button>
+                {hasPartner ? (
                   <button
-                    key={section.id}
-                    onClick={() => {
-                      setActiveSubSection(section.id);
-                      setActiveTab('client');
-                    }}
+                    onClick={() => setActiveTab('partner')}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border",
-                      activeSubSection === section.id
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                      "px-4 py-2 rounded-full text-sm font-medium transition-colors",
+                      activeTab === 'partner'
+                        ? "bg-blue-50 text-blue-700 border border-blue-200"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     )}
                   >
-                    {section.label}
+                    {partnerData.first_name && partnerData.last_name 
+                      ? `${partnerData.first_name} ${partnerData.last_name}`
+                      : partnerData.first_name || 'Partner'}
                   </button>
-                ))}
+                ) : (
+                  <button
+                    onClick={() => {
+                      setHasPartner(true);
+                      setActiveTab('partner');
+                    }}
+                    className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-600"></span>
+                    Add Partner
+                  </button>
+                )}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Sub-section Tabs */}
+          <div className="flex gap-2 flex-wrap">
+            {subSections.map(section => (
+              <button
+                key={section.id}
+                onClick={() => {
+                  setActiveSubSection(section.id);
+                  setActiveTab('client');
+                }}
+                className={cn(
+                  "px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2",
+                  activeSubSection === section.id
+                    ? "bg-blue-50 text-blue-700 border border-blue-200"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                )}
+              >
+                <span>{section.icon}</span>
+                {section.label}
+              </button>
+            ))}
+          </div>
+
+          <Card className="border-slate-200 shadow-sm">
+            <CardContent className="p-6 space-y-6">
               {/* Form Content Based on Active Sub-Section */}
               <div className="space-y-4">
                 {activeSubSection === 'basic' && (
@@ -1030,8 +1035,13 @@ export default function FactFindPersonal() {
                 )}
               </div>
 
-              {/* Navigation Buttons */}
-              <div className="flex items-center justify-between pt-6 border-t border-slate-200">
+            </CardContent>
+          </Card>
+
+          {/* Navigation Buttons */}
+          <Card className="border-slate-200 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <Button
                   onClick={handleBackSubSection}
                   variant="outline"
