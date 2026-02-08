@@ -284,9 +284,9 @@ export default function FactFindAssetsLiabilities() {
 
                   {/* EDITOR */}
                   {activeAsset && (
-                    <Card className="border-slate-200 shadow-sm border-blue-300 bg-blue-50/50">
-                      <div className="bg-blue-600 px-6 py-3 rounded-t-lg">
-                        <h4 className="font-bold text-white">✏️ Edit Asset</h4>
+                    <Card className="border-slate-200 shadow-sm">
+                      <div className="bg-gradient-to-r from-blue-50 to-transparent border-l-4 border-blue-500 px-6 py-3">
+                        <h4 className="font-bold text-slate-800">🏠 Asset Details</h4>
                       </div>
                       <CardContent className="p-6 space-y-4">
                         <div>
@@ -453,9 +453,9 @@ export default function FactFindAssetsLiabilities() {
 
                   {/* EDITOR */}
                   {activeDebt && (
-                    <Card className="border-slate-200 shadow-sm border-blue-300 bg-blue-50/50">
-                      <div className="bg-blue-600 px-6 py-3 rounded-t-lg">
-                        <h4 className="font-bold text-white">✏️ Edit Liability</h4>
+                    <Card className="border-slate-200 shadow-sm">
+                      <div className="bg-gradient-to-r from-blue-50 to-transparent border-l-4 border-blue-500 px-6 py-3">
+                        <h4 className="font-bold text-slate-800">💳 Liability Details</h4>
                       </div>
                       <CardContent className="p-6 space-y-4">
                         <div>
