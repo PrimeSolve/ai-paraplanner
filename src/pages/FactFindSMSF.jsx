@@ -621,6 +621,28 @@ export default function FactFindSMSF() {
   }, [factFind?.id]);
 
   // ============================================
+  // SAVE STATE
+  // ============================================
+
+  const saveSmsfState = useCallback(async () => {
+    if (!factFind?.id) return;
+
+    try {
+      globalStateRef.current.smsf_details = readTabToArray();
+      globalStateRef.current.activeIndex = activeIndex;
+
+      await base44.entities.FactFind.update(factFind.id, {
+        smsf: {
+          smsf_details: globalStateRef.current.smsf_details,
+          activeIndex: globalStateRef.current.activeIndex
+        }
+      });
+    } catch (error) {
+      console.error('Save failed:', error);
+    }
+  }, [factFind?.id, readTabToArray, activeIndex]);
+
+  // ============================================
   // INITIALIZE DOM
   // ============================================
 
@@ -798,28 +820,6 @@ export default function FactFindSMSF() {
       document.removeEventListener('input', inputHandler);
     };
   }, [activeIndex, updatePills, removeEntry, createAccountRow, createBeneficiaryRow, principalsOnly, saveSmsfState]);
-
-  // ============================================
-  // SAVE STATE
-  // ============================================
-
-  const saveSmsfState = useCallback(async () => {
-    if (!factFind?.id) return;
-
-    try {
-      globalStateRef.current.smsf_details = readTabToArray();
-      globalStateRef.current.activeIndex = activeIndex;
-
-      await base44.entities.FactFind.update(factFind.id, {
-        smsf: {
-          smsf_details: globalStateRef.current.smsf_details,
-          activeIndex: globalStateRef.current.activeIndex
-        }
-      });
-    } catch (error) {
-      console.error('Save failed:', error);
-    }
-  }, [factFind?.id, readTabToArray, activeIndex]);
 
   // ============================================
   // NAVIGATION
