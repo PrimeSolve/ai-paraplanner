@@ -425,9 +425,10 @@ export default function FactFindReview() {
             {/* Section Cards Grid */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+              gridTemplateColumns: 'repeat(3, 1fr)',
               gap: '16px',
-              marginBottom: '32px'
+              marginBottom: '32px',
+              width: '100%'
             }}>
               {SECTIONS.map(section => {
                 const state = displayState[section.key] || {};
@@ -436,31 +437,40 @@ export default function FactFindReview() {
                 const isComplete = state.isComplete || false;
 
                 // Determine card state colors
+                // Always show real percentage, but use green if marked complete
                 let borderColor = '#ef4444';
                 let background = '#fef2f2';
                 let icon = '!';
                 let iconBg = '#fee2e2';
                 let iconColor = '#dc2626';
-                let badge = 'Not started';
                 let badgeColor = '#dc2626';
                 let actionText = 'Start section →';
 
-                if (isComplete) {
+                if (isManuallyComplete) {
+                  // Marked complete: green styling but keep real percentage
                   borderColor = '#10b981';
                   background = '#f0fdf4';
                   icon = '✓';
                   iconBg = '#d1fae5';
                   iconColor = '#059669';
-                  badge = isManuallyComplete && percentage < 100 ? 'Marked complete' : '✓ Complete';
+                  badgeColor = '#059669';
+                  actionText = 'Review section →';
+                } else if (percentage === 100) {
+                  // Auto-complete: 100% natural data completion
+                  borderColor = '#10b981';
+                  background = '#f0fdf4';
+                  icon = '✓';
+                  iconBg = '#d1fae5';
+                  iconColor = '#059669';
                   badgeColor = '#059669';
                   actionText = 'Review section →';
                 } else if (percentage > 0) {
+                  // In progress
                   borderColor = '#f59e0b';
                   background = '#fffbeb';
                   icon = '◐';
                   iconBg = '#fef3c7';
                   iconColor = '#d97706';
-                  badge = `${Math.round(percentage)}% complete`;
                   badgeColor = '#d97706';
                   actionText = 'Continue →';
                 }
