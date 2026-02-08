@@ -375,26 +375,29 @@ export default function FactFindSuperannuation() {
           <div className="flex gap-2">
             <button
               onClick={() => handleMainTabChange('super')}
-              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
-                mainTab === 'super' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
+                mainTab === 'super' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              Super
+              <span>💰</span>
+              Superannuation
             </button>
             <button
               onClick={() => handleMainTabChange('pension')}
-              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
-                mainTab === 'pension' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
+                mainTab === 'pension' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
+              <span>🏦</span>
               Pension
             </button>
             <button
               onClick={() => handleMainTabChange('annuity')}
-              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
-                mainTab === 'annuity' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
+                mainTab === 'annuity' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
+              <span>📄</span>
               Annuity
             </button>
           </div>

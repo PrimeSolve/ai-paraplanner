@@ -612,12 +612,13 @@ export default function FactFindDependants() {
                setActiveIndex(0);
                setTimeout(() => updatePills('children', 0), 0);
              }}
-             className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+             className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
                currentTab === 'children'
                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
              }`}
            >
+             <span>👶</span>
              Children
            </button>
            <button
@@ -626,12 +627,13 @@ export default function FactFindDependants() {
                setActiveIndex(0);
                setTimeout(() => updatePills('dependants', 0), 0);
              }}
-             className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+             className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
                currentTab === 'dependants'
                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
              }`}
            >
+             <span>👥</span>
              Dependants
            </button>
          </div>

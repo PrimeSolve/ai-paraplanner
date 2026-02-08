@@ -14,7 +14,7 @@ import { ArrowRight, ArrowLeft, Target, Plus, Trash2, Edit2 } from 'lucide-react
 import { cn } from '@/lib/utils';
 
 const TABS = [
-  { id: 'reasons', label: 'Reasons', icon: '📋' },
+  { id: 'reasons', label: 'Reasons', icon: '📝' },
   { id: 'objectives', label: 'Objectives', icon: '🎯' }
 ];
 

@@ -258,18 +258,20 @@ export default function FactFindInvestment() {
           <div className="flex gap-2">
             <button
               onClick={() => handleMainTabChange('wrap')}
-              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
-                mainTab === 'wrap' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
+                mainTab === 'wrap' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
+              <span>📊</span>
               Wrap / Mastertrust
             </button>
             <button
               onClick={() => handleMainTabChange('bond')}
-              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
-                mainTab === 'bond' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
+                mainTab === 'bond' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
+              <span>📑</span>
               Investment Bonds
             </button>
           </div>

@@ -273,22 +273,24 @@ export default function FactFindIncomeExpenses() {
            <div className="flex gap-2">
              <button
                onClick={() => setCurrentTab('inc')}
-               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
                  currentTab === 'inc'
                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                }`}
              >
+               <span>💵</span>
                Income
              </button>
              <button
                onClick={() => setCurrentTab('exp')}
-               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
                  currentTab === 'exp'
                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                }`}
              >
+               <span>🧾</span>
                Expenses
              </button>
            </div>

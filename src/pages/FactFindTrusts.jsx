@@ -932,12 +932,13 @@ export default function FactFindTrusts() {
                 setActiveIndex(0);
                 setTimeout(() => updatePills('trust', 0), 0);
               }}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
                 currentTab === 'trust'
                   ? 'bg-blue-50 text-blue-700 border border-blue-200'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
+              <span>🏛️</span>
               Trusts
             </button>
             <button
@@ -946,12 +947,13 @@ export default function FactFindTrusts() {
                 setActiveIndex(0);
                 setTimeout(() => updatePills('company', 0), 0);
               }}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
                 currentTab === 'company'
                   ? 'bg-blue-50 text-blue-700 border border-blue-200'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
+              <span>🏢</span>
               Companies
             </button>
           </div>
