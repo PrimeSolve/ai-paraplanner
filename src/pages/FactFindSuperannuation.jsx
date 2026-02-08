@@ -58,7 +58,6 @@ export default function FactFindSuperannuation() {
 
   const getEmptyPension = () => ({
     id: `pension_${Date.now()}`,
-    joint_holding: false,
     owner: '',
     fund_name: '',
     product: '',
@@ -1007,40 +1006,7 @@ export default function FactFindSuperannuation() {
                 {mainTab === 'pension' && (
                   <>
                     {activeTab === 'fund_details' && (
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-semibold text-slate-700 mb-2">Joint holding?</label>
-                          <div className="flex gap-4">
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="radio"
-                                checked={currentItem.joint_holding === true}
-                                onChange={() => setCurrentItem({
-                                  ...currentItem,
-                                  joint_holding: true,
-                                  owner: 'joint'
-                                })}
-                                className="w-4 h-4"
-                              />
-                              <span className="text-sm">Yes</span>
-                            </label>
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="radio"
-                                checked={currentItem.joint_holding === false}
-                                onChange={() => setCurrentItem({
-                                  ...currentItem,
-                                  joint_holding: false,
-                                  owner: ''
-                                })}
-                                className="w-4 h-4"
-                              />
-                              <span className="text-sm">No</span>
-                            </label>
-                          </div>
-                        </div>
-                        
-                        <div className="grid md:grid-cols-2 gap-4">
+                      <div className="grid md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-semibold text-slate-700 mb-2">Fund name</label>
                             <input
