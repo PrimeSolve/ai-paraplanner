@@ -1,46 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
-import FactFindHeader from '../components/factfind/FactFindHeader';
 import { useFactFind } from '@/components/factfind/useFactFind';
-import { Card, CardContent } from '@/components/ui/card';
+import { useSectionState } from '@/components/factfind/useSectionState';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowLeft, MessageSquare, RefreshCw, Info, CheckCircle2, AlertCircle, Send, Sparkles, ArrowRight } from 'lucide-react';
+import { Info, RefreshCw, CheckCircle2, AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
-
-const sectionList = [
-  { id: 'welcome', label: 'Welcome', path: 'FactFindWelcome' },
-  { id: 'prefill', label: 'Pre-fill (upload documents)', path: 'FactFindPrefill' },
-  { id: 'personal', label: '1. Personal', path: 'FactFindPersonal' },
-  { id: 'dependants', label: '2. Dependants', path: 'FactFindDependants' },
-  { id: 'trusts', label: '3. Trusts & Companies', path: 'FactFindTrusts' },
-  { id: 'smsf', label: '4. SMSF', path: 'FactFindSMSF' },
-  { id: 'superannuation', label: '5. Superannuation', path: 'FactFindSuperannuation' },
-  { id: 'investment', label: '6. Investment', path: 'FactFindInvestment' },
-  { id: 'assets_liabilities', label: '7. Assets & Liabilities', path: 'FactFindAssetsLiabilities' },
-  { id: 'income_expenses', label: '8. Income & Expenses', path: 'FactFindIncomeExpenses' },
-  { id: 'insurance', label: '9. Insurance policies', path: 'FactFindInsurance' },
-  { id: 'super_tax', label: '10. Super & Tax', path: 'FactFindSuperTax' },
-  { id: 'advice_reason', label: '11. Reason for seeking advice', path: 'FactFindAdviceReason' },
-  { id: 'risk_profile', label: '12. Risk profile', path: 'FactFindRiskProfile' }
-];
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function FactFindReview() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading } = useFactFind();
-  const [submitting, setSubmitting] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const { factFind, loading: ffLoading, updateSection } = useFactFind();
+  const { SECTIONS, getSectionCardState, calculateOverallProgress } = useSectionState();
   const [user, setUser] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showKeyInfo, setShowKeyInfo] = useState(false);
+  const [showRefresh, setShowRefresh] = useState(false);
+  const [refreshConfirmed, setRefreshConfirmed] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -54,30 +42,77 @@ export default function FactFindReview() {
     loadUser();
   }, []);
 
+  const reviewStatus = factFind?.review_status || { sections: {}, submitted: false };
+  const progress = calculateOverallProgress(factFind, reviewStatus);
+
+  const handleToggleMark = async (sectionKey) => {
+    if (!factFind) return;
+    const currentStatus = reviewStatus?.sections?.[sectionKey]?.manually_complete || false;
+    const updatedReviewStatus = {
+      ...reviewStatus,
+      sections: {
+        ...reviewStatus?.sections,
+        [sectionKey]: { manually_complete: !currentStatus }
+      }
+    };
+    await updateSection('review_status', updatedReviewStatus);
+  };
+
+  const handleNavigateToSection = (path) => {
+    navigate(createPageUrl(path) + (factFind?.id ? `?id=${factFind.id}` : ''));
+  };
+
   const handleSubmit = async () => {
     if (!factFind) return;
-
     setSubmitting(true);
     try {
-      await base44.entities.FactFind.update(factFind.id, {
-        status: 'submitted',
-        submitted_date: new Date().toISOString()
-      });
-
+      const updatedReviewStatus = {
+        ...reviewStatus,
+        submitted: true,
+        submitted_at: new Date().toISOString()
+      };
+      await updateSection('review_status', updatedReviewStatus);
+      setShowConfirm(false);
       setShowSuccess(true);
     } catch (error) {
       toast.error('Failed to submit fact find');
-    } finally {
       setSubmitting(false);
     }
   };
 
-  const handleContinueToRecommendations = () => {
-    navigate(createPageUrl('Home'));
-  };
+  const handleRefreshConfirm = async () => {
+    if (!refreshConfirmed) {
+      toast.error('Please confirm you understand this will delete all data');
+      return;
+    }
 
-  const handleBack = () => {
-    navigate(createPageUrl('FactFindRiskProfile') + `?id=${factFind?.id || ''}`);
+    try {
+      const emptyFactFind = {
+        personal: {},
+        dependants: {},
+        trusts_companies: {},
+        smsf: {},
+        superannuation: {},
+        investment: {},
+        assets_liabilities: {},
+        income_expenses: {},
+        insurance: {},
+        super_tax: {},
+        advice_reason: {},
+        risk_profile: {},
+        review_status: { sections: {}, submitted: false, submitted_at: null }
+      };
+
+      for (const [key, value] of Object.entries(emptyFactFind)) {
+        await updateSection(key, value);
+      }
+      
+      setShowRefresh(false);
+      setRefreshConfirmed(false);
+      window.location.reload();
+    } catch (error) {
+      toast.error('Failed to refresh data');
+    }
   };
 
   if (ffLoading) {
@@ -90,200 +125,426 @@ export default function FactFindReview() {
     );
   }
 
-  const completedSections = factFind?.sections_completed || [];
-  const totalSections = sectionList.length;
-  const completionPercentage = factFind?.completion_percentage || 0;
-  const allComplete = completedSections.length === totalSections;
+  const incompleteSections = SECTIONS.filter(s => {
+    const state = getSectionCardState(s, factFind, reviewStatus);
+    return state.status !== 'complete';
+  });
 
   return (
     <>
-      <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
-        <DialogContent className="max-w-lg">
+      {/* Key Info Modal */}
+      <Dialog open={showKeyInfo} onOpenChange={setShowKeyInfo}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
-              </div>
-            </div>
-            <DialogTitle className="text-center text-2xl font-bold text-slate-800">
-              Fact Find Complete!
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-6 h-6">👤</div>
+              Key Information
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <p className="text-center text-slate-600">
-              Great work! We've analyzed your financial data and identified key opportunities.
-            </p>
-            
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <div className="flex items-start gap-3 mb-3">
-                <Sparkles className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="space-y-6">
+            <div>
+              <h4 className="font-semibold text-slate-800 mb-2">Client Information</h4>
+              <div className="space-y-2 text-sm text-slate-600">
                 <div>
-                  <h4 className="font-semibold text-slate-800 mb-2">What's Next?</h4>
-                  <p className="text-sm text-slate-600 mb-3">
-                    We're ready to generate personalized recommendations for:
-                  </p>
-                  <ul className="space-y-1.5 text-sm text-slate-700">
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
-                      Retirement planning strategies
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
-                      Investment optimization
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
-                      Tax planning opportunities
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
-                      Insurance coverage review
-                    </li>
-                  </ul>
+                  <div className="font-medium text-slate-700">Primary</div>
+                  {factFind?.personal?.first_name && factFind?.personal?.last_name
+                    ? `${factFind.personal.first_name} ${factFind.personal.last_name}`
+                    : 'Not provided'}
+                </div>
+                <div>
+                  <div className="font-medium text-slate-700">Partner</div>
+                  {factFind?.partner_email ? factFind.partner_email : 'Not provided'}
                 </div>
               </div>
             </div>
 
-            <p className="text-center text-sm text-slate-500">
-              This takes approximately 5 minutes
+            <div>
+              <h4 className="font-semibold text-slate-800 mb-2">Adviser</h4>
+              <div className="text-sm text-slate-600">
+                {user?.full_name || 'Your adviser'}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-slate-800 mb-2">Fact Find Status</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Completion</span>
+                  <span className="font-semibold text-slate-700">{progress.percentage}%</span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div
+                    className="h-2 rounded-full transition-all"
+                    style={{
+                      width: `${progress.percentage}%`,
+                      backgroundColor: progress.barColor
+                    }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-slate-600">
+                  <span>Submitted: {reviewStatus.submitted ? 'Yes' : 'Not yet'}</span>
+                  <span>
+                    Last Updated: {factFind?.updated_date
+                      ? new Date(factFind.updated_date).toLocaleDateString()
+                      : 'N/A'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Refresh Data Modal */}
+      <Dialog open={showRefresh} onOpenChange={setShowRefresh}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-600">
+              <AlertCircle className="w-5 h-5" />
+              Refresh Fact Find Data
+            </DialogTitle>
+            <DialogDescription>
+              This will delete all your current data
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <p className="text-sm text-amber-900">
+                ⚠️ This action will clear all sections and cannot be undone.
+              </p>
+            </div>
+
+            <div className="flex items-start gap-3 border border-slate-200 rounded-lg p-3 bg-slate-50">
+              <Checkbox
+                id="confirm-refresh"
+                checked={refreshConfirmed}
+                onCheckedChange={setRefreshConfirmed}
+                className="mt-0.5"
+              />
+              <label htmlFor="confirm-refresh" className="text-sm text-slate-700 cursor-pointer">
+                I understand this will delete all my current fact find data
+              </label>
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t border-slate-200">
+              <Button
+                variant="outline"
+                onClick={() => setShowRefresh(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleRefreshConfirm}
+                disabled={!refreshConfirmed}
+                className="flex-1 bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                Refresh Data
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Submit Fact Find?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-slate-600">
+              Your adviser will be notified and will review your information.
             </p>
 
-            <Button
-              onClick={handleContinueToRecommendations}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-6 text-base"
-            >
-              Generate My Personalized Recommendations
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
+            {progress.remaining > 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="text-sm text-amber-900">
+                  <strong>{progress.remaining} sections are incomplete.</strong>
+                </p>
+                <p className="text-sm text-amber-800 mt-1">
+                  You can still submit, but consider completing all sections first.
+                </p>
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-4 border-t border-slate-200">
+              <Button
+                variant="outline"
+                onClick={() => setShowConfirm(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              >
+                {submitting ? 'Submitting...' : 'Yes, Submit →'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Modal */}
+      <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+            </div>
+            <DialogTitle className="text-center text-2xl">✓ Fact Find Submitted</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 text-center">
+            <p className="text-slate-600">
+              Your fact find has been successfully submitted to your adviser.
+            </p>
+            <p className="text-sm text-slate-500">
+              You can still make changes if needed — your adviser will review the most recent version.
+            </p>
+            <div className="space-y-2 text-sm text-slate-700 text-left bg-slate-50 p-3 rounded-lg">
+              <p className="font-semibold">What Happens Next:</p>
+              <ul className="space-y-1 ml-4">
+                <li>• Your adviser will review your information</li>
+                <li>• They'll prepare recommendations</li>
+                <li>• You'll be contacted to discuss</li>
+              </ul>
+            </div>
+            <div className="flex gap-3 pt-4 border-t border-slate-200">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowSuccess(false);
+                  navigate(createPageUrl('ClientDashboard'));
+                }}
+                className="flex-1"
+              >
+                Close
+              </Button>
+              <Button
+                onClick={() => navigate(createPageUrl('ClientDashboard'))}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                View Dashboard
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
 
       <FactFindLayout currentSection="review" factFind={factFind}>
-      <FactFindHeader
-        title="Review & Submit Your Fact Find"
-        description="Review your responses across all sections before submitting to your adviser. You can click any section to review or update your information."
-        factFind={factFind}
-        user={user}
-      />
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-8 bg-slate-50">
-        <div className="w-full space-y-6">
-          {/* Progress Overview */}
-          <Card className="border-slate-200 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h4 className="font-bold text-slate-800 text-lg">Overall Completion</h4>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-blue-600">{completionPercentage}%</div>
-                    <div className="text-xs text-slate-500 font-semibold">Complete</div>
-                  </div>
-                  {allComplete && (
-                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                      <CheckCircle2 className="w-6 h-6 text-green-600" />
-                    </div>
-                  )}
-                </div>
+        <div className="flex-1 overflow-y-auto p-8 bg-slate-50">
+          <div className="max-w-6xl mx-auto space-y-8">
+            {/* Header */}
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-slate-900">Review & Submit Your Fact Find</h1>
+                <p className="text-slate-600 mt-2">Review your progress and mark sections as complete</p>
               </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowKeyInfo(true)}
+                  className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors"
+                  title="Key Information"
+                >
+                  <Info className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setShowRefresh(true)}
+                  className="p-2 hover:bg-slate-100 rounded-lg text-orange-600 transition-colors"
+                  title="Refresh Data"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
 
-              <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden mb-6">
+            {/* Overall Progress Bar */}
+            <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-slate-800">Overall Completion</span>
+                <span className="text-2xl font-bold" style={{ color: progress.barColor }}>
+                  {progress.percentage}%
+                </span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-3">
                 <div
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 h-full transition-all duration-500"
-                  style={{ width: `${completionPercentage}%` }}
+                  className="h-3 rounded-full transition-all"
+                  style={{
+                    width: `${progress.percentage}%`,
+                    backgroundColor: progress.barColor
+                  }}
                 />
               </div>
-
-              <div className="grid md:grid-cols-2 gap-3">
-                {sectionList.map(section => {
-                  const isComplete = completedSections.includes(section.id);
-                  return (
-                    <Link
-                      key={section.id}
-                      to={createPageUrl(section.path) + (factFind?.id ? `?id=${factFind.id}` : '')}
-                      className={cn(
-                        "flex items-center justify-between px-4 py-3 rounded-lg border-2 transition-all group hover:shadow-md",
-                        isComplete
-                          ? "bg-green-50 border-green-300"
-                          : "bg-white border-slate-200 hover:border-slate-300"
-                      )}
-                    >
-                      <span className="text-sm font-semibold text-slate-800 group-hover:text-blue-600">
-                        {section.label}
-                      </span>
-                      {isComplete ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <AlertCircle className="w-5 h-5 text-slate-400" />
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Submit Card */}
-          <Card className="border-slate-200 shadow-sm">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 rounded-t-lg">
-              <h4 className="font-bold text-white text-lg">✓ Ready to Submit?</h4>
-            </div>
-            <CardContent className="p-6">
-              <p className="text-slate-700 mb-4 leading-relaxed">
-                Once you submit your fact find, your adviser will receive all the information you've provided 
-                and will be in touch to discuss your financial planning needs.
+              <p className="text-sm text-slate-600">
+                {progress.completed} of {progress.total} sections complete
               </p>
+            </div>
 
-              {!allComplete && (
-                <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-4 rounded">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <h5 className="font-bold text-amber-900 mb-1">Some sections are incomplete</h5>
+            {/* Section Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {SECTIONS.map(section => {
+                const state = getSectionCardState(section, factFind, reviewStatus);
+                return (
+                  <div
+                    key={section.key}
+                    style={{
+                      background: state.background,
+                      border: `1px solid ${state.borderColor}`,
+                      borderRadius: '12px',
+                      padding: '20px',
+                      transition: 'all 0.2s',
+                      cursor: 'pointer'
+                    }}
+                    className="hover:shadow-lg hover:-translate-y-0.5 space-y-3"
+                  >
+                    {/* Header */}
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p
+                          style={{ color: '#64748b', fontSize: '11px', fontWeight: 600 }}
+                          className="uppercase tracking-wider mb-1"
+                        >
+                          {section.category}
+                        </p>
+                        <h3 style={{ fontSize: '15px', fontWeight: 700 }} className="text-slate-900">
+                          {section.title}
+                        </h3>
+                      </div>
+                      <div
+                        style={{
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '8px',
+                          background: state.iconBg,
+                          color: state.iconColor,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '16px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {state.icon}
+                      </div>
+                    </div>
+
+                    {/* Percentage */}
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: state.badgeColor }}>
+                      {state.percentage}%
+                    </div>
+
+                    {/* Action Row */}
+                    <div
+                      onClick={() => handleNavigateToSection(section.path)}
+                      style={{
+                        paddingTop: '12px',
+                        borderTop: `1px solid ${state.borderColor}`,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}
+                      className="hover:opacity-70 transition-opacity"
+                    >
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: state.badgeColor }}>
+                        {state.actionText}
+                      </span>
+                      <span style={{ fontSize: '16px', opacity: 0.7 }}>→</span>
+                    </div>
+
+                    {/* Mark Complete Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleMark(section.key);
+                      }}
+                      style={{
+                        marginTop: '8px',
+                        padding: '6px 12px',
+                        border: state.isManuallyComplete ? '1px solid #10b981' : '1px solid #cbd5e1',
+                        background: state.isManuallyComplete ? '#d1fae5' : '#fff',
+                        borderRadius: '999px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        color: state.isManuallyComplete ? '#059669' : '#64748b',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.2s'
+                      }}
+                      className="hover:opacity-80"
+                    >
+                      <span>{state.isManuallyComplete ? '✓' : '○'}</span>
+                      {state.isManuallyComplete ? 'Marked complete' : 'Mark as complete'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Submit Section */}
+            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-200">
+                <h2 className="text-lg font-bold flex items-center gap-2">
+                  <span>✓</span>
+                  {progress.remaining === 0 ? 'Ready to Submit!' : 'Ready to Submit?'}
+                </h2>
+              </div>
+
+              <div className="p-6 space-y-4">
+                {progress.remaining === 0 ? (
+                  <p className="text-slate-600">
+                    All sections are complete. Your adviser will receive all the information you've provided.
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-slate-600">
+                      You can still submit, but your adviser will have a more complete picture if you finish all sections.
+                    </p>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                      <p className="text-sm font-semibold text-amber-900 mb-2">
+                        ⚠ {progress.remaining} sections remaining
+                      </p>
                       <p className="text-sm text-amber-800">
-                        You can still submit, but your adviser will have a more complete picture if you finish all sections.
+                        {incompleteSections.map(s => s.title).join(', ')}
                       </p>
                     </div>
-                  </div>
+                  </>
+                )}
+
+                <div className="flex gap-3 pt-4 border-t border-slate-200">
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(createPageUrl('FactFindRiskProfile') + `?id=${factFind?.id}`)}
+                    className="border-slate-300"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back
+                  </Button>
+                  <Button
+                    onClick={() => setShowConfirm(true)}
+                    disabled={submitting}
+                    className={cn(
+                      'text-white font-semibold flex-1',
+                      progress.remaining === 0
+                        ? 'bg-green-600 hover:bg-green-700'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    )}
+                  >
+                    {submitting ? 'Submitting...' : 'Submit Fact Find →'}
+                  </Button>
                 </div>
-              )}
-
-              <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-                <Button
-                  onClick={handleBack}
-                  variant="outline"
-                  disabled={submitting}
-                  className="border-slate-300 text-slate-700 hover:bg-slate-50"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Button>
-
-                <Button
-                  onClick={handleSubmit}
-                  disabled={submitting}
-                  size="lg"
-                  className="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/30"
-                >
-                  {submitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      Submit to Your Adviser
-                      <Send className="w-4 h-4 ml-2" />
-                    </>
-                  )}
-                </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
-      </div>
-    </FactFindLayout>
+      </FactFindLayout>
     </>
-    );
-    }
+  );
+}
