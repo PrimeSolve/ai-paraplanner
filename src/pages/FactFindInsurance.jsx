@@ -262,6 +262,9 @@ export default function FactFindInsurance() {
 
               {/* POLICY EDITOR */}
               <Card className="border-slate-200 shadow-sm">
+                <div className="bg-blue-50 border-l-4 border-blue-500 px-6 py-3">
+                  <h4 className="font-bold text-blue-700">Policy Details</h4>
+                </div>
                 <CardContent className="p-6 space-y-4">
                   {/* Basic Details */}
                   <div>
@@ -432,8 +435,8 @@ export default function FactFindInsurance() {
               {/* SUM INSURED SECTION */}
               {config.sumInsured.length > 0 && (
                 <Card className="border-slate-200 shadow-sm">
-                  <div className="bg-blue-600 px-6 py-3 rounded-t-lg">
-                    <h4 className="font-bold text-white">Sum Insured</h4>
+                  <div className="bg-green-50 border-l-4 border-green-500 px-6 py-3">
+                    <h4 className="font-bold text-green-700">Sum Insured</h4>
                   </div>
                   <CardContent className="p-6 space-y-4">
                     {config.sumInsured.includes('life') && (
@@ -527,8 +530,8 @@ export default function FactFindInsurance() {
               {/* PREMIUM SECTION */}
               {config.premium.length > 0 && (
                 <Card className="border-slate-200 shadow-sm">
-                  <div className="bg-green-600 px-6 py-3 rounded-t-lg">
-                    <h4 className="font-bold text-white">Premium Details</h4>
+                  <div className="bg-orange-50 border-l-4 border-orange-500 px-6 py-3">
+                    <h4 className="font-bold text-orange-700">Premium Details</h4>
                   </div>
                   <CardContent className="p-6 space-y-4">
                     {config.premium.includes('life') && (

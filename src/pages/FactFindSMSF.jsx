@@ -1128,8 +1128,8 @@ export default function FactFindSMSF() {
 
             {/* Beneficiaries Section */}
             <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <div className="bg-amber-50 border-l-4 border-amber-500 p-3">
-                <h3 className="text-amber-700 font-semibold flex items-center gap-2">
+              <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3">
+                <h3 className="text-yellow-700 font-semibold flex items-center gap-2">
                   <UserPlus className="w-5 h-5" />
                   Beneficiaries
                 </h3>
