@@ -21,6 +21,7 @@ export default function SOARequestInsurance() {
   const [currentPerson, setCurrentPerson] = useState('client');
   const [clientName, setClientName] = useState('Client');
   const [partnerName, setPartnerName] = useState('Partner');
+  const [clientId, setClientId] = useState(null);
   
   // Modals state
   const [showAssumptionsModal, setShowAssumptionsModal] = useState(false);
