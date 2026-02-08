@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft, Trash2, Plus, Landmark, UserPlus, Building } from 'lucide-react';
+import EntityDot from '../components/factfind/EntityDot';
 
 export default function FactFindTrusts() {
   const navigate = useNavigate();
