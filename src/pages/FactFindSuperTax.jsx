@@ -251,11 +251,6 @@ export default function FactFindSuperTax() {
           {/* Super Tab */}
           {currentTab === 'super' && (
             <Card className="border-slate-200 shadow-sm">
-              <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3 rounded-t-lg">
-                <h4 className="font-bold text-white">
-                  {activePerson === 'c1' ? principalNames.client : principalNames.partner} - Superannuation
-                </h4>
-              </div>
               <CardContent className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">
@@ -440,11 +435,6 @@ export default function FactFindSuperTax() {
           {/* Tax Tab */}
           {currentTab === 'tax' && (
             <Card className="border-slate-200 shadow-sm">
-              <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 rounded-t-lg">
-                <h4 className="font-bold text-white">
-                  {activePerson === 'c1' ? principalNames.client : principalNames.partner} - Tax
-                </h4>
-              </div>
               <CardContent className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Pre-existing losses</label>
