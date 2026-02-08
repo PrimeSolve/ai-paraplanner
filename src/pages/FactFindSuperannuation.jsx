@@ -1107,7 +1107,6 @@ export default function FactFindSuperannuation() {
                             </select>
                           </div>
                         </div>
-                      </div>
                     )}
 
                     {activeTab === 'income' && (
