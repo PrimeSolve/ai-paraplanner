@@ -136,12 +136,55 @@ export default function FactFindSuperannuation() {
 
     const handleSaveBeforeNav = async () => {
       console.log('=== SUPER SAVE-BEFORE-NAV FIRED ===');
+      console.log('View:', view, 'MainTab:', mainTab, 'EditingIndex:', editingIndex);
+      
+      // Start with current arrays
+      let fundsToSave = [...superFunds];
+      let pensionsToSave = [...pensions];
+      let annuitiesToSave = [...annuities];
+      
+      // If user is in detail view with unsaved data, capture it
+      if (view === 'detail' && currentItem) {
+        console.log('Detail view detected - capturing in-progress data:', currentItem);
+        
+        if (mainTab === 'super') {
+          if (editingIndex !== null) {
+            fundsToSave[editingIndex] = currentItem;
+            console.log('Updated existing super fund at index', editingIndex);
+          } else {
+            fundsToSave.push(currentItem);
+            console.log('Added new super fund');
+          }
+        } else if (mainTab === 'pension') {
+          if (editingIndex !== null) {
+            pensionsToSave[editingIndex] = currentItem;
+            console.log('Updated existing pension at index', editingIndex);
+          } else {
+            pensionsToSave.push(currentItem);
+            console.log('Added new pension');
+          }
+        } else if (mainTab === 'annuity') {
+          if (editingIndex !== null) {
+            annuitiesToSave[editingIndex] = currentItem;
+            console.log('Updated existing annuity at index', editingIndex);
+          } else {
+            annuitiesToSave.push(currentItem);
+            console.log('Added new annuity');
+          }
+        }
+      }
+      
+      console.log('Saving:', {
+        funds: fundsToSave.length,
+        pensions: pensionsToSave.length,
+        annuities: annuitiesToSave.length
+      });
       
       try {
         await updateSection('superannuation', {
-          funds: superFunds || [],
-          pensions: pensions || [],
-          annuities: annuities || []
+          funds: fundsToSave,
+          pensions: pensionsToSave,
+          annuities: annuitiesToSave
         });
         console.log('=== SUPER SAVE DONE ===');
       } catch (err) {
@@ -154,7 +197,7 @@ export default function FactFindSuperannuation() {
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [superFunds, pensions, annuities, updateSection]);
+  }, [superFunds, pensions, annuities, view, mainTab, editingIndex, currentItem, updateSection]);
 
   const getCurrentList = () => {
     if (mainTab === 'super') return superFunds;
