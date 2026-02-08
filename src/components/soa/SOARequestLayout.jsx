@@ -188,26 +188,29 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
                 const Icon = section.icon;
 
                 return (
-                  <Link
-                    key={section.id}
-                    to={createPageUrl(section.path) + (soaRequest?.id ? `?id=${soaRequest.id}` : '')}
-                    title={section.description}
-                    className={cn(
-                      "flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all text-sm",
-                      isActive 
-                        ? "bg-slate-700 text-white font-medium" 
-                        : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
-                    )}
-                  >
-                    <span className="flex items-center gap-2">
-                      {Icon && <Icon className="w-4 h-4" />}
-                      {section.label}
-                    </span>
-                    {completion > 0 && (
-                      <span className="text-xs text-slate-400 font-semibold">{completion}%</span>
-                    )}
-                  </Link>
-                );
+                   <button
+                     key={section.id}
+                     onClick={(e) => {
+                       e.preventDefault();
+                       handleNavigation(createPageUrl(section.path) + (soaRequest?.id ? `?id=${soaRequest.id}` : ''));
+                     }}
+                     title={section.description}
+                     className={cn(
+                       "w-full flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all text-sm border-none bg-transparent cursor-pointer",
+                       isActive 
+                         ? "bg-slate-700 text-white font-medium" 
+                         : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
+                     )}
+                   >
+                     <span className="flex items-center gap-2">
+                       {Icon && <Icon className="w-4 h-4" />}
+                       {section.label}
+                     </span>
+                     {completion > 0 && (
+                       <span className="text-xs text-slate-400 font-semibold">{completion}%</span>
+                     )}
+                   </button>
+                 );
               })}
             </div>
           ))}
