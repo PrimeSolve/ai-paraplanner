@@ -36,7 +36,25 @@ export default function AdviserSOARequests() {
       const data = await base44.entities.SOARequest.filter({
         created_by: currentUser.email
       }, '-created_date');
-      setRequests(data);
+      
+      // Load client names for each SOA Request
+      const requestsWithClientNames = await Promise.all(
+        data.map(async (req) => {
+          try {
+            const client = await base44.entities.Client.filter({ id: req.client_id });
+            const clientData = client[0];
+            const clientName = clientData 
+              ? `${clientData.first_name || ''} ${clientData.last_name || ''}`.trim() 
+              : 'Unknown Client';
+            return { ...req, client_name: clientName };
+          } catch (err) {
+            console.error(`Failed to load client for SOA ${req.id}:`, err);
+            return { ...req, client_name: 'Unknown Client' };
+          }
+        })
+      );
+      
+      setRequests(requestsWithClientNames);
     } catch (error) {
       console.error('Failed to load requests:', error);
     } finally {
