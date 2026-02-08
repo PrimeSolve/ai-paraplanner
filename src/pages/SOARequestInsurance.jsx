@@ -671,10 +671,21 @@ export default function SOARequestInsurance() {
 
                 {/* NEEDS TAB */}
                 <TabsContent value="needs" className="space-y-4 mt-6">
+              {/* DEBUG BUTTON */}
+              <button 
+                onClick={async () => {
+                  const ff = await base44.entities.FactFind.get(soaRequest.fact_find_id);
+                  alert('LIABILITIES: ' + JSON.stringify(ff.assets_liabilities?.liabilities || 'NO LIABILITIES', null, 2).substring(0, 2000));
+                }}
+                style={{ background: '#dc2626', color: 'white', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', marginBottom: '16px', fontSize: '12px', fontWeight: 'bold' }}
+              >
+                DEBUG: Show Liabilities
+              </button>
+
               {/* Toolbar */}
-              <div className="flex items-center justify-between">
-                {/* Person Switcher */}
-                <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-1">
+                <div className="flex items-center justify-between">
+                  {/* Person Switcher */}
+                  <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-1">
                   {principals[0] && (
                     <button
                       className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
