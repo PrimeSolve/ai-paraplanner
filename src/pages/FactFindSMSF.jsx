@@ -489,8 +489,40 @@ export default function FactFindSMSF() {
       if (el) el.value = data.benef_entitlement;
     }
 
+    // Add change listener to account dropdown to update beneficiary options
+    const acctSelect = row.querySelector('select[name="benef_account"]');
+    if (acctSelect) {
+      acctSelect.addEventListener('change', function() {
+        const selectedIdx = this.value ? parseInt(this.value.split('_')[1]) : -1;
+        const selectedAcctRow = selectedIdx >= 0 ? acctRows[selectedIdx] : null;
+        const accountOwnerId = selectedAcctRow?.querySelector('select[name="acct_owner"]')?.value || '';
+        
+        // Rebuild beneficiary options excluding the account owner
+        const whoSelect = row.querySelector('select[name="benef_who"]');
+        if (whoSelect) {
+          const currentValue = whoSelect.value;
+          const filteredOptions = beneficiaryEntities
+            .filter(entity => entity.id !== accountOwnerId)
+            .map(entity => 
+              `<option value="${entity.id}">${entity.label} (${entity.type})</option>`
+            ).join('');
+          
+          whoSelect.innerHTML = `
+            <option value="">Select entity…</option>
+            ${filteredOptions}
+            <option value="estate">Estate</option>
+          `;
+          
+          // Restore value if still valid
+          if (currentValue && currentValue !== accountOwnerId) {
+            whoSelect.value = currentValue;
+          }
+        }
+      });
+    }
+
     return row;
-  }, [principalsOnly]);
+  }, [beneficiaryEntities, principalsOnly, factFind?.id, readTabToArray]);
 
   // ============================================
   // ADD ENTRY
