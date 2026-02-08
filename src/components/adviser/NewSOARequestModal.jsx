@@ -55,6 +55,7 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
           
           return {
             ...client,
+            name: `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Unnamed Client',
             factFindStatus,
             factFindProgress
           };
