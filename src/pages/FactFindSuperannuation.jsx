@@ -19,10 +19,13 @@ export default function FactFindSuperannuation() {
   
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
+  const [mainTab, setMainTab] = useState('super'); // 'super' | 'pension' | 'annuity'
   const [view, setView] = useState('summary'); // 'summary' | 'detail'
   const [editingIndex, setEditingIndex] = useState(null);
   const [activeTab, setActiveTab] = useState('fund_details');
-  const [funds, setFunds] = useState([]);
+  const [superFunds, setSuperFunds] = useState([]);
+  const [pensionFunds, setPensionFunds] = useState([]);
+  const [annuityFunds, setAnnuityFunds] = useState([]);
   
   // Current fund being edited
   const [currentFund, setCurrentFund] = useState({
@@ -63,18 +66,35 @@ export default function FactFindSuperannuation() {
 
   // Load funds from factFind
   useEffect(() => {
-    if (factFind?.superannuation?.funds) {
-      setFunds(factFind.superannuation.funds);
+    if (factFind?.superannuation) {
+      setSuperFunds(factFind.superannuation.super_funds || []);
+      setPensionFunds(factFind.superannuation.pension_funds || []);
+      setAnnuityFunds(factFind.superannuation.annuity_funds || []);
     }
-  }, [factFind?.superannuation?.funds]);
+  }, [factFind?.superannuation]);
+
+  // Get current funds based on active tab
+  const getCurrentFunds = () => {
+    if (mainTab === 'super') return superFunds;
+    if (mainTab === 'pension') return pensionFunds;
+    return annuityFunds;
+  };
+
+  const setCurrentFunds = (funds) => {
+    if (mainTab === 'super') setSuperFunds(funds);
+    else if (mainTab === 'pension') setPensionFunds(funds);
+    else setAnnuityFunds(funds);
+  };
 
   // Save to database
-  const saveFunds = useCallback(async (updatedFunds) => {
+  const saveFunds = useCallback(async (superFunds, pensionFunds, annuityFunds) => {
     if (!factFind?.id) return;
     try {
       await base44.entities.FactFind.update(factFind.id, {
         superannuation: {
-          funds: updatedFunds
+          super_funds: superFunds,
+          pension_funds: pensionFunds,
+          annuity_funds: annuityFunds
         }
       });
     } catch (error) {
@@ -113,6 +133,7 @@ export default function FactFindSuperannuation() {
 
   // Edit existing fund
   const handleEdit = (index) => {
+    const funds = getCurrentFunds();
     setCurrentFund(JSON.parse(JSON.stringify(funds[index])));
     setEditingIndex(index);
     setActiveTab('fund_details');
@@ -121,14 +142,21 @@ export default function FactFindSuperannuation() {
 
   // Remove fund
   const handleRemove = async (index) => {
+    const funds = getCurrentFunds();
     const updated = funds.filter((_, i) => i !== index);
-    setFunds(updated);
-    await saveFunds(updated);
+    setCurrentFunds(updated);
+    
+    // Save all funds
+    if (mainTab === 'super') await saveFunds(updated, pensionFunds, annuityFunds);
+    else if (mainTab === 'pension') await saveFunds(superFunds, updated, annuityFunds);
+    else await saveFunds(superFunds, pensionFunds, updated);
+    
     toast.success('Fund removed');
   };
 
   // Save current fund
   const handleSaveCurrentFund = async () => {
+    const funds = getCurrentFunds();
     let updated;
     if (editingIndex !== null) {
       // Update existing
@@ -139,8 +167,13 @@ export default function FactFindSuperannuation() {
       updated = [...funds, currentFund];
     }
     
-    setFunds(updated);
-    await saveFunds(updated);
+    setCurrentFunds(updated);
+    
+    // Save all funds
+    if (mainTab === 'super') await saveFunds(updated, pensionFunds, annuityFunds);
+    else if (mainTab === 'pension') await saveFunds(superFunds, updated, annuityFunds);
+    else await saveFunds(superFunds, pensionFunds, updated);
+    
     setView('summary');
     toast.success(editingIndex !== null ? 'Fund updated' : 'Fund added');
   };
@@ -210,6 +243,12 @@ export default function FactFindSuperannuation() {
     });
   };
 
+  // Switch main tab (reset view to summary)
+  const handleMainTabChange = (tab) => {
+    setMainTab(tab);
+    setView('summary');
+  };
+
   // Navigation
   const handleNext = async () => {
     if (!factFind?.id) {
@@ -225,7 +264,11 @@ export default function FactFindSuperannuation() {
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        superannuation: { funds },
+        superannuation: {
+          super_funds: superFunds,
+          pension_funds: pensionFunds,
+          annuity_funds: annuityFunds
+        },
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
@@ -263,21 +306,60 @@ export default function FactFindSuperannuation() {
     return beneficiaryEntities.filter(e => e.id !== currentFund.owner);
   };
 
+  const currentFunds = getCurrentFunds();
+  const fundTypeLabel = mainTab === 'super' ? 'Superannuation' : mainTab === 'pension' ? 'Pension' : 'Annuity';
+
   return (
     <FactFindLayout currentSection="superannuation" factFind={factFind}>
       <FactFindHeader
         title="Superannuation"
-        description="Record super funds, contributions, and beneficiaries."
+        description="Record super funds, pensions, annuities, and beneficiaries."
         factFind={factFind}
         user={user}
       />
 
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
+          {/* Main tabs: Super / Pension / Annuity */}
+          {view === 'summary' && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleMainTabChange('super')}
+                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
+                  mainTab === 'super'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                Super
+              </button>
+              <button
+                onClick={() => handleMainTabChange('pension')}
+                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
+                  mainTab === 'pension'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                Pension
+              </button>
+              <button
+                onClick={() => handleMainTabChange('annuity')}
+                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
+                  mainTab === 'annuity'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                Annuity
+              </button>
+            </div>
+          )}
+
           {view === 'summary' ? (
             <>
               {/* Summary Table */}
-              {funds.length > 0 ? (
+              {currentFunds.length > 0 ? (
                 <Card className="border-slate-200 shadow-sm">
                   <CardContent className="p-6">
                     <table className="w-full text-sm border-collapse">
@@ -291,7 +373,7 @@ export default function FactFindSuperannuation() {
                         </tr>
                       </thead>
                       <tbody>
-                        {funds.map((fund, index) => (
+                        {currentFunds.map((fund, index) => (
                           <tr key={index} className="border-b border-slate-100 hover:bg-slate-50/50">
                             <td className="py-3 px-3 font-medium text-slate-800">{getOwnerName(fund.owner)}</td>
                             <td className="py-3 px-3 text-slate-600">{fund.fund_name || 'N/A'}</td>
@@ -323,7 +405,7 @@ export default function FactFindSuperannuation() {
                         className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
                       >
                         <Plus className="w-4 h-4" />
-                        Add Superannuation
+                        Add {fundTypeLabel}
                       </button>
                     </div>
                   </CardContent>
@@ -333,17 +415,17 @@ export default function FactFindSuperannuation() {
                   <CardContent className="p-12 text-center">
                     <div className="text-5xl mb-4">🏦</div>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      Do you have any superannuation funds?
+                      Do you have any {fundTypeLabel.toLowerCase()} funds?
                     </h3>
                     <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                      Add details about your superannuation funds, balances, and contributions.
+                      Add details about your {fundTypeLabel.toLowerCase()} funds, balances, and contributions.
                     </p>
                     <button
                       onClick={handleAddNew}
                       className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors"
                     >
                       <Plus className="w-4 h-4" />
-                      Add First Fund
+                      Add First {fundTypeLabel}
                     </button>
                   </CardContent>
                 </Card>
@@ -366,7 +448,7 @@ export default function FactFindSuperannuation() {
                     <h3 className="text-lg font-bold text-slate-900">
                       {currentFund.owner && currentFund.fund_name ? 
                         `${getOwnerName(currentFund.owner)} — ${currentFund.fund_name}` : 
-                        'New Fund'}
+                        `New ${fundTypeLabel}`}
                     </h3>
                   </div>
 
