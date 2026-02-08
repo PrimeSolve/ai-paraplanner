@@ -13,7 +13,7 @@ import { ArrowRight, ArrowLeft, Plus, ArrowLeftCircle } from 'lucide-react';
 
 export default function FactFindSuperannuation() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection } = useFactFind();
   const principalsOnly = useFactFindEntities(factFind, { types: ['Principal'] });
   const beneficiaryEntities = useFactFindEntities(factFind, { types: ['Principal', 'Dependant'] });
   
@@ -28,6 +28,9 @@ export default function FactFindSuperannuation() {
   const [annuities, setAnnuities] = useState([]);
   
   const [currentItem, setCurrentItem] = useState(null);
+
+  // Debug principals
+  console.log('Principals loaded:', principalsOnly);
 
   // Initialize empty items for each type
   const getEmptySuper = () => ({
@@ -127,6 +130,28 @@ export default function FactFindSuperannuation() {
     }
   }, [factFind?.superannuation]);
 
+  // CRITICAL: Save before navigating away
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      console.log('Save before nav triggered');
+      if (!factFind?.id) return;
+      
+      try {
+        await updateSection('superannuation', {
+          funds: superFunds,
+          pensions: pensions,
+          annuities: annuities
+        });
+        console.log('Superannuation data saved');
+      } catch (error) {
+        console.error('Failed to save superannuation:', error);
+      }
+    };
+
+    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+  }, [factFind?.id, superFunds, pensions, annuities, updateSection]);
+
   const getCurrentList = () => {
     if (mainTab === 'super') return superFunds;
     if (mainTab === 'pension') return pensions;
@@ -212,9 +237,14 @@ export default function FactFindSuperannuation() {
     setCurrentItem(null);
   };
 
-  const handleMainTabChange = (tab) => {
+  const handleMainTabChange = async (tab) => {
+    // Auto-save current fund if in detail view
+    if (view === 'detail' && currentItem) {
+      await handleSaveCurrent();
+    }
     setMainTab(tab);
     setView('summary');
+    setCurrentItem(null);
   };
 
   const handleNext = async () => {
@@ -295,34 +325,33 @@ export default function FactFindSuperannuation() {
 
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
-          {view === 'summary' && (
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleMainTabChange('super')}
-                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
-                  mainTab === 'super' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                }`}
-              >
-                Super
-              </button>
-              <button
-                onClick={() => handleMainTabChange('pension')}
-                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
-                  mainTab === 'pension' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                }`}
-              >
-                Pension
-              </button>
-              <button
-                onClick={() => handleMainTabChange('annuity')}
-                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
-                  mainTab === 'annuity' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                }`}
-              >
-                Annuity
-              </button>
-            </div>
-          )}
+          {/* ALWAYS VISIBLE: Top-level product tabs */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleMainTabChange('super')}
+              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
+                mainTab === 'super' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              }`}
+            >
+              Super
+            </button>
+            <button
+              onClick={() => handleMainTabChange('pension')}
+              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
+                mainTab === 'pension' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              }`}
+            >
+              Pension
+            </button>
+            <button
+              onClick={() => handleMainTabChange('annuity')}
+              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
+                mainTab === 'annuity' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              }`}
+            >
+              Annuity
+            </button>
+          </div>
 
           {view === 'summary' ? (
             <>
