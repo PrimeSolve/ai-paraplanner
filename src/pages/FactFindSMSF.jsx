@@ -1017,10 +1017,11 @@ export default function FactFindSMSF() {
 
                 {/* Empty state */}
                 <div className="benef-list-empty text-center py-6">
-                  <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
+                  <p className="text-sm text-slate-600 mb-3">Add beneficiaries to accounts</p>
+                  <p className="text-xs text-slate-500 mb-3">Beneficiaries must be linked to a specific account above</p>
                   <button type="button" className="add-first-benef inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                     <Plus className="w-4 h-4" />
-                    Add First Beneficiary
+                    Add Beneficiary
                   </button>
                 </div>
 
