@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import { useFactFind } from '@/components/factfind/useFactFind';
-import { useSectionState } from '@/components/factfind/useSectionState';
+import { useCompletionLogic } from '@/components/factfind/useCompletionLogic';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Info, RefreshCw, CheckCircle2, AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -18,10 +18,25 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from '@/components/ui/checkbox';
 
+const SECTIONS = [
+  { key: 'personal', title: 'Personal Details', category: 'Personal', path: 'FactFindPersonal' },
+  { key: 'dependants', title: 'Dependants', category: 'Personal', path: 'FactFindDependants' },
+  { key: 'trusts_companies', title: 'Trusts & Companies', category: 'Other Entities', path: 'FactFindTrusts' },
+  { key: 'smsf', title: 'SMSF', category: 'Other Entities', path: 'FactFindSMSF' },
+  { key: 'superannuation', title: 'Superannuation', category: 'Financial Products', path: 'FactFindSuperannuation' },
+  { key: 'investments', title: 'Investment Accounts', category: 'Financial Products', path: 'FactFindInvestment' },
+  { key: 'assets_liabilities', title: 'Assets & Liabilities', category: 'Net Worth', path: 'FactFindAssetsLiabilities' },
+  { key: 'income_expenses', title: 'Income & Expenses', category: 'Cashflow', path: 'FactFindIncomeExpenses' },
+  { key: 'insurance', title: 'Insurance Policies', category: 'Insurance', path: 'FactFindInsurance' },
+  { key: 'super_tax', title: 'Super & Tax Planning', category: 'Planning', path: 'FactFindSuperTax' },
+  { key: 'advice_reason', title: 'Reason for Seeking Advice', category: 'Planning', path: 'FactFindAdviceReason' },
+  { key: 'risk_profile', title: 'Risk Profile', category: 'Planning', path: 'FactFindRiskProfile' }
+];
+
 export default function FactFindReview() {
   const navigate = useNavigate();
   const { factFind, loading: ffLoading, updateSection } = useFactFind();
-  const { SECTIONS, getSectionCardState, calculateOverallProgress } = useSectionState();
+  const { calculateAllSectionCompletion, getDisplayState } = useCompletionLogic();
   const [user, setUser] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -43,7 +58,34 @@ export default function FactFindReview() {
   }, []);
 
   const reviewStatus = factFind?.review_status || { sections: {}, submitted: false };
-  const progress = calculateOverallProgress(factFind, reviewStatus);
+  
+  const displayState = useMemo(() => {
+    if (!factFind) return {};
+    return getDisplayState(factFind);
+  }, [factFind, getDisplayState]);
+
+  const progress = useMemo(() => {
+    let completedSections = 0;
+    SECTIONS.forEach(section => {
+      if (displayState[section.key]?.isComplete) {
+        completedSections++;
+      }
+    });
+
+    const percentage = Math.round((completedSections / SECTIONS.length) * 100);
+    let barColor = '#ef4444';
+    if (percentage >= 100) barColor = '#10b981';
+    else if (percentage >= 80) barColor = '#2563eb';
+    else if (percentage >= 50) barColor = '#f59e0b';
+
+    return {
+      percentage,
+      completed: completedSections,
+      total: SECTIONS.length,
+      remaining: SECTIONS.length - completedSections,
+      barColor
+    };
+  }, [displayState]);
 
   const handleToggleMark = async (sectionKey) => {
     if (!factFind) return;
@@ -386,15 +428,54 @@ export default function FactFindReview() {
             </div>
 
             {/* Section Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+              gap: '16px',
+              marginBottom: '32px'
+            }}>
               {SECTIONS.map(section => {
-                const state = getSectionCardState(section, factFind, reviewStatus);
+                const state = displayState[section.key] || {};
+                const percentage = state.percentage || 0;
+                const isManuallyComplete = state.isManuallyComplete || false;
+                const isComplete = state.isComplete || false;
+
+                // Determine card state colors
+                let borderColor = '#ef4444';
+                let background = '#fef2f2';
+                let icon = '!';
+                let iconBg = '#fee2e2';
+                let iconColor = '#dc2626';
+                let badge = 'Not started';
+                let badgeColor = '#dc2626';
+                let actionText = 'Start section →';
+
+                if (isComplete) {
+                  borderColor = '#10b981';
+                  background = '#f0fdf4';
+                  icon = '✓';
+                  iconBg = '#d1fae5';
+                  iconColor = '#059669';
+                  badge = isManuallyComplete && percentage < 100 ? 'Marked complete' : '✓ Complete';
+                  badgeColor = '#059669';
+                  actionText = 'Review section →';
+                } else if (percentage > 0) {
+                  borderColor = '#f59e0b';
+                  background = '#fffbeb';
+                  icon = '◐';
+                  iconBg = '#fef3c7';
+                  iconColor = '#d97706';
+                  badge = `${Math.round(percentage)}% complete`;
+                  badgeColor = '#d97706';
+                  actionText = 'Continue →';
+                }
+
                 return (
                   <div
                     key={section.key}
                     style={{
-                      background: state.background,
-                      border: `1px solid ${state.borderColor}`,
+                      background,
+                      border: `1px solid ${borderColor}`,
                       borderRadius: '12px',
                       padding: '20px',
                       transition: 'all 0.2s',
@@ -420,8 +501,8 @@ export default function FactFindReview() {
                           width: '28px',
                           height: '28px',
                           borderRadius: '8px',
-                          background: state.iconBg,
-                          color: state.iconColor,
+                          background: iconBg,
+                          color: iconColor,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -429,13 +510,13 @@ export default function FactFindReview() {
                           fontWeight: 'bold'
                         }}
                       >
-                        {state.icon}
+                        {icon}
                       </div>
                     </div>
 
                     {/* Percentage */}
-                    <div style={{ fontSize: '18px', fontWeight: 800, color: state.badgeColor }}>
-                      {state.percentage}%
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: badgeColor }}>
+                      {percentage}%
                     </div>
 
                     {/* Action Row */}
@@ -443,7 +524,7 @@ export default function FactFindReview() {
                       onClick={() => handleNavigateToSection(section.path)}
                       style={{
                         paddingTop: '12px',
-                        borderTop: `1px solid ${state.borderColor}`,
+                        borderTop: `1px solid ${borderColor}`,
                         cursor: 'pointer',
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -451,8 +532,8 @@ export default function FactFindReview() {
                       }}
                       className="hover:opacity-70 transition-opacity"
                     >
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: state.badgeColor }}>
-                        {state.actionText}
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: badgeColor }}>
+                        {actionText}
                       </span>
                       <span style={{ fontSize: '16px', opacity: 0.7 }}>→</span>
                     </div>
@@ -466,12 +547,12 @@ export default function FactFindReview() {
                       style={{
                         marginTop: '8px',
                         padding: '6px 12px',
-                        border: state.isManuallyComplete ? '1px solid #10b981' : '1px solid #cbd5e1',
-                        background: state.isManuallyComplete ? '#d1fae5' : '#fff',
+                        border: isManuallyComplete ? '1px solid #10b981' : '1px solid #cbd5e1',
+                        background: isManuallyComplete ? '#d1fae5' : '#fff',
                         borderRadius: '999px',
                         fontSize: '12px',
                         fontWeight: 700,
-                        color: state.isManuallyComplete ? '#059669' : '#64748b',
+                        color: isManuallyComplete ? '#059669' : '#64748b',
                         cursor: 'pointer',
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -480,8 +561,8 @@ export default function FactFindReview() {
                       }}
                       className="hover:opacity-80"
                     >
-                      <span>{state.isManuallyComplete ? '✓' : '○'}</span>
-                      {state.isManuallyComplete ? 'Marked complete' : 'Mark as complete'}
+                      <span>{isManuallyComplete ? '✓' : '○'}</span>
+                      {isManuallyComplete ? 'Marked complete' : 'Mark as complete'}
                     </button>
                   </div>
                 );
@@ -512,7 +593,7 @@ export default function FactFindReview() {
                         ⚠ {progress.remaining} sections remaining
                       </p>
                       <p className="text-sm text-amber-800">
-                        {incompleteSections.map(s => s.title).join(', ')}
+                        {SECTIONS.filter(s => !displayState[s.key]?.isComplete).map(s => s.title).join(', ')}
                       </p>
                     </div>
                   </>
