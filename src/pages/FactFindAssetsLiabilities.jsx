@@ -5,6 +5,7 @@ import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 import { useFactFind } from '@/components/factfind/useFactFind';
+import { useFactFindEntities } from '@/components/factfind/useFactFindEntities';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -12,7 +13,8 @@ import { ArrowRight, ArrowLeft, Edit2, Trash2, Plus } from 'lucide-react';
 
 export default function FactFindAssetsLiabilities() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection } = useFactFind();
+  const assetEntities = useFactFindEntities(factFind, { types: ['principal', 'trust', 'company', 'wrap', 'bond'] });
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('assets');
@@ -22,49 +24,18 @@ export default function FactFindAssetsLiabilities() {
   const [activeAssetIndex, setActiveAssetIndex] = useState(null);
   const [activeDebtIndex, setActiveDebtIndex] = useState(null);
 
-  // Get owner options from fact find data
-  const getOwnerOptions = useCallback(() => {
-    if (!factFind) return [];
-    const opts = [];
-
-    // Principals
-    const clientName = factFind?.personal?.client?.first_name
-      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
-      : null;
-    const partnerName = factFind?.personal?.partner?.first_name
-      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
-      : null;
-
-    if (clientName) opts.push({ label: clientName, value: 'client' });
-    if (partnerName) opts.push({ label: partnerName, value: 'partner' });
-
-    // Trusts
-    (factFind?.trusts_companies?.entities || [])
-      .filter(e => e.entity_type === 'trust')
-      .forEach((trust, i) => {
-        opts.push({ label: trust.entity_name || `Trust ${i + 1}`, value: `trust-${i}` });
-      });
-
-    // Companies
-    (factFind?.trusts_companies?.entities || [])
-      .filter(e => e.entity_type === 'company')
-      .forEach((company, i) => {
-        opts.push({ label: company.entity_name || `Company ${i + 1}`, value: `company-${i}` });
-      });
-
-    // SMSFs
-    (factFind?.smsf?.funds || []).forEach((smsf, i) => {
-      opts.push({ label: smsf.smsf_name || `SMSF ${i + 1}`, value: `smsf-${i}` });
-    });
-
-    return opts;
-  }, [factFind]);
-
   const getOwnerLabel = useCallback((value) => {
     if (!value) return '-';
-    const opts = getOwnerOptions();
-    return opts.find(o => o.value === value)?.label || value;
-  }, [getOwnerOptions]);
+    if (value === 'joint') {
+      if (assetEntities.filter(e => e.type === 'Principal').length >= 2) {
+        const principals = assetEntities.filter(e => e.type === 'Principal');
+        return `${principals[0].label} & ${principals[1].label}`;
+      }
+      return 'Joint';
+    }
+    const entity = assetEntities.find(e => e.id === value);
+    return entity ? entity.label : value;
+  }, [assetEntities]);
 
   const getDebtTypeLabel = useCallback((value) => {
     const types = { '1': 'Home loan', '2': 'Investment loan', '3': 'Margin loan', '5': 'Credit card', '6': 'Reverse mortgage', '7': 'Car loan', '8': 'Other' };
@@ -91,6 +62,23 @@ export default function FactFindAssetsLiabilities() {
       setDebtsList(factFind.assets_liabilities.liabilities);
     }
   }, [factFind]);
+
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      try {
+        await updateSection('assets_liabilities', {
+          assets: assetsList,
+          liabilities: debtsList
+        });
+      } catch (err) {
+        console.error('Save failed:', err);
+      }
+      window.dispatchEvent(new Event('factfind-save-complete'));
+    };
+
+    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+  }, [assetsList, debtsList, updateSection]);
 
 
 
@@ -201,7 +189,6 @@ export default function FactFindAssetsLiabilities() {
     );
   }
 
-  const ownerOptions = getOwnerOptions();
   const activeAsset = activeAssetIndex !== null ? assetsList[activeAssetIndex] : null;
   const activeDebt = activeDebtIndex !== null ? debtsList[activeDebtIndex] : null;
 
@@ -319,10 +306,11 @@ export default function FactFindAssetsLiabilities() {
                           <div>
                             <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
                             <select value={activeAsset.a_owner} onChange={(e) => updateAsset(activeAssetIndex, 'a_owner', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                              <option value="">Select…</option>
-                              {ownerOptions.map(opt => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              <option value="">Select owner…</option>
+                              {assetEntities.map(entity => (
+                                <option key={entity.id} value={entity.id}>{entity.label} ({entity.type})</option>
                               ))}
+                              <option value="joint">Joint</option>
                             </select>
                           </div>
                         </div>
@@ -487,10 +475,11 @@ export default function FactFindAssetsLiabilities() {
                           <div>
                             <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
                             <select value={activeDebt.d_owner} onChange={(e) => updateDebt(activeDebtIndex, 'd_owner', e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                              <option value="">Select…</option>
-                              {ownerOptions.map(opt => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              <option value="">Select owner…</option>
+                              {assetEntities.map(entity => (
+                                <option key={entity.id} value={entity.id}>{entity.label} ({entity.type})</option>
                               ))}
+                              <option value="joint">Joint</option>
                             </select>
                           </div>
                         </div>
