@@ -380,7 +380,7 @@ export default function SOARequestProducts() {
                       updated[idx].shareholders[sidx].sh_entity = val;
                       setNewCompanies(updated);
                     }}
-                    options={companyShareholderOptions}
+                    entities={companyShareholderOptions}
                   />
                 </td>
                 <td style={{ padding: '8px 0' }}>
