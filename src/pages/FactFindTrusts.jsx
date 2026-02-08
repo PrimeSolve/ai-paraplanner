@@ -280,7 +280,7 @@ export default function FactFindTrusts() {
     row.className = 'benef-row border-b border-slate-100 hover:bg-purple-50/50';
 
     const entityOptions = entityList && entityList.length > 0
-      ? entityList.map(entity => `<option value="${entity.id}">${entity.label} (${entity.type})</option>`).join('')
+      ? entityList.map(entity => `<option value="${entity.id}">\u25CF ${entity.label} (${entity.type})</option>`).join('')
       : '';
 
     row.innerHTML = `
@@ -327,7 +327,7 @@ export default function FactFindTrusts() {
     row.className = 'sh-row border-b border-slate-100 hover:bg-orange-50/50';
 
     const entityOptions = entityList && entityList.length > 0
-      ? entityList.map(entity => `<option value="${entity.id}">${entity.label} (${entity.type})</option>`).join('')
+      ? entityList.map(entity => `<option value="${entity.id}">\u25CF ${entity.label} (${entity.type})</option>`).join('')
       : '';
 
     row.innerHTML = `

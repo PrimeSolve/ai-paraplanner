@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft, Plus, ArrowLeftCircle } from 'lucide-react';
+import EntityDot from '../components/factfind/EntityDot';
 
 export default function FactFindInvestment() {
   const navigate = useNavigate();
@@ -435,7 +436,7 @@ export default function FactFindInvestment() {
                           >
                             <option value="">Select owner…</option>
                             {wrapOwnerEntities.map(entity => (
-                              <option key={entity.id} value={entity.id}>{entity.label} ({entity.type})</option>
+                              <option key={entity.id} value={entity.id}>{'\u25CF'} {entity.label} ({entity.type})</option>
                             ))}
                           </select>
                         </div>
