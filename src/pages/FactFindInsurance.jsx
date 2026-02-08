@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import EntityDot from '../components/factfind/EntityDot';
 
 // Insurance type configuration
 const INSURANCE_TYPE_CONFIG = {
@@ -352,7 +353,7 @@ export default function FactFindInsurance() {
                       >
                         <option value="">Select…</option>
                         {principalEntities.map(entity => (
-                          <option key={entity.id} value={entity.id}>{entity.label}</option>
+                          <option key={entity.id} value={entity.id}>{'\u25CF'} {entity.label}</option>
                         ))}
                       </select>
                     </div>
@@ -366,7 +367,7 @@ export default function FactFindInsurance() {
                       >
                         <option value="">Select…</option>
                         {principalEntities.map(entity => (
-                          <option key={entity.id} value={entity.id}>{entity.label}</option>
+                          <option key={entity.id} value={entity.id}>{'\u25CF'} {entity.label}</option>
                         ))}
                       </select>
                     </div>
@@ -402,7 +403,7 @@ export default function FactFindInsurance() {
                                 <option value="">Select fund…</option>
                                 {ownerFunds.map(fund => (
                                   <option key={fund.id} value={fund.id}>
-                                    {fund.label} ({fund.type})
+                                    {'\u25CF'} {fund.label} ({fund.type})
                                   </option>
                                 ))}
                               </select>
