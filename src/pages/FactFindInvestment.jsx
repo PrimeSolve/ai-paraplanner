@@ -613,21 +613,21 @@ export default function FactFindInvestment() {
 
           {currentCount === 0 ? (
             <div className="border border-gray-200 rounded-lg p-12 text-center bg-white">
-              <div className="text-5xl mb-4">{currentTab === 'wrap' ? '📊' : '💰'}</div>
+              <div className="text-5xl mb-4">{currentTab === 'wrap' ? '📊' : '📄'}</div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Do you have any {currentTab === 'wrap' ? 'Wrap or Mastertrust accounts?' : 'Investment bonds?'}
+                {currentTab === 'wrap' ? 'No wrap accounts added yet' : 'No investment bonds added yet'}
               </h3>
               <p className="text-gray-500 mb-6 max-w-md mx-auto">
                 {currentTab === 'wrap'
-                  ? 'Add details about your investment platform accounts and portfolios.'
-                  : 'Add details about your investment bond accounts and contributions.'}
+                  ? 'Add investment platform accounts like wraps and master trust products'
+                  : 'Add insurance or investment bond products'}
               </p>
               <button
                 onClick={() => addEntry(currentTab)}
                 className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                Add First {currentTab === 'wrap' ? 'Wrap / Mastertrust' : 'Investment Bond'}
+                Add First {currentTab === 'wrap' ? 'Wrap' : 'Bond'}
               </button>
             </div>
           ) : (
