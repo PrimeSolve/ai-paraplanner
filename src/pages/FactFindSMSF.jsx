@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft, Plus, Landmark, Wallet, UserPlus, Edit } from 'lucide-react';
+import EntitySelect from '../components/factfind/EntitySelect';
 
 const MAX_SMSF = 2;
 
@@ -1190,16 +1191,12 @@ export default function FactFindSMSF() {
           <div className="grid grid-cols-2 gap-4 py-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Account Owner</label>
-              <select
+              <EntitySelect
                 value={accountForm.owner}
-                onChange={(e) => setAccountForm({ ...accountForm, owner: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select…</option>
-                {principalsOnly.map(entity => (
-                  <option key={entity.id} value={entity.id}>{entity.label}</option>
-                ))}
-              </select>
+                onChange={(id) => setAccountForm({ ...accountForm, owner: id })}
+                entities={principalsOnly}
+                placeholder="Select…"
+              />
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Tax Environment</label>

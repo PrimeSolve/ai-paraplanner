@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft, Plus, ArrowLeftCircle } from 'lucide-react';
+import EntitySelect from '../components/factfind/EntitySelect';
 
 export default function FactFindSuperannuation() {
   const navigate = useNavigate();
@@ -612,16 +613,12 @@ export default function FactFindSuperannuation() {
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
-                          <select
+                          <EntitySelect
                             value={currentItem.owner}
-                            onChange={(e) => setCurrentItem({ ...currentItem, owner: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="">Select owner…</option>
-                            {principalsOnly.map(entity => (
-                              <option key={entity.id} value={entity.id}>{entity.label}</option>
-                            ))}
-                          </select>
+                            onChange={(id) => setCurrentItem({ ...currentItem, owner: id })}
+                            entities={principalsOnly}
+                            placeholder="Select owner…"
+                          />
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-slate-700 mb-2">Balance</label>
@@ -1032,16 +1029,12 @@ export default function FactFindSuperannuation() {
                           </div>
                           <div>
                             <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
-                            <select
+                            <EntitySelect
                               value={currentItem.owner}
-                              onChange={(e) => setCurrentItem({ ...currentItem, owner: e.target.value })}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option value="">Select owner…</option>
-                              {principalsOnly.map(entity => (
-                                <option key={entity.id} value={entity.id}>{entity.label}</option>
-                              ))}
-                            </select>
+                              onChange={(id) => setCurrentItem({ ...currentItem, owner: id })}
+                              entities={principalsOnly}
+                              placeholder="Select owner…"
+                            />
                           </div>
                           <div>
                             <label className="block text-sm font-semibold text-slate-700 mb-2">Balance</label>
@@ -1098,16 +1091,12 @@ export default function FactFindSuperannuation() {
                           </div>
                           <div>
                             <label className="block text-sm font-semibold text-slate-700 mb-2">Reversionary nominee</label>
-                            <select
+                            <EntitySelect
                               value={currentItem.reversionary_nominee}
-                              onChange={(e) => setCurrentItem({ ...currentItem, reversionary_nominee: e.target.value })}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option value="">Select…</option>
-                              {getAvailableReversionary().map(entity => (
-                                <option key={entity.id} value={entity.id}>{entity.label}</option>
-                              ))}
-                            </select>
+                              onChange={(id) => setCurrentItem({ ...currentItem, reversionary_nominee: id })}
+                              entities={getAvailableReversionary()}
+                              placeholder="Select…"
+                            />
                           </div>
                         </div>
                     )}
