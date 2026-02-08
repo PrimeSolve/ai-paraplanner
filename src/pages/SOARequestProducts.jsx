@@ -202,7 +202,7 @@ export default function SOARequestProducts() {
                       updated[idx].beneficiaries[bidx].benef_entity = val;
                       setNewTrusts(updated);
                     }}
-                    options={trustBeneficiaryOptions}
+                    entities={trustBeneficiaryOptions}
                   />
                 </td>
                 <td style={{ padding: '8px 0' }}>
