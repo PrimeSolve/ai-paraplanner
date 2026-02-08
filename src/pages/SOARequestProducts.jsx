@@ -557,110 +557,432 @@ export default function SOARequestProducts() {
     </div>
   );
 
-  const renderProductCard = (product, idx) => (
+  const renderSuperProduct = (product, idx) => (
     <div key={idx} className="border border-slate-200 rounded-lg p-6 space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="text-xs font-semibold text-slate-600 mb-1 block">Product Type</label>
-          <select
-            value={product.product_type || ''}
-            onChange={(e) => {
-              const updated = [...products];
-              updated[idx].product_type = e.target.value;
-              setProducts(updated);
-            }}
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              borderRadius: '6px',
-              border: '1px solid #e2e8f0',
-              fontSize: '14px'
-            }}
-          >
-            <option value="">Select…</option>
-            <option value="super_fund">Super Fund</option>
-            <option value="pension">Pension</option>
-            <option value="annuity">Annuity</option>
-            <option value="wrap">Wrap</option>
-            <option value="bond">Bond</option>
-            <option value="insurance">Insurance</option>
-          </select>
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-slate-600 mb-1 block">Product Name</label>
-          <Input
-            value={product.product_name || ''}
-            onChange={(e) => {
-              const updated = [...products];
-              updated[idx].product_name = e.target.value;
-              setProducts(updated);
-            }}
-            placeholder="e.g., AustralianSuper - Balanced"
-          />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-slate-600 mb-1 block">Provider</label>
-          <Input
-            value={product.provider || ''}
-            onChange={(e) => {
-              const updated = [...products];
-              updated[idx].provider = e.target.value;
-              setProducts(updated);
-            }}
-            placeholder="e.g., AustralianSuper"
-          />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-slate-600 mb-1 block">Owner</label>
-          <EntitySelect
-            value={product.owner || ''}
-            onChange={(val) => {
-              const updated = [...products];
-              updated[idx].owner = val;
-              setProducts(updated);
-            }}
-            entities={entities}
-          />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-slate-600 mb-1 block">Recommended Action</label>
-          <select
-            value={product.recommended_action || ''}
-            onChange={(e) => {
-              const updated = [...products];
-              updated[idx].recommended_action = e.target.value;
-              setProducts(updated);
-            }}
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              borderRadius: '6px',
-              border: '1px solid #e2e8f0',
-              fontSize: '14px'
-            }}
-          >
-            <option value="">Select…</option>
-            <option value="new">New</option>
-            <option value="replace_existing">Replace existing</option>
-          </select>
-        </div>
-        <div className="col-span-2">
-          <label className="text-xs font-semibold text-slate-600 mb-1 block">Notes</label>
-          <Textarea
-            value={product.notes || ''}
-            onChange={(e) => {
-              const updated = [...products];
-              updated[idx].notes = e.target.value;
-              setProducts(updated);
-            }}
-            placeholder="Optional notes about this product"
-            className="h-20"
-          />
+      <div className="border-l-4 border-blue-500 bg-blue-50 px-4 py-3 rounded">
+        <h4 className="text-sm font-bold text-slate-700 mb-3">🏦 Superannuation Details</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Product name</label>
+            <Input
+              value={product.product_name || ''}
+              onChange={(e) => {
+                const updated = [...superProducts];
+                updated[idx].product_name = e.target.value;
+                setSuperProducts(updated);
+              }}
+              placeholder="e.g., AustralianSuper - Balanced"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Product provider</label>
+            <Input
+              value={product.provider || ''}
+              onChange={(e) => {
+                const updated = [...superProducts];
+                updated[idx].provider = e.target.value;
+                setSuperProducts(updated);
+              }}
+              placeholder="e.g., AustralianSuper"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Owner</label>
+            <EntitySelect
+              value={product.owner || ''}
+              onChange={(val) => {
+                const updated = [...superProducts];
+                updated[idx].owner = val;
+                setSuperProducts(updated);
+              }}
+              entities={superOwnerOptions}
+            />
+          </div>
         </div>
       </div>
       <div className="flex justify-end">
         <button
-          onClick={() => setProducts(products.filter((_, i) => i !== idx))}
+          onClick={() => setSuperProducts(superProducts.filter((_, i) => i !== idx))}
+          className="p-2 text-red-600 hover:bg-red-50 rounded"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderPensionProduct = (product, idx) => (
+    <div key={idx} className="border border-slate-200 rounded-lg p-6 space-y-4">
+      <div className="border-l-4 border-blue-500 bg-blue-50 px-4 py-3 rounded">
+        <h4 className="text-sm font-bold text-slate-700 mb-3">💳 Pension Details</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Product name</label>
+            <Input
+              value={product.product_name || ''}
+              onChange={(e) => {
+                const updated = [...pensionProducts];
+                updated[idx].product_name = e.target.value;
+                setPensionProducts(updated);
+              }}
+              placeholder="e.g., AustralianSuper - Pension"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Product provider</label>
+            <Input
+              value={product.provider || ''}
+              onChange={(e) => {
+                const updated = [...pensionProducts];
+                updated[idx].provider = e.target.value;
+                setPensionProducts(updated);
+              }}
+              placeholder="e.g., AustralianSuper"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Owner</label>
+            <EntitySelect
+              value={product.owner || ''}
+              onChange={(val) => {
+                const updated = [...pensionProducts];
+                updated[idx].owner = val;
+                setPensionProducts(updated);
+              }}
+              entities={pensionOwnerOptions}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Type of pension</label>
+            <select
+              value={product.pension_type || ''}
+              onChange={(e) => {
+                const updated = [...pensionProducts];
+                updated[idx].pension_type = e.target.value;
+                setPensionProducts(updated);
+              }}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #e2e8f0',
+                fontSize: '14px'
+              }}
+            >
+              <option value="">Select…</option>
+              <option value="account_based">Account based</option>
+              <option value="term_allocated">Term allocated</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div className="flex justify-end">
+        <button
+          onClick={() => setPensionProducts(pensionProducts.filter((_, i) => i !== idx))}
+          className="p-2 text-red-600 hover:bg-red-50 rounded"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderAnnuityProduct = (product, idx) => (
+    <div key={idx} className="border border-slate-200 rounded-lg p-6 space-y-4">
+      <div className="border-l-4 border-blue-500 bg-blue-50 px-4 py-3 rounded">
+        <h4 className="text-sm font-bold text-slate-700 mb-3">📋 Annuity Details</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Product name</label>
+            <Input
+              value={product.product_name || ''}
+              onChange={(e) => {
+                const updated = [...annuityProducts];
+                updated[idx].product_name = e.target.value;
+                setAnnuityProducts(updated);
+              }}
+              placeholder="e.g., Challenger Lifetime Annuity"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Product provider</label>
+            <Input
+              value={product.provider || ''}
+              onChange={(e) => {
+                const updated = [...annuityProducts];
+                updated[idx].provider = e.target.value;
+                setAnnuityProducts(updated);
+              }}
+              placeholder="e.g., Challenger"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Owner</label>
+            <EntitySelect
+              value={product.owner || ''}
+              onChange={(val) => {
+                const updated = [...annuityProducts];
+                updated[idx].owner = val;
+                setAnnuityProducts(updated);
+              }}
+              entities={annuityOwnerOptions}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Tax environment</label>
+            <select
+              value={product.annuity_tax_env || ''}
+              onChange={(e) => {
+                const updated = [...annuityProducts];
+                updated[idx].annuity_tax_env = e.target.value;
+                setAnnuityProducts(updated);
+              }}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #e2e8f0',
+                fontSize: '14px'
+              }}
+            >
+              <option value="">Select…</option>
+              <option value="superannuation">Superannuation</option>
+              <option value="non_superannuation">Non-superannuation</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Joint holder</label>
+            <Input
+              value={product.annuity_joint || ''}
+              onChange={(e) => {
+                const updated = [...annuityProducts];
+                updated[idx].annuity_joint = e.target.value;
+                setAnnuityProducts(updated);
+              }}
+              placeholder="e.g., Joint with spouse"
+            />
+          </div>
+          <div className="flex items-end pb-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={product.annuity_lifetime || false}
+                onChange={(e) => {
+                  const updated = [...annuityProducts];
+                  updated[idx].annuity_lifetime = e.target.checked;
+                  setAnnuityProducts(updated);
+                }}
+                className="w-4 h-4"
+              />
+              <span className="text-xs font-semibold text-slate-600">Lifetime annuity</span>
+            </label>
+          </div>
+          {!product.annuity_lifetime && (
+            <div>
+              <label className="text-xs font-semibold text-slate-600 mb-1 block">Term of annuity (years)</label>
+              <Input
+                type="number"
+                value={product.annuity_term || ''}
+                onChange={(e) => {
+                  const updated = [...annuityProducts];
+                  updated[idx].annuity_term = e.target.value;
+                  setAnnuityProducts(updated);
+                }}
+                placeholder="e.g., 10"
+              />
+            </div>
+          )}
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Purchase price ($)</label>
+            <Input
+              type="number"
+              value={product.annuity_purchase_price || ''}
+              onChange={(e) => {
+                const updated = [...annuityProducts];
+                updated[idx].annuity_purchase_price = e.target.value;
+                setAnnuityProducts(updated);
+              }}
+              placeholder="0"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Purchase date</label>
+            <Input
+              type="date"
+              value={product.annuity_purchase_date || ''}
+              onChange={(e) => {
+                const updated = [...annuityProducts];
+                updated[idx].annuity_purchase_date = e.target.value;
+                setAnnuityProducts(updated);
+              }}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Annuity income (per period) ($)</label>
+            <Input
+              type="number"
+              value={product.annuity_income || ''}
+              onChange={(e) => {
+                const updated = [...annuityProducts];
+                updated[idx].annuity_income = e.target.value;
+                setAnnuityProducts(updated);
+              }}
+              placeholder="0"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Index rate (%)</label>
+            <Input
+              type="number"
+              step="0.01"
+              value={product.annuity_index_rate || ''}
+              onChange={(e) => {
+                const updated = [...annuityProducts];
+                updated[idx].annuity_index_rate = e.target.value;
+                setAnnuityProducts(updated);
+              }}
+              placeholder="e.g., 2.5"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Residual value ($)</label>
+            <Input
+              type="number"
+              value={product.annuity_residual_value || ''}
+              onChange={(e) => {
+                const updated = [...annuityProducts];
+                updated[idx].annuity_residual_value = e.target.value;
+                setAnnuityProducts(updated);
+              }}
+              placeholder="0"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Deductible income ($)</label>
+            <Input
+              type="number"
+              value={product.annuity_deductible_income || ''}
+              onChange={(e) => {
+                const updated = [...annuityProducts];
+                updated[idx].annuity_deductible_income = e.target.value;
+                setAnnuityProducts(updated);
+              }}
+              placeholder="0"
+            />
+          </div>
+        </div>
+      </div>
+      <div className="flex justify-end">
+        <button
+          onClick={() => setAnnuityProducts(annuityProducts.filter((_, i) => i !== idx))}
+          className="p-2 text-red-600 hover:bg-red-50 rounded"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderWrapProduct = (product, idx) => (
+    <div key={idx} className="border border-slate-200 rounded-lg p-6 space-y-4">
+      <div className="border-l-4 border-blue-500 bg-blue-50 px-4 py-3 rounded">
+        <h4 className="text-sm font-bold text-slate-700 mb-3">📊 Wrap Platform Details</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Product name</label>
+            <Input
+              value={product.product_name || ''}
+              onChange={(e) => {
+                const updated = [...wrapProducts];
+                updated[idx].product_name = e.target.value;
+                setWrapProducts(updated);
+              }}
+              placeholder="e.g., Hub24 Invest"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Product provider</label>
+            <Input
+              value={product.provider || ''}
+              onChange={(e) => {
+                const updated = [...wrapProducts];
+                updated[idx].provider = e.target.value;
+                setWrapProducts(updated);
+              }}
+              placeholder="e.g., Hub24"
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Owner</label>
+            <EntitySelect
+              value={product.owner || ''}
+              onChange={(val) => {
+                const updated = [...wrapProducts];
+                updated[idx].owner = val;
+                setWrapProducts(updated);
+              }}
+              entities={wrapOwnerOptions}
+            />
+          </div>
+        </div>
+      </div>
+      <div className="flex justify-end">
+        <button
+          onClick={() => setWrapProducts(wrapProducts.filter((_, i) => i !== idx))}
+          className="p-2 text-red-600 hover:bg-red-50 rounded"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderBondProduct = (product, idx) => (
+    <div key={idx} className="border border-slate-200 rounded-lg p-6 space-y-4">
+      <div className="border-l-4 border-blue-500 bg-blue-50 px-4 py-3 rounded">
+        <h4 className="text-sm font-bold text-slate-700 mb-3">🔒 Investment Bond Details</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Product name</label>
+            <Input
+              value={product.product_name || ''}
+              onChange={(e) => {
+                const updated = [...bondProducts];
+                updated[idx].product_name = e.target.value;
+                setBondProducts(updated);
+              }}
+              placeholder="e.g., Generation Life Bond"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Product provider</label>
+            <Input
+              value={product.provider || ''}
+              onChange={(e) => {
+                const updated = [...bondProducts];
+                updated[idx].provider = e.target.value;
+                setBondProducts(updated);
+              }}
+              placeholder="e.g., Generation Life"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 mb-1 block">Owner</label>
+            <EntitySelect
+              value={product.owner || ''}
+              onChange={(val) => {
+                const updated = [...bondProducts];
+                updated[idx].owner = val;
+                setBondProducts(updated);
+              }}
+              entities={bondOwnerOptions}
+            />
+          </div>
+        </div>
+      </div>
+      <div className="flex justify-end">
+        <button
+          onClick={() => setBondProducts(bondProducts.filter((_, i) => i !== idx))}
           className="p-2 text-red-600 hover:bg-red-50 rounded"
         >
           <Trash2 className="w-4 h-4" />
