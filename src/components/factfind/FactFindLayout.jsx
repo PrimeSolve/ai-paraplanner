@@ -208,14 +208,12 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
                          {Icon && <Icon className="w-4 h-4" />}
                          {section.label}
                        </span>
-                       {completion > 0 && (
-                         <span 
-                           className="text-xs font-semibold"
-                           style={{ color: getCompletionDisplay(section.id).color }}
-                         >
-                           {getCompletionDisplay(section.id).value}
-                         </span>
-                       )}
+                       <span 
+                         className="text-xs font-semibold"
+                         style={{ color: getCompletionDisplay(section.id).color }}
+                       >
+                         {getCompletionDisplay(section.id).value}
+                       </span>
                      </Link>
                    );
                  })}
