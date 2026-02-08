@@ -11,8 +11,11 @@ import { useMemo } from 'react';
  *   { id: 'dep_0', label: 'Tom Jones', type: 'Dependant (Child)' },
  *   { id: 'trust_0', label: 'Jones Family Trust', type: 'Trust' },
  * ]
+ * 
+ * @param {object} factFind - The fact find data object
+ * @param {string} [excludeId] - Optional entity ID to exclude (e.g., prevent trust being its own beneficiary)
  */
-export function useFactFindEntities(factFind) {
+export function useFactFindEntities(factFind, excludeId) {
   return useMemo(() => {
     const entities = [];
 
@@ -94,6 +97,11 @@ export function useFactFindEntities(factFind) {
       });
     }
 
+    // Filter out excluded entity if specified
+    if (excludeId) {
+      return entities.filter(e => e.id !== excludeId);
+    }
+    
     return entities;
-  }, [factFind]);
+  }, [factFind, excludeId]);
 }

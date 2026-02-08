@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
@@ -14,13 +14,28 @@ import { ArrowRight, ArrowLeft, Trash2, Plus, Landmark, UserPlus, Building } fro
 export default function FactFindTrusts() {
   const navigate = useNavigate();
   const { factFind, loading: ffLoading, updateSection } = useFactFind();
-  const entityList = useFactFindEntities(factFind);
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('trust');
   const [activeIndex, setActiveIndex] = useState(0);
   const [trustsCount, setTrustsCount] = useState(0);
   const [companiesCount, setCompaniesCount] = useState(0);
+  
+  // Calculate current entity ID for exclusion
+  const currentEntityId = useMemo(() => {
+    if (!factFind?.trusts_companies?.entities) return null;
+    
+    const entities = factFind.trusts_companies.entities.filter(e => e.type === currentTab);
+    if (activeIndex >= entities.length) return null;
+    
+    // Find the actual index in the full entities array
+    const currentEntity = entities[activeIndex];
+    const fullIndex = factFind.trusts_companies.entities.findIndex(e => e === currentEntity);
+    
+    return fullIndex >= 0 ? `${currentTab}_${fullIndex}` : null;
+  }, [factFind, currentTab, activeIndex]);
+  
+  const entityList = useFactFindEntities(factFind, currentEntityId);
 
   const globalStateRef = React.useRef({
     entities: [],
@@ -150,8 +165,8 @@ export default function FactFindTrusts() {
 
       pill.className = `px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
         isActive
-          ? 'bg-white border-blue-500 text-blue-700 shadow-sm'
-          : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+          ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
       }`;
       pill.textContent = displayName;
 
@@ -159,6 +174,7 @@ export default function FactFindTrusts() {
         e.preventDefault();
         setActiveIndex(i);
         showOnlyActiveEntry(tab, i);
+        updatePills(tab, i);
       };
 
       pillsContainer.appendChild(pill);
