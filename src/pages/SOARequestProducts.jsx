@@ -182,6 +182,10 @@ export default function SOARequestProducts() {
   }, [soaRequest?.id, newTrusts, newCompanies, newSMSFs, superProducts, pensionProducts, annuityProducts, wrapProducts, bondProducts, mainTab, entityTab, productTab, activeTrustIdx, activeCompanyIdx, activeSMSFIdx, activeSuperIdx, activePensionIdx, activeAnnuityIdx, activeWrapIdx, activeBondIdx]);
 
   const handleSaveAndContinue = async () => {
+    if (!soaRequest?.id) {
+      toast.error('Error: SOA Request not loaded');
+      return;
+    }
     setSaving(true);
     try {
       await base44.entities.SOARequest.update(soaRequest.id, {
