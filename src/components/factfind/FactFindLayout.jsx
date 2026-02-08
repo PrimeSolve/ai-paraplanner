@@ -113,20 +113,41 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
     navigate(targetPath);
   };
 
+  const sectionCompletionMap = useMemo(() => ({
+    dashboard: 0,
+    welcome: 0,
+    prefill: 0,
+    personal: 'personal',
+    dependants: 'dependants',
+    trusts: 'trusts_companies',
+    smsf: 'smsf',
+    superannuation: 'superannuation',
+    investment: 'investments',
+    assets_liabilities: 'assets_liabilities',
+    income_expenses: 'income_expenses',
+    insurance: 'insurance',
+    super_tax: 'super_tax',
+    advice_reason: 'advice_reason',
+    risk_profile: 'risk_profile',
+    review: 0
+  }), []);
+
+  const sectionPercentages = useMemo(() => {
+    if (!factFind) return {};
+    return calculateAllSectionCompletion(factFind);
+  }, [factFind, calculateAllSectionCompletion]);
+
   const getCompletionForSection = (sectionId) => {
-    if (!factFind) return 0;
-    
-    // Check for section-specific completion percentage
-    if (sectionId === 'personal' && factFind.personal?.completionPct !== undefined) {
-      return factFind.personal.completionPct;
-    }
-    
-    // Fall back to binary completion
-    const completed = factFind.sections_completed || [];
-    return completed.includes(sectionId) ? 100 : 0;
+    const key = sectionCompletionMap[sectionId];
+    if (!key) return 0;
+    if (typeof key === 'number') return key;
+    return sectionPercentages[key] || 0;
   };
 
-  const overallCompletion = factFind?.completion_percentage || 0;
+  const overallCompletion = useMemo(() => {
+    if (!factFind) return 0;
+    return calculateOverallCompletion(factFind);
+  }, [factFind, calculateOverallCompletion]);
 
   return (
     <div className="flex bg-slate-50 overflow-hidden" style={{ height: 'calc(100vh - 64px)' }}>
