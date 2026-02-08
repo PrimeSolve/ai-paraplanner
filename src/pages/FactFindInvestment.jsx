@@ -9,269 +9,50 @@ import { useFactFindEntities } from '@/components/factfind/useFactFindEntities';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, Plus } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Plus, ArrowLeftCircle } from 'lucide-react';
 
 export default function FactFindInvestment() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection } = useFactFind();
   const wrapOwnerEntities = useFactFindEntities(factFind, { types: ['principal', 'trust', 'company', 'smsf'] });
-  const bondOwnerEntities = useFactFindEntities(factFind, { types: ['principal'] });
+  const bondOwnerEntities = useFactFindEntities(factFind, { types: ['principal', 'trust'] });
+
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
-  const [currentTab, setCurrentTab] = useState('wrap');
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [wrapCount, setWrapCount] = useState(0);
-  const [bondCount, setBondCount] = useState(0);
+  const [mainTab, setMainTab] = useState('wrap');
+  const [view, setView] = useState('summary');
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [activeTab, setActiveTab] = useState('platform_details');
+  const [wraps, setWraps] = useState([]);
+  const [bonds, setBonds] = useState([]);
+  const [currentItem, setCurrentItem] = useState(null);
 
-  const globalStateRef = React.useRef({
-    investments: [],
-    currentTab: 'wrap',
-    activeIdx: { wrap: 0, bonds: 0 }
+  const getEmptyWrap = () => ({
+    id: `wrap_${Date.now()}`,
+    platform_name: '',
+    owner: '',
+    account_number: '',
+    balance: '',
+    portfolio: [],
+    fees: {
+      admin_fee_type: '',
+      admin_fee_value: '',
+      adviser_fee_type: '',
+      adviser_fee_value: '',
+      other_fees: ''
+    }
   });
 
-  const wrapForTab = useCallback((tab) => {
-    const id = tab === 'wrap' ? 'wrapWrap' : 'bondsWrap';
-    return document.getElementById(id);
-  }, []);
-
-  const cloneTemplateDiv = useCallback((id) => {
-    const src = document.getElementById(id);
-    if (!src) {
-      console.error(`Template not found: ${id}`);
-      return null;
-    }
-    const tmp = document.createElement('div');
-    tmp.innerHTML = (src.innerHTML || '').trim();
-    return tmp.firstElementChild;
-  }, []);
-
-  const readTabToArray = useCallback((tab) => {
-    const wrap = wrapForTab(tab);
-    if (!wrap) return [];
-
-    const cards = [...wrap.querySelectorAll('.entry')];
-    return cards.map((card) => {
-      const data = {};
-      const inputs = card.querySelectorAll('input:not([type="button"]), select, textarea');
-      inputs.forEach(input => {
-        if (input.type === 'radio') {
-          const baseName = input.name.replace(/__\d+$/, '');
-          if (input.checked) {
-            data[baseName] = input.value;
-          }
-        } else if (input.type !== 'button') {
-          data[input.name] = input.value;
-        }
-      });
-      return data;
-    });
-  }, [wrapForTab]);
-
-  const renumber = useCallback((tab) => {
-    const wrap = wrapForTab(tab);
-    if (!wrap) return;
-
-    [...wrap.querySelectorAll('.entry')].forEach((card, i) => {
-      const idxSpan = card.querySelector('.idx');
-      if (idxSpan) idxSpan.textContent = i + 1;
-
-      if (tab === 'wrap') {
-        card.querySelectorAll('input[type="radio"][name^="w_owner_type"]')
-          .forEach(r => { r.name = 'w_owner_type__' + (i + 1); });
-      } else {
-        card.querySelectorAll('input[type="radio"][name^="b_owner_type"]')
-          .forEach(r => { r.name = 'b_owner_type__' + (i + 1); });
-        card.querySelectorAll('input[type="radio"][name^="b_type"]')
-          .forEach(r => { r.name = 'b_type__' + (i + 1); });
-      }
-    });
-  }, [wrapForTab]);
-
-  const updatePills = useCallback((tab, index) => {
-    const pillsId = tab === 'wrap' ? 'wrapPills' : 'bondsPills';
-    const pillsContainer = document.getElementById(pillsId);
-    if (!pillsContainer) return;
-
-    pillsContainer.innerHTML = '';
-    const wrap = wrapForTab(tab);
-    if (!wrap) return;
-
-    const cards = [...wrap.querySelectorAll('.entry')];
-    cards.forEach((card, i) => {
-      const pill = document.createElement('button');
-      const isActive = i === index;
-      pill.type = 'button';
-
-      const nameInput = card.querySelector('input[name="investment_name"], input[name="bond_name"]');
-      let displayName = nameInput?.value?.trim();
-      if (!displayName) {
-        displayName = tab === 'wrap' ? `Wrap ${i + 1}` : `Bond ${i + 1}`;
-      }
-
-      pill.className = `px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-        isActive
-          ? 'bg-white border-blue-500 text-blue-700 shadow-sm'
-          : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-      }`;
-      pill.textContent = displayName;
-
-      pill.onclick = (e) => {
-        e.preventDefault();
-        setActiveIndex(i);
-        showOnlyActiveEntry(tab, i);
-      };
-
-      pillsContainer.appendChild(pill);
-    });
-  }, [wrapForTab]);
-
-  const showOnlyActiveEntry = useCallback((tab, index) => {
-    const wrap = wrapForTab(tab);
-    if (!wrap) return;
-
-    const cards = [...wrap.querySelectorAll('.entry')];
-    cards.forEach((card, i) => {
-      card.style.display = i === index ? '' : 'none';
-    });
-  }, [wrapForTab]);
-
-  const fillCardFromData = useCallback((card, tab, data) => {
-    if (!data || !card) return;
-
-    if (tab === 'wrap') {
-      const nameInput = card.querySelector('input[name="investment_name"]');
-      if (nameInput && data.investment_name) nameInput.value = data.investment_name;
-
-      if (data.w_owner_type) {
-        card.querySelectorAll('input[type="radio"][name^="w_owner_type"]').forEach(r => {
-          r.checked = r.value === data.w_owner_type;
-        });
-      }
-
-      const ownerSelect = card.querySelector('select[name="w_owner"]');
-      if (ownerSelect) {
-        ownerSelect.innerHTML = '<option value="">Select owner…</option>';
-        wrapOwnerEntities.forEach(entity => {
-          ownerSelect.innerHTML += `<option value="${entity.id}">${entity.label} (${entity.type})</option>`;
-        });
-        if (data.w_owner) ownerSelect.value = data.w_owner;
-      }
-
-      const providerInput = card.querySelector('input[name="w_provider"]');
-      if (providerInput && data.w_provider) providerInput.value = data.w_provider;
-    }
-
-    if (tab === 'bonds') {
-      const nameInput = card.querySelector('input[name="bond_name"]');
-      if (nameInput && data.bond_name) nameInput.value = data.bond_name;
-
-      if (data.b_owner_type) {
-        card.querySelectorAll('input[type="radio"][name^="b_owner_type"]').forEach(r => {
-          r.checked = r.value === data.b_owner_type;
-        });
-      }
-
-      const ownerSelect = card.querySelector('select[name="b_owner"]');
-      if (ownerSelect) {
-        ownerSelect.innerHTML = '<option value="">Select owner…</option>';
-        bondOwnerEntities.forEach(entity => {
-          ownerSelect.innerHTML += `<option value="${entity.id}">${entity.label}</option>`;
-        });
-        if (data.b_owner) ownerSelect.value = data.b_owner;
-      }
-
-      if (data.b_type) {
-        card.querySelectorAll('input[type="radio"][name^="b_type"]').forEach(r => {
-          r.checked = r.value === data.b_type;
-        });
-      }
-
-      const providerInput = card.querySelector('input[name="b_provider"]');
-      if (providerInput && data.b_provider) providerInput.value = data.b_provider;
-
-      const valueInput = card.querySelector('input[name="b_value"]');
-      if (valueInput && data.b_value) valueInput.value = data.b_value;
-
-      const contribInput = card.querySelector('input[name="b_contrib"]');
-      if (contribInput && data.b_contrib) contribInput.value = data.b_contrib;
-    }
-  }, [factFind, wrapOwnerEntities, bondOwnerEntities]);
-
-  const addEntry = useCallback((tab, existingData = null) => {
-    const wrap = wrapForTab(tab);
-    if (!wrap) return;
-
-    const templateId = tab === 'wrap' ? 'wrapTemplate' : 'bondTemplate';
-    const node = cloneTemplateDiv(templateId);
-    if (!node) return;
-
-    wrap.appendChild(node);
-
-    if (existingData) {
-      fillCardFromData(node, tab, existingData);
-    }
-
-    renumber(tab);
-    const newCount = wrap.querySelectorAll('.entry').length;
-    if (tab === 'wrap') {
-      setWrapCount(newCount);
-    } else {
-      setBondCount(newCount);
-    }
-
-    const newIndex = newCount - 1;
-    setActiveIndex(newIndex);
-    
-    // Use setTimeout to ensure state updates before showing entry
-    setTimeout(() => {
-      updatePills(tab, newIndex);
-      showOnlyActiveEntry(tab, newIndex);
-    }, 0);
-  }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry]);
-
-  const removeEntry = useCallback(async (node, tab) => {
-    node.remove();
-    const wrap = wrapForTab(tab);
-    if (!wrap) return;
-    const remaining = wrap.querySelectorAll('.entry').length;
-    renumber(tab);
-
-    if (tab === 'wrap') {
-      setWrapCount(remaining);
-    } else {
-      setBondCount(remaining);
-    }
-
-    if (remaining > 0) {
-      const newIndex = Math.max(0, remaining - 1);
-      setActiveIndex(newIndex);
-      showOnlyActiveEntry(tab, newIndex);
-      updatePills(tab, newIndex);
-    } else {
-      setActiveIndex(0);
-    }
-
-    // Save to database immediately
-    if (factFind?.id) {
-      const wraps = readTabToArray('wrap').map(i => ({ ...i, investment_type: 'wrap' }));
-      const bonds = readTabToArray('bonds').map(i => ({ ...i, investment_type: 'bond' }));
-      
-      globalStateRef.current.investments = [...wraps, ...bonds];
-      globalStateRef.current.currentTab = tab;
-      globalStateRef.current.activeIdx = {
-        wrap: tab === 'wrap' ? (remaining > 0 ? Math.max(0, remaining - 1) : 0) : globalStateRef.current.activeIdx?.wrap || 0,
-        bonds: tab === 'bonds' ? (remaining > 0 ? Math.max(0, remaining - 1) : 0) : globalStateRef.current.activeIdx?.bonds || 0
-      };
-
-      await base44.entities.FactFind.update(factFind.id, {
-        investment: {
-          investments: globalStateRef.current.investments,
-          currentTab: globalStateRef.current.currentTab,
-          activeIdx: globalStateRef.current.activeIdx
-        }
-      });
-    }
-  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills, factFind?.id, readTabToArray]);
+  const getEmptyBond = () => ({
+    id: `bond_${Date.now()}`,
+    product_name: '',
+    owner: '',
+    policy_number: '',
+    balance: '',
+    commencement_date: '',
+    tax_treatment: '',
+    portfolio: []
+  });
 
   useEffect(() => {
     const loadUser = async () => {
@@ -286,105 +67,132 @@ export default function FactFindInvestment() {
   }, []);
 
   useEffect(() => {
-    if (factFind?.id && factFind.investment) {
-      globalStateRef.current.investments = factFind.investment.investments || [];
-      globalStateRef.current.currentTab = factFind.investment.currentTab || 'wrap';
-      globalStateRef.current.activeIdx = factFind.investment.activeIdx || { wrap: 0, bonds: 0 };
+    if (factFind?.investment) {
+      setWraps(factFind.investment.wraps || []);
+      setBonds(factFind.investment.bonds || []);
     }
-  }, [factFind?.id]);
+  }, [factFind?.investment]);
 
   useEffect(() => {
-    if (!ffLoading && factFind?.id) {
-      setTimeout(() => {
-        const wrapWrap = document.getElementById('wrapWrap');
-        const bondsWrap = document.getElementById('bondsWrap');
+    const handleSaveBeforeNav = async () => {
+      let wrapsToSave = [...wraps];
+      let bondsToSave = [...bonds];
 
-        if (wrapWrap) wrapWrap.innerHTML = '';
-        if (bondsWrap) bondsWrap.innerHTML = '';
-
-        const wraps = globalStateRef.current.investments.filter(i => i.investment_type === 'wrap');
-        const bonds = globalStateRef.current.investments.filter(i => i.investment_type === 'bond');
-
-        if (wraps.length > 0) {
-          wraps.forEach((data) => {
-            addEntry('wrap', data);
-          });
+      if (view === 'detail' && currentItem) {
+        if (mainTab === 'wrap') {
+          if (editingIndex !== null) {
+            wrapsToSave[editingIndex] = currentItem;
+          } else {
+            wrapsToSave.push(currentItem);
+          }
+        } else if (mainTab === 'bond') {
+          if (editingIndex !== null) {
+            bondsToSave[editingIndex] = currentItem;
+          } else {
+            bondsToSave.push(currentItem);
+          }
         }
-
-        if (bonds.length > 0) {
-          bonds.forEach((data) => {
-            addEntry('bonds', data);
-          });
-        }
-
-        const activeIdx = globalStateRef.current.activeIdx?.[currentTab] || 0;
-        setActiveIndex(activeIdx);
-        updatePills(currentTab, activeIdx);
-        showOnlyActiveEntry(currentTab, activeIdx);
-      }, 50);
-    }
-  }, [ffLoading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
-
-  useEffect(() => {
-    const clickHandler = (e) => {
-      if (e.target.closest('.add-first-wrap') || e.target.closest('.add-wrap')) {
-        e.preventDefault();
-        addEntry('wrap');
       }
-      if (e.target.closest('.add-first-bond') || e.target.closest('.add-bond')) {
-        e.preventDefault();
-        addEntry('bonds');
+
+      try {
+        await updateSection('investment', {
+          wraps: wrapsToSave,
+          bonds: bondsToSave
+        });
+      } catch (err) {
+        console.error('Save failed:', err);
       }
-      if (e.target.closest('.entry-remove')) {
-        e.preventDefault();
-        const node = e.target.closest('.entry');
-        removeEntry(node, currentTab);
-      }
+
+      window.dispatchEvent(new Event('factfind-save-complete'));
     };
 
-    const inputHandler = (e) => {
-      if (e.target.matches('input[name="investment_name"], input[name="bond_name"]')) {
-        updatePills(currentTab, activeIndex);
-      }
-      clearTimeout(window._investmentSaveTimeout);
-      window._investmentSaveTimeout = setTimeout(() => {
-        saveInvestmentState();
-      }, 500);
-    };
+    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+  }, [wraps, bonds, view, mainTab, editingIndex, currentItem, updateSection]);
 
-    document.addEventListener('click', clickHandler);
-    document.addEventListener('input', inputHandler);
-    return () => {
-      document.removeEventListener('click', clickHandler);
-      document.removeEventListener('input', inputHandler);
-    };
-  }, [currentTab, activeIndex, updatePills, addEntry, removeEntry]);
+  const getCurrentList = () => {
+    if (mainTab === 'wrap') return wraps;
+    return bonds;
+  };
 
-  const saveInvestmentState = useCallback(async () => {
+  const setCurrentList = (items) => {
+    if (mainTab === 'wrap') setWraps(items);
+    else setBonds(items);
+  };
+
+  const saveInvestments = useCallback(async (w, b) => {
     if (!factFind?.id) return;
-
     try {
-      const wraps = readTabToArray('wrap').map(i => ({ ...i, investment_type: 'wrap' }));
-      const bonds = readTabToArray('bonds').map(i => ({ ...i, investment_type: 'bond' }));
-      
-      globalStateRef.current.investments = [...wraps, ...bonds];
-      globalStateRef.current.currentTab = currentTab;
-      globalStateRef.current.activeIdx = {
-        wrap: currentTab === 'wrap' ? activeIndex : globalStateRef.current.activeIdx?.wrap || 0,
-        bonds: currentTab === 'bonds' ? activeIndex : globalStateRef.current.activeIdx?.bonds || 0
-      };
-
       await base44.entities.FactFind.update(factFind.id, {
         investment: {
-          investments: globalStateRef.current.investments,
-          currentTab: globalStateRef.current.currentTab,
-          activeIdx: globalStateRef.current.activeIdx
+          wraps: w,
+          bonds: b
         }
       });
     } catch (error) {
       console.error('Save failed:', error);
     }
-  }, [factFind?.id, readTabToArray, currentTab, activeIndex]);
+  }, [factFind?.id]);
+
+  const handleAddNew = () => {
+    if (mainTab === 'wrap') setCurrentItem(getEmptyWrap());
+    else setCurrentItem(getEmptyBond());
+    setEditingIndex(null);
+    setActiveTab(mainTab === 'wrap' ? 'platform_details' : 'bond_details');
+    setView('detail');
+  };
+
+  const handleEdit = (index) => {
+    const list = getCurrentList();
+    setCurrentItem(JSON.parse(JSON.stringify(list[index])));
+    setEditingIndex(index);
+    setActiveTab(mainTab === 'wrap' ? 'platform_details' : 'bond_details');
+    setView('detail');
+  };
+
+  const handleRemove = async (index) => {
+    const list = getCurrentList();
+    const updated = list.filter((_, i) => i !== index);
+    setCurrentList(updated);
+
+    if (mainTab === 'wrap') await saveInvestments(updated, bonds);
+    else await saveInvestments(wraps, updated);
+
+    toast.success('Removed successfully');
+  };
+
+  const handleSaveCurrent = async () => {
+    const list = getCurrentList();
+    let updated;
+    if (editingIndex !== null) {
+      updated = [...list];
+      updated[editingIndex] = currentItem;
+    } else {
+      updated = [...list, currentItem];
+    }
+
+    setCurrentList(updated);
+
+    if (mainTab === 'wrap') await saveInvestments(updated, bonds);
+    else await saveInvestments(wraps, updated);
+
+    setView('summary');
+    toast.success(editingIndex !== null ? 'Updated successfully' : 'Added successfully');
+  };
+
+  const handleBackToSummary = () => {
+    setView('summary');
+    setCurrentItem(null);
+  };
+
+  const handleMainTabChange = async (tab) => {
+    if (view === 'detail' && currentItem) {
+      await handleSaveCurrent();
+    }
+    setMainTab(tab);
+    setView('summary');
+    setCurrentItem(null);
+  };
 
   const handleNext = async () => {
     if (!factFind?.id) {
@@ -400,11 +208,7 @@ export default function FactFindInvestment() {
       }
 
       await base44.entities.FactFind.update(factFind.id, {
-        investment: {
-          investments: globalStateRef.current.investments,
-          currentTab: globalStateRef.current.currentTab,
-          activeIdx: globalStateRef.current.activeIdx
-        },
+        investment: { wraps, bonds },
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
@@ -431,253 +235,631 @@ export default function FactFindInvestment() {
     );
   }
 
-  const currentCount = currentTab === 'wrap' ? wrapCount : bondCount;
+  const getOwnerName = (ownerId) => {
+    const entities = mainTab === 'wrap' ? wrapOwnerEntities : bondOwnerEntities;
+    const entity = entities.find(e => e.id === ownerId);
+    return entity ? entity.label : 'Unknown';
+  };
+
+  const currentList = getCurrentList();
+  const itemTypeLabel = mainTab === 'wrap' ? 'Wrap' : 'Bond';
 
   return (
     <FactFindLayout currentSection="investment" factFind={factFind}>
       <FactFindHeader
         title="Investments"
-        description="Capture Wrap/Mastertrusts and Investment bonds."
+        description="Record wrap accounts and investment bonds."
         factFind={factFind}
         user={user}
       />
 
-      {/* Hidden Templates */}
-      <div id="wrapTemplate" style={{ display: 'none' }}>
-        <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-4">
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Wrap <span className="idx">1</span></h3>
-              <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
-            </div>
-            <button type="button" className="entry-remove px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">Remove</button>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Investment name</label>
-              <input type="text" name="investment_name" placeholder="e.g. Smith Family Wrap Account" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-3">Ownership type</label>
-                <div className="flex flex-col gap-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="w_owner_type__1" value="2" className="w-4 h-4" />
-                    <span className="text-sm text-slate-700">Joint</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="w_owner_type__1" value="1" className="w-4 h-4" />
-                    <span className="text-sm text-slate-700">Sole ownership</span>
-                  </label>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Wrap owner</label>
-                <select name="w_owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">Select owner…</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Wrap product provider</label>
-              <input type="text" name="w_provider" placeholder="" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="bondTemplate" style={{ display: 'none' }}>
-        <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-4">
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Bond <span className="idx">1</span></h3>
-              <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
-            </div>
-            <button type="button" className="entry-remove px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">Remove</button>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Bond name</label>
-              <input type="text" name="bond_name" placeholder="e.g. Smith Education Bond" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-3">Bond ownership type</label>
-                <div className="flex flex-col gap-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="b_owner_type__1" value="2" className="w-4 h-4" />
-                    <span className="text-sm text-slate-700">Joint</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="b_owner_type__1" value="1" className="w-4 h-4" />
-                    <span className="text-sm text-slate-700">Sole ownership</span>
-                  </label>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Bond owner</label>
-                <select name="b_owner" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">Select owner…</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-3">Bond type</label>
-                <div className="flex flex-col gap-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="b_type__1" value="1" className="w-4 h-4" />
-                    <span className="text-sm text-slate-700">Investment bond</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="b_type__1" value="2" className="w-4 h-4" />
-                    <span className="text-sm text-slate-700">Education bond</span>
-                  </label>
-                </div>
-              </div>
-
-              <div></div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Bond provider</label>
-              <input type="text" name="b_provider" placeholder="" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Bond value</label>
-                <div className="flex items-center">
-                  <span className="text-slate-500 mr-2">$</span>
-                  <input type="number" name="b_value" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Contribution</label>
-                <div className="flex items-center">
-                  <span className="text-slate-500 mr-2">$</span>
-                  <input type="number" name="b_contrib" placeholder="0.00" step="0.01" min="0" className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="w-full space-y-6">
-          {/* Tabs - Part of form content */}
           <div className="flex gap-2">
             <button
-              onClick={() => {
-                setCurrentTab('wrap');
-                setActiveIndex(0);
-                setTimeout(() => updatePills('wrap', 0), 0);
-              }}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                currentTab === 'wrap'
-                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              onClick={() => handleMainTabChange('wrap')}
+              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
+                mainTab === 'wrap' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
               }`}
             >
               Wrap / Mastertrust
             </button>
             <button
-              onClick={() => {
-                setCurrentTab('bonds');
-                setActiveIndex(0);
-                setTimeout(() => updatePills('bonds', 0), 0);
-              }}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                currentTab === 'bonds'
-                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              onClick={() => handleMainTabChange('bond')}
+              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
+                mainTab === 'bond' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
               }`}
             >
-              Investment bonds
+              Investment Bonds
             </button>
           </div>
 
-          <div id="wrapWrap" style={{ display: currentTab === 'wrap' ? 'block' : 'none' }} className="space-y-4" />
-          <div id="bondsWrap" style={{ display: currentTab === 'bonds' ? 'block' : 'none' }} className="space-y-4" />
-
-          {currentCount === 0 ? (
-            <div className="border border-gray-200 rounded-lg p-12 text-center bg-white">
-              <div className="text-5xl mb-4">{currentTab === 'wrap' ? '📊' : '📄'}</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {currentTab === 'wrap' ? 'No wrap accounts added yet' : 'No investment bonds added yet'}
-              </h3>
-              <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                {currentTab === 'wrap'
-                  ? 'Add investment platform accounts like wraps and master trust products'
-                  : 'Add insurance or investment bond products'}
-              </p>
-              <button
-                onClick={() => addEntry(currentTab)}
-                className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Add First {currentTab === 'wrap' ? 'Wrap' : 'Bond'}
-              </button>
-            </div>
-          ) : (
+          {view === 'summary' ? (
             <>
-              <div className="flex items-center justify-between mb-4">
-                <div id={currentTab === 'wrap' ? 'wrapPills' : 'bondsPills'} className="flex items-center gap-2" />
-                <button
-                  onClick={() => addEntry(currentTab)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add {currentTab === 'wrap' ? 'Wrap' : 'Bond'}
-                </button>
-              </div>
+              {currentList.length > 0 ? (
+                <Card className="border-slate-200 shadow-sm">
+                  <CardContent className="p-6">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="border-b border-slate-200">
+                          <th className="text-left py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">Owner</th>
+                          <th className="text-left py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">
+                            {mainTab === 'wrap' ? 'Platform Name' : 'Product Name'}
+                          </th>
+                          {mainTab === 'wrap' && (
+                            <th className="text-left py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">Account Number</th>
+                          )}
+                          {mainTab === 'bond' && (
+                            <th className="text-left py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">Policy Number</th>
+                          )}
+                          <th className="text-right py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">Balance</th>
+                          <th className="text-right py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentList.map((item, index) => (
+                          <tr key={index} className="border-b border-slate-100 hover:bg-slate-50/50">
+                            <td className="py-3 px-3 font-medium text-slate-800">{getOwnerName(item.owner)}</td>
+                            <td className="py-3 px-3 text-slate-600">
+                              {mainTab === 'wrap' ? (item.platform_name || 'N/A') : (item.product_name || 'N/A')}
+                            </td>
+                            <td className="py-3 px-3 text-slate-600">
+                              {mainTab === 'wrap' ? (item.account_number || 'N/A') : (item.policy_number || 'N/A')}
+                            </td>
+                            <td className="py-3 px-3 text-right font-medium text-slate-800">
+                              {item.balance ? `$${parseFloat(item.balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A'}
+                            </td>
+                            <td className="py-3 px-3 text-right">
+                              <button
+                                onClick={() => handleEdit(index)}
+                                className="px-3 py-1 text-xs font-medium text-blue-600 border border-blue-600 rounded hover:bg-blue-50 transition-colors mr-2"
+                              >
+                                Details
+                              </button>
+                              <button
+                                onClick={() => handleRemove(index)}
+                                className="text-xs font-medium text-red-600 hover:text-red-700 transition-colors"
+                              >
+                                Remove
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        onClick={handleAddNew}
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add {itemTypeLabel}
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="border-slate-200 shadow-sm">
+                  <CardContent className="p-12 text-center">
+                    <div className="text-5xl mb-4">{mainTab === 'wrap' ? '📊' : '📄'}</div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      {mainTab === 'wrap' ? 'No wrap accounts added yet' : 'No investment bonds added yet'}
+                    </h3>
+                    <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                      {mainTab === 'wrap'
+                        ? 'Add investment platform accounts like wraps and master trust products'
+                        : 'Add insurance or investment bond products'}
+                    </p>
+                    <button
+                      onClick={handleAddNew}
+                      className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add First {itemTypeLabel}
+                    </button>
+                  </CardContent>
+                </Card>
+              )}
             </>
+          ) : (
+            <Card className="border-slate-200 shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+                  <button
+                    onClick={handleBackToSummary}
+                    className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                  >
+                    <ArrowLeftCircle className="w-4 h-4" />
+                    Back to Summary
+                  </button>
+                  <h3 className="text-lg font-bold text-slate-900">
+                    {currentItem?.platform_name || currentItem?.product_name || `New ${itemTypeLabel}`}
+                  </h3>
+                </div>
+
+                <div className="flex gap-2 mb-6">
+                  {mainTab === 'wrap' && [
+                    { id: 'platform_details', label: 'Platform Details' },
+                    { id: 'portfolio', label: 'Portfolio' },
+                    { id: 'fees', label: 'Fees' }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        activeTab === tab.id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+
+                  {mainTab === 'bond' && [
+                    { id: 'bond_details', label: 'Bond Details' },
+                    { id: 'portfolio', label: 'Portfolio' }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        activeTab === tab.id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {mainTab === 'wrap' && (
+                  <>
+                    {activeTab === 'platform_details' && (
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Platform / Product name</label>
+                          <input
+                            type="text"
+                            value={currentItem.platform_name}
+                            onChange={(e) => setCurrentItem({ ...currentItem, platform_name: e.target.value })}
+                            placeholder="e.g. BT Panorama, Macquarie Wrap"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
+                          <select
+                            value={currentItem.owner}
+                            onChange={(e) => setCurrentItem({ ...currentItem, owner: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select owner…</option>
+                            {wrapOwnerEntities.map(entity => (
+                              <option key={entity.id} value={entity.id}>{entity.label} ({entity.type})</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Account number</label>
+                          <input
+                            type="text"
+                            value={currentItem.account_number}
+                            onChange={(e) => setCurrentItem({ ...currentItem, account_number: e.target.value })}
+                            placeholder="Account number"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Balance</label>
+                          <div className="flex items-center">
+                            <span className="text-slate-500 mr-2">$</span>
+                            <input
+                              type="number"
+                              value={currentItem.balance}
+                              onChange={(e) => setCurrentItem({ ...currentItem, balance: e.target.value })}
+                              placeholder="0.00"
+                              step="0.01"
+                              min="0"
+                              className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === 'portfolio' && (
+                      <div>
+                        {currentItem.portfolio?.length > 0 ? (
+                          <div className="space-y-3">
+                            {currentItem.portfolio.map((holding, index) => (
+                              <div key={index} className="grid grid-cols-5 gap-3 items-end">
+                                <div>
+                                  <label className="block text-sm font-semibold text-slate-700 mb-2">Asset name</label>
+                                  <input
+                                    type="text"
+                                    value={holding.asset_name}
+                                    onChange={(e) => {
+                                      const updated = [...currentItem.portfolio];
+                                      updated[index].asset_name = e.target.value;
+                                      setCurrentItem({ ...currentItem, portfolio: updated });
+                                    }}
+                                    placeholder="e.g. Vanguard Growth"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-semibold text-slate-700 mb-2">Asset code / Ticker</label>
+                                  <input
+                                    type="text"
+                                    value={holding.asset_code}
+                                    onChange={(e) => {
+                                      const updated = [...currentItem.portfolio];
+                                      updated[index].asset_code = e.target.value;
+                                      setCurrentItem({ ...currentItem, portfolio: updated });
+                                    }}
+                                    placeholder="e.g. VDHG"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-semibold text-slate-700 mb-2">Amount</label>
+                                  <div className="flex items-center">
+                                    <span className="text-slate-500 mr-2">$</span>
+                                    <input
+                                      type="number"
+                                      value={holding.amount}
+                                      onChange={(e) => {
+                                        const updated = [...currentItem.portfolio];
+                                        updated[index].amount = e.target.value;
+                                        setCurrentItem({ ...currentItem, portfolio: updated });
+                                      }}
+                                      placeholder="0.00"
+                                      step="0.01"
+                                      min="0"
+                                      className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-semibold text-slate-700 mb-2">Allocation %</label>
+                                  <input
+                                    type="number"
+                                    value={holding.allocation_pct}
+                                    onChange={(e) => {
+                                      const updated = [...currentItem.portfolio];
+                                      updated[index].allocation_pct = e.target.value;
+                                      setCurrentItem({ ...currentItem, portfolio: updated });
+                                    }}
+                                    placeholder="0"
+                                    min="0"
+                                    max="100"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                </div>
+                                <div>
+                                  <button
+                                    onClick={() => {
+                                      const updated = currentItem.portfolio.filter((_, i) => i !== index);
+                                      setCurrentItem({ ...currentItem, portfolio: updated });
+                                    }}
+                                    className="text-xs font-medium text-red-600 hover:text-red-700 transition-colors"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-600 text-center py-6">No holdings added yet</p>
+                        )}
+                        <div className="mt-4">
+                          <button
+                            onClick={() => setCurrentItem({
+                              ...currentItem,
+                              portfolio: [...(currentItem.portfolio || []), { asset_name: '', asset_code: '', amount: '', allocation_pct: '' }]
+                            })}
+                            className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Add Holding
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === 'fees' && (
+                      <div className="space-y-4">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Administration fee type</label>
+                            <select
+                              value={currentItem.fees?.admin_fee_type || ''}
+                              onChange={(e) => setCurrentItem({
+                                ...currentItem,
+                                fees: { ...currentItem.fees, admin_fee_type: e.target.value }
+                              })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">Select type…</option>
+                              <option value="percentage">Percentage (%)</option>
+                              <option value="dollar">Dollar amount ($)</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Administration fee value</label>
+                            <input
+                              type="number"
+                              value={currentItem.fees?.admin_fee_value || ''}
+                              onChange={(e) => setCurrentItem({
+                                ...currentItem,
+                                fees: { ...currentItem.fees, admin_fee_value: e.target.value }
+                              })}
+                              placeholder="0.00"
+                              step="0.01"
+                              min="0"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Adviser fee type</label>
+                            <select
+                              value={currentItem.fees?.adviser_fee_type || ''}
+                              onChange={(e) => setCurrentItem({
+                                ...currentItem,
+                                fees: { ...currentItem.fees, adviser_fee_type: e.target.value }
+                              })}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">Select type…</option>
+                              <option value="percentage">Percentage (%)</option>
+                              <option value="dollar">Dollar amount ($)</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Adviser fee value</label>
+                            <input
+                              type="number"
+                              value={currentItem.fees?.adviser_fee_value || ''}
+                              onChange={(e) => setCurrentItem({
+                                ...currentItem,
+                                fees: { ...currentItem.fees, adviser_fee_value: e.target.value }
+                              })}
+                              placeholder="0.00"
+                              step="0.01"
+                              min="0"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Other fees (details)</label>
+                          <textarea
+                            value={currentItem.fees?.other_fees || ''}
+                            onChange={(e) => setCurrentItem({
+                              ...currentItem,
+                              fees: { ...currentItem.fees, other_fees: e.target.value }
+                            })}
+                            placeholder="Additional fee details..."
+                            rows="3"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {mainTab === 'bond' && (
+                  <>
+                    {activeTab === 'bond_details' && (
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Product / Provider name</label>
+                          <input
+                            type="text"
+                            value={currentItem.product_name}
+                            onChange={(e) => setCurrentItem({ ...currentItem, product_name: e.target.value })}
+                            placeholder="e.g. Australian Unity, Centuria"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
+                          <select
+                            value={currentItem.owner}
+                            onChange={(e) => setCurrentItem({ ...currentItem, owner: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select owner…</option>
+                            {bondOwnerEntities.map(entity => (
+                              <option key={entity.id} value={entity.id}>{entity.label} ({entity.type})</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Policy number</label>
+                          <input
+                            type="text"
+                            value={currentItem.policy_number}
+                            onChange={(e) => setCurrentItem({ ...currentItem, policy_number: e.target.value })}
+                            placeholder="Policy number"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Balance / Current value</label>
+                          <div className="flex items-center">
+                            <span className="text-slate-500 mr-2">$</span>
+                            <input
+                              type="number"
+                              value={currentItem.balance}
+                              onChange={(e) => setCurrentItem({ ...currentItem, balance: e.target.value })}
+                              placeholder="0.00"
+                              step="0.01"
+                              min="0"
+                              className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Commencement date</label>
+                          <input
+                            type="date"
+                            value={currentItem.commencement_date}
+                            onChange={(e) => setCurrentItem({ ...currentItem, commencement_date: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Tax treatment</label>
+                          <select
+                            value={currentItem.tax_treatment}
+                            onChange={(e) => setCurrentItem({ ...currentItem, tax_treatment: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select…</option>
+                            <option value="tax_paid">Tax paid</option>
+                            <option value="tax_deferred">Tax deferred</option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === 'portfolio' && (
+                      <div>
+                        {currentItem.portfolio?.length > 0 ? (
+                          <div className="space-y-3">
+                            {currentItem.portfolio.map((holding, index) => (
+                              <div key={index} className="grid grid-cols-5 gap-3 items-end">
+                                <div>
+                                  <label className="block text-sm font-semibold text-slate-700 mb-2">Asset name</label>
+                                  <input
+                                    type="text"
+                                    value={holding.asset_name}
+                                    onChange={(e) => {
+                                      const updated = [...currentItem.portfolio];
+                                      updated[index].asset_name = e.target.value;
+                                      setCurrentItem({ ...currentItem, portfolio: updated });
+                                    }}
+                                    placeholder="e.g. Balanced Fund"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-semibold text-slate-700 mb-2">Asset code / Ticker</label>
+                                  <input
+                                    type="text"
+                                    value={holding.asset_code}
+                                    onChange={(e) => {
+                                      const updated = [...currentItem.portfolio];
+                                      updated[index].asset_code = e.target.value;
+                                      setCurrentItem({ ...currentItem, portfolio: updated });
+                                    }}
+                                    placeholder="e.g. BAL"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-semibold text-slate-700 mb-2">Amount</label>
+                                  <div className="flex items-center">
+                                    <span className="text-slate-500 mr-2">$</span>
+                                    <input
+                                      type="number"
+                                      value={holding.amount}
+                                      onChange={(e) => {
+                                        const updated = [...currentItem.portfolio];
+                                        updated[index].amount = e.target.value;
+                                        setCurrentItem({ ...currentItem, portfolio: updated });
+                                      }}
+                                      placeholder="0.00"
+                                      step="0.01"
+                                      min="0"
+                                      className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-semibold text-slate-700 mb-2">Allocation %</label>
+                                  <input
+                                    type="number"
+                                    value={holding.allocation_pct}
+                                    onChange={(e) => {
+                                      const updated = [...currentItem.portfolio];
+                                      updated[index].allocation_pct = e.target.value;
+                                      setCurrentItem({ ...currentItem, portfolio: updated });
+                                    }}
+                                    placeholder="0"
+                                    min="0"
+                                    max="100"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                </div>
+                                <div>
+                                  <button
+                                    onClick={() => {
+                                      const updated = currentItem.portfolio.filter((_, i) => i !== index);
+                                      setCurrentItem({ ...currentItem, portfolio: updated });
+                                    }}
+                                    className="text-xs font-medium text-red-600 hover:text-red-700 transition-colors"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-600 text-center py-6">No holdings added yet</p>
+                        )}
+                        <div className="mt-4">
+                          <button
+                            onClick={() => setCurrentItem({
+                              ...currentItem,
+                              portfolio: [...(currentItem.portfolio || []), { asset_name: '', asset_code: '', amount: '', allocation_pct: '' }]
+                            })}
+                            className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Add Holding
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                <div className="mt-6 pt-4 border-t border-slate-200 flex justify-end">
+                  <Button
+                    onClick={handleSaveCurrent}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Save {itemTypeLabel}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
-          <Card className="border-slate-200 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <Button
-                  onClick={handleBack}
-                  variant="outline"
-                  disabled={saving}
-                  className="border-slate-300 text-slate-700 hover:bg-slate-50"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Button>
-
-                <Button
-                  onClick={handleNext}
-                  disabled={saving}
-                  className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
-                >
-                  {saving ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      Save & continue
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {view === 'summary' && (
+            <Card className="border-slate-200 shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <Button onClick={handleBack} variant="outline" disabled={saving} className="border-slate-300">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back
+                  </Button>
+                  <Button onClick={handleNext} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white">
+                    {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />}
+                    Save & continue
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </FactFindLayout>
