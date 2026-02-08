@@ -256,7 +256,7 @@ export default function FactFindPersonal() {
       console.log('Current completionPct in factFind:', factFind.personal?.completionPct);
       console.log('New calculated completionPct:', completionPct);
       
-      // Only update if percentage changed
+      // Always update (first load or when percentage changed)
       if (completionPct !== factFind.personal?.completionPct) {
         console.log('Updating completionPct from', factFind.personal?.completionPct, 'to', completionPct);
         await updateSection('personal', {
@@ -267,10 +267,14 @@ export default function FactFindPersonal() {
       }
     };
     
-    // Debounce to avoid too many saves
-    const timeoutId = setTimeout(saveCompletion, 1000);
-    return () => clearTimeout(timeoutId);
-  }, [clientData, partnerData, hasPartner, dataLoaded, factFind?.id, factFind?.personal?.completionPct]);
+    // Save immediately on first load, debounce on changes
+    if (!factFind.personal?.completionPct) {
+      saveCompletion();
+    } else {
+      const timeoutId = setTimeout(saveCompletion, 1000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [clientData, partnerData, hasPartner, dataLoaded, factFind?.id, updateSection]);
 
   const handleSaveAndContinue = async () => {
     if (!factFind?.id) {
