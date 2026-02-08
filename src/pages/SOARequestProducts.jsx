@@ -240,6 +240,13 @@ export default function SOARequestProducts() {
   const smsfAccountOwnerOptions = getFullEntityList();
   const smsfBeneficiaryOptions = getFullEntityList();
 
+  // Product owner options by type
+  const superOwnerOptions = getByTypes(['principal']);
+  const pensionOwnerOptions = getByTypes(['principal']);
+  const annuityOwnerOptions = getByTypes(['principal']);
+  const wrapOwnerOptions = getByTypes(['principal', 'trust', 'company', 'smsf']);
+  const bondOwnerOptions = getByTypes(['principal', 'trust']);
+
   // ============ RENDER HELPERS ============
 
   const renderNewTrustCard = (trust, idx) => (
