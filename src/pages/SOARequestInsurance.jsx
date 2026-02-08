@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Checkbox } from '@/components/ui/checkbox';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
 import { useSOAEntities } from '../components/soa/useSOAEntities';
+import { useFactFind } from '../components/factfind/useFactFind';
 import { Settings, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -23,6 +24,7 @@ export default function SOARequestInsurance() {
   const [soaId, setSOAId] = useState(null);
   const { getByTypes } = useSOAEntities(soaId);
   const principals = getByTypes(['principal']);
+  const { factFind } = useFactFind();
   
   // Modals state
   const [showAssumptionsModal, setShowAssumptionsModal] = useState(false);
@@ -153,6 +155,27 @@ export default function SOARequestInsurance() {
       }
     }));
   };
+
+  // Pre-populate assumptions modal on open
+  useEffect(() => {
+    const handleModalOpen = () => {
+      const defaults = getPreFillDefaults();
+      const personKey = currentPerson;
+      
+      // Use saved overrides if exist, otherwise use Fact Find defaults
+      const mortgage = assumptions.mortgage_override ?? defaults.mortgage;
+      const otherDebts = assumptions.other_debts_override ?? defaults.otherDebts;
+      const salary = assumptions.salary_override ?? defaults.salary;
+      
+      // Only update if they're empty (initial load)
+      if (!assumptions.mortgage_balance) updateAssumptions('mortgage_balance', mortgage);
+      if (!assumptions.other_debts) updateAssumptions('other_debts', otherDebts);
+      if (!assumptions.annual_salary) updateAssumptions('annual_salary', salary);
+    };
+
+    window.addEventListener('show-assumptions', handleModalOpen);
+    return () => window.removeEventListener('show-assumptions', handleModalOpen);
+  }, [currentPerson, factFind, assumptions]);
 
   const formatCurrency = (num) => {
     return `$${(parseFloat(num) || 0).toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
@@ -376,6 +399,30 @@ export default function SOARequestInsurance() {
   };
 
   const calculatedMetrics = calculateMetrics();
+
+  // Pre-fill calculations from Fact Find
+  const getPreFillDefaults = () => {
+    if (!factFind) return { mortgage: 0, otherDebts: 0, salary: 0 };
+
+    // Mortgage total (debt_type = '1')
+    const allDebts = factFind.assets_liabilities?.liabilities || [];
+    const mortgageTotal = allDebts
+      .filter(d => d.d_type === '1')
+      .reduce((sum, d) => sum + (parseFloat(d.d_balance) || 0), 0);
+
+    // Other debts (debt_type !== '1')
+    const otherDebtsTotal = allDebts
+      .filter(d => d.d_type !== '1')
+      .reduce((sum, d) => sum + (parseFloat(d.d_balance) || 0), 0);
+
+    // Current person's salary
+    const incomeSources = factFind.income_expenses?.income_sources || [];
+    const personKey = currentPerson === 'client' ? 'client' : 'partner';
+    const incomeData = incomeSources.find(s => s.person === personKey);
+    const salary = parseFloat(incomeData?.fields?.i_gross || 0);
+
+    return { mortgage: mortgageTotal, otherDebts: otherDebtsTotal, salary };
+  };
 
   const incomeTotals = {
     life_pv: currentPersonData.income_rows.filter(r => r.life).reduce((sum, r) => sum + (parseFloat(r.pv) || 0), 0),
@@ -652,7 +699,10 @@ export default function SOARequestInsurance() {
                 {/* Key Assumptions Button */}
                 <Button 
                   variant="outline" 
-                  onClick={() => setShowAssumptionsModal(true)}
+                  onClick={() => {
+                    window.dispatchEvent(new Event('show-assumptions'));
+                    setShowAssumptionsModal(true);
+                  }}
                   className="gap-2"
                 >
                   <Settings className="w-4 h-4" />
