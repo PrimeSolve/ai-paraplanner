@@ -72,27 +72,34 @@ export default function FactFindSMSF() {
         }
       });
 
-      // Read account rows
-      const acctRows = card.querySelectorAll('tbody.acct-list tr');
-      data.accounts = Array.from(acctRows).map(row => ({
-        acct_owner: row.querySelector('select[name="acct_owner"]')?.value || '',
-        tax_env: row.querySelector('select[name="tax_env"]')?.value || '',
-        tax_free_amt: row.querySelector('input[name="tax_free_amt"]')?.value || '',
-        tax_free_pct: row.querySelector('input[name="tax_free_pct"]')?.value || '',
-        unp_amt: row.querySelector('input[name="unp_amt"]')?.value || '',
-        super_guarantee: row.querySelector('select[name="super_guarantee"]')?.value || '',
-        salary_sacrifice: row.querySelector('input[name="salary_sacrifice"]')?.value || '',
-        after_tax: row.querySelector('input[name="after_tax"]')?.value || ''
-      }));
-
-      // Read beneficiary rows
-      const benefRows = card.querySelectorAll('tbody.benef-list tr');
-      data.beneficiaries = Array.from(benefRows).map(row => ({
-        benef_account: row.querySelector('select[name="benef_account"]')?.value || '',
-        benef_who: row.querySelector('select[name="benef_who"]')?.value || '',
-        benef_type: row.querySelector('select[name="benef_type"]')?.value || '',
-        benef_entitlement: row.querySelector('input[name="benef_entitlement"]')?.value || ''
-      }));
+      // Read account rows with their nested beneficiaries
+      const acctRows = card.querySelectorAll('tbody.acct-list tr.acct-row');
+      data.accounts = Array.from(acctRows).map((row, acctIdx) => {
+        const accountId = `account_${acctIdx}`;
+        
+        // Find beneficiaries for this specific account
+        const benefRows = card.querySelectorAll('tbody.benef-list tr.benef-row');
+        const accountBeneficiaries = Array.from(benefRows)
+          .filter(bRow => bRow.querySelector('select[name="benef_account"]')?.value === accountId)
+          .map(bRow => ({
+            entity_id: bRow.querySelector('select[name="benef_who"]')?.value || '',
+            beneficiary_type: bRow.querySelector('select[name="benef_type"]')?.value || '',
+            entitlement: bRow.querySelector('input[name="benef_entitlement"]')?.value || ''
+          }));
+        
+        return {
+          id: accountId,
+          owner: row.querySelector('select[name="acct_owner"]')?.value || '',
+          tax_environment: row.querySelector('select[name="tax_env"]')?.value || '',
+          tax_free_amt: row.querySelector('input[name="tax_free_amt"]')?.value || '',
+          tax_free_pct: row.querySelector('input[name="tax_free_pct"]')?.value || '',
+          unp_amt: row.querySelector('input[name="unp_amt"]')?.value || '',
+          super_guarantee: row.querySelector('select[name="super_guarantee"]')?.value || '',
+          salary_sacrifice: row.querySelector('input[name="salary_sacrifice"]')?.value || '',
+          after_tax: row.querySelector('input[name="after_tax"]')?.value || '',
+          beneficiaries: accountBeneficiaries
+        };
+      });
 
       return data;
     });
@@ -219,21 +226,33 @@ export default function FactFindSMSF() {
       acctTable?.classList.remove('hidden');
       acctEmpty?.classList.add('hidden');
       acctBtn?.classList.remove('hidden');
-    }
-
-    // Fill beneficiaries
-    if (Array.isArray(data.beneficiaries) && data.beneficiaries.length > 0) {
+      
+      // Fill beneficiaries from nested data
       const benefContainer = card.querySelector('.benef-list');
       if (benefContainer) {
         benefContainer.innerHTML = '';
-        data.beneficiaries.forEach((benef) => {
-          const row = createBeneficiaryRow(card, benef);
-          benefContainer.appendChild(row);
+        
+        // Flatten beneficiaries from all accounts
+        data.accounts.forEach((acct, acctIdx) => {
+          if (Array.isArray(acct.beneficiaries)) {
+            acct.beneficiaries.forEach((benef) => {
+              const row = createBeneficiaryRow(card, {
+                benef_account: acct.id || `account_${acctIdx}`,
+                benef_who: benef.entity_id,
+                benef_type: benef.beneficiary_type,
+                benef_entitlement: benef.entitlement
+              });
+              benefContainer.appendChild(row);
+            });
+          }
         });
       }
+      
       const benefTable = card.querySelector('.benef-list-table');
       const benefEmpty = card.querySelector('.benef-list-empty');
       const benefBtn = card.querySelector('.add-benef');
+      
+      // Show beneficiary section if we have accounts
       benefTable?.classList.remove('hidden');
       benefEmpty?.classList.add('hidden');
       benefBtn?.classList.remove('hidden');
@@ -324,41 +343,41 @@ export default function FactFindSMSF() {
      };
    }
 
-   if (data?.acct_owner) {
-     const el = row.querySelector('select[name="acct_owner"]');
-     if (el) el.value = data.acct_owner;
-   }
-   if (data?.tax_env) {
-     const el = row.querySelector('select[name="tax_env"]');
-     if (el) el.value = data.tax_env;
-   }
-   if (data?.tax_free_amt) {
-     const el = row.querySelector('input[name="tax_free_amt"]');
-     if (el) el.value = data.tax_free_amt;
-   }
-   if (data?.tax_free_pct) {
-     const el = row.querySelector('input[name="tax_free_pct"]');
-     if (el) el.value = data.tax_free_pct;
-   }
-   if (data?.unp_amt) {
-     const el = row.querySelector('input[name="unp_amt"]');
-     if (el) el.value = data.unp_amt;
-   }
-   if (data?.super_guarantee) {
-     const el = row.querySelector('select[name="super_guarantee"]');
-     if (el) el.value = data.super_guarantee;
-   }
-   if (data?.salary_sacrifice) {
-     const el = row.querySelector('input[name="salary_sacrifice"]');
-     if (el) el.value = data.salary_sacrifice;
-   }
-   if (data?.after_tax) {
-     const el = row.querySelector('input[name="after_tax"]');
-     if (el) el.value = data.after_tax;
-   }
+   if (data?.owner) {
+      const el = row.querySelector('select[name="acct_owner"]');
+      if (el) el.value = data.owner;
+    }
+    if (data?.tax_environment) {
+      const el = row.querySelector('select[name="tax_env"]');
+      if (el) el.value = data.tax_environment;
+    }
+    if (data?.tax_free_amt) {
+      const el = row.querySelector('input[name="tax_free_amt"]');
+      if (el) el.value = data.tax_free_amt;
+    }
+    if (data?.tax_free_pct) {
+      const el = row.querySelector('input[name="tax_free_pct"]');
+      if (el) el.value = data.tax_free_pct;
+    }
+    if (data?.unp_amt) {
+      const el = row.querySelector('input[name="unp_amt"]');
+      if (el) el.value = data.unp_amt;
+    }
+    if (data?.super_guarantee) {
+      const el = row.querySelector('select[name="super_guarantee"]');
+      if (el) el.value = data.super_guarantee;
+    }
+    if (data?.salary_sacrifice) {
+      const el = row.querySelector('input[name="salary_sacrifice"]');
+      if (el) el.value = data.salary_sacrifice;
+    }
+    if (data?.after_tax) {
+      const el = row.querySelector('input[name="after_tax"]');
+      if (el) el.value = data.after_tax;
+    }
 
    return row;
-   }, [beneficiaryEntities]);
+   }, [principalsOnly]);
 
   // ============================================
   // CREATE BENEFICIARY ROW
@@ -368,25 +387,43 @@ export default function FactFindSMSF() {
     const row = document.createElement('tr');
     row.className = 'benef-row border-b border-slate-100 hover:bg-purple-50/50';
 
-    // Build entity options from beneficiaryEntities (principals and dependants only)
-    const entityOptions = beneficiaryEntities.map(entity => 
-      `<option value="${entity.id}">${entity.label} (${entity.type})</option>`
-    ).join('');
+    // Get accounts from the card to build dropdown AND filter beneficiaries
+    const acctList = card.querySelector('.acct-list');
+    const acctRows = acctList ? Array.from(acctList.querySelectorAll('.acct-row')) : [];
+    
+    // Build account options with owner names
+    const accountOptions = acctRows.map((acctRow, idx) => {
+      const ownerId = acctRow.querySelector('select[name="acct_owner"]')?.value || '';
+      const ownerEntity = principalsOnly.find(e => e.id === ownerId);
+      const ownerName = ownerEntity ? ownerEntity.label : 'Unknown';
+      return `<option value="account_${idx}">${ownerName} - Account ${idx + 1}</option>`;
+    }).join('');
+    
+    // Get the selected account to filter beneficiary options
+    const selectedAccountId = data?.benef_account || '';
+    const selectedAcctRow = selectedAccountId ? acctRows[parseInt(selectedAccountId.split('_')[1])] : null;
+    const accountOwnerId = selectedAcctRow?.querySelector('select[name="acct_owner"]')?.value || '';
+    
+    // Build entity options from beneficiaryEntities, excluding the account owner
+    const entityOptions = beneficiaryEntities
+      .filter(entity => entity.id !== accountOwnerId)
+      .map(entity => 
+        `<option value="${entity.id}">${entity.label} (${entity.type})</option>`
+      ).join('');
     
     // Add Estate as a static option
     const estateOption = '<option value="estate">Estate</option>';
-
-    // Get account count from the card
-    const acctList = card.querySelector('.acct-list');
-    const accountCount = acctList ? acctList.querySelectorAll('.acct-row').length : 0;
-    const accountOptions = Array.from({ length: accountCount }, (_, i) => 
-      `<option value="account-${i + 1}">Account ${i + 1}</option>`
-    ).join('');
+    
+    // Show message if no accounts exist
+    const noAccountsMessage = acctRows.length === 0 
+      ? '<option value="">Add an account above first</option>' 
+      : '';
 
     row.innerHTML = `
       <td class="py-2 px-2">
-        <select name="benef_account" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
-          <option value="">Select…</option>
+        <select name="benef_account" class="benef-account-select w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" ${acctRows.length === 0 ? 'disabled' : ''}>
+          <option value="">Select account…</option>
+          ${noAccountsMessage}
           ${accountOptions}
         </select>
       </td>
@@ -400,10 +437,10 @@ export default function FactFindSMSF() {
       <td class="py-2 px-2">
         <select name="benef_type" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select…</option>
-          <option value="1">Binding</option>
-          <option value="2">Non binding</option>
-          <option value="3">Reversionary</option>
-          <option value="4">Not sure</option>
+          <option value="binding">Binding</option>
+          <option value="non-binding">Non-binding</option>
+          <option value="lapsing">Lapsing binding</option>
+          <option value="non-lapsing">Non-lapsing binding</option>
         </select>
       </td>
       <td class="py-2 px-2">
@@ -612,11 +649,46 @@ export default function FactFindSMSF() {
         const row = createAccountRow(card);
         list.appendChild(row);
         updateTableVisibility(card, 'acct');
+        
+        // Refresh beneficiary account dropdowns
+        const benefRows = card.querySelectorAll('.benef-row');
+        benefRows.forEach(bRow => {
+          const acctSelect = bRow.querySelector('select[name="benef_account"]');
+          if (acctSelect) {
+            const currentValue = acctSelect.value;
+            const acctList = card.querySelector('.acct-list');
+            const acctRows = acctList ? Array.from(acctList.querySelectorAll('.acct-row')) : [];
+            
+            const accountOptions = acctRows.map((acctRow, idx) => {
+              const ownerId = acctRow.querySelector('select[name="acct_owner"]')?.value || '';
+              const ownerEntity = principalsOnly.find(e => e.id === ownerId);
+              const ownerName = ownerEntity ? ownerEntity.label : 'Unknown';
+              return `<option value="account_${idx}">${ownerName} - Account ${idx + 1}</option>`;
+            }).join('');
+            
+            acctSelect.disabled = false;
+            acctSelect.innerHTML = `
+              <option value="">Select account…</option>
+              ${accountOptions}
+            `;
+            acctSelect.value = currentValue;
+          }
+        });
       }
       if (e.target.closest('.add-first-benef') || e.target.closest('.add-benef')) {
         e.preventDefault();
         const card = e.target.closest('.entry');
         if (!card) return;
+        
+        // Check if accounts exist
+        const acctList = card.querySelector('.acct-list');
+        const acctRows = acctList ? acctList.querySelectorAll('.acct-row') : [];
+        
+        if (acctRows.length === 0) {
+          toast.error('Add an account above before adding beneficiaries');
+          return;
+        }
+        
         const list = card.querySelector('.benef-list');
         if (!list) return;
         const row = createBeneficiaryRow(card);
@@ -630,7 +702,46 @@ export default function FactFindSMSF() {
       }
       if (e.target.closest('.remove-acct')) {
         const card = e.target.closest('.entry');
-        if (card) setTimeout(() => updateTableVisibility(card, 'acct'), 0);
+        if (card) {
+          setTimeout(() => {
+            updateTableVisibility(card, 'acct');
+            
+            // Refresh beneficiary account dropdowns
+            const benefRows = card.querySelectorAll('.benef-row');
+            benefRows.forEach(bRow => {
+              const acctSelect = bRow.querySelector('select[name="benef_account"]');
+              if (acctSelect) {
+                const currentValue = acctSelect.value;
+                const acctList = card.querySelector('.acct-list');
+                const acctRows = acctList ? Array.from(acctList.querySelectorAll('.acct-row')) : [];
+                
+                if (acctRows.length === 0) {
+                  acctSelect.disabled = true;
+                  acctSelect.innerHTML = '<option value="">Add an account above first</option>';
+                } else {
+                  const accountOptions = acctRows.map((acctRow, idx) => {
+                    const ownerId = acctRow.querySelector('select[name="acct_owner"]')?.value || '';
+                    const ownerEntity = principalsOnly.find(e => e.id === ownerId);
+                    const ownerName = ownerEntity ? ownerEntity.label : 'Unknown';
+                    return `<option value="account_${idx}">${ownerName} - Account ${idx + 1}</option>`;
+                  }).join('');
+                  
+                  acctSelect.disabled = false;
+                  acctSelect.innerHTML = `
+                    <option value="">Select account…</option>
+                    ${accountOptions}
+                  `;
+                  
+                  // Check if current value is still valid
+                  const currentIdx = currentValue ? parseInt(currentValue.split('_')[1]) : -1;
+                  if (currentIdx >= 0 && currentIdx < acctRows.length) {
+                    acctSelect.value = currentValue;
+                  }
+                }
+              }
+            });
+          }, 0);
+        }
       }
       if (e.target.closest('.remove-benef')) {
         const card = e.target.closest('.entry');
