@@ -550,12 +550,16 @@ export default function FactFindTrusts() {
 
   useEffect(() => {
     const updateTableVisibility = (card, type) => {
+      if (!card) return;
+      
       const container = type === 'benef' ? card.querySelector('.benef-container') : card.querySelector('.sh-container');
       const table = type === 'benef' ? card.querySelector('.benef-list-table') : card.querySelector('.sh-list-table');
       const empty = type === 'benef' ? card.querySelector('.benef-list-empty') : card.querySelector('.sh-list-empty');
       const addBtn = type === 'benef' ? card.querySelector('.add-benef') : card.querySelector('.add-shareholder');
       const list = type === 'benef' ? card.querySelector('.benef-list') : card.querySelector('.sh-list');
 
+      if (!list) return;
+      
       const hasRows = list.querySelectorAll(type === 'benef' ? 'tr.benef-row' : 'tr.sh-row').length > 0;
 
       if (hasRows) {
