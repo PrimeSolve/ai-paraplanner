@@ -111,6 +111,9 @@ export function useSOAEntities(soaRequestId) {
           });
         });
 
+        console.log('useSOAEntities - loaded entities:', entityList);
+        console.log('useSOAEntities - entity count:', entityList.length);
+        console.log('useSOAEntities - types:', entityList.map(e => e.type));
         setEntities(entityList);
       } catch (error) {
         console.error('Failed to load SOA entities:', error);
