@@ -102,16 +102,28 @@ export default function SOARequestProducts() {
             setNewTrusts(pe.new_trusts || []);
             setNewCompanies(pe.new_companies || []);
             setNewSMSFs(pe.new_smsf || []);
-            setProducts(pe.products || []);
+            
+            // Load products per-type
+            const prods = pe.products || {};
+            setSuperProducts(prods.superannuation || []);
+            setPensionProducts(prods.pension || []);
+            setAnnuityProducts(prods.annuity || []);
+            setWrapProducts(prods.wrap || []);
+            setBondProducts(prods.investment_bond || []);
             
             // Restore UI state
             setMainTab(pe.currentMainTab || 'entities');
             setEntityTab(pe.currentEntityTab || 'trust');
+            setProductTab(pe.currentProductTab || 'superannuation');
             const activeIdx = pe.activeIndex || {};
             setActiveTrustIdx(activeIdx.trust || 0);
             setActiveCompanyIdx(activeIdx.company || 0);
             setActiveSMSFIdx(activeIdx.smsf || 0);
-            setActiveProductIdx(activeIdx.product || 0);
+            setActiveSuperIdx(activeIdx.super || 0);
+            setActivePensionIdx(activeIdx.pension || 0);
+            setActiveAnnuityIdx(activeIdx.annuity || 0);
+            setActiveWrapIdx(activeIdx.wrap || 0);
+            setActiveBondIdx(activeIdx.bond || 0);
           }
         }
       } catch (error) {
