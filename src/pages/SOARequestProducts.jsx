@@ -214,7 +214,12 @@ export default function SOARequestProducts() {
       
       // DEBUG: Read back immediately to verify save worked
       const check = await base44.entities.SOARequest.get(soaRequest.id);
-      alert('SAVE CHECK: products_entities = ' + JSON.stringify(check.products_entities?.new_trusts || 'EMPTY'));
+      alert('SAVE CHECK:\n' +
+        'new_trusts: ' + JSON.stringify(check.products_entities?.new_trusts?.length || 0) + '\n' +
+        'new_companies: ' + JSON.stringify(check.products_entities?.new_companies?.length || 0) + '\n' +
+        'new_smsf: ' + JSON.stringify(check.products_entities?.new_smsf?.length || 0) + '\n' +
+        'products: ' + JSON.stringify(check.products_entities?.products || 'EMPTY')
+      );
       
       navigate(createPageUrl('SOARequestInsurance') + `?id=${soaRequest.id}`);
     } catch (error) {
