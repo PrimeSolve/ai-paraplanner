@@ -537,9 +537,9 @@ export default function FactFindIncomeExpenses() {
                   )}
 
                   {editingIncomeAdj && (
-                    <Card className="border-slate-200 shadow-sm border-blue-300 bg-blue-50/50">
-                      <div className="bg-blue-600 px-6 py-3 rounded-t-lg">
-                        <h4 className="font-bold text-white">✏️ Income adjustment details</h4>
+                    <Card className="border-slate-200 shadow-sm">
+                      <div className="px-6 py-3 border-b border-slate-200">
+                        <h4 className="font-bold text-slate-800">Income adjustment details</h4>
                       </div>
                       <CardContent className="p-6 space-y-4">
                         <div>
@@ -755,9 +755,9 @@ export default function FactFindIncomeExpenses() {
                   )}
 
                   {editingExpenseAdj && (
-                    <Card className="border-slate-200 shadow-sm border-blue-300 bg-blue-50/50">
-                      <div className="bg-blue-600 px-6 py-3 rounded-t-lg">
-                        <h4 className="font-bold text-white">✏️ Expense adjustment details</h4>
+                    <Card className="border-slate-200 shadow-sm">
+                      <div className="px-6 py-3 border-b border-slate-200">
+                        <h4 className="font-bold text-slate-800">Expense adjustment details</h4>
                       </div>
                       <CardContent className="p-6 space-y-4">
                         <div>
