@@ -133,16 +133,26 @@ export default function FactFindSuperannuation() {
   // CRITICAL: Save before navigating away
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
-      console.log('Save before nav triggered');
-      if (!factFind?.id) return;
+      console.log('=== SUPER SAVE TRIGGERED ===');
+      console.log('factFind.id:', factFind?.id);
+      console.log('Data being saved:', JSON.stringify({
+        funds: superFunds,
+        pensions: pensions,
+        annuities: annuities
+      }, null, 2));
+      
+      if (!factFind?.id) {
+        console.log('NO FACTFIND ID - ABORTING SAVE');
+        return;
+      }
       
       try {
-        await updateSection('superannuation', {
+        const result = await updateSection('superannuation', {
           funds: superFunds,
           pensions: pensions,
           annuities: annuities
         });
-        console.log('Superannuation data saved');
+        console.log('Superannuation data saved, result:', result);
       } catch (error) {
         console.error('Failed to save superannuation:', error);
       }
