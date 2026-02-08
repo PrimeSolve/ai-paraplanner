@@ -169,18 +169,29 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
           <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1e293b', marginBottom: '12px' }}>
             Select Client
           </label>
-          <Select value={selectedClient} onValueChange={setSelectedClient} disabled={clientsLoading}>
-            <SelectTrigger style={{ height: '44px', padding: '10px 14px' }}>
-              <SelectValue placeholder={clientsLoading ? 'Loading clients...' : 'Choose a client...'} />
-            </SelectTrigger>
-            <SelectContent>
-              {clients.map(client => (
-                <SelectItem key={client.id} value={client.id}>
-                  {client.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <select 
+            value={selectedClient}
+            onChange={(e) => setSelectedClient(e.target.value)}
+            disabled={clientsLoading}
+            style={{ 
+              width: '100%', 
+              padding: '10px 14px', 
+              fontSize: '14px', 
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0',
+              backgroundColor: 'white',
+              color: '#1e293b',
+              cursor: clientsLoading ? 'not-allowed' : 'pointer',
+              opacity: clientsLoading ? 0.5 : 1
+            }}
+          >
+            <option value="">Choose a client...</option>
+            {clients.map(client => (
+              <option key={client.id} value={client.id}>
+                {client.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
