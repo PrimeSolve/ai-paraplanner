@@ -78,26 +78,24 @@ export function useSOAEntities(soaRequestId) {
           });
         });
 
-        // Trusts
-        const trusts = ff.trusts_companies?.trusts || [];
-        trusts.forEach((trust, idx) => {
-          entityList.push({
-            id: `trust_${idx}`,
-            label: trust.name || trust.trust_name || `Trust ${idx + 1}`,
-            type: 'trust',
-            color: '#8b5cf6'
-          });
-        });
-
-        // Companies
-        const companies = ff.trusts_companies?.companies || [];
-        companies.forEach((company, idx) => {
-          entityList.push({
-            id: `company_${idx}`,
-            label: company.name || company.company_name || `Company ${idx + 1}`,
-            type: 'company',
-            color: '#06b6d4'
-          });
+        // Trusts & Companies from entities array
+        const tcEntities = ff.trusts_companies?.entities || [];
+        tcEntities.forEach((entity, idx) => {
+          if (entity.type === 'trust') {
+            entityList.push({
+              id: `trust_${idx}`,
+              label: entity.trust_name || entity.name || `Trust ${idx + 1}`,
+              type: 'trust',
+              color: '#ef4444'
+            });
+          } else if (entity.type === 'company') {
+            entityList.push({
+              id: `company_${idx}`,
+              label: entity.company_name || entity.name || `Company ${idx + 1}`,
+              type: 'company',
+              color: '#f97316'
+            });
+          }
         });
 
         // SMSFs
