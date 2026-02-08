@@ -278,38 +278,30 @@ export function useCompletionLogic() {
    * Income & Expenses Section
    */
   const getIncomeExpensesCompletion = (factFind) => {
-    const income = factFind?.income_expenses?.income || {};
-    const expenses = factFind?.income_expenses?.expenses || {};
+    const incomeExpenses = factFind?.income_expenses || {};
+    const incomeSources = incomeExpenses.income_sources || [];
+    const expenses = incomeExpenses.expenses || [];
+
+    if (incomeSources.length === 0 && expenses.length === 0) return 0;
 
     let totalFields = 0;
     let filledFields = 0;
 
-    // Client income fields
-    const clientIncomeFields = [
-      income.client?.gross_salary,
-      income.client?.investment_income,
-      income.client?.other_income
-    ];
-    totalFields += clientIncomeFields.length;
-    filledFields += clientIncomeFields.filter(f => f).length;
+    // Income sources: 3 fields per source
+    incomeSources.forEach(s => {
+      totalFields += 3;
+      if (s.source_type) filledFields++;
+      if (s.amount) filledFields++;
+      if (s.owner) filledFields++;
+    });
 
-    // Partner income fields
-    const partnerIncomeFields = [
-      income.partner?.gross_salary,
-      income.partner?.investment_income,
-      income.partner?.other_income
-    ];
-    totalFields += partnerIncomeFields.length;
-    filledFields += partnerIncomeFields.filter(f => f).length;
-
-    // Expenses
-    const expenseFields = [
-      expenses.living_expenses,
-      expenses.debt_repayments,
-      expenses.other_expenses
-    ];
-    totalFields += expenseFields.length;
-    filledFields += expenseFields.filter(f => f).length;
+    // Expenses: 3 fields per expense
+    expenses.forEach(e => {
+      totalFields += 3;
+      if (e.expense_type) filledFields++;
+      if (e.amount) filledFields++;
+      if (e.frequency) filledFields++;
+    });
 
     return totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
   };
@@ -348,45 +340,34 @@ export function useCompletionLogic() {
     let totalFields = 0;
     let filledFields = 0;
 
-    // Client super fields
+    // Client super/tax: 6 fields
     const clientSuper = superTax.client?.super || {};
-    const superFields = [
+    const clientTax = superTax.client?.tax || {};
+    const clientFields = [
       clientSuper.salary_sacrifice,
       clientSuper.personal_contribution,
-      clientSuper.spouse_contribution
-    ];
-    totalFields += superFields.length;
-    filledFields += superFields.filter(f => f).length;
-
-    // Client tax fields
-    const clientTax = superTax.client?.tax || {};
-    const taxFields = [
+      clientSuper.spouse_contribution,
       clientTax.taxable_income,
       clientTax.tax_rate,
       clientTax.tax_file_number
     ];
-    totalFields += taxFields.length;
-    filledFields += taxFields.filter(f => f).length;
+    totalFields += clientFields.length;
+    filledFields += clientFields.filter(f => f || f === 0).length;
 
-    // Partner super/tax (if partner exists)
+    // Partner super/tax (if partner data exists): 6 fields
     if (superTax.partner) {
       const partnerSuper = superTax.partner.super || {};
-      const pSuperFields = [
+      const partnerTax = superTax.partner.tax || {};
+      const partnerFields = [
         partnerSuper.salary_sacrifice,
         partnerSuper.personal_contribution,
-        partnerSuper.spouse_contribution
-      ];
-      totalFields += pSuperFields.length;
-      filledFields += pSuperFields.filter(f => f).length;
-
-      const partnerTax = superTax.partner.tax || {};
-      const pTaxFields = [
+        partnerSuper.spouse_contribution,
         partnerTax.taxable_income,
         partnerTax.tax_rate,
         partnerTax.tax_file_number
       ];
-      totalFields += pTaxFields.length;
-      filledFields += pTaxFields.filter(f => f).length;
+      totalFields += partnerFields.length;
+      filledFields += partnerFields.filter(f => f || f === 0).length;
     }
 
     return totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
@@ -407,17 +388,28 @@ export function useCompletionLogic() {
   };
 
   /**
-   * Risk Profile Section - Uses visited flag
+   * Risk Profile Section
    */
   const getRiskProfileCompletion = (factFind) => {
     const riskProfile = factFind?.risk_profile || {};
     
-    // Complete if visited OR has completion percentage
-    if (riskProfile._visited || riskProfile.completionPct) {
-      return riskProfile.completionPct || 100;
+    // Check for client profile selection
+    let filledFields = 0;
+    let totalFields = 2;
+
+    if (riskProfile.client?.profile || riskProfile.client?.specifiedProfile) {
+      filledFields++;
     }
     
-    return 0;
+    // Check for partner profile (if partner exists)
+    if (riskProfile.partner) {
+      if (riskProfile.partner?.profile || riskProfile.partner?.specifiedProfile) {
+        filledFields++;
+      }
+      totalFields = 2;
+    }
+
+    return totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
   };
 
   /**
