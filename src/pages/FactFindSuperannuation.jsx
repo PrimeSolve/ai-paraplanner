@@ -132,8 +132,15 @@ export default function FactFindSuperannuation() {
 
   // CRITICAL: Save before navigating away
   useEffect(() => {
+    console.log('=== SUPER LISTENER REGISTERED ===');
+    console.log('Current state:', { 
+      superFunds: superFunds.length, 
+      pensions: pensions.length, 
+      annuities: annuities.length 
+    });
+
     const handleSaveBeforeNav = async () => {
-      console.log('=== SUPER SAVE TRIGGERED ===');
+      console.log('=== SUPER SAVE-BEFORE-NAV FIRED ===');
       console.log('factFind.id:', factFind?.id);
       console.log('Data being saved:', JSON.stringify({
         funds: superFunds,
@@ -152,14 +159,18 @@ export default function FactFindSuperannuation() {
           pensions: pensions,
           annuities: annuities
         });
-        console.log('Superannuation data saved, result:', result);
+        console.log('=== SUPER SAVE SUCCESS ===');
+        console.log('Result:', result);
       } catch (error) {
-        console.error('Failed to save superannuation:', error);
+        console.error('=== SUPER SAVE FAILED ===', error);
       }
     };
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+    return () => {
+      console.log('=== SUPER LISTENER REMOVED ===');
+      window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
+    };
   }, [factFind?.id, superFunds, pensions, annuities, updateSection]);
 
   const getCurrentList = () => {

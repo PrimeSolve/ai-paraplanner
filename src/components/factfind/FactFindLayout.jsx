@@ -82,11 +82,16 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
   const handleNavClick = async (e, targetPath) => {
     e.preventDefault();
     
+    console.log('=== NAV CLICK - DISPATCHING SAVE EVENT ===');
+    
     // Trigger save event for current page
     window.dispatchEvent(new CustomEvent('factfind-save-before-nav'));
     
-    // Brief delay to let save complete
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // CRITICAL: Increase delay to 800ms to allow async saves to complete
+    console.log('Waiting 800ms for save to complete...');
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    console.log('=== NAVIGATING TO:', targetPath, '===');
     
     // Navigate to target
     navigate(targetPath);
