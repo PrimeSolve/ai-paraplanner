@@ -1202,11 +1202,15 @@ export default function SOARequestProducts() {
                       }}
                     >
                       <option value="">Select…</option>
-                      {(smsf.accounts || []).map((acct, aidx) => (
-                        <option key={aidx} value={`account_${aidx}`}>
-                          Account {aidx + 1}
-                        </option>
-                      ))}
+                      {(smsf.accounts || []).map((acct, aidx) => {
+                        const ownerLabel = smsfAccountOwnerOptions.find(o => o.id === acct.owner)?.label || '';
+                        const taxEnv = acct.tax_environment || '';
+                        return (
+                          <option key={aidx} value={`account_${aidx}`}>
+                            {ownerLabel} {taxEnv ? `- ${taxEnv.charAt(0).toUpperCase() + taxEnv.slice(1)}` : ''}
+                          </option>
+                        );
+                      })}
                     </select>
                   </td>
                   <td style={{ padding: '8px 0' }}>
