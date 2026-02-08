@@ -269,10 +269,8 @@ export default function FactFindSMSF() {
       const benefEmpty = card.querySelector('.benef-list-empty');
       const benefBtn = card.querySelector('.add-benef');
       
-      // Show beneficiary section if we have accounts
-      benefTable?.classList.remove('hidden');
-      benefEmpty?.classList.add('hidden');
-      benefBtn?.classList.remove('hidden');
+      // Update beneficiary section visibility
+      updateBeneficiaryVisibility(card);
     }
   }, []);
 
@@ -346,13 +344,11 @@ export default function FactFindSMSF() {
       list.appendChild(row);
     }
 
-    // Update visibility
-    const acctTable = card.querySelector('.acct-list-table');
-    const acctEmpty = card.querySelector('.acct-list-empty');
-    const acctBtn = card.querySelector('.add-acct');
-    acctTable?.classList.remove('hidden');
-    acctEmpty?.classList.add('hidden');
-    acctBtn?.classList.remove('hidden');
+    // Update account table visibility
+    updateAccountTableVisibility(card);
+
+    // Update beneficiary section visibility (accounts now exist)
+    updateBeneficiaryVisibility(card);
 
     // Refresh beneficiary dropdowns
     refreshBeneficiaryDropdowns(card);
@@ -377,18 +373,11 @@ export default function FactFindSMSF() {
 
     row.remove();
 
-    // Update visibility
-    const list = card.querySelector('.acct-list');
-    const hasRows = list ? list.querySelectorAll('.acct-row').length > 0 : false;
-    const acctTable = card.querySelector('.acct-list-table');
-    const acctEmpty = card.querySelector('.acct-list-empty');
-    const acctBtn = card.querySelector('.add-acct');
+    // Update account table visibility
+    updateAccountTableVisibility(card);
 
-    if (!hasRows) {
-      acctTable?.classList.add('hidden');
-      acctEmpty?.classList.remove('hidden');
-      acctBtn?.classList.add('hidden');
-    }
+    // Update beneficiary section visibility (check if accounts still exist)
+    updateBeneficiaryVisibility(card);
 
     // Refresh beneficiary dropdowns
     refreshBeneficiaryDropdowns(card);
@@ -396,6 +385,49 @@ export default function FactFindSMSF() {
     // Save to database
     await saveSmsfState();
     toast.success('Account removed');
+  };
+
+  const updateAccountTableVisibility = (card) => {
+    const list = card.querySelector('.acct-list');
+    const hasRows = list ? list.querySelectorAll('.acct-row').length > 0 : false;
+    const acctTable = card.querySelector('.acct-list-table');
+    const acctEmpty = card.querySelector('.acct-list-empty');
+
+    if (hasRows) {
+      acctTable?.classList.remove('hidden');
+      acctEmpty?.classList.add('hidden');
+    } else {
+      acctTable?.classList.add('hidden');
+      acctEmpty?.classList.remove('hidden');
+    }
+  };
+
+  const updateBeneficiaryVisibility = (card) => {
+    const acctList = card.querySelector('.acct-list');
+    const hasAccounts = acctList ? acctList.querySelectorAll('.acct-row').length > 0 : false;
+    const benefList = card.querySelector('.benef-list');
+    const hasBeneficiaries = benefList ? benefList.querySelectorAll('.benef-row').length > 0 : false;
+    
+    const benefTable = card.querySelector('.benef-list-table');
+    const benefEmptyNoAccounts = card.querySelector('.benef-list-empty-no-accounts');
+    const benefEmpty = card.querySelector('.benef-list-empty');
+
+    if (!hasAccounts) {
+      // No accounts - show "add account first" message
+      benefEmptyNoAccounts?.classList.remove('hidden');
+      benefEmpty?.classList.add('hidden');
+      benefTable?.classList.add('hidden');
+    } else if (hasBeneficiaries) {
+      // Accounts exist and beneficiaries added
+      benefEmptyNoAccounts?.classList.add('hidden');
+      benefEmpty?.classList.add('hidden');
+      benefTable?.classList.remove('hidden');
+    } else {
+      // Accounts exist but no beneficiaries
+      benefEmptyNoAccounts?.classList.add('hidden');
+      benefEmpty?.classList.remove('hidden');
+      benefTable?.classList.add('hidden');
+    }
   };
 
   const refreshBeneficiaryDropdowns = (card) => {
@@ -486,13 +518,13 @@ export default function FactFindSMSF() {
     const balance = data.balance ? `$${parseFloat(data.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
 
     row.innerHTML = `
-      <td class="py-3 px-3 acct-owner-cell">${ownerName}</td>
-      <td class="py-3 px-3 acct-tax-env-cell">${taxEnvLabel}</td>
-      <td class="py-3 px-3 text-right acct-fund-pct-cell">${fundPct}</td>
-      <td class="py-3 px-3 text-right acct-balance-cell">${balance}</td>
+      <td class="py-3 px-3 acct-owner-cell font-medium text-slate-800">${ownerName}</td>
+      <td class="py-3 px-3 acct-tax-env-cell text-slate-600">${taxEnvLabel}</td>
+      <td class="py-3 px-3 text-right acct-fund-pct-cell text-slate-800">${fundPct}</td>
+      <td class="py-3 px-3 text-right acct-balance-cell font-medium text-slate-800">${balance}</td>
       <td class="py-3 px-3 text-right">
-        <button type="button" class="edit-acct text-blue-600 hover:text-blue-700 text-sm font-medium mr-3">Details</button>
-        <button type="button" class="remove-acct text-red-500 hover:text-red-700 text-sm font-medium">Remove</button>
+        <button type="button" class="edit-acct px-3 py-1 text-xs font-medium text-blue-600 border border-blue-600 rounded hover:bg-blue-50 transition-colors mr-2">Details</button>
+        <button type="button" class="remove-acct text-xs font-medium text-red-600 hover:text-red-700 transition-colors">Remove</button>
       </td>
     `;
 
@@ -540,21 +572,21 @@ export default function FactFindSMSF() {
       : '';
 
     row.innerHTML = `
-      <td class="py-2 px-2">
+      <td class="py-3 px-3">
         <select name="benef_account" class="benef-account-select w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" ${acctRows.length === 0 ? 'disabled' : ''}>
           <option value="">Select account…</option>
           ${noAccountsMessage}
           ${accountOptions}
         </select>
       </td>
-      <td class="py-2 px-2">
+      <td class="py-3 px-3">
         <select name="benef_who" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select entity…</option>
           ${entityOptions}
           ${estateOption}
         </select>
       </td>
-      <td class="py-2 px-2">
+      <td class="py-3 px-3">
         <select name="benef_type" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select…</option>
           <option value="binding">Binding</option>
@@ -563,11 +595,11 @@ export default function FactFindSMSF() {
           <option value="non-lapsing">Non-lapsing binding</option>
         </select>
       </td>
-      <td class="py-2 px-2">
-        <input type="text" name="benef_entitlement" placeholder="e.g. 50%" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+      <td class="py-3 px-3 text-right">
+        <input type="text" name="benef_entitlement" placeholder="e.g. 50%" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs text-right focus:outline-none focus:ring-1 focus:ring-blue-500" />
       </td>
-      <td class="py-2 px-2 text-center">
-        <button type="button" class="remove-benef text-red-500 hover:text-red-700 text-xs font-medium">Remove</button>
+      <td class="py-3 px-3 text-right">
+        <button type="button" class="remove-benef text-xs font-medium text-red-600 hover:text-red-700 transition-colors">Remove</button>
       </td>
     `;
 
@@ -797,7 +829,6 @@ export default function FactFindSMSF() {
       const container = type === 'acct' ? card.querySelector('.acct-container') : card.querySelector('.benef-container');
       const table = type === 'acct' ? card.querySelector('.acct-list-table') : card.querySelector('.benef-list-table');
       const empty = type === 'acct' ? card.querySelector('.acct-list-empty') : card.querySelector('.benef-list-empty');
-      const addBtn = type === 'acct' ? card.querySelector('.add-acct') : card.querySelector('.add-benef');
       const list = type === 'acct' ? card.querySelector('.acct-list') : card.querySelector('.benef-list');
 
       const hasRows = list ? list.querySelectorAll(type === 'acct' ? '.acct-row' : '.benef-row').length > 0 : false;
@@ -805,11 +836,33 @@ export default function FactFindSMSF() {
       if (hasRows) {
         table?.classList.remove('hidden');
         empty?.classList.add('hidden');
-        addBtn?.classList.remove('hidden');
       } else {
         table?.classList.add('hidden');
         empty?.classList.remove('hidden');
-        addBtn?.classList.add('hidden');
+      }
+
+      // For beneficiaries, also handle the "no accounts" state
+      if (type === 'benef') {
+        const acctList = card.querySelector('.acct-list');
+        const hasAccounts = acctList ? acctList.querySelectorAll('.acct-row').length > 0 : false;
+        const emptyNoAccounts = card.querySelector('.benef-list-empty-no-accounts');
+        
+        if (!hasAccounts) {
+          // No accounts - show "add account first" message
+          emptyNoAccounts?.classList.remove('hidden');
+          empty?.classList.add('hidden');
+          table?.classList.add('hidden');
+        } else {
+          // Accounts exist
+          emptyNoAccounts?.classList.add('hidden');
+          if (hasRows) {
+            table?.classList.remove('hidden');
+            empty?.classList.add('hidden');
+          } else {
+            table?.classList.add('hidden');
+            empty?.classList.remove('hidden');
+          }
+        }
       }
     };
 
@@ -844,15 +897,6 @@ export default function FactFindSMSF() {
         e.preventDefault();
         const card = e.target.closest('.entry');
         if (!card) return;
-        
-        // Check if accounts exist
-        const acctList = card.querySelector('.acct-list');
-        const acctRows = acctList ? acctList.querySelectorAll('.acct-row') : [];
-        
-        if (acctRows.length === 0) {
-          toast.error('Add an account above before adding beneficiaries');
-          return;
-        }
         
         const list = card.querySelector('.benef-list');
         if (!list) return;
@@ -1047,23 +1091,23 @@ export default function FactFindSMSF() {
               
               <div className="acct-container">
                 {/* Summary Table */}
-                <div className="acct-list-table hidden mb-3">
+                <div className="acct-list-table hidden">
                   <table className="w-full text-sm border-collapse">
                     <thead>
-                      <tr className="border-b-2 border-slate-300 bg-slate-50">
-                        <th className="text-left py-3 px-3 font-semibold text-slate-700">Account Owner</th>
-                        <th className="text-left py-3 px-3 font-semibold text-slate-700">Tax Environment</th>
-                        <th className="text-right py-3 px-3 font-semibold text-slate-700">% of Fund</th>
-                        <th className="text-right py-3 px-3 font-semibold text-slate-700">Balance</th>
-                        <th className="text-right py-3 px-3 font-semibold text-slate-700">Actions</th>
+                      <tr className="border-b border-slate-200">
+                        <th className="text-left py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">Account Owner</th>
+                        <th className="text-left py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">Tax Environment</th>
+                        <th className="text-right py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">% of Fund</th>
+                        <th className="text-right py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">Balance</th>
+                        <th className="text-right py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="acct-list">
                       {/* Account rows go here */}
                     </tbody>
                   </table>
-                  <div className="mt-4 text-right">
-                    <button type="button" className="add-acct inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                  <div className="mt-4">
+                    <button type="button" className="add-acct inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
                       <Plus className="w-4 h-4" />
                       Add Account
                     </button>
@@ -1073,7 +1117,7 @@ export default function FactFindSMSF() {
                 {/* Empty state */}
                 <div className="acct-list-empty text-center py-6">
                   <p className="text-sm text-slate-600 mb-3">No accounts added yet</p>
-                  <button type="button" className="add-first-acct inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                  <button type="button" className="add-first-acct inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
                     <Plus className="w-4 h-4" />
                     Add First Account
                   </button>
@@ -1094,38 +1138,42 @@ export default function FactFindSMSF() {
               
               <div className="benef-container">
                 {/* Table with headers */}
-                <div className="benef-list-table hidden mb-3 overflow-x-auto">
-                  <table className="w-full text-xs border-collapse min-w-[700px]">
+                <div className="benef-list-table hidden overflow-x-auto">
+                  <table className="w-full text-sm border-collapse min-w-[700px]">
                     <thead>
-                      <tr className="border-b border-purple-200">
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Beneficiary Account</th>
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Who is Beneficiary</th>
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Beneficiary Type</th>
-                        <th className="text-left py-2 px-2 font-semibold text-slate-600">Entitlement</th>
-                        <th className="w-16"></th>
+                      <tr className="border-b border-slate-200">
+                        <th className="text-left py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">Beneficiary Account</th>
+                        <th className="text-left py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">Who is Beneficiary</th>
+                        <th className="text-left py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">Beneficiary Type</th>
+                        <th className="text-right py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">Entitlement</th>
+                        <th className="text-right py-2 px-3 font-semibold text-slate-600 text-xs uppercase tracking-wide">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="benef-list">
                       {/* Beneficiary rows go here */}
                     </tbody>
                   </table>
+                  <div className="mt-4">
+                    <button type="button" className="add-benef inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                      <Plus className="w-4 h-4" />
+                      Add Beneficiary
+                    </button>
+                  </div>
                 </div>
 
-                {/* Empty state */}
-                <div className="benef-list-empty text-center py-6">
-                  <p className="text-sm text-slate-600 mb-3">Add beneficiaries to accounts</p>
-                  <p className="text-xs text-slate-500 mb-3">Beneficiaries must be linked to a specific account above</p>
-                  <button type="button" className="add-first-benef inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                {/* Empty state - no accounts */}
+                <div className="benef-list-empty-no-accounts text-center py-6">
+                  <p className="text-sm text-slate-600 mb-2">Add an account above before adding beneficiaries</p>
+                </div>
+
+                {/* Empty state - accounts exist but no beneficiaries */}
+                <div className="benef-list-empty hidden text-center py-6">
+                  <p className="text-sm text-slate-600 mb-3">No beneficiaries added yet</p>
+                  <button type="button" className="add-first-benef inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
                     <Plus className="w-4 h-4" />
                     Add Beneficiary
                   </button>
                 </div>
-
-                {/* Add button - only show if beneficiaries exist */}
-                <button type="button" className="add-benef hidden inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                  <Plus className="w-4 h-4" />
-                  Add Beneficiary
-                </button>
               </div>
             </div>
           </div>
