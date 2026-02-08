@@ -105,17 +105,23 @@ export default function SOARequestInsurance() {
           const requests = await base44.entities.SOARequest.filter({ id });
           if (requests[0]) {
             setSOARequest(requests[0]);
+            setClientId(requests[0].client_id);
             const insurance = requests[0].insurance || { client: getDefaultPersonData(), partner: getDefaultPersonData() };
             setInsuranceData(insurance);
 
-            // Load fact find for names
-            if (requests[0].fact_find_id) {
-              const factFinds = await base44.entities.FactFind.filter({ id: requests[0].fact_find_id });
-              if (factFinds[0]) {
-                setFactFind(factFinds[0]);
-                const personal = factFinds[0].personal || {};
-                setClientName(`${personal.first_name || ''} ${personal.last_name || ''}`.trim() || 'Client');
-                setPartnerName(personal.partner_first_name ? `${personal.partner_first_name} ${personal.partner_last_name || ''}`.trim() : 'Partner');
+            // Load client and fact find for names
+            if (requests[0].client_id) {
+              const clients = await base44.entities.Client.filter({ id: requests[0].client_id });
+              if (clients[0]) {
+                setClientName(`${clients[0].first_name || ''} ${clients[0].last_name || ''}`.trim() || 'Client');
+              }
+            }
+
+            // Load principal records for partner name
+            if (requests[0].client_id) {
+              const partners = await base44.entities.Principal.filter({ client_id: requests[0].client_id, role: 'partner' });
+              if (partners[0]) {
+                setPartnerName(`${partners[0].first_name || ''} ${partners[0].last_name || ''}`.trim() || 'Partner');
               }
             }
           }
