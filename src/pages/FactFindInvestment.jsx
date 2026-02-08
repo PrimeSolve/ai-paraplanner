@@ -5,6 +5,7 @@ import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 import { useFactFind } from '@/components/factfind/useFactFind';
+import { useFactFindEntities } from '@/components/factfind/useFactFindEntities';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -13,6 +14,8 @@ import { ArrowRight, ArrowLeft, Plus } from 'lucide-react';
 export default function FactFindInvestment() {
   const navigate = useNavigate();
   const { factFind, loading: ffLoading } = useFactFind();
+  const wrapOwnerEntities = useFactFindEntities(factFind, { types: ['principal', 'trust', 'company', 'smsf'] });
+  const bondOwnerEntities = useFactFindEntities(factFind, { types: ['principal'] });
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('wrap');
@@ -148,34 +151,9 @@ export default function FactFindInvestment() {
       const ownerSelect = card.querySelector('select[name="w_owner"]');
       if (ownerSelect) {
         ownerSelect.innerHTML = '<option value="">Select owner…</option>';
-        const clientName = factFind?.personal?.client?.first_name
-          ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
-          : null;
-        const partnerName = factFind?.personal?.partner?.first_name
-          ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
-          : null;
-
-        if (clientName) ownerSelect.innerHTML += `<option value="client">${clientName}</option>`;
-        if (partnerName) ownerSelect.innerHTML += `<option value="partner">${partnerName}</option>`;
-
-        // Add trusts
-        const trusts = factFind?.trusts_companies?.entities?.filter(e => e.entity_type === 'trust') || [];
-        trusts.forEach((trust, i) => {
-          ownerSelect.innerHTML += `<option value="trust-${i}">${trust.entity_name || `Trust ${i + 1}`}</option>`;
+        wrapOwnerEntities.forEach(entity => {
+          ownerSelect.innerHTML += `<option value="${entity.id}">${entity.label} (${entity.type})</option>`;
         });
-
-        // Add companies
-        const companies = factFind?.trusts_companies?.entities?.filter(e => e.entity_type === 'company') || [];
-        companies.forEach((company, i) => {
-          ownerSelect.innerHTML += `<option value="company-${i}">${company.entity_name || `Company ${i + 1}`}</option>`;
-        });
-
-        // Add SMSFs
-        const smsfFunds = factFind?.smsf?.funds || [];
-        smsfFunds.forEach((smsf, i) => {
-          ownerSelect.innerHTML += `<option value="smsf-${i}">${smsf.smsf_name || `SMSF ${i + 1}`}</option>`;
-        });
-
         if (data.w_owner) ownerSelect.value = data.w_owner;
       }
 
@@ -196,22 +174,9 @@ export default function FactFindInvestment() {
       const ownerSelect = card.querySelector('select[name="b_owner"]');
       if (ownerSelect) {
         ownerSelect.innerHTML = '<option value="">Select owner…</option>';
-        const clientName = factFind?.personal?.client?.first_name
-          ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
-          : null;
-        const partnerName = factFind?.personal?.partner?.first_name
-          ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
-          : null;
-
-        if (clientName) ownerSelect.innerHTML += `<option value="client">${clientName}</option>`;
-        if (partnerName) ownerSelect.innerHTML += `<option value="partner">${partnerName}</option>`;
-
-        // Add trusts only (no companies or SMSFs for bonds)
-        const trusts = factFind?.trusts_companies?.entities?.filter(e => e.entity_type === 'trust') || [];
-        trusts.forEach((trust, i) => {
-          ownerSelect.innerHTML += `<option value="trust-${i}">${trust.entity_name || `Trust ${i + 1}`}</option>`;
+        bondOwnerEntities.forEach(entity => {
+          ownerSelect.innerHTML += `<option value="${entity.id}">${entity.label}</option>`;
         });
-
         if (data.b_owner) ownerSelect.value = data.b_owner;
       }
 
@@ -230,7 +195,7 @@ export default function FactFindInvestment() {
       const contribInput = card.querySelector('input[name="b_contrib"]');
       if (contribInput && data.b_contrib) contribInput.value = data.b_contrib;
     }
-  }, [factFind]);
+  }, [factFind, wrapOwnerEntities, bondOwnerEntities]);
 
   const addEntry = useCallback((tab, existingData = null) => {
     const wrap = wrapForTab(tab);

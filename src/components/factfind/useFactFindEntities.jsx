@@ -15,7 +15,7 @@ import { useMemo } from 'react';
  * @param {object} factFind - The fact find data object
  * @param {object} [options] - Optional filters
  * @param {string} [options.excludeId] - Entity ID to exclude (e.g., prevent trust being its own beneficiary)
- * @param {string[]} [options.types] - Filter by type: ['Principal', 'Dependant', 'Dependant (Child)', 'Trust', 'Company']
+ * @param {string[]} [options.types] - Filter by type: ['Principal', 'Dependant', 'Dependant (Child)', 'Trust', 'Company', 'SMSF']
  */
 export function useFactFindEntities(factFind, options = {}) {
   const { excludeId, types } = options;
@@ -95,6 +95,20 @@ export function useFactFindEntities(factFind, options = {}) {
             id: `company_${i}`,
             label: entity.company_name,
             type: 'Company',
+            index: i
+          });
+        }
+      });
+    }
+
+    // Add SMSFs
+    if (Array.isArray(factFind?.smsf?.smsf_details)) {
+      factFind.smsf.smsf_details.forEach((smsf, i) => {
+        if (smsf.smsf_name) {
+          entities.push({
+            id: `smsf_${i}`,
+            label: smsf.smsf_name,
+            type: 'SMSF',
             index: i
           });
         }
