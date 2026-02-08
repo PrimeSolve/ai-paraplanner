@@ -5,6 +5,7 @@ import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 import { useFactFind } from '@/components/factfind/useFactFind';
+import { useFactFindEntities } from '@/components/factfind/useFactFindEntities';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -13,6 +14,8 @@ import { ArrowRight, ArrowLeft, Plus, Landmark, DollarSign, Wallet, UserPlus, Ba
 export default function FactFindSuperannuation() {
   const navigate = useNavigate();
   const { factFind, loading: ffLoading } = useFactFind();
+  const principalsOnly = useFactFindEntities(factFind, { types: ['Principal'] });
+  const beneficiaryEntities = useFactFindEntities(factFind, { types: ['Principal', 'Dependant'] });
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('super');
@@ -175,17 +178,11 @@ export default function FactFindSuperannuation() {
     if (tab === 'super') {
       const ownerSelect = card.querySelector('select[name="owner"]');
       if (ownerSelect) {
-        // Populate with principal names
+        // Populate with principals using useFactFindEntities
         ownerSelect.innerHTML = '<option value="">Select owner…</option>';
-        const clientName = factFind?.personal?.client?.first_name 
-          ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
-          : null;
-        const partnerName = factFind?.personal?.partner?.first_name 
-          ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
-          : null;
-        
-        if (clientName) ownerSelect.innerHTML += `<option value="client">${clientName}</option>`;
-        if (partnerName) ownerSelect.innerHTML += `<option value="partner">${partnerName}</option>`;
+        principalsOnly.forEach(entity => {
+          ownerSelect.innerHTML += `<option value="${entity.id}">${entity.label}</option>`;
+        });
         
         if (data.owner) ownerSelect.value = data.owner;
       }
@@ -230,17 +227,11 @@ export default function FactFindSuperannuation() {
     if (tab === 'pension') {
       const ownerSelect = card.querySelector('select[name="owner"]');
       if (ownerSelect) {
-        // Populate with principal names
+        // Populate with principals using useFactFindEntities
         ownerSelect.innerHTML = '<option value="">Select owner…</option>';
-        const clientName = factFind?.personal?.client?.first_name 
-          ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
-          : null;
-        const partnerName = factFind?.personal?.partner?.first_name 
-          ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
-          : null;
-        
-        if (clientName) ownerSelect.innerHTML += `<option value="client">${clientName}</option>`;
-        if (partnerName) ownerSelect.innerHTML += `<option value="partner">${partnerName}</option>`;
+        principalsOnly.forEach(entity => {
+          ownerSelect.innerHTML += `<option value="${entity.id}">${entity.label}</option>`;
+        });
         
         if (data.owner) ownerSelect.value = data.owner;
       }
@@ -282,27 +273,14 @@ export default function FactFindSuperannuation() {
     if (tab === 'annuities') {
       const ownersSelect = card.querySelector('select[name="owners"]');
       if (ownersSelect) {
-        // Populate with principal names
+        // Populate with principals using useFactFindEntities
         ownersSelect.innerHTML = '';
-        const clientName = factFind?.personal?.client?.first_name 
-          ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
-          : null;
-        const partnerName = factFind?.personal?.partner?.first_name 
-          ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
-          : null;
-        
-        if (clientName) {
+        principalsOnly.forEach(entity => {
           const opt = document.createElement('option');
-          opt.value = 'client';
-          opt.textContent = clientName;
+          opt.value = entity.id;
+          opt.textContent = entity.label;
           ownersSelect.appendChild(opt);
-        }
-        if (partnerName) {
-          const opt = document.createElement('option');
-          opt.value = 'partner';
-          opt.textContent = partnerName;
-          ownersSelect.appendChild(opt);
-        }
+        });
         
         if (Array.isArray(data.owners)) {
           [...ownersSelect.options].forEach(opt => {
@@ -393,30 +371,20 @@ export default function FactFindSuperannuation() {
     const row = document.createElement('tr');
     row.className = 'benef-row border-b border-slate-100 hover:bg-purple-50/50';
 
-    const clientName = factFind?.personal?.client?.first_name 
-      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
-      : 'Client';
-
-    const partnerName = factFind?.personal?.partner?.first_name 
-      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
-      : null;
-
-    const childrenOptions = factFind?.dependants?.children
-      ?.map((c, i) => `<option value="child-${i}">${c.child_name || `Child ${i + 1}`}</option>`)
-      .join('') || '';
-
-    const dependantsOptions = factFind?.dependants?.dependants_list
-      ?.map((d, i) => `<option value="dependent-${i}">${d.dep_name || `Dependant ${i + 1}`}</option>`)
-      .join('') || '';
+    // Build entity options using useFactFindEntities
+    const entityOptions = beneficiaryEntities
+      .map(entity => `<option value="${entity.id}">${entity.label} (${entity.type})</option>`)
+      .join('');
+    
+    // Add Estate as static option
+    const estateOption = '<option value="estate">Estate</option>';
 
     row.innerHTML = `
       <td class="py-2 px-2">
         <select name="benef_who" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select…</option>
-          <option value="client">${clientName}</option>
-          ${partnerName ? `<option value="partner">${partnerName}</option>` : ''}
-          ${childrenOptions}
-          ${dependantsOptions}
+          ${entityOptions}
+          ${estateOption}
         </select>
       </td>
       <td class="py-2 px-2">
@@ -446,7 +414,7 @@ export default function FactFindSuperannuation() {
     if (data?.benef_type) row.querySelector('select[name="benef_type"]').value = data.benef_type;
 
     return row;
-  }, [factFind]);
+  }, [beneficiaryEntities]);
 
   const createPortfolioRow = useCallback((card, data = {}) => {
     const row = document.createElement('tr');
