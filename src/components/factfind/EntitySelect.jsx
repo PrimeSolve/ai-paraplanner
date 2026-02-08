@@ -1,14 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 import EntityDot from './EntityDot';
 
 export default function EntitySelect({ value, onChange, entities, placeholder = "Select…" }) {
   const [open, setOpen] = useState(false);
+  const containerRef = useRef(null);
   
   const selectedEntity = entities.find(e => e.id === value);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    }
+
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [open]);
+
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <button
         onClick={() => setOpen(!open)}
         className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white flex items-center justify-between"
@@ -39,13 +54,15 @@ export default function EntitySelect({ value, onChange, entities, placeholder = 
                     onChange(entity.id);
                     setOpen(false);
                   }}
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-slate-100 flex items-center gap-2 border-b border-slate-100 last:border-b-0 transition-colors"
+                  className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 border-b border-slate-100 last:border-b-0 transition-colors ${
+                    entity.id === value ? 'bg-slate-100' : 'hover:bg-slate-100'
+                  }`}
                 >
                   <EntityDot color={entity.color} />
                   <span className="flex-1">
                     <span className="font-medium">{entity.label}</span>
-                    <span className="text-slate-500 ml-1">({entity.type})</span>
                   </span>
+                  <span className="text-xs text-slate-500">{entity.type}</span>
                 </button>
               ))}
             </div>
