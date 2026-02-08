@@ -26,48 +26,68 @@ const INSURANCE_TYPE_CONFIG = {
 };
 
 import { useFactFind } from '@/components/factfind/useFactFind';
+import { useFactFindEntities } from '@/components/factfind/useFactFindEntities';
 
 export default function FactFindInsurance() {
   const navigate = useNavigate();
   const { factFind, loading: ffLoading } = useFactFind();
+  const principalEntities = useFactFindEntities(factFind, { types: ['principal'] });
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   
   const [policies, setPolicies] = useState([]);
   const [activeIdx, setActiveIdx] = useState(0);
 
-  // Get principals for owner/insured dropdowns
-  const getPrincipalOptions = useCallback(() => {
-    if (!factFind) return [];
-    const opts = [];
+  // Get funds for a specific owner
+  const getOwnerFunds = useCallback((ownerId) => {
+    if (!ownerId || !factFind) return [];
+    const funds = [];
 
-    const clientName = factFind?.personal?.first_name
-      ? `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim()
-      : null;
-    const partnerName = factFind?.personal?.partner?.first_name
-      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim()
-      : null;
+    // Get super funds for this owner
+    if (factFind?.superannuation?.funds) {
+      factFind.superannuation.funds
+        .filter(f => f.owner === ownerId)
+        .forEach((f, i) => {
+          funds.push({
+            id: `super_fund_${i}`,
+            label: f.fund_name || 'Unnamed Super Fund',
+            type: 'Superannuation'
+          });
+        });
+    }
 
-    if (clientName) opts.push({ label: clientName, value: 'client' });
-    if (partnerName) opts.push({ label: partnerName, value: 'partner' });
+    // Get pensions for this owner
+    if (factFind?.superannuation?.pensions) {
+      factFind.superannuation.pensions
+        .filter(p => p.owner === ownerId)
+        .forEach((p, i) => {
+          funds.push({
+            id: `pension_${i}`,
+            label: p.fund_name || 'Unnamed Pension',
+            type: 'Pension'
+          });
+        });
+    }
 
-    return opts;
-  }, [factFind]);
+    // Get SMSF accounts for this owner
+    if (factFind?.smsf?.smsf_details) {
+      factFind.smsf.smsf_details.forEach((smsf, smsfIdx) => {
+        if (Array.isArray(smsf.accounts)) {
+          smsf.accounts
+            .filter(a => a.owner === ownerId)
+            .forEach((a, acctIdx) => {
+              const smsfName = smsf.smsf_name || 'SMSF';
+              funds.push({
+                id: `smsf_${smsfIdx}_${acctIdx}`,
+                label: `${smsfName} - Account ${acctIdx + 1}`,
+                type: 'SMSF'
+              });
+            });
+        }
+      });
+    }
 
-  // Get super funds for super fund dropdown
-  const getSuperFundOptions = useCallback(() => {
-    if (!factFind) return [];
-    const opts = [];
-
-    (factFind?.superannuation?.super_accounts || []).forEach((acc, i) => {
-      opts.push({ label: acc.super_name || `Super ${i + 1}`, value: `super-${i}` });
-    });
-
-    (factFind?.smsf?.funds || []).forEach((smsf, i) => {
-      opts.push({ label: smsf.smsf_name || `SMSF ${i + 1}`, value: `smsf-${i}` });
-    });
-
-    return opts;
+    return funds;
   }, [factFind]);
 
   useEffect(() => {
@@ -115,7 +135,7 @@ export default function FactFindInsurance() {
       pol_name: '',
       pol_type: '',
       pol_tax_env: '',
-      pol_super_fund: '',
+      linked_fund_id: '',
       pol_owner: '',
       pol_insured: '',
       pol_insurer: '',
@@ -152,12 +172,34 @@ export default function FactFindInsurance() {
     setPolicies(prev => {
       const updated = [...prev];
       updated[activeIdx] = { ...updated[activeIdx], [field]: value };
+      
+      // Reset linked_fund_id when owner changes
+      if (field === 'pol_owner') {
+        updated[activeIdx].linked_fund_id = '';
+      }
+      
+      // Reset linked_fund_id when tax environment changes
+      if (field === 'pol_tax_env') {
+        updated[activeIdx].linked_fund_id = '';
+      }
+      
       return updated;
     });
   };
 
   const currentPolicy = policies[activeIdx] || {};
   const config = INSURANCE_TYPE_CONFIG[currentPolicy.pol_type] || { sumInsured: [], premium: [], showTaxEnv: false, showIPFields: false };
+  
+  const ownerFunds = useMemo(() => {
+    return getOwnerFunds(currentPolicy.pol_owner);
+  }, [currentPolicy.pol_owner, getOwnerFunds]);
+  
+  const showFundDropdown = config.showTaxEnv && currentPolicy.pol_tax_env === 'super';
+  
+  const getOwnerName = (ownerId) => {
+    const entity = principalEntities.find(e => e.id === ownerId);
+    return entity ? entity.label : 'this owner';
+  };
 
   const handleNext = async () => {
     if (!factFind?.id) {
@@ -199,9 +241,6 @@ export default function FactFindInsurance() {
       </FactFindLayout>
     );
   }
-
-  const principalOptions = getPrincipalOptions();
-  const superFundOptions = getSuperFundOptions();
 
   return (
     <FactFindLayout currentSection="insurance" factFind={factFind}>
@@ -311,26 +350,40 @@ export default function FactFindInsurance() {
                         className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">Select…</option>
-                        <option value="super">Superannuation</option>
-                        <option value="non-super">Non-superannuation</option>
+                        <option value="super">Inside Superannuation</option>
+                        <option value="non-super">Outside Superannuation</option>
                       </select>
                     </div>
                   )}
 
-                  {/* Super Fund - Conditional */}
-                  {config.showTaxEnv && currentPolicy.pol_tax_env === 'super' && (
+                  {/* Which Fund - Conditional on tax environment and owner */}
+                  {showFundDropdown && (
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">Superannuation fund</label>
-                      <select
-                        value={currentPolicy.pol_super_fund}
-                        onChange={(e) => updatePolicy('pol_super_fund', e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">Select super fund…</option>
-                        {superFundOptions.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Which fund?</label>
+                      {currentPolicy.pol_owner ? (
+                        ownerFunds.length > 0 ? (
+                          <select
+                            value={currentPolicy.linked_fund_id || ''}
+                            onChange={(e) => updatePolicy('linked_fund_id', e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select fund…</option>
+                            {ownerFunds.map(fund => (
+                              <option key={fund.id} value={fund.id}>
+                                {fund.label} ({fund.type})
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <div className="w-full px-3 py-2 border border-amber-300 bg-amber-50 rounded-md text-sm text-amber-700">
+                            No superannuation funds found for {getOwnerName(currentPolicy.pol_owner)}. Add funds on the Superannuation or SMSF page first.
+                          </div>
+                        )
+                      ) : (
+                        <div className="w-full px-3 py-2 border border-slate-300 bg-slate-50 rounded-md text-sm text-slate-500">
+                          Select a policy owner first
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -343,8 +396,8 @@ export default function FactFindInsurance() {
                         className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">Select…</option>
-                        {principalOptions.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        {principalEntities.map(entity => (
+                          <option key={entity.id} value={entity.id}>{entity.label}</option>
                         ))}
                       </select>
                     </div>
@@ -357,8 +410,8 @@ export default function FactFindInsurance() {
                         className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">Select…</option>
-                        {principalOptions.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        {principalEntities.map(entity => (
+                          <option key={entity.id} value={entity.id}>{entity.label}</option>
                         ))}
                       </select>
                     </div>
