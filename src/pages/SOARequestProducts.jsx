@@ -186,10 +186,10 @@ export default function SOARequestProducts() {
     );
   }
 
-  const trustBeneficiaryOptions = getByTypes(['principal', 'child', 'dependant']);
-  const companyShareholderOptions = getByTypes(['principal', 'trust', 'company']);
-  const smsfAccountOwnerOptions = getByTypes(['principal']);
-  const smsfBeneficiaryOptions = getByTypes(['principal', 'child', 'dependant']);
+  const trustBeneficiaryOptions = getFullEntityList(`new_trust_${activeTrustIdx}`);
+  const companyShareholderOptions = getFullEntityList(`new_company_${activeCompanyIdx}`);
+  const smsfAccountOwnerOptions = getFullEntityList();
+  const smsfBeneficiaryOptions = getFullEntityList();
 
   // ============ RENDER HELPERS ============
 
