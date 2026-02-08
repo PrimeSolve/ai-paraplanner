@@ -5,6 +5,7 @@ import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 import { useFactFind } from '../components/factfind/useFactFind';
+import { useFactFindEntities } from '../components/factfind/useFactFindEntities';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -15,6 +16,7 @@ const MAX_SMSF = 2;
 export default function FactFindSMSF() {
   const navigate = useNavigate();
   const { factFind, loading: ffLoading } = useFactFind();
+  const entityList = useFactFindEntities(factFind);
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -245,22 +247,16 @@ export default function FactFindSMSF() {
    const row = document.createElement('tr');
    row.className = 'acct-row border-b border-slate-100 hover:bg-orange-50/50';
 
-   const clientName = factFind?.personal?.client?.first_name 
-     ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
-     : 'Client';
-
-   const partnerName = factFind?.personal?.partner?.first_name 
-     ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
-     : null;
-
-   const partnerOption = partnerName ? `<option value="partner">${partnerName}</option>` : '';
+   // Build entity options from entityList
+   const entityOptions = entityList.map(entity => 
+     `<option value="${entity.id}">${entity.label}</option>`
+   ).join('');
 
    row.innerHTML = `
      <td class="py-2 px-2">
        <select name="acct_owner" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
          <option value="">Select…</option>
-         <option value="client">${clientName}</option>
-         ${partnerName ? `<option value="partner">${partnerName}</option>` : ''}
+         ${entityOptions}
        </select>
      </td>
      <td class="py-2 px-2">
@@ -371,13 +367,10 @@ export default function FactFindSMSF() {
     const row = document.createElement('tr');
     row.className = 'benef-row border-b border-slate-100 hover:bg-purple-50/50';
 
-    const clientName = factFind?.personal?.client?.first_name 
-      ? `${factFind.personal.client.first_name} ${factFind.personal.client.last_name}`.trim()
-      : 'Client';
-
-    const partnerName = factFind?.personal?.partner?.first_name 
-      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name}`.trim()
-      : null;
+    // Build entity options from entityList
+    const entityOptions = entityList.map(entity => 
+      `<option value="${entity.id}">${entity.label}</option>`
+    ).join('');
 
     // Get account count from the card
     const acctList = card.querySelector('.acct-list');
@@ -396,8 +389,7 @@ export default function FactFindSMSF() {
       <td class="py-2 px-2">
         <select name="benef_who" class="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="">Select entity…</option>
-          <option value="client">${clientName}</option>
-          ${partnerName ? `<option value="partner">${partnerName}</option>` : ''}
+          ${entityOptions}
         </select>
       </td>
       <td class="py-2 px-2">
@@ -456,7 +448,7 @@ export default function FactFindSMSF() {
     }
 
     return row;
-  }, [factFind]);
+  }, [entityList]);
 
   // ============================================
   // ADD ENTRY
