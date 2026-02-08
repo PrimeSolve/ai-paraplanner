@@ -457,10 +457,10 @@ export default function FactFindSuperannuation() {
                   <CardContent className="p-12 text-center">
                     <div className="text-5xl mb-4">🏦</div>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      Do you have any {fundTypeLabel.toLowerCase()}s?
+                      Do you have any {mainTab === 'annuity' ? 'annuities' : `${fundTypeLabel.toLowerCase()}s`}?
                     </h3>
                     <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                      Add details about your {fundTypeLabel.toLowerCase()}s, balances, and beneficiaries.
+                      Add details about your {mainTab === 'annuity' ? 'annuities' : `${fundTypeLabel.toLowerCase()}s`}, balances, and beneficiaries.
                     </p>
                     <button
                       onClick={handleAddNew}
