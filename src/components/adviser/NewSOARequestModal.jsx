@@ -197,7 +197,7 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
                 <SelectItem key={client.id} value={client.id}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <div style={{ fontWeight: '600' }}>
-                      {client.first_name} {client.last_name}
+                      {client.name}
                     </div>
                     <div style={{ fontSize: '12px', color: '#64748b' }}>
                       Fact Find: {client.factFindStatus}
