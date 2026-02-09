@@ -666,12 +666,18 @@ export default function SOARequestInsurance() {
     setPolicyForm(prev => ({ ...prev, [field]: value }));
   };
 
+  const saveInsuranceData = async () => {
+    if (!soaRequest?.id) return;
+    
+    await base44.entities.SOARequest.update(soaRequest.id, {
+      insurance_needs: insuranceData
+    });
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      await base44.entities.SOARequest.update(soaRequest.id, {
-        insurance: insuranceData
-      });
+      await saveInsuranceData();
       toast.success('Insurance details saved');
       navigate(createPageUrl('SOARequestTransactions') + `?id=${soaRequest.id}`);
     } catch (error) {
@@ -681,6 +687,21 @@ export default function SOARequestInsurance() {
       setSaving(false);
     }
   };
+
+  // Save before sidebar navigation
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      try {
+        await saveInsuranceData();
+      } catch (err) {
+        console.error('Save before nav failed:', err);
+      }
+      window.dispatchEvent(new Event('soa-save-complete'));
+    };
+
+    window.addEventListener('soa-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('soa-save-before-nav', handleSaveBeforeNav);
+  }, [insuranceData, soaRequest?.id]);
 
   if (loading) {
     return (
