@@ -201,34 +201,8 @@ export default function SOARequestTransactions() {
       // Build asset options (for sell dropdown) - grouped by type
       const assetOpts = [];
       
-      // 1. Superannuation accounts from Fact Find
+      // Investment assets only from Fact Find
       if (factFind) {
-        const superFunds = factFind.superannuation?.funds || [];
-        superFunds.forEach((fund, i) => {
-          const fundName = fund.fund_name || fund.provider || 'Superannuation';
-          const balance = parseFloat(fund.balance || fund.current_balance) || 0;
-          assetOpts.push({
-            value: `super_${i}`,
-            label: `Super - ${fundName}`,
-            type: 'Superannuation',
-            balance
-          });
-        });
-        
-        // 2. Pension accounts
-        const pensions = factFind.superannuation?.pensions || [];
-        pensions.forEach((pension, i) => {
-          const fundName = pension.fund_name || pension.provider || 'Pension';
-          const balance = parseFloat(pension.balance || pension.current_balance) || 0;
-          assetOpts.push({
-            value: `pension_${i}`,
-            label: `Pension - ${fundName}`,
-            type: 'Pension',
-            balance
-          });
-        });
-        
-        // 3. Investment assets
         const investments = factFind.assets_liabilities?.assets || [];
         investments.forEach((asset, i) => {
           const value = parseFloat(asset.a_value || asset.value) || 0;
@@ -240,18 +214,6 @@ export default function SOARequestTransactions() {
           });
         });
       }
-      
-      // 4. NEW products from the SOA Request (excluding entities)
-      const products = soaReq.products_entities?.products || {};
-      Object.entries(products).forEach(([type, items]) => {
-        (items || []).forEach((p, i) => {
-          assetOpts.push({
-            value: `new_product_${type}_${i}`,
-            label: `NEW - ${p.product_name || type}`,
-            type: `New ${type}`
-          });
-        });
-      });
       
       // 5. Buy transactions from current SOA
       buyTxns.forEach(b => {
