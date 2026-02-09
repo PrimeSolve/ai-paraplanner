@@ -1104,10 +1104,12 @@ export default function SOARequestInsurance() {
                   </tbody>
                 </table>
               </div>
-            </TabsContent>
+            </div>
+              )}
 
-            {/* POLICIES TAB */}
-            <TabsContent value="policies" className="space-y-4 mt-6">
+              {/* POLICIES TAB */}
+              {activeTab === 'policies' && (
+                <div className="space-y-4 mt-6">
               {/* Toolbar */}
               <div className="flex items-center justify-end mb-4">
                 <Button 
