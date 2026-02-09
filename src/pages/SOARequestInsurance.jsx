@@ -740,20 +740,16 @@ export default function SOARequestInsurance() {
                 border: '1px solid #E2E8F0' 
               }}>
                 <button 
-                  onClick={() => {
-                    const tabs = document.querySelector('[role="tablist"]');
-                    const needsTab = tabs?.querySelector('[value="needs"]');
-                    needsTab?.click();
-                  }}
+                  onClick={() => setActiveTab('needs')}
                   style={{
                     padding: '12px 24px',
                     borderRadius: '8px',
                     border: 'none',
-                    backgroundColor: '#FFFFFF',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                    color: '#1E293B',
+                    backgroundColor: activeTab === 'needs' ? '#FFFFFF' : 'transparent',
+                    boxShadow: activeTab === 'needs' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                    color: activeTab === 'needs' ? '#1E293B' : '#64748B',
                     fontSize: '14px',
-                    fontWeight: 600,
+                    fontWeight: activeTab === 'needs' ? 600 : 500,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -764,19 +760,16 @@ export default function SOARequestInsurance() {
                   📊 Needs
                 </button>
                 <button 
-                  onClick={() => {
-                    const tabs = document.querySelector('[role="tablist"]');
-                    const policiesTab = tabs?.querySelector('[value="policies"]');
-                    policiesTab?.click();
-                  }}
+                  onClick={() => setActiveTab('policies')}
                   style={{
                     padding: '12px 24px',
                     borderRadius: '8px',
                     border: 'none',
-                    backgroundColor: 'transparent',
-                    color: '#64748B',
+                    backgroundColor: activeTab === 'policies' ? '#FFFFFF' : 'transparent',
+                    boxShadow: activeTab === 'policies' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                    color: activeTab === 'policies' ? '#1E293B' : '#64748B',
                     fontSize: '14px',
-                    fontWeight: 500,
+                    fontWeight: activeTab === 'policies' ? 600 : 500,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
