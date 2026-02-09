@@ -457,6 +457,91 @@ export default function SOARequestInsurance() {
     tpd: currentPersonData.asset_rows.filter(r => r.tpd).reduce((sum, r) => sum + (parseFloat(r.value) || 0), 0)
   };
 
+  // Pre-populate assets modal from Fact Find
+  useEffect(() => {
+    if (showAssetsModal && factFind && currentPersonData.asset_rows.length === 0) {
+      const rows = [];
+      
+      // 1. Superannuation accounts
+      const superFunds = factFind.superannuation?.funds || [];
+      superFunds.forEach(fund => {
+        const fundName = fund.fund_name || fund.provider || 'Superannuation';
+        const balance = parseFloat(fund.balance || fund.current_balance) || 0;
+        if (balance > 0) {
+          rows.push({
+            id: crypto.randomUUID(),
+            description: `Super - ${fundName}`,
+            life: false,
+            tpd: false,
+            value: balance
+          });
+        }
+      });
+      
+      // 2. Pension accounts
+      const pensions = factFind.superannuation?.pensions || [];
+      pensions.forEach(pension => {
+        const fundName = pension.fund_name || pension.provider || 'Pension';
+        const balance = parseFloat(pension.balance || pension.current_balance) || 0;
+        if (balance > 0) {
+          rows.push({
+            id: crypto.randomUUID(),
+            description: `Pension - ${fundName}`,
+            life: false,
+            tpd: false,
+            value: balance
+          });
+        }
+      });
+      
+      // 3. Investment assets
+      const assets = factFind.assets_liabilities?.assets || [];
+      assets.forEach(asset => {
+        const description = asset.a_name || asset.description || 'Investment';
+        const value = parseFloat(asset.a_value || asset.value) || 0;
+        if (value > 0) {
+          rows.push({
+            id: crypto.randomUUID(),
+            description,
+            life: false,
+            tpd: false,
+            value
+          });
+        }
+      });
+      
+      // 4. SMSF accounts
+      const smsfDetails = factFind.smsf?.smsf_details || [];
+      smsfDetails.forEach(smsf => {
+        const smsfName = smsf.smsf_name || 'SMSF';
+        const accounts = smsf.accounts || [];
+        accounts.forEach(acc => {
+          const owner = acc.owner || '';
+          const balance = parseFloat(acc.balance) || 0;
+          if (balance > 0) {
+            rows.push({
+              id: crypto.randomUUID(),
+              description: `SMSF - ${smsfName}${owner ? ` (${owner})` : ''}`,
+              life: false,
+              tpd: false,
+              value: balance
+            });
+          }
+        });
+      });
+      
+      if (rows.length > 0) {
+        setInsuranceData(prev => ({
+          ...prev,
+          [currentPerson]: {
+            ...prev[currentPerson],
+            asset_rows: rows
+          }
+        }));
+      }
+    }
+  }, [showAssetsModal, factFind, currentPerson, currentPersonData.asset_rows.length]);
+
   // Policy Management Functions
   const getInsuranceTypeBenefits = (insuranceTypeValue) => {
     const map = {
