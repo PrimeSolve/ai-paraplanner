@@ -361,7 +361,7 @@ export default function SOARequestTransactions() {
   const getTransactionOwnerOptions = () => {
     let owners = [];
     
-    // Principals
+    // Principals - CRITICAL: Use the Principal entity records loaded from database
     principals.forEach(p => {
       const name = `${p.first_name || ''} ${p.last_name || ''}`.trim();
       owners.push({
@@ -371,6 +371,9 @@ export default function SOARequestTransactions() {
         color: '#3B82F6'
       });
     });
+    
+    console.log('getTransactionOwnerOptions - principals:', principals);
+    console.log('getTransactionOwnerOptions - owners so far:', owners);
     
     // Joint (synthetic)
     if (principals.length === 2) {
