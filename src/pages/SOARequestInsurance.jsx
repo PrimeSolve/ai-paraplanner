@@ -115,6 +115,8 @@ export default function SOARequestInsurance() {
             setSOARequest(requests[0]);
             const insurance = requests[0].insurance_needs || { client: getDefaultPersonData(), partner: getDefaultPersonData() };
             setInsuranceData(insurance);
+            const policies = requests[0].insurance_policies?.policies || [];
+            setPoliciesData(policies);
             
             // Load linked fact find
             if (requests[0].fact_find_id) {
