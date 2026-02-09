@@ -39,6 +39,9 @@ export default function SOARequestInsurance() {
     client: getDefaultPersonData(),
     partner: getDefaultPersonData()
   });
+  
+  // Policies data (separate from needs)
+  const [policiesData, setPoliciesData] = useState([]);
 
   // Policy form state
   const [policyForm, setPolicyForm] = useState({
