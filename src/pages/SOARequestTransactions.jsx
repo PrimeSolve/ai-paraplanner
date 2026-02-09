@@ -1116,7 +1116,7 @@ function SellDetailPanel({ sell, assetOptions, modelOptions, onUpdate, onClose }
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select asset..." />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[400px]">
                 {(() => {
                   const grouped = {};
                   assetOptions.forEach(a => {
@@ -1127,11 +1127,13 @@ function SellDetailPanel({ sell, assetOptions, modelOptions, onUpdate, onClose }
                   
                   return Object.entries(grouped).map(([type, items]) => (
                     <React.Fragment key={type}>
-                      <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 bg-slate-50">
+                      <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide bg-slate-50 sticky top-0">
                         {type}
                       </div>
                       {items.map(a => (
-                        <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+                        <SelectItem key={a.value} value={a.value} className="pl-6">
+                          {a.label}
+                        </SelectItem>
                       ))}
                     </React.Fragment>
                   ));
