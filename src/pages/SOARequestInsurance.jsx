@@ -557,12 +557,30 @@ export default function SOARequestInsurance() {
 
   const resetPolicyForm = () => {
     setPolicyForm({
-      owner: '', insurer: '', product_name: '', policy_number: '',
-      insurance_type: '', structure: '', premium_type: '', premium_frequency: '', premium_amount: '',
-      include_life: false, life_sum_insured: '', life_premium: '',
-      include_tpd: false, tpd_sum_insured: '', tpd_premium: '', tpd_definition: '', tpd_notes: '',
-      include_trauma: false, trauma_sum_insured: '', trauma_premium: '', trauma_notes: '',
-      include_ip: false, ip_monthly_benefit: '', ip_premium: '', ip_waiting_period: '', ip_benefit_period: ''
+      person: currentPerson,
+      policy_owner: '',
+      insured: '',
+      provider: '',
+      policy_number: '',
+      policy_type: '',
+      premium_type: '',
+      premium_frequency: '',
+      premium_amount: '',
+      include_life: false,
+      life_sum_insured: '',
+      life_recommendation: '',
+      include_tpd: false,
+      tpd_definition: '',
+      tpd_sum_insured: '',
+      tpd_recommendation: '',
+      include_trauma: false,
+      trauma_sum_insured: '',
+      trauma_recommendation: '',
+      include_ip: false,
+      ip_monthly_benefit: '',
+      ip_waiting_period: '',
+      ip_benefit_period: '',
+      ip_recommendation: ''
     });
   };
 
