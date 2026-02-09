@@ -672,7 +672,8 @@ export default function SOARequestInsurance() {
     if (!soaRequest?.id) return;
     
     await base44.entities.SOARequest.update(soaRequest.id, {
-      insurance_needs: insuranceData
+      insurance_needs: insuranceData,
+      insurance_policies: { policies: policiesData }
     });
   };
 
