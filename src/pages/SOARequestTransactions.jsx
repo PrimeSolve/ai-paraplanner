@@ -1088,25 +1088,9 @@ function SellDetailPanel({ sell, assetOptions, modelOptions, onUpdate, onClose }
                 </optgroup>
               )}
               
-              {assetOptions.filter(a => a.type === 'SMSF').length > 0 && (
-                <optgroup label="SMSF">
-                  {assetOptions.filter(a => a.type === 'SMSF').map(a => (
-                    <option key={a.value} value={a.value}>{a.label}</option>
-                  ))}
-                </optgroup>
-              )}
-              
-              {assetOptions.filter(a => ['Trust', 'Company'].includes(a.type)).length > 0 && (
-                <optgroup label="Trusts & Companies">
-                  {assetOptions.filter(a => ['Trust', 'Company'].includes(a.type)).map(a => (
-                    <option key={a.value} value={a.value}>{a.label}</option>
-                  ))}
-                </optgroup>
-              )}
-              
-              {assetOptions.filter(a => a.type?.startsWith('New')).length > 0 && (
-                <optgroup label="New Products & Entities (SOA)">
-                  {assetOptions.filter(a => a.type?.startsWith('New')).map(a => (
+              {assetOptions.filter(a => a.type?.startsWith('New') && a.type !== 'New Purchase').length > 0 && (
+                <optgroup label="New Products (SOA)">
+                  {assetOptions.filter(a => a.type?.startsWith('New') && a.type !== 'New Purchase').map(a => (
                     <option key={a.value} value={a.value}>{a.label}</option>
                   ))}
                 </optgroup>
