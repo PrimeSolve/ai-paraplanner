@@ -385,14 +385,20 @@ export default function SOARequestPortfolio() {
   // SAVE HANDLER
   // ============================================================================
 
+  const savePortfolioData = async () => {
+    if (!soaRequest?.id) return;
+    
+    await base44.entities.SOARequest.update(soaRequest.id, {
+      portfolio: {
+        transactions: transactions
+      }
+    });
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      await base44.entities.SOARequest.update(soaRequest.id, {
-        portfolio: {
-          transactions: transactions
-        }
-      });
+      await savePortfolioData();
       toast.success('Portfolio saved');
       navigate(createPageUrl('SOARequestStrategy') + `?id=${soaRequest.id}`);
     } catch (error) {
@@ -402,6 +408,21 @@ export default function SOARequestPortfolio() {
       setSaving(false);
     }
   };
+
+  // Save before sidebar navigation
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      try {
+        await savePortfolioData();
+      } catch (err) {
+        console.error('Save before nav failed:', err);
+      }
+      window.dispatchEvent(new Event('soa-save-complete'));
+    };
+
+    window.addEventListener('soa-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('soa-save-before-nav', handleSaveBeforeNav);
+  }, [transactions, soaRequest?.id]);
 
   // ============================================================================
   // HELPERS
