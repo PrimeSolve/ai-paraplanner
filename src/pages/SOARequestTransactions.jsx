@@ -170,6 +170,13 @@ export default function SOARequestTransactions() {
       // Load SMSFs
       const smsfs = await base44.entities.SMSF.filter({ client_id: clientId });
       
+      // Load Fact Find for asset data
+      let factFind = null;
+      if (soaReq.fact_find_id) {
+        const factFinds = await base44.entities.FactFind.filter({ id: soaReq.fact_find_id });
+        factFind = factFinds[0];
+      }
+      
       // Build owner options
       const owners = [];
       principals.forEach(p => {
@@ -191,17 +198,127 @@ export default function SOARequestTransactions() {
       
       setOwnerOptions(owners);
       
-      // Build asset options (for sell dropdown)
+      // Build asset options (for sell dropdown) - grouped by type
       const assetOpts = [];
+      
+      // 1. Superannuation accounts from Fact Find
+      if (factFind) {
+        const superFunds = factFind.superannuation?.funds || [];
+        superFunds.forEach((fund, i) => {
+          const fundName = fund.fund_name || fund.provider || 'Superannuation';
+          const balance = parseFloat(fund.balance || fund.current_balance) || 0;
+          assetOpts.push({
+            value: `super_${i}`,
+            label: `Super - ${fundName}`,
+            type: 'Superannuation',
+            balance
+          });
+        });
+        
+        // 2. Pension accounts
+        const pensions = factFind.superannuation?.pensions || [];
+        pensions.forEach((pension, i) => {
+          const fundName = pension.fund_name || pension.provider || 'Pension';
+          const balance = parseFloat(pension.balance || pension.current_balance) || 0;
+          assetOpts.push({
+            value: `pension_${i}`,
+            label: `Pension - ${fundName}`,
+            type: 'Pension',
+            balance
+          });
+        });
+        
+        // 3. Investment assets
+        const investments = factFind.assets_liabilities?.assets || [];
+        investments.forEach((asset, i) => {
+          const value = parseFloat(asset.a_value || asset.value) || 0;
+          assetOpts.push({
+            value: `asset_${i}`,
+            label: asset.a_name || asset.description || 'Investment',
+            type: 'Investment',
+            value
+          });
+        });
+        
+        // 4. SMSF accounts
+        const smsfDetails = factFind.smsf?.smsf_details || [];
+        smsfDetails.forEach((smsf, fi) => {
+          const smsfName = smsf.smsf_name || 'SMSF';
+          const accounts = smsf.accounts || [];
+          accounts.forEach((acc, ai) => {
+            const owner = acc.owner || '';
+            const balance = parseFloat(acc.balance) || 0;
+            assetOpts.push({
+              value: `smsf_${fi}_${ai}`,
+              label: `SMSF - ${smsfName}${owner ? ` (${owner})` : ''}`,
+              type: 'SMSF',
+              balance
+            });
+          });
+        });
+        
+        // 5. Existing trusts & companies from Fact Find
+        const entities = factFind.trusts_companies?.entities || [];
+        entities.forEach((e, i) => {
+          assetOpts.push({
+            value: `entity_${i}`,
+            label: e.type === 'trust' ? (e.trust_name || 'Trust') : (e.company_name || 'Company'),
+            type: e.type === 'trust' ? 'Trust' : 'Company'
+          });
+        });
+      }
+      
+      // 6. NEW products from the SOA Request
+      const products = soaReq.products_entities?.products || {};
+      Object.entries(products).forEach(([type, items]) => {
+        (items || []).forEach((p, i) => {
+          assetOpts.push({
+            value: `new_product_${type}_${i}`,
+            label: `NEW - ${p.product_name || type}`,
+            type: `New ${type}`
+          });
+        });
+      });
+      
+      // 7. NEW entities from the SOA Request
+      const newTrusts = soaReq.products_entities?.new_trusts || [];
+      newTrusts.forEach((t, i) => {
+        assetOpts.push({
+          value: `new_trust_${i}`,
+          label: `NEW - ${t.trust_name}`,
+          type: 'New Trust'
+        });
+      });
+      
+      const newCompanies = soaReq.products_entities?.new_companies || [];
+      newCompanies.forEach((c, i) => {
+        assetOpts.push({
+          value: `new_company_${i}`,
+          label: `NEW - ${c.company_name}`,
+          type: 'New Company'
+        });
+      });
+      
+      const newSMSFs = soaReq.products_entities?.new_smsf || [];
+      newSMSFs.forEach((s, i) => {
+        assetOpts.push({
+          value: `new_smsf_${i}`,
+          label: `NEW - ${s.smsf_name}`,
+          type: 'New SMSF'
+        });
+      });
+      
+      // 8. Buy transactions from current SOA
       buyTxns.forEach(b => {
         if (b.asset_type) {
           assetOpts.push({
             value: b.id,
             label: `${getAssetTypeLabel(b.asset_type)} (New Purchase)`,
-            isExisting: false
+            type: 'New Purchase'
           });
         }
       });
+      
       setAssetOptions(assetOpts);
       
       // Build SMSF options
