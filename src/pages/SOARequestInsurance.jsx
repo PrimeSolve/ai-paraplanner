@@ -1990,7 +1990,7 @@ export default function SOARequestInsurance() {
             
             {/* Header Row */}
             <div className="grid grid-cols-4 gap-2 py-2 text-xs font-bold text-slate-500 uppercase border-b border-slate-200">
-              <div>Asset description</div>
+              <div>Select asset</div>
               <div>Insurance type</div>
               <div className="text-right">Asset value ($)</div>
               <div></div>
