@@ -1997,54 +1997,107 @@ export default function SOARequestInsurance() {
             </div>
             
             {/* Asset Rows */}
-            {currentPersonData.asset_rows.map((row, index) => (
-              <div key={row.id} className="grid grid-cols-4 gap-2 py-2 items-center border-b border-slate-100">
-                <div>
-                  <Input 
-                    placeholder="e.g. Super balance"
-                    value={row.description}
-                    onChange={(e) => updateAssetRow(index, 'description', e.target.value)}
-                  />
-                </div>
-                <div className="flex gap-3 p-2 bg-slate-50 border border-slate-200 rounded-md">
-                  <label className="flex items-center gap-1 text-sm cursor-pointer text-slate-900">
-                    <Checkbox 
-                      checked={row.life}
-                      onCheckedChange={(checked) => updateAssetRow(index, 'life', checked)}
-                      className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+            {currentPersonData.asset_rows.map((row, index) => {
+              const assetList = buildAssetList();
+              return (
+                <div key={row.id} className="grid grid-cols-4 gap-2 py-2 items-center border-b border-slate-100">
+                  <div>
+                    <select
+                      value={row.asset_id || ''}
+                      onChange={(e) => handleAssetSelect(index, e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                      <option value="">Select asset...</option>
+                      
+                      {assetList.filter(a => a.type === 'Superannuation').length > 0 && (
+                        <optgroup label="Superannuation">
+                          {assetList.filter(a => a.type === 'Superannuation').map(a => (
+                            <option key={a.id} value={a.id}>{a.label}</option>
+                          ))}
+                        </optgroup>
+                      )}
+                      
+                      {assetList.filter(a => a.type === 'Pension').length > 0 && (
+                        <optgroup label="Pension">
+                          {assetList.filter(a => a.type === 'Pension').map(a => (
+                            <option key={a.id} value={a.id}>{a.label}</option>
+                          ))}
+                        </optgroup>
+                      )}
+                      
+                      {assetList.filter(a => a.type === 'Investment').length > 0 && (
+                        <optgroup label="Investments">
+                          {assetList.filter(a => a.type === 'Investment').map(a => (
+                            <option key={a.id} value={a.id}>{a.label}</option>
+                          ))}
+                        </optgroup>
+                      )}
+                      
+                      {assetList.filter(a => a.type === 'SMSF').length > 0 && (
+                        <optgroup label="SMSF">
+                          {assetList.filter(a => a.type === 'SMSF').map(a => (
+                            <option key={a.id} value={a.id}>{a.label}</option>
+                          ))}
+                        </optgroup>
+                      )}
+                      
+                      {assetList.filter(a => ['Trust', 'Company'].includes(a.type)).length > 0 && (
+                        <optgroup label="Trusts & Companies">
+                          {assetList.filter(a => ['Trust', 'Company'].includes(a.type)).map(a => (
+                            <option key={a.id} value={a.id}>{a.label}</option>
+                          ))}
+                        </optgroup>
+                      )}
+                      
+                      {assetList.filter(a => a.type?.startsWith('New')).length > 0 && (
+                        <optgroup label="New Products & Entities (SOA)">
+                          {assetList.filter(a => a.type?.startsWith('New')).map(a => (
+                            <option key={a.id} value={a.id}>{a.label}</option>
+                          ))}
+                        </optgroup>
+                      )}
+                    </select>
+                  </div>
+                  <div className="flex gap-3 p-2 bg-slate-50 border border-slate-200 rounded-md">
+                    <label className="flex items-center gap-1 text-sm cursor-pointer text-slate-900">
+                      <Checkbox 
+                        checked={row.life}
+                        onCheckedChange={(checked) => updateAssetRow(index, 'life', checked)}
+                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      />
+                      <span className="text-slate-900">Life</span>
+                    </label>
+                    <label className="flex items-center gap-1 text-sm cursor-pointer text-slate-900">
+                      <Checkbox 
+                        checked={row.tpd}
+                        onCheckedChange={(checked) => updateAssetRow(index, 'tpd', checked)}
+                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      />
+                      <span className="text-slate-900">TPD</span>
+                    </label>
+                  </div>
+                  <div>
+                    <Input 
+                      type="number"
+                      placeholder="$"
+                      value={row.value || ''}
+                      onChange={(e) => updateAssetRow(index, 'value', e.target.value)}
+                      className="text-right"
                     />
-                    <span className="text-slate-900">Life</span>
-                  </label>
-                  <label className="flex items-center gap-1 text-sm cursor-pointer text-slate-900">
-                    <Checkbox 
-                      checked={row.tpd}
-                      onCheckedChange={(checked) => updateAssetRow(index, 'tpd', checked)}
-                      className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                    />
-                    <span className="text-slate-900">TPD</span>
-                  </label>
+                  </div>
+                  <div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => removeAssetRow(index)}
+                      className="w-8 h-8 p-0 bg-red-50 text-red-600 hover:bg-red-100"
+                    >
+                      ×
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <Input 
-                    type="number"
-                    placeholder="$"
-                    value={row.value || ''}
-                    onChange={(e) => updateAssetRow(index, 'value', e.target.value)}
-                    className="text-right"
-                  />
-                </div>
-                <div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => removeAssetRow(index)}
-                    className="w-8 h-8 p-0 bg-red-50 text-red-600 hover:bg-red-100"
-                  >
-                    ×
-                  </Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
             
             {/* Footer with Add Row and Totals */}
             <div className="flex justify-between items-center pt-4 border-t border-slate-200">
