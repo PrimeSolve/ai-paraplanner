@@ -143,7 +143,9 @@ export default function SOARequestPortfolio() {
 
   // Core data
   const [soaRequest, setSOARequest] = useState(null);
+  const [factFind, setFactFind] = useState(null);
   const [clientId, setClientId] = useState(null);
+  const [principals, setPrincipals] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [products, setProducts] = useState([]);
   const [clientRiskProfile, setClientRiskProfile] = useState(null);
@@ -187,8 +189,20 @@ export default function SOARequestPortfolio() {
       const portfolioData = soaReq.portfolio || {};
       setTransactions(portfolioData.transactions || []);
 
+      // Load Fact Find
+      let factFindData = null;
+      if (soaReq.fact_find_id) {
+        const factFinds = await base44.entities.FactFind.filter({ id: soaReq.fact_find_id });
+        factFindData = factFinds[0];
+        setFactFind(factFindData);
+      }
+
+      // Load Principals
+      const principalsData = await base44.entities.Principal.filter({ client_id: soaReq.client_id });
+      setPrincipals(principalsData);
+
       // Load products and risk profile
-      await loadProducts(soaReq.client_id, soaReq);
+      await loadProducts(soaReq, factFindData, principalsData);
       await loadRiskProfile(soaReq.client_id);
 
     } catch (error) {
@@ -199,61 +213,79 @@ export default function SOARequestPortfolio() {
     }
   };
 
-  const loadProducts = async (clientId, soaReq) => {
+  const loadProducts = async (soaReq, factFindData, principalsData) => {
     try {
       const productList = [];
 
-      // Try to load Super Funds
-      try {
-        const superFunds = await base44.entities.SuperFund?.filter({ client_id: clientId });
-        if (superFunds) {
-          superFunds.forEach(f => {
-            if (f.name) productList.push({ id: f.id, name: f.name, owner_id: f.owner_id, type: 'Super Fund' });
+      // 1. Existing superannuation funds from Fact Find
+      const superAccounts = factFindData?.superannuation?.funds || [];
+      superAccounts.forEach((acc, i) => {
+        productList.push({
+          id: `super_${i}`,
+          name: `Super - ${acc.fund_name || acc.provider || 'Superannuation'}`,
+          type: 'Superannuation'
+        });
+      });
+
+      // 2. Existing pension accounts from Fact Find
+      const pensionAccounts = factFindData?.superannuation?.pensions || [];
+      pensionAccounts.forEach((acc, i) => {
+        productList.push({
+          id: `pension_${i}`,
+          name: `Pension - ${acc.fund_name || acc.provider || 'Pension'}`,
+          type: 'Pension'
+        });
+      });
+
+      // 3. Existing investments (wraps, platforms, managed funds) from Fact Find
+      const investments = factFindData?.investment?.wraps || [];
+      investments.forEach((asset, i) => {
+        productList.push({
+          id: `investment_${i}`,
+          name: asset.platform_name || asset.name || 'Investment',
+          type: 'Investment'
+        });
+      });
+
+      // Also check bonds
+      const bonds = factFindData?.investment?.bonds || [];
+      bonds.forEach((bond, i) => {
+        productList.push({
+          id: `bond_${i}`,
+          name: bond.bond_name || bond.name || 'Investment Bond',
+          type: 'Investment'
+        });
+      });
+
+      // 4. SMSF from Fact Find (pooled = fund, segregated = accounts)
+      const smsfs = factFindData?.smsf?.smsf_details || [];
+      smsfs.forEach((fund, fi) => {
+        if (fund.acct_type === '1') {
+          // Pooled
+          productList.push({ id: `smsf_${fi}`, name: fund.smsf_name || 'SMSF', type: 'SMSF' });
+        } else if (fund.acct_type === '2') {
+          // Segregated - add each account
+          (fund.accounts || []).forEach((acc, ai) => {
+            const ownerName = principalsData.find(p => p.id === acc.owner)?.first_name || acc.owner;
+            productList.push({
+              id: `smsf_${fi}_acc_${ai}`,
+              name: `${fund.smsf_name || 'SMSF'} - ${ownerName}`,
+              type: 'SMSF Account'
+            });
           });
         }
-      } catch (e) { /* Entity may not exist */ }
+      });
 
-      // Try to load Pensions
-      try {
-        const pensions = await base44.entities.Pension?.filter({ client_id: clientId });
-        if (pensions) {
-          pensions.forEach(p => {
-            if (p.name) productList.push({ id: p.id, name: p.name, owner_id: p.owner_id, type: 'Pension' });
-          });
-        }
-      } catch (e) { /* Entity may not exist */ }
-
-      // Try to load Wraps
-      try {
-        const wraps = await base44.entities.Wrap?.filter({ client_id: clientId });
-        if (wraps) {
-          wraps.forEach(w => {
-            if (w.name) productList.push({ id: w.id, name: w.name, owner_id: w.owner_id, type: 'Wrap' });
-          });
-        }
-      } catch (e) { /* Entity may not exist */ }
-
-      // Try to load Investment Bonds
-      try {
-        const bonds = await base44.entities.InvestmentBond?.filter({ client_id: clientId });
-        if (bonds) {
-          bonds.forEach(b => {
-            if (b.name) productList.push({ id: b.id, name: b.name, owner_id: b.owner_id, type: 'Investment Bond' });
-          });
-        }
-      } catch (e) { /* Entity may not exist */ }
-
-      // Load new products from SOA Request products_entities
-      const newProducts = soaReq.products_entities?.products || [];
-      newProducts.forEach(p => {
-        if (p.name) {
+      // 5. New products from SOA Request (super, pension, wrap, bonds)
+      const newProducts = soaReq.products_entities?.products || {};
+      Object.entries(newProducts).forEach(([type, items]) => {
+        (items || []).forEach((p, i) => {
           productList.push({
-            id: p.id,
-            name: p.name,
-            owner_id: p.owner_id,
-            type: p.type || 'New Product'
+            id: `new_${type}_${i}`,
+            name: `NEW - ${p.product_name || type}`,
+            type: `New ${type}`
           });
-        }
+        });
       });
 
       setProducts(productList);
@@ -377,7 +409,7 @@ export default function SOARequestPortfolio() {
 
   const getProductName = (productId) => {
     const product = products.find(p => p.id === productId);
-    return product ? `${product.name} (${product.type})` : '—';
+    return product ? product.name : '—';
   };
 
   // ============================================================================
@@ -424,18 +456,53 @@ export default function SOARequestPortfolio() {
                   <CardTitle className="flex items-center gap-2">
                     <span>📊</span> Current Allocation
                   </CardTitle>
-                  <Select value={selectedProductId} onValueChange={setSelectedProductId}>
-                    <SelectTrigger className="w-[250px]">
-                      <SelectValue placeholder="Select a product..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {products.map(p => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <select
+                    value={selectedProductId}
+                    onChange={(e) => setSelectedProductId(e.target.value)}
+                    className="w-[250px] flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    <option value="">Select a product...</option>
+                    
+                    {products.filter(p => p.type === 'Superannuation').length > 0 && (
+                      <optgroup label="Superannuation">
+                        {products.filter(p => p.type === 'Superannuation').map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                    
+                    {products.filter(p => p.type === 'Pension').length > 0 && (
+                      <optgroup label="Pension">
+                        {products.filter(p => p.type === 'Pension').map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                    
+                    {products.filter(p => p.type === 'Investment').length > 0 && (
+                      <optgroup label="Investments">
+                        {products.filter(p => p.type === 'Investment').map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                    
+                    {products.filter(p => p.type === 'SMSF' || p.type === 'SMSF Account').length > 0 && (
+                      <optgroup label="SMSF">
+                        {products.filter(p => p.type === 'SMSF' || p.type === 'SMSF Account').map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                    
+                    {products.filter(p => p.type?.startsWith('New')).length > 0 && (
+                      <optgroup label="New Products (SOA)">
+                        {products.filter(p => p.type?.startsWith('New')).map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                  </select>
                 </div>
               </CardHeader>
               <CardContent>
@@ -594,19 +661,53 @@ export default function SOARequestPortfolio() {
                       <TableRow key={txn.id}>
                         <TableCell>
                           {editingId === txn.id ? (
-                            <Select
+                            <select
                               value={txn.product_id}
-                              onValueChange={(v) => updateTransaction(txn.id, 'product_id', v)}
+                              onChange={(e) => updateTransaction(txn.id, 'product_id', e.target.value)}
+                              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                             >
-                              <SelectTrigger className="text-xs">
-                                <SelectValue placeholder="Select..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {products.map(p => (
-                                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              <option value="">Select...</option>
+                              
+                              {products.filter(p => p.type === 'Superannuation').length > 0 && (
+                                <optgroup label="Superannuation">
+                                  {products.filter(p => p.type === 'Superannuation').map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                  ))}
+                                </optgroup>
+                              )}
+                              
+                              {products.filter(p => p.type === 'Pension').length > 0 && (
+                                <optgroup label="Pension">
+                                  {products.filter(p => p.type === 'Pension').map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                  ))}
+                                </optgroup>
+                              )}
+                              
+                              {products.filter(p => p.type === 'Investment').length > 0 && (
+                                <optgroup label="Investments">
+                                  {products.filter(p => p.type === 'Investment').map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                  ))}
+                                </optgroup>
+                              )}
+                              
+                              {products.filter(p => p.type === 'SMSF' || p.type === 'SMSF Account').length > 0 && (
+                                <optgroup label="SMSF">
+                                  {products.filter(p => p.type === 'SMSF' || p.type === 'SMSF Account').map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                  ))}
+                                </optgroup>
+                              )}
+                              
+                              {products.filter(p => p.type?.startsWith('New')).length > 0 && (
+                                <optgroup label="New Products (SOA)">
+                                  {products.filter(p => p.type?.startsWith('New')).map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                  ))}
+                                </optgroup>
+                              )}
+                            </select>
                           ) : (
                             <span className="text-sm">{getProductName(txn.product_id)}</span>
                           )}
