@@ -90,11 +90,12 @@ export default function SOARequestTransactions() {
   
   // Data
   const [soaRequest, setSOARequest] = useState(null);
+  const [soaId, setSOAId] = useState(null);
   const [factFind, setFactFind] = useState(null);
   const [clientId, setClientId] = useState(null);
   
   // Load entities from Fact Find via hook
-  const { getByTypes } = useSOAEntities(soaRequest?.id);
+  const { getByTypes } = useSOAEntities(soaId);
   
   // Entity options for dropdowns
   const [ownerOptions, setOwnerOptions] = useState([]);
@@ -143,6 +144,7 @@ export default function SOARequestTransactions() {
       
       const soaReq = requests[0];
       setSOARequest(soaReq);
+      setSOAId(id);
       setClientId(soaReq.client_id);
       
       // Load transactions from SOA Request
@@ -218,16 +220,22 @@ export default function SOARequestTransactions() {
   // SAVE HANDLER
   // ============================================================================
 
+  const saveTransactionsData = async () => {
+    if (!soaRequest?.id) return;
+    
+    await base44.entities.SOARequest.update(soaRequest.id, {
+      transactions: {
+        buy: buyTransactions,
+        sell: sellTransactions,
+        debts: debtTransactions
+      }
+    });
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      await base44.entities.SOARequest.update(soaRequest.id, {
-        transactions: {
-          buy: buyTransactions,
-          sell: sellTransactions,
-          debts: debtTransactions
-        }
-      });
+      await saveTransactionsData();
       toast.success('Transactions saved');
       navigate(createPageUrl('SOARequestPortfolio') + `?id=${soaRequest.id}`);
     } catch (error) {
@@ -237,6 +245,21 @@ export default function SOARequestTransactions() {
       setSaving(false);
     }
   };
+
+  // Save before sidebar navigation
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      try {
+        await saveTransactionsData();
+      } catch (err) {
+        console.error('Save before nav failed:', err);
+      }
+      window.dispatchEvent(new Event('soa-save-complete'));
+    };
+
+    window.addEventListener('soa-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('soa-save-before-nav', handleSaveBeforeNav);
+  }, [buyTransactions, sellTransactions, debtTransactions, soaRequest?.id]);
 
   // ============================================================================
   // BUY TRANSACTION HANDLERS
