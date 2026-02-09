@@ -457,90 +457,121 @@ export default function SOARequestInsurance() {
     tpd: currentPersonData.asset_rows.filter(r => r.tpd).reduce((sum, r) => sum + (parseFloat(r.value) || 0), 0)
   };
 
-  // Pre-populate assets modal from Fact Find
-  useEffect(() => {
-    if (showAssetsModal && factFind && currentPersonData.asset_rows.length === 0) {
-      const rows = [];
-      
+  // Build asset list from Fact Find and SOA Request
+  const buildAssetList = () => {
+    const assetList = [];
+    
+    if (factFind) {
       // 1. Superannuation accounts
       const superFunds = factFind.superannuation?.funds || [];
-      superFunds.forEach(fund => {
+      superFunds.forEach((fund, i) => {
         const fundName = fund.fund_name || fund.provider || 'Superannuation';
         const balance = parseFloat(fund.balance || fund.current_balance) || 0;
-        if (balance > 0) {
-          rows.push({
-            id: crypto.randomUUID(),
-            description: `Super - ${fundName}`,
-            life: false,
-            tpd: false,
-            value: balance
-          });
-        }
+        assetList.push({
+          id: `super_${i}`,
+          label: `Super - ${fundName}`,
+          type: 'Superannuation',
+          balance
+        });
       });
       
       // 2. Pension accounts
       const pensions = factFind.superannuation?.pensions || [];
-      pensions.forEach(pension => {
+      pensions.forEach((pension, i) => {
         const fundName = pension.fund_name || pension.provider || 'Pension';
         const balance = parseFloat(pension.balance || pension.current_balance) || 0;
-        if (balance > 0) {
-          rows.push({
-            id: crypto.randomUUID(),
-            description: `Pension - ${fundName}`,
-            life: false,
-            tpd: false,
-            value: balance
-          });
-        }
+        assetList.push({
+          id: `pension_${i}`,
+          label: `Pension - ${fundName}`,
+          type: 'Pension',
+          balance
+        });
       });
       
       // 3. Investment assets
-      const assets = factFind.assets_liabilities?.assets || [];
-      assets.forEach(asset => {
-        const description = asset.a_name || asset.description || 'Investment';
+      const investments = factFind.assets_liabilities?.assets || [];
+      investments.forEach((asset, i) => {
         const value = parseFloat(asset.a_value || asset.value) || 0;
-        if (value > 0) {
-          rows.push({
-            id: crypto.randomUUID(),
-            description,
-            life: false,
-            tpd: false,
-            value
-          });
-        }
+        assetList.push({
+          id: `asset_${i}`,
+          label: asset.a_name || asset.description || 'Investment',
+          type: 'Investment',
+          value
+        });
       });
       
       // 4. SMSF accounts
       const smsfDetails = factFind.smsf?.smsf_details || [];
-      smsfDetails.forEach(smsf => {
+      smsfDetails.forEach((smsf, fi) => {
         const smsfName = smsf.smsf_name || 'SMSF';
         const accounts = smsf.accounts || [];
-        accounts.forEach(acc => {
+        accounts.forEach((acc, ai) => {
           const owner = acc.owner || '';
           const balance = parseFloat(acc.balance) || 0;
-          if (balance > 0) {
-            rows.push({
-              id: crypto.randomUUID(),
-              description: `SMSF - ${smsfName}${owner ? ` (${owner})` : ''}`,
-              life: false,
-              tpd: false,
-              value: balance
-            });
-          }
+          assetList.push({
+            id: `smsf_${fi}_${ai}`,
+            label: `SMSF - ${smsfName}${owner ? ` (${owner})` : ''}`,
+            type: 'SMSF',
+            balance
+          });
         });
       });
       
-      if (rows.length > 0) {
-        setInsuranceData(prev => ({
-          ...prev,
-          [currentPerson]: {
-            ...prev[currentPerson],
-            asset_rows: rows
-          }
-        }));
-      }
+      // 5. Trusts & Companies
+      const entities = factFind.trusts_companies?.entities || [];
+      entities.forEach((e, i) => {
+        assetList.push({
+          id: `entity_${i}`,
+          label: e.type === 'trust' ? (e.trust_name || 'Trust') : (e.company_name || 'Company'),
+          type: e.type === 'trust' ? 'Trust' : 'Company'
+        });
+      });
     }
-  }, [showAssetsModal, factFind, currentPerson, currentPersonData.asset_rows.length]);
+    
+    // 6. NEW products from SOA Request
+    if (soaRequest) {
+      const products = soaRequest.products_entities?.products || {};
+      Object.entries(products).forEach(([type, items]) => {
+        (items || []).forEach((p, i) => {
+          assetList.push({
+            id: `new_product_${type}_${i}`,
+            label: `NEW - ${p.product_name || type}`,
+            type: `New ${type}`
+          });
+        });
+      });
+      
+      // 7. NEW entities
+      const newTrusts = soaRequest.products_entities?.new_trusts || [];
+      newTrusts.forEach((t, i) => {
+        assetList.push({
+          id: `new_trust_${i}`,
+          label: `NEW - ${t.trust_name}`,
+          type: 'New Trust'
+        });
+      });
+      
+      const newCompanies = soaRequest.products_entities?.new_companies || [];
+      newCompanies.forEach((c, i) => {
+        assetList.push({
+          id: `new_company_${i}`,
+          label: `NEW - ${c.company_name}`,
+          type: 'New Company'
+        });
+      });
+      
+      const newSMSFs = soaRequest.products_entities?.new_smsf || [];
+      newSMSFs.forEach((s, i) => {
+        assetList.push({
+          id: `new_smsf_${i}`,
+          label: `NEW - ${s.smsf_name}`,
+          type: 'New SMSF'
+        });
+      });
+    }
+    
+    return assetList;
+  };
 
   // Policy Management Functions
   const getInsuranceTypeBenefits = (insuranceTypeValue) => {
