@@ -481,7 +481,33 @@ export default function SOARequestInsurance() {
     const assetList = [];
     
     if (factFind) {
-      // Investment assets only
+      // 1. Superannuation accounts
+      const superFunds = factFind.superannuation?.funds || [];
+      superFunds.forEach((fund, i) => {
+        const fundName = fund.fund_name || fund.provider || 'Superannuation';
+        const balance = parseFloat(fund.balance || fund.current_balance) || 0;
+        assetList.push({
+          id: `super_${i}`,
+          label: `Super - ${fundName}`,
+          type: 'Superannuation',
+          balance
+        });
+      });
+      
+      // 2. Pension accounts
+      const pensions = factFind.superannuation?.pensions || [];
+      pensions.forEach((pension, i) => {
+        const fundName = pension.fund_name || pension.provider || 'Pension';
+        const balance = parseFloat(pension.balance || pension.current_balance) || 0;
+        assetList.push({
+          id: `pension_${i}`,
+          label: `Pension - ${fundName}`,
+          type: 'Pension',
+          balance
+        });
+      });
+      
+      // 3. Investment assets
       const investments = factFind.assets_liabilities?.assets || [];
       investments.forEach((asset, i) => {
         const value = parseFloat(asset.a_value || asset.value) || 0;
@@ -490,6 +516,20 @@ export default function SOARequestInsurance() {
           label: asset.a_name || asset.description || 'Investment',
           type: 'Investment',
           value
+        });
+      });
+    }
+    
+    // 4. NEW products from SOA Request (excluding entities)
+    if (soaRequest) {
+      const products = soaRequest.products_entities?.products || {};
+      Object.entries(products).forEach(([type, items]) => {
+        (items || []).forEach((p, i) => {
+          assetList.push({
+            id: `new_product_${type}_${i}`,
+            label: `NEW - ${p.product_name || type}`,
+            type: `New ${type}`
+          });
         });
       });
     }
@@ -1914,9 +1954,33 @@ export default function SOARequestInsurance() {
                     >
                       <option value="">Select asset...</option>
                       
+                      {assetList.filter(a => a.type === 'Superannuation').length > 0 && (
+                        <optgroup label="Superannuation">
+                          {assetList.filter(a => a.type === 'Superannuation').map(a => (
+                            <option key={a.id} value={a.id}>{a.label}</option>
+                          ))}
+                        </optgroup>
+                      )}
+                      
+                      {assetList.filter(a => a.type === 'Pension').length > 0 && (
+                        <optgroup label="Pension">
+                          {assetList.filter(a => a.type === 'Pension').map(a => (
+                            <option key={a.id} value={a.id}>{a.label}</option>
+                          ))}
+                        </optgroup>
+                      )}
+                      
                       {assetList.filter(a => a.type === 'Investment').length > 0 && (
                         <optgroup label="Investments">
                           {assetList.filter(a => a.type === 'Investment').map(a => (
+                            <option key={a.id} value={a.id}>{a.label}</option>
+                          ))}
+                        </optgroup>
+                      )}
+                      
+                      {assetList.filter(a => a.type?.startsWith('New')).length > 0 && (
+                        <optgroup label="New Products (SOA)">
+                          {assetList.filter(a => a.type?.startsWith('New')).map(a => (
                             <option key={a.id} value={a.id}>{a.label}</option>
                           ))}
                         </optgroup>
