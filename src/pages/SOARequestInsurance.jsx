@@ -481,33 +481,7 @@ export default function SOARequestInsurance() {
     const assetList = [];
     
     if (factFind) {
-      // 1. Superannuation accounts
-      const superFunds = factFind.superannuation?.funds || [];
-      superFunds.forEach((fund, i) => {
-        const fundName = fund.fund_name || fund.provider || 'Superannuation';
-        const balance = parseFloat(fund.balance || fund.current_balance) || 0;
-        assetList.push({
-          id: `super_${i}`,
-          label: `Super - ${fundName}`,
-          type: 'Superannuation',
-          balance
-        });
-      });
-      
-      // 2. Pension accounts
-      const pensions = factFind.superannuation?.pensions || [];
-      pensions.forEach((pension, i) => {
-        const fundName = pension.fund_name || pension.provider || 'Pension';
-        const balance = parseFloat(pension.balance || pension.current_balance) || 0;
-        assetList.push({
-          id: `pension_${i}`,
-          label: `Pension - ${fundName}`,
-          type: 'Pension',
-          balance
-        });
-      });
-      
-      // 3. Investment assets
+      // Investment assets only
       const investments = factFind.assets_liabilities?.assets || [];
       investments.forEach((asset, i) => {
         const value = parseFloat(asset.a_value || asset.value) || 0;
@@ -516,20 +490,6 @@ export default function SOARequestInsurance() {
           label: asset.a_name || asset.description || 'Investment',
           type: 'Investment',
           value
-        });
-      });
-    }
-    
-    // 4. NEW products from SOA Request (excluding entities)
-    if (soaRequest) {
-      const products = soaRequest.products_entities?.products || {};
-      Object.entries(products).forEach(([type, items]) => {
-        (items || []).forEach((p, i) => {
-          assetList.push({
-            id: `new_product_${type}_${i}`,
-            label: `NEW - ${p.product_name || type}`,
-            type: `New ${type}`
-          });
         });
       });
     }
