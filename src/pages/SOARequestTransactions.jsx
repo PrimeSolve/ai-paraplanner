@@ -1112,34 +1112,69 @@ function SellDetailPanel({ sell, assetOptions, modelOptions, onUpdate, onClose }
         <div className="grid grid-cols-3 gap-4">
           <div>
             <Label>Select asset</Label>
-            <Select value={sell.asset_id || ''} onValueChange={(v) => onUpdate('asset_id', v)}>
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select asset..." />
-              </SelectTrigger>
-              <SelectContent className="max-h-[400px]">
-                {(() => {
-                  const grouped = {};
-                  assetOptions.forEach(a => {
-                    const type = a.type || 'Other';
-                    if (!grouped[type]) grouped[type] = [];
-                    grouped[type].push(a);
-                  });
-                  
-                  return Object.entries(grouped).map(([type, items]) => (
-                    <React.Fragment key={type}>
-                      <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide bg-slate-50 sticky top-0">
-                        {type}
-                      </div>
-                      {items.map(a => (
-                        <SelectItem key={a.value} value={a.value} className="pl-6">
-                          {a.label}
-                        </SelectItem>
-                      ))}
-                    </React.Fragment>
-                  ));
-                })()}
-              </SelectContent>
-            </Select>
+            <select
+              value={sell.asset_id || ''}
+              onChange={(e) => onUpdate('asset_id', e.target.value)}
+              className="mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <option value="">Select asset...</option>
+              
+              {assetOptions.filter(a => a.type === 'Superannuation').length > 0 && (
+                <optgroup label="Superannuation">
+                  {assetOptions.filter(a => a.type === 'Superannuation').map(a => (
+                    <option key={a.value} value={a.value}>{a.label}</option>
+                  ))}
+                </optgroup>
+              )}
+              
+              {assetOptions.filter(a => a.type === 'Pension').length > 0 && (
+                <optgroup label="Pension">
+                  {assetOptions.filter(a => a.type === 'Pension').map(a => (
+                    <option key={a.value} value={a.value}>{a.label}</option>
+                  ))}
+                </optgroup>
+              )}
+              
+              {assetOptions.filter(a => a.type === 'Investment').length > 0 && (
+                <optgroup label="Investments">
+                  {assetOptions.filter(a => a.type === 'Investment').map(a => (
+                    <option key={a.value} value={a.value}>{a.label}</option>
+                  ))}
+                </optgroup>
+              )}
+              
+              {assetOptions.filter(a => a.type === 'SMSF').length > 0 && (
+                <optgroup label="SMSF">
+                  {assetOptions.filter(a => a.type === 'SMSF').map(a => (
+                    <option key={a.value} value={a.value}>{a.label}</option>
+                  ))}
+                </optgroup>
+              )}
+              
+              {assetOptions.filter(a => ['Trust', 'Company'].includes(a.type)).length > 0 && (
+                <optgroup label="Trusts & Companies">
+                  {assetOptions.filter(a => ['Trust', 'Company'].includes(a.type)).map(a => (
+                    <option key={a.value} value={a.value}>{a.label}</option>
+                  ))}
+                </optgroup>
+              )}
+              
+              {assetOptions.filter(a => a.type?.startsWith('New')).length > 0 && (
+                <optgroup label="New Products & Entities (SOA)">
+                  {assetOptions.filter(a => a.type?.startsWith('New')).map(a => (
+                    <option key={a.value} value={a.value}>{a.label}</option>
+                  ))}
+                </optgroup>
+              )}
+              
+              {assetOptions.filter(a => a.type === 'New Purchase').length > 0 && (
+                <optgroup label="New Purchases (This SOA)">
+                  {assetOptions.filter(a => a.type === 'New Purchase').map(a => (
+                    <option key={a.value} value={a.value}>{a.label}</option>
+                  ))}
+                </optgroup>
+              )}
+            </select>
           </div>
           <div>
             <Label>Sell entire amount</Label>
