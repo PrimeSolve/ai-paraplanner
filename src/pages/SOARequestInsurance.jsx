@@ -381,6 +381,25 @@ export default function SOARequestInsurance() {
     });
   };
 
+  const handleAssetSelect = (rowIdx, assetId) => {
+    const assetList = buildAssetList();
+    const asset = assetList.find(a => a.id === assetId);
+    
+    setInsuranceData(prev => {
+      const updated = [...prev[currentPerson].asset_rows];
+      updated[rowIdx].asset_id = assetId;
+      updated[rowIdx].description = asset?.label || '';
+      updated[rowIdx].value = asset?.balance || asset?.value || 0;
+      return {
+        ...prev,
+        [currentPerson]: {
+          ...prev[currentPerson],
+          asset_rows: updated
+        }
+      };
+    });
+  };
+
   // Calculate metrics for assumptions modal
   const calculateMetrics = () => {
     const dob = assumptions.date_of_birth ? new Date(assumptions.date_of_birth) : null;
