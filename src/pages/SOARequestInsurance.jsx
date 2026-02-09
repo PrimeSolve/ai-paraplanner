@@ -1184,28 +1184,44 @@ export default function SOARequestInsurance() {
                   {/* Core Fields */}
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <div>
-                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Owner</label>
-                      <Input 
-                        placeholder="e.g. Client, Partner, SMSF"
-                        value={policyForm.owner}
-                        onChange={(e) => updatePolicyForm('owner', e.target.value)}
-                      />
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Policy owner</label>
+                      <Select 
+                        value={policyForm.policy_owner} 
+                        onValueChange={(v) => updatePolicyForm('policy_owner', v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select owner..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {allEntities.map(e => (
+                            <SelectItem key={e.id} value={e.id}>{e.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
-                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Insurer / Product provider</label>
-                      <Input 
-                        placeholder="e.g. TAL, AIA, MLC"
-                        value={policyForm.insurer}
-                        onChange={(e) => updatePolicyForm('insurer', e.target.value)}
-                      />
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Insured</label>
+                      <Select 
+                        value={policyForm.insured} 
+                        onValueChange={(v) => updatePolicyForm('insured', v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select insured..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {principals.map(p => (
+                            <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     
                     <div>
-                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Product / Policy name</label>
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Provider</label>
                       <Input 
-                        placeholder="e.g. Accelerated Protection"
-                        value={policyForm.product_name}
-                        onChange={(e) => updatePolicyForm('product_name', e.target.value)}
+                        placeholder="e.g. TAL, AIA, MLC"
+                        value={policyForm.provider}
+                        onChange={(e) => updatePolicyForm('provider', e.target.value)}
                       />
                     </div>
                     <div>
@@ -1218,44 +1234,17 @@ export default function SOARequestInsurance() {
                     </div>
                     
                     <div>
-                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Insurance type</label>
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Policy type</label>
                       <Select 
-                        value={policyForm.insurance_type} 
-                        onValueChange={handleInsuranceTypeChange}
+                        value={policyForm.policy_type} 
+                        onValueChange={(v) => updatePolicyForm('policy_type', v)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1">Life (Stand-alone)</SelectItem>
-                          <SelectItem value="2">Life with Linked TPD</SelectItem>
-                          <SelectItem value="3">Life with Linked Trauma</SelectItem>
-                          <SelectItem value="4">Life with Linked TPD/Trauma</SelectItem>
-                          <SelectItem value="5">TPD (Stand-alone)</SelectItem>
-                          <SelectItem value="6">Trauma (Stand alone)</SelectItem>
-                          <SelectItem value="7">Trauma with Linked TPD</SelectItem>
-                          <SelectItem value="8">Income protection (Stand-alone)</SelectItem>
-                          <SelectItem value="10">Life with Super linked TPD</SelectItem>
-                          <SelectItem value="11">Life with Flexi linked TPD</SelectItem>
-                          <SelectItem value="12">Life with flexi linked Trauma</SelectItem>
-                          <SelectItem value="13">Super-Linked IP</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Structure</label>
-                      <Select 
-                        value={policyForm.structure} 
-                        onValueChange={(v) => updatePolicyForm('structure', v)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">Outside super</SelectItem>
-                          <SelectItem value="2">Inside super</SelectItem>
-                          <SelectItem value="3">Through SMSF</SelectItem>
-                          <SelectItem value="4">Through platform / wrap</SelectItem>
+                          <SelectItem value="1">Inside super</SelectItem>
+                          <SelectItem value="2">Outside super</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1272,7 +1261,7 @@ export default function SOARequestInsurance() {
                         <SelectContent>
                           <SelectItem value="1">Stepped</SelectItem>
                           <SelectItem value="2">Level</SelectItem>
-                          <SelectItem value="3">Blended</SelectItem>
+                          <SelectItem value="3">Hybrid</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1286,12 +1275,9 @@ export default function SOARequestInsurance() {
                           <SelectValue placeholder="Select..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1">Annual</SelectItem>
-                          <SelectItem value="2">Fortnightly</SelectItem>
-                          <SelectItem value="3">Monthly</SelectItem>
-                          <SelectItem value="4">Quarterly</SelectItem>
-                          <SelectItem value="5">Half-yearly</SelectItem>
-                          <SelectItem value="6">Weekly</SelectItem>
+                          <SelectItem value="1">Monthly</SelectItem>
+                          <SelectItem value="2">Quarterly</SelectItem>
+                          <SelectItem value="3">Annually</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1300,7 +1286,7 @@ export default function SOARequestInsurance() {
                       <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Premium amount</label>
                       <Input 
                         type="number"
-                        placeholder="$ per selected frequency"
+                        placeholder="$"
                         value={policyForm.premium_amount}
                         onChange={(e) => updatePolicyForm('premium_amount', e.target.value)}
                       />
