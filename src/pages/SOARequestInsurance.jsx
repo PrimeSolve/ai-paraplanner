@@ -1354,27 +1354,7 @@ export default function SOARequestInsurance() {
                         className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Sum insured (TPD)</label>
-                        <Input 
-                          type="number"
-                          placeholder="$"
-                          value={policyForm.tpd_sum_insured}
-                          onChange={(e) => updatePolicyForm('tpd_sum_insured', e.target.value)}
-                          disabled={!policyForm.include_tpd}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Premium (TPD)</label>
-                        <Input 
-                          type="number"
-                          placeholder="$"
-                          value={policyForm.tpd_premium}
-                          onChange={(e) => updatePolicyForm('tpd_premium', e.target.value)}
-                          disabled={!policyForm.include_tpd}
-                        />
-                      </div>
+                    <div className="grid grid-cols-3 gap-4">
                       <div>
                         <label className="text-sm font-semibold text-slate-700 mb-1.5 block">TPD definition</label>
                         <Select 
@@ -1392,13 +1372,33 @@ export default function SOARequestInsurance() {
                         </Select>
                       </div>
                       <div>
-                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Notes (optional)</label>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Sum insured</label>
                         <Input 
-                          placeholder="Additional notes..."
-                          value={policyForm.tpd_notes}
-                          onChange={(e) => updatePolicyForm('tpd_notes', e.target.value)}
+                          type="number"
+                          placeholder="$"
+                          value={policyForm.tpd_sum_insured}
+                          onChange={(e) => updatePolicyForm('tpd_sum_insured', e.target.value)}
                           disabled={!policyForm.include_tpd}
                         />
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Recommendation</label>
+                        <Select 
+                          value={policyForm.tpd_recommendation} 
+                          onValueChange={(v) => updatePolicyForm('tpd_recommendation', v)}
+                          disabled={!policyForm.include_tpd}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="retain">Retain</SelectItem>
+                            <SelectItem value="cancel">Cancel</SelectItem>
+                            <SelectItem value="replace">Replace</SelectItem>
+                            <SelectItem value="increase">Increase</SelectItem>
+                            <SelectItem value="decrease">Decrease</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>
