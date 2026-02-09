@@ -591,7 +591,7 @@ export default function SOARequestInsurance() {
   };
 
   const editPolicy = (index) => {
-    const policy = policies[index];
+    const policy = policiesData[index];
     setPolicyForm({ ...policy });
     setEditingPolicyIndex(index);
     setShowPolicyForm(true);
