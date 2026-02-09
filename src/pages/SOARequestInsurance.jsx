@@ -604,20 +604,14 @@ export default function SOARequestInsurance() {
   };
 
   const savePolicy = () => {
-    setInsuranceData(prev => {
-      const updatedPolicies = [...prev[currentPerson].policies];
+    setPoliciesData(prev => {
+      const updated = [...prev];
       if (editingPolicyIndex !== null) {
-        updatedPolicies[editingPolicyIndex] = { ...policyForm, id: policies[editingPolicyIndex].id };
+        updated[editingPolicyIndex] = { ...policyForm, id: updated[editingPolicyIndex].id };
       } else {
-        updatedPolicies.push({ ...policyForm, id: crypto.randomUUID() });
+        updated.push({ ...policyForm, id: crypto.randomUUID() });
       }
-      return {
-        ...prev,
-        [currentPerson]: {
-          ...prev[currentPerson],
-          policies: updatedPolicies
-        }
-      };
+      return updated;
     });
     cancelPolicyEdit();
   };
