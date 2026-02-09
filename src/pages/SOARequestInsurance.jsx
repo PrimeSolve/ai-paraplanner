@@ -1150,7 +1150,7 @@ export default function SOARequestInsurance() {
               
               {/* Info Note */}
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 mb-4">
-                Use this section to record existing and recommended policies. Client / Partner selection follows the toggle on the Needs tab.
+                Record existing and recommended policies for {currentPerson === 'client' ? (principals[0]?.label || 'Client') : (principals[1]?.label || 'Partner')}.
               </div>
               
               {/* Policies Summary Table */}
