@@ -618,13 +618,7 @@ export default function SOARequestInsurance() {
 
   const removePolicy = (index) => {
     if (confirm('Are you sure you want to delete this policy?')) {
-      setInsuranceData(prev => ({
-        ...prev,
-        [currentPerson]: {
-          ...prev[currentPerson],
-          policies: prev[currentPerson].policies.filter((_, i) => i !== index)
-        }
-      }));
+      setPoliciesData(prev => prev.filter((_, i) => i !== index));
     }
   };
 
