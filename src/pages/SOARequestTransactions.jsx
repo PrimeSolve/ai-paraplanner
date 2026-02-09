@@ -239,36 +239,9 @@ export default function SOARequestTransactions() {
             value
           });
         });
-        
-        // 4. SMSF accounts
-        const smsfDetails = factFind.smsf?.smsf_details || [];
-        smsfDetails.forEach((smsf, fi) => {
-          const smsfName = smsf.smsf_name || 'SMSF';
-          const accounts = smsf.accounts || [];
-          accounts.forEach((acc, ai) => {
-            const owner = acc.owner || '';
-            const balance = parseFloat(acc.balance) || 0;
-            assetOpts.push({
-              value: `smsf_${fi}_${ai}`,
-              label: `SMSF - ${smsfName}${owner ? ` (${owner})` : ''}`,
-              type: 'SMSF',
-              balance
-            });
-          });
-        });
-        
-        // 5. Existing trusts & companies from Fact Find
-        const entities = factFind.trusts_companies?.entities || [];
-        entities.forEach((e, i) => {
-          assetOpts.push({
-            value: `entity_${i}`,
-            label: e.type === 'trust' ? (e.trust_name || 'Trust') : (e.company_name || 'Company'),
-            type: e.type === 'trust' ? 'Trust' : 'Company'
-          });
-        });
       }
       
-      // 6. NEW products from the SOA Request
+      // 4. NEW products from the SOA Request (excluding entities)
       const products = soaReq.products_entities?.products || {};
       Object.entries(products).forEach(([type, items]) => {
         (items || []).forEach((p, i) => {
@@ -280,35 +253,7 @@ export default function SOARequestTransactions() {
         });
       });
       
-      // 7. NEW entities from the SOA Request
-      const newTrusts = soaReq.products_entities?.new_trusts || [];
-      newTrusts.forEach((t, i) => {
-        assetOpts.push({
-          value: `new_trust_${i}`,
-          label: `NEW - ${t.trust_name}`,
-          type: 'New Trust'
-        });
-      });
-      
-      const newCompanies = soaReq.products_entities?.new_companies || [];
-      newCompanies.forEach((c, i) => {
-        assetOpts.push({
-          value: `new_company_${i}`,
-          label: `NEW - ${c.company_name}`,
-          type: 'New Company'
-        });
-      });
-      
-      const newSMSFs = soaReq.products_entities?.new_smsf || [];
-      newSMSFs.forEach((s, i) => {
-        assetOpts.push({
-          value: `new_smsf_${i}`,
-          label: `NEW - ${s.smsf_name}`,
-          type: 'New SMSF'
-        });
-      });
-      
-      // 8. Buy transactions from current SOA
+      // 5. Buy transactions from current SOA
       buyTxns.forEach(b => {
         if (b.asset_type) {
           assetOpts.push({
