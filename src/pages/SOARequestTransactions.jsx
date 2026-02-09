@@ -1117,9 +1117,25 @@ function SellDetailPanel({ sell, assetOptions, modelOptions, onUpdate, onClose }
                 <SelectValue placeholder="Select asset..." />
               </SelectTrigger>
               <SelectContent>
-                {assetOptions.map(a => (
-                  <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
-                ))}
+                {(() => {
+                  const grouped = {};
+                  assetOptions.forEach(a => {
+                    const type = a.type || 'Other';
+                    if (!grouped[type]) grouped[type] = [];
+                    grouped[type].push(a);
+                  });
+                  
+                  return Object.entries(grouped).map(([type, items]) => (
+                    <React.Fragment key={type}>
+                      <div className="px-2 py-1.5 text-xs font-semibold text-slate-500 bg-slate-50">
+                        {type}
+                      </div>
+                      {items.map(a => (
+                        <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+                      ))}
+                    </React.Fragment>
+                  ));
+                })()}
               </SelectContent>
             </Select>
           </div>
