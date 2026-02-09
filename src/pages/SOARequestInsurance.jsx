@@ -1159,52 +1159,55 @@ export default function SOARequestInsurance() {
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-200">
                       <th className="text-left p-3 font-bold text-slate-600 text-xs uppercase">Owner</th>
-                      <th className="text-left p-3 font-bold text-slate-600 text-xs uppercase">Insurance type</th>
-                      <th className="text-left p-3 font-bold text-slate-600 text-xs uppercase">Premium type</th>
-                      <th className="text-left p-3 font-bold text-slate-600 text-xs uppercase">Premium frequency</th>
-                      <th className="text-right p-3 font-bold text-slate-600 text-xs uppercase">Premium amount</th>
+                      <th className="text-left p-3 font-bold text-slate-600 text-xs uppercase">Insured</th>
+                      <th className="text-left p-3 font-bold text-slate-600 text-xs uppercase">Provider</th>
+                      <th className="text-left p-3 font-bold text-slate-600 text-xs uppercase">Policy Type</th>
+                      <th className="text-right p-3 font-bold text-slate-600 text-xs uppercase">Premium</th>
                       <th className="p-3 w-[100px]"></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {policies.length === 0 ? (
+                    {policiesData.filter(p => p.person === currentPerson).length === 0 ? (
                       <tr>
                         <td colSpan={6} className="text-center py-8 text-slate-500">
                           No policies added yet. Click "Add new policy" to get started.
                         </td>
                       </tr>
                     ) : (
-                      policies.map((policy, index) => (
-                        <tr key={policy.id} className="border-b border-slate-200 hover:bg-slate-50">
-                          <td className="p-3 text-slate-700">{policy.owner || '—'}</td>
-                          <td className="p-3 text-slate-700">{getInsuranceTypeLabel(policy.insurance_type)}</td>
-                          <td className="p-3 text-slate-700">{getPremiumTypeLabel(policy.premium_type)}</td>
-                          <td className="p-3 text-slate-700">{getPremiumFrequencyLabel(policy.premium_frequency)}</td>
-                          <td className="p-3 text-right font-mono text-slate-700">
-                            {policy.premium_amount ? formatCurrency(policy.premium_amount) : '—'}
-                          </td>
-                          <td className="p-3">
-                            <div className="flex gap-1">
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => editPolicy(index)}
-                                className="text-slate-600 hover:text-slate-900"
-                              >
-                                Edit
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => removePolicy(index)}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
+                      policiesData.filter(p => p.person === currentPerson).map((policy, index) => {
+                        const actualIndex = policiesData.findIndex(p => p.id === policy.id);
+                        return (
+                          <tr key={policy.id} className="border-b border-slate-200 hover:bg-slate-50">
+                            <td className="p-3 text-slate-700">{allEntities.find(e => e.id === policy.policy_owner)?.label || '—'}</td>
+                            <td className="p-3 text-slate-700">{principals.find(p => p.id === policy.insured)?.label || '—'}</td>
+                            <td className="p-3 text-slate-700">{policy.provider || '—'}</td>
+                            <td className="p-3 text-slate-700">{policy.policy_type === '1' ? 'Inside super' : policy.policy_type === '2' ? 'Outside super' : '—'}</td>
+                            <td className="p-3 text-right font-mono text-slate-700">
+                              {policy.premium_amount ? formatCurrency(policy.premium_amount) : '—'}
+                            </td>
+                            <td className="p-3">
+                              <div className="flex gap-1">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => editPolicy(actualIndex)}
+                                  className="text-slate-600 hover:text-slate-900"
+                                >
+                                  Edit
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => removePolicy(actualIndex)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
