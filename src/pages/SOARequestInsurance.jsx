@@ -1464,7 +1464,7 @@ export default function SOARequestInsurance() {
                         className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-4 gap-4">
                       <div>
                         <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Monthly benefit</label>
                         <Input 
@@ -1472,16 +1472,6 @@ export default function SOARequestInsurance() {
                           placeholder="$ per month"
                           value={policyForm.ip_monthly_benefit}
                           onChange={(e) => updatePolicyForm('ip_monthly_benefit', e.target.value)}
-                          disabled={!policyForm.include_ip}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Premium (IP)</label>
-                        <Input 
-                          type="number"
-                          placeholder="$"
-                          value={policyForm.ip_premium}
-                          onChange={(e) => updatePolicyForm('ip_premium', e.target.value)}
                           disabled={!policyForm.include_ip}
                         />
                       </div>
@@ -1499,11 +1489,6 @@ export default function SOARequestInsurance() {
                             <SelectItem value="1">30 days</SelectItem>
                             <SelectItem value="2">60 days</SelectItem>
                             <SelectItem value="3">90 days</SelectItem>
-                            <SelectItem value="4">120 days</SelectItem>
-                            <SelectItem value="5">180 days</SelectItem>
-                            <SelectItem value="6">1 year</SelectItem>
-                            <SelectItem value="7">2 years</SelectItem>
-                            <SelectItem value="8">Other</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1518,15 +1503,28 @@ export default function SOARequestInsurance() {
                             <SelectValue placeholder="Select..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="2">180 days</SelectItem>
-                            <SelectItem value="3">1 year</SelectItem>
-                            <SelectItem value="4">2 years</SelectItem>
-                            <SelectItem value="5">3 years</SelectItem>
-                            <SelectItem value="6">5 years</SelectItem>
-                            <SelectItem value="7">To age 60</SelectItem>
-                            <SelectItem value="8">To age 65</SelectItem>
-                            <SelectItem value="9">To age 67</SelectItem>
-                            <SelectItem value="10">To age 70</SelectItem>
+                            <SelectItem value="1">2 years</SelectItem>
+                            <SelectItem value="2">5 years</SelectItem>
+                            <SelectItem value="3">To age 65</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Recommendation</label>
+                        <Select 
+                          value={policyForm.ip_recommendation} 
+                          onValueChange={(v) => updatePolicyForm('ip_recommendation', v)}
+                          disabled={!policyForm.include_ip}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="retain">Retain</SelectItem>
+                            <SelectItem value="cancel">Cancel</SelectItem>
+                            <SelectItem value="replace">Replace</SelectItem>
+                            <SelectItem value="increase">Increase</SelectItem>
+                            <SelectItem value="decrease">Decrease</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
