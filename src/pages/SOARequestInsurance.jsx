@@ -1978,24 +1978,8 @@ export default function SOARequestInsurance() {
                         </optgroup>
                       )}
                       
-                      {assetList.filter(a => a.type === 'SMSF').length > 0 && (
-                        <optgroup label="SMSF">
-                          {assetList.filter(a => a.type === 'SMSF').map(a => (
-                            <option key={a.id} value={a.id}>{a.label}</option>
-                          ))}
-                        </optgroup>
-                      )}
-                      
-                      {assetList.filter(a => ['Trust', 'Company'].includes(a.type)).length > 0 && (
-                        <optgroup label="Trusts & Companies">
-                          {assetList.filter(a => ['Trust', 'Company'].includes(a.type)).map(a => (
-                            <option key={a.id} value={a.id}>{a.label}</option>
-                          ))}
-                        </optgroup>
-                      )}
-                      
                       {assetList.filter(a => a.type?.startsWith('New')).length > 0 && (
-                        <optgroup label="New Products & Entities (SOA)">
+                        <optgroup label="New Products (SOA)">
                           {assetList.filter(a => a.type?.startsWith('New')).map(a => (
                             <option key={a.id} value={a.id}>{a.label}</option>
                           ))}
