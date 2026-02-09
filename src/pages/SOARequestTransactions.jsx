@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
+import EntitySelect from '../components/factfind/EntitySelect';
 import { Plus, Trash2, Pencil, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -88,7 +89,9 @@ export default function SOARequestTransactions() {
   
   // Data
   const [soaRequest, setSOARequest] = useState(null);
+  const [factFind, setFactFind] = useState(null);
   const [clientId, setClientId] = useState(null);
+  const [principals, setPrincipals] = useState([]);
   
   // Entity options for dropdowns
   const [ownerOptions, setOwnerOptions] = useState([]);
@@ -159,51 +162,23 @@ export default function SOARequestTransactions() {
   const loadEntityOptions = async (clientId, soaReq, buyTxns) => {
     try {
       // Load Principals
-      const principals = await base44.entities.Principal.filter({ client_id: clientId });
-      
-      // Load Trusts
-      const trusts = await base44.entities.Trust.filter({ client_id: clientId });
-      
-      // Load Companies
-      const companies = await base44.entities.Company.filter({ client_id: clientId });
-      
-      // Load SMSFs
-      const smsfs = await base44.entities.SMSF.filter({ client_id: clientId });
+      const principalsData = await base44.entities.Principal.filter({ client_id: clientId });
+      setPrincipals(principalsData);
       
       // Load Fact Find for asset data
-      let factFind = null;
+      let factFindData = null;
       if (soaReq.fact_find_id) {
         const factFinds = await base44.entities.FactFind.filter({ id: soaReq.fact_find_id });
-        factFind = factFinds[0];
+        factFindData = factFinds[0];
+        setFactFind(factFindData);
       }
-      
-      // Build owner options
-      const owners = [];
-      principals.forEach(p => {
-        const name = `${p.first_name || ''} ${p.last_name || ''}`.trim();
-        owners.push({
-          value: p.id,
-          label: name || (p.role === 'client' ? 'Client' : 'Partner')
-        });
-      });
-      trusts.forEach(t => owners.push({ value: t.id, label: `${t.name} (Trust)` }));
-      companies.forEach(c => owners.push({ value: c.id, label: `${c.name} (Company)` }));
-      smsfs.forEach(s => owners.push({ value: s.id, label: `${s.name} (SMSF)` }));
-      
-      // Add new entities from products_entities if available
-      const newEntities = soaReq.products_entities?.entities || [];
-      newEntities.forEach(e => {
-        owners.push({ value: e.id, label: `${e.name} (${e.type || 'New'})` });
-      });
-      
-      setOwnerOptions(owners);
       
       // Build asset options (for sell dropdown) - grouped by type
       const assetOpts = [];
       
       // Investment assets only from Fact Find
-      if (factFind) {
-        const investments = factFind.assets_liabilities?.assets || [];
+      if (factFindData) {
+        const investments = factFindData.assets_liabilities?.assets || [];
         investments.forEach((asset, i) => {
           const value = parseFloat(asset.a_value || asset.value) || 0;
           assetOpts.push({
@@ -215,7 +190,7 @@ export default function SOARequestTransactions() {
         });
       }
       
-      // 5. Buy transactions from current SOA
+      // Buy transactions from current SOA
       buyTxns.forEach(b => {
         if (b.asset_type) {
           assetOpts.push({
@@ -227,10 +202,6 @@ export default function SOARequestTransactions() {
       });
       
       setAssetOptions(assetOpts);
-      
-      // Build SMSF options
-      const smsfOpts = smsfs.map(s => ({ value: s.id, label: s.name }));
-      setSmsfOptions(smsfOpts);
       
       // Build debt options (existing debts for offset account, etc.)
       setDebtOptions([]);
@@ -384,11 +355,99 @@ export default function SOARequestTransactions() {
   };
 
   // ============================================================================
+  // SHARED OWNER OPTIONS (with SMSF pooled/segregated logic)
+  // ============================================================================
+
+  const getTransactionOwnerOptions = () => {
+    let owners = [];
+    
+    // Principals
+    principals.forEach(p => {
+      const name = `${p.first_name || ''} ${p.last_name || ''}`.trim();
+      owners.push({
+        id: p.id,
+        label: name || (p.role === 'client' ? 'Client' : 'Partner'),
+        type: 'Principal',
+        color: '#3B82F6'
+      });
+    });
+    
+    // Joint (synthetic)
+    if (principals.length === 2) {
+      const name1 = `${principals[0].first_name || ''} ${principals[0].last_name || ''}`.trim();
+      const name2 = `${principals[1].first_name || ''} ${principals[1].last_name || ''}`.trim();
+      owners.push({
+        id: 'joint',
+        label: `${name1 || 'Client'} & ${name2 || 'Partner'} (Joint)`,
+        type: 'Joint',
+        color: '#3B82F6'
+      });
+    }
+    
+    // Trusts & Companies from Fact Find
+    const entities = factFind?.trusts_companies?.entities || [];
+    entities.filter(e => e.type === 'trust').forEach((t, i) => {
+      owners.push({ id: `trust_${i}`, label: t.trust_name, type: 'Trust', color: '#EF4444' });
+    });
+    entities.filter(e => e.type === 'company').forEach((c, i) => {
+      owners.push({ id: `company_${i}`, label: c.company_name, type: 'Company', color: '#F97316' });
+    });
+    
+    // SMSFs from Fact Find — pooled = fund, segregated = accounts
+    const smsfs = factFind?.smsf?.smsf_details || [];
+    smsfs.forEach((fund, fi) => {
+      if (fund.acct_type === '1') {
+        // Pooled - add the fund itself
+        owners.push({ id: `smsf_${fi}`, label: fund.smsf_name || 'SMSF', type: 'SMSF', color: '#92400E' });
+      } else if (fund.acct_type === '2') {
+        // Segregated - add each account
+        (fund.accounts || []).forEach((acc, ai) => {
+          const ownerName = principals.find(p => p.id === acc.owner)?.first_name || acc.owner;
+          owners.push({
+            id: `smsf_${fi}_acc_${ai}`,
+            label: `${fund.smsf_name || 'SMSF'} - ${ownerName}`,
+            type: 'SMSF Account',
+            color: '#92400E'
+          });
+        });
+      }
+    });
+    
+    // New trusts from SOA Request
+    const newTrusts = soaRequest?.products_entities?.new_trusts || [];
+    newTrusts.forEach((t, i) => {
+      if (t.trust_name) owners.push({ id: `new_trust_${i}`, label: `NEW - ${t.trust_name}`, type: 'Trust', color: '#EF4444' });
+    });
+    
+    // New companies from SOA Request
+    const newCompanies = soaRequest?.products_entities?.new_companies || [];
+    newCompanies.forEach((c, i) => {
+      if (c.company_name) owners.push({ id: `new_company_${i}`, label: `NEW - ${c.company_name}`, type: 'Company', color: '#F97316' });
+    });
+    
+    // New SMSFs from SOA Request — same pooled/segregated logic
+    const newSmsfs = soaRequest?.products_entities?.new_smsf || [];
+    newSmsfs.forEach((fund, fi) => {
+      if (fund.acct_type === '1') {
+        owners.push({ id: `new_smsf_${fi}`, label: `NEW - ${fund.smsf_name || 'SMSF'}`, type: 'SMSF', color: '#92400E' });
+      } else if (fund.acct_type === '2') {
+        (fund.accounts || []).forEach((acc, ai) => {
+          const ownerName = principals.find(p => p.id === acc.owner)?.first_name || acc.owner;
+          owners.push({ id: `new_smsf_${fi}_acc_${ai}`, label: `NEW - ${fund.smsf_name || 'SMSF'} - ${ownerName}`, type: 'SMSF Account', color: '#92400E' });
+        });
+      }
+    });
+    
+    return owners;
+  };
+
+  // ============================================================================
   // RENDER HELPERS
   // ============================================================================
 
   const getOwnerLabel = (ownerId) => {
-    const owner = ownerOptions.find(o => o.value === ownerId);
+    const owners = getTransactionOwnerOptions();
+    const owner = owners.find(o => o.id === ownerId);
     return owner ? owner.label : '—';
   };
 
@@ -575,7 +634,7 @@ export default function SOARequestTransactions() {
                       {editingBuyId && (
                         <BuyDetailPanel
                           buy={buyTransactions.find(b => b.id === editingBuyId)}
-                          ownerOptions={ownerOptions}
+                          ownerOptions={getTransactionOwnerOptions()}
                           modelOptions={modelOptions}
                           debtOptions={debtOptions}
                           onUpdate={(field, value) => updateBuyTransaction(editingBuyId, field, value)}
@@ -745,7 +804,7 @@ export default function SOARequestTransactions() {
                       {editingDebtId && (
                         <DebtDetailPanel
                           debt={debtTransactions.find(d => d.id === editingDebtId)}
-                          ownerOptions={ownerOptions}
+                          ownerOptions={getTransactionOwnerOptions()}
                           smsfOptions={smsfOptions}
                           modelOptions={modelOptions}
                           buyTransactions={buyTransactions}
@@ -845,16 +904,13 @@ function BuyDetailPanel({ buy, ownerOptions, modelOptions, debtOptions, onUpdate
           </div>
           <div>
             <Label>Owner</Label>
-            <Select value={buy.owner_id || ''} onValueChange={(v) => onUpdate('owner_id', v)}>
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select owner..." />
-              </SelectTrigger>
-              <SelectContent>
-                {ownerOptions.map(o => (
-                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="mt-1">
+              <EntitySelect
+                value={buy.owner_id}
+                onChange={(val) => onUpdate('owner_id', val)}
+                entities={ownerOptions}
+              />
+            </div>
           </div>
           <div>
             <Label>ASX holding</Label>
@@ -1158,16 +1214,13 @@ function DebtDetailPanel({ debt, ownerOptions, smsfOptions, modelOptions, buyTra
           </div>
           <div>
             <Label>Owner</Label>
-            <Select value={debt.owner_id || ''} onValueChange={(v) => onUpdate('owner_id', v)}>
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select owner..." />
-              </SelectTrigger>
-              <SelectContent>
-                {ownerOptions.map(o => (
-                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="mt-1">
+              <EntitySelect
+                value={debt.owner_id}
+                onChange={(val) => onUpdate('owner_id', val)}
+                entities={ownerOptions}
+              />
+            </div>
           </div>
           <div>
             <Label>SMSF account</Label>
