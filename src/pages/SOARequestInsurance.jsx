@@ -1419,7 +1419,7 @@ export default function SOARequestInsurance() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Sum insured (Trauma)</label>
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Sum insured</label>
                         <Input 
                           type="number"
                           placeholder="$"
@@ -1429,23 +1429,23 @@ export default function SOARequestInsurance() {
                         />
                       </div>
                       <div>
-                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Premium (Trauma)</label>
-                        <Input 
-                          type="number"
-                          placeholder="$"
-                          value={policyForm.trauma_premium}
-                          onChange={(e) => updatePolicyForm('trauma_premium', e.target.value)}
+                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Recommendation</label>
+                        <Select 
+                          value={policyForm.trauma_recommendation} 
+                          onValueChange={(v) => updatePolicyForm('trauma_recommendation', v)}
                           disabled={!policyForm.include_trauma}
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Key events / comments</label>
-                        <Input 
-                          placeholder="e.g. Cancer, Heart attack, Stroke..."
-                          value={policyForm.trauma_notes}
-                          onChange={(e) => updatePolicyForm('trauma_notes', e.target.value)}
-                          disabled={!policyForm.include_trauma}
-                        />
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="retain">Retain</SelectItem>
+                            <SelectItem value="cancel">Cancel</SelectItem>
+                            <SelectItem value="replace">Replace</SelectItem>
+                            <SelectItem value="increase">Increase</SelectItem>
+                            <SelectItem value="decrease">Decrease</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>
