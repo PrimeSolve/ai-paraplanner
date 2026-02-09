@@ -43,34 +43,32 @@ export default function SOARequestInsurance() {
   // Policies data (separate from needs)
   const [policiesData, setPoliciesData] = useState([]);
 
-  // Policy form state
+  // Policy form state (new structure)
   const [policyForm, setPolicyForm] = useState({
-    owner: '',
-    insurer: '',
-    product_name: '',
+    person: 'client',
+    policy_owner: '',
+    insured: '',
+    provider: '',
     policy_number: '',
-    insurance_type: '',
-    structure: '',
+    policy_type: '',
     premium_type: '',
     premium_frequency: '',
     premium_amount: '',
     include_life: false,
     life_sum_insured: '',
-    life_premium: '',
+    life_recommendation: '',
     include_tpd: false,
-    tpd_sum_insured: '',
-    tpd_premium: '',
     tpd_definition: '',
-    tpd_notes: '',
+    tpd_sum_insured: '',
+    tpd_recommendation: '',
     include_trauma: false,
     trauma_sum_insured: '',
-    trauma_premium: '',
-    trauma_notes: '',
+    trauma_recommendation: '',
     include_ip: false,
     ip_monthly_benefit: '',
-    ip_premium: '',
     ip_waiting_period: '',
-    ip_benefit_period: ''
+    ip_benefit_period: '',
+    ip_recommendation: ''
   });
   
   const navigate = useNavigate();
