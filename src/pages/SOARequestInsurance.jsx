@@ -543,39 +543,7 @@ export default function SOARequestInsurance() {
   };
 
   // Policy Management Functions
-  const getInsuranceTypeBenefits = (insuranceTypeValue) => {
-    const map = {
-      '1':  { life: true,  tpd: false, trauma: false, ip: false },
-      '2':  { life: true,  tpd: true,  trauma: false, ip: false },
-      '3':  { life: true,  tpd: false, trauma: true,  ip: false },
-      '4':  { life: true,  tpd: true,  trauma: true,  ip: false },
-      '5':  { life: false, tpd: true,  trauma: false, ip: false },
-      '6':  { life: false, tpd: false, trauma: true,  ip: false },
-      '7':  { life: false, tpd: true,  trauma: true,  ip: false },
-      '8':  { life: false, tpd: false, trauma: false, ip: true  },
-      '10': { life: true,  tpd: true,  trauma: false, ip: false },
-      '11': { life: true,  tpd: true,  trauma: false, ip: false },
-      '12': { life: true,  tpd: false, trauma: true,  ip: false },
-      '13': { life: false, tpd: false, trauma: false, ip: true  },
-    };
-    return map[insuranceTypeValue] || { life: false, tpd: false, trauma: false, ip: false };
-  };
 
-  const handleInsuranceTypeChange = (value) => {
-    if (editingPolicyIndex === null) {
-      const benefits = getInsuranceTypeBenefits(value);
-      setPolicyForm(prev => ({
-        ...prev,
-        insurance_type: value,
-        include_life: benefits.life,
-        include_tpd: benefits.tpd,
-        include_trauma: benefits.trauma,
-        include_ip: benefits.ip
-      }));
-    } else {
-      setPolicyForm(prev => ({ ...prev, insurance_type: value }));
-    }
-  };
 
   const getPremiumTypeLabel = (value) => {
     const labels = { '1': 'Stepped', '2': 'Level', '3': 'Hybrid' };
