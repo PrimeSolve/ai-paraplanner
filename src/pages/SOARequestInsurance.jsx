@@ -577,27 +577,13 @@ export default function SOARequestInsurance() {
     }
   };
 
-  const getInsuranceTypeLabel = (value) => {
-    const labels = {
-      '1': 'Life (Stand-alone)', '2': 'Life with Linked TPD', '3': 'Life with Linked Trauma',
-      '4': 'Life with Linked TPD/Trauma', '5': 'TPD (Stand-alone)', '6': 'Trauma (Stand alone)',
-      '7': 'Trauma with Linked TPD', '8': 'Income protection (Stand-alone)',
-      '10': 'Life with Super linked TPD', '11': 'Life with Flexi linked TPD',
-      '12': 'Life with flexi linked Trauma', '13': 'Super-Linked IP'
-    };
-    return labels[value] || '—';
-  };
-
   const getPremiumTypeLabel = (value) => {
-    const labels = { '1': 'Stepped', '2': 'Level', '3': 'Blended' };
+    const labels = { '1': 'Stepped', '2': 'Level', '3': 'Hybrid' };
     return labels[value] || '—';
   };
 
   const getPremiumFrequencyLabel = (value) => {
-    const labels = {
-      '1': 'Annual', '2': 'Fortnightly', '3': 'Monthly',
-      '4': 'Quarterly', '5': 'Half-yearly', '6': 'Weekly'
-    };
+    const labels = { '1': 'Monthly', '2': 'Quarterly', '3': 'Annually' };
     return labels[value] || '—';
   };
 
