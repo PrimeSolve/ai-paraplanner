@@ -108,7 +108,7 @@ export default function SOARequestInsurance() {
           const requests = await base44.entities.SOARequest.filter({ id });
           if (requests[0]) {
             setSOARequest(requests[0]);
-            const insurance = requests[0].insurance || { client: getDefaultPersonData(), partner: getDefaultPersonData() };
+            const insurance = requests[0].insurance_needs || { client: getDefaultPersonData(), partner: getDefaultPersonData() };
             setInsuranceData(insurance);
             
             // Load linked fact find
