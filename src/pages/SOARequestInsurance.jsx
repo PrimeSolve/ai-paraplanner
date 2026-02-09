@@ -675,11 +675,13 @@ export default function SOARequestInsurance() {
               <button 
                 onClick={async () => {
                   const ff = await base44.entities.FactFind.get(soaRequest.fact_find_id);
-                  alert('LIABILITIES: ' + JSON.stringify(ff.assets_liabilities?.liabilities || 'NO LIABILITIES', null, 2).substring(0, 2000));
+                  const debts = ff.assets_liabilities?.liabilities || [];
+                  const nonMortgage = debts.find(d => d.d_type !== '1');
+                  alert('NON-MORTGAGE DEBT:\n' + Object.entries(nonMortgage || {}).map(([k, v]) => `${k} = ${v}`).join('\n'));
                 }}
                 style={{ background: '#dc2626', color: 'white', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', marginBottom: '16px', fontSize: '12px', fontWeight: 'bold' }}
               >
-                DEBUG: Show Liabilities
+                DEBUG: Show Investment Debt
               </button>
 
               {/* Toolbar */}
