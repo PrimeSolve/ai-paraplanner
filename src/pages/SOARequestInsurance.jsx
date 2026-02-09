@@ -1583,6 +1583,7 @@ export default function SOARequestInsurance() {
                     id="override_tax"
                     checked={assumptions.override_tpd_tax}
                     onCheckedChange={(checked) => updateAssumptions('override_tpd_tax', checked)}
+                    className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                   />
                   <label htmlFor="override_tax" className="text-sm font-semibold text-slate-700 cursor-pointer">
                     Override TPD tax uplift manually
