@@ -173,11 +173,22 @@ export default function SOARequestInsurance() {
       const salary = assumptions.salary_override ?? defaults.salary;
       const dob = assumptions.dob_override ?? defaults.dob;
       
+      // Calculate service end date (when client turns retirement age)
+      let calculatedServiceEnd = '';
+      if (dob) {
+        const retireAge = assumptions.retirement_age || 65;
+        const retireDate = new Date(dob);
+        retireDate.setFullYear(retireDate.getFullYear() + retireAge);
+        calculatedServiceEnd = retireDate.toISOString().split('T')[0];
+      }
+      const serviceEnd = assumptions.service_end_override ?? calculatedServiceEnd;
+      
       // Only update if they're empty (initial load)
       if (!assumptions.mortgage_balance) updateAssumptions('mortgage_balance', mortgage);
       if (!assumptions.other_debts) updateAssumptions('other_debts', otherDebts);
       if (!assumptions.annual_salary) updateAssumptions('annual_salary', salary);
       if (!assumptions.date_of_birth) updateAssumptions('date_of_birth', dob);
+      if (!assumptions.service_end_date && calculatedServiceEnd) updateAssumptions('service_end_date', serviceEnd);
     };
 
     window.addEventListener('show-assumptions', handleModalOpen);
