@@ -171,11 +171,13 @@ export default function SOARequestInsurance() {
       const mortgage = assumptions.mortgage_override ?? defaults.mortgage;
       const otherDebts = assumptions.other_debts_override ?? defaults.otherDebts;
       const salary = assumptions.salary_override ?? defaults.salary;
+      const dob = assumptions.dob_override ?? defaults.dob;
       
       // Only update if they're empty (initial load)
       if (!assumptions.mortgage_balance) updateAssumptions('mortgage_balance', mortgage);
       if (!assumptions.other_debts) updateAssumptions('other_debts', otherDebts);
       if (!assumptions.annual_salary) updateAssumptions('annual_salary', salary);
+      if (!assumptions.date_of_birth) updateAssumptions('date_of_birth', dob);
     };
 
     window.addEventListener('show-assumptions', handleModalOpen);
@@ -407,7 +409,7 @@ export default function SOARequestInsurance() {
 
   // Pre-fill calculations from Fact Find
   const getPreFillDefaults = () => {
-    if (!factFind) return { mortgage: 0, otherDebts: 0, salary: 0 };
+    if (!factFind) return { mortgage: 0, otherDebts: 0, salary: 0, dob: '' };
 
     // Mortgage total (debt_type = '1')
     const allDebts = factFind.assets_liabilities?.liabilities || [];
@@ -426,7 +428,12 @@ export default function SOARequestInsurance() {
     const incomeData = incomeSources.find(s => s.person === personKey);
     const salary = parseFloat(incomeData?.fields?.i_gross || 0);
 
-    return { mortgage: mortgageTotal, otherDebts: otherDebtsTotal, salary };
+    // Date of birth
+    const dob = currentPerson === 'client' 
+      ? factFind.personal?.date_of_birth 
+      : factFind.personal?.partner_date_of_birth;
+
+    return { mortgage: mortgageTotal, otherDebts: otherDebtsTotal, salary, dob: dob || '' };
   };
 
   const incomeTotals = {
@@ -671,19 +678,6 @@ export default function SOARequestInsurance() {
 
                 {/* NEEDS TAB */}
                 <TabsContent value="needs" className="space-y-4 mt-6">
-              {/* DEBUG BUTTON */}
-              <button 
-                onClick={async () => {
-                  const ff = await base44.entities.FactFind.get(soaRequest.fact_find_id);
-                  const debts = ff.assets_liabilities?.liabilities || [];
-                  const nonMortgage = debts.find(d => d.d_type !== '1');
-                  alert('NON-MORTGAGE DEBT:\n' + Object.entries(nonMortgage || {}).map(([k, v]) => `${k} = ${v}`).join('\n'));
-                }}
-                style={{ background: '#dc2626', color: 'white', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', marginBottom: '16px', fontSize: '12px', fontWeight: 'bold' }}
-              >
-                DEBUG: Show Investment Debt
-              </button>
-
               {/* Toolbar */}
                 <div className="flex items-center justify-between">
                   {/* Person Switcher */}
