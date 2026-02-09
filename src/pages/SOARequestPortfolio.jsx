@@ -152,6 +152,7 @@ export default function SOARequestPortfolio() {
 
   // UI state
   const [selectedProductId, setSelectedProductId] = useState('');
+  const [selectedProductOwnerRiskProfile, setSelectedProductOwnerRiskProfile] = useState(null);
   const [editingId, setEditingId] = useState(null);
 
   // ============================================================================
@@ -223,7 +224,8 @@ export default function SOARequestPortfolio() {
         productList.push({
           id: `super_${i}`,
           name: `Super - ${acc.fund_name || acc.provider || 'Superannuation'}`,
-          type: 'Superannuation'
+          type: 'Superannuation',
+          owner: acc.person // 'client' or 'partner'
         });
       });
 
@@ -233,7 +235,8 @@ export default function SOARequestPortfolio() {
         productList.push({
           id: `pension_${i}`,
           name: `Pension - ${acc.fund_name || acc.provider || 'Pension'}`,
-          type: 'Pension'
+          type: 'Pension',
+          owner: acc.person // 'client' or 'partner'
         });
       });
 
@@ -243,7 +246,8 @@ export default function SOARequestPortfolio() {
         productList.push({
           id: `investment_${i}`,
           name: asset.platform_name || asset.name || 'Investment',
-          type: 'Investment'
+          type: 'Investment',
+          owner: asset.person // 'client' or 'partner'
         });
       });
 
@@ -253,7 +257,8 @@ export default function SOARequestPortfolio() {
         productList.push({
           id: `bond_${i}`,
           name: bond.bond_name || bond.name || 'Investment Bond',
-          type: 'Investment'
+          type: 'Investment',
+          owner: bond.person // 'client' or 'partner'
         });
       });
 
@@ -261,16 +266,23 @@ export default function SOARequestPortfolio() {
       const smsfs = factFindData?.smsf?.smsf_details || [];
       smsfs.forEach((fund, fi) => {
         if (fund.acct_type === '1') {
-          // Pooled
-          productList.push({ id: `smsf_${fi}`, name: fund.smsf_name || 'SMSF', type: 'SMSF' });
+          // Pooled - no specific owner
+          productList.push({ 
+            id: `smsf_${fi}`, 
+            name: fund.smsf_name || 'SMSF', 
+            type: 'SMSF',
+            owner: null // Entity owned
+          });
         } else if (fund.acct_type === '2') {
           // Segregated - add each account
           (fund.accounts || []).forEach((acc, ai) => {
             const ownerName = principalsData.find(p => p.id === acc.owner)?.first_name || acc.owner;
+            const ownerRole = principalsData.find(p => p.id === acc.owner)?.role;
             productList.push({
               id: `smsf_${fi}_acc_${ai}`,
               name: `${fund.smsf_name || 'SMSF'} - ${ownerName}`,
-              type: 'SMSF Account'
+              type: 'SMSF Account',
+              owner: ownerRole // 'client' or 'partner'
             });
           });
         }
@@ -283,7 +295,8 @@ export default function SOARequestPortfolio() {
           productList.push({
             id: `new_${type}_${i}`,
             name: `NEW - ${p.product_name || type}`,
-            type: `New ${type}`
+            type: `New ${type}`,
+            owner: p.person || p.owner // New products may have owner/person field
           });
         });
       });
@@ -433,6 +446,36 @@ export default function SOARequestPortfolio() {
     return product ? product.name : '—';
   };
 
+  // Get risk profile for selected product's owner
+  const handleProductSelection = (productId) => {
+    setSelectedProductId(productId);
+    
+    if (!productId || !factFind) {
+      setSelectedProductOwnerRiskProfile(null);
+      return;
+    }
+    
+    // Find the product and its owner
+    const product = products.find(p => p.id === productId);
+    const owner = product?.owner; // 'client', 'partner', or null (entity)
+    
+    if (!owner) {
+      // Entity-owned product (e.g., pooled SMSF, trust, company)
+      setSelectedProductOwnerRiskProfile('entity');
+      return;
+    }
+    
+    // Get the owner's risk profile from Fact Find
+    let riskProfile = null;
+    if (owner === 'client') {
+      riskProfile = factFind.risk_profile?.client?.adjustedProfile || factFind.risk_profile?.client?.profile;
+    } else if (owner === 'partner') {
+      riskProfile = factFind.risk_profile?.partner?.adjustedProfile || factFind.risk_profile?.partner?.profile;
+    }
+    
+    setSelectedProductOwnerRiskProfile(riskProfile);
+  };
+
   // ============================================================================
   // LOADING STATE
   // ============================================================================
@@ -479,7 +522,7 @@ export default function SOARequestPortfolio() {
                   </CardTitle>
                   <select
                     value={selectedProductId}
-                    onChange={(e) => setSelectedProductId(e.target.value)}
+                    onChange={(e) => handleProductSelection(e.target.value)}
                     className="w-[250px] flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   >
                     <option value="">Select a product...</option>
@@ -574,15 +617,27 @@ export default function SOARequestPortfolio() {
                   <CardTitle className="flex items-center gap-2">
                     <span>⚖️</span> Target vs Current
                   </CardTitle>
-                  {clientRiskProfile && (
+                  {selectedProductOwnerRiskProfile && selectedProductOwnerRiskProfile !== 'entity' && (
                     <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 border border-blue-200 rounded-lg text-sm font-medium text-blue-800">
-                      🎯 {RISK_PROFILE_LABELS[clientRiskProfile]}
+                      🎯 {RISK_PROFILE_LABELS[selectedProductOwnerRiskProfile]}
                     </span>
                   )}
                 </div>
               </CardHeader>
               <CardContent>
-                {!clientRiskProfile ? (
+                {!selectedProductId ? (
+                  <div className="text-center py-12 text-slate-500">
+                    <div className="text-4xl mb-3">🎯</div>
+                    <p>Select a product to view target allocation</p>
+                  </div>
+                ) : selectedProductOwnerRiskProfile === 'entity' ? (
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center gap-3">
+                    <AlertTriangle className="w-5 h-5 text-slate-600 flex-shrink-0" />
+                    <span className="text-sm text-slate-700">
+                      Risk profile not applicable for entity-owned products
+                    </span>
+                  </div>
+                ) : !selectedProductOwnerRiskProfile ? (
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center gap-3">
                     <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
                     <span className="text-sm text-amber-800">
@@ -598,7 +653,7 @@ export default function SOARequestPortfolio() {
                       <div className="text-center">Div</div>
                     </div>
                     {GROWTH_ASSETS.map(asset => {
-                      const target = RISK_PROFILE_ALLOCATIONS[clientRiskProfile]?.[asset] || 0;
+                      const target = RISK_PROFILE_ALLOCATIONS[selectedProductOwnerRiskProfile]?.[asset] || 0;
                       const current = 0;
                       const div = current - target;
                       return (
@@ -614,12 +669,12 @@ export default function SOARequestPortfolio() {
                     })}
                     <div className="grid grid-cols-4 gap-2 py-1.5 bg-sky-50 font-semibold text-sky-800 text-xs">
                       <div>Growth Exp</div>
-                      <div className="text-center">{RISK_PROFILE_ALLOCATIONS[clientRiskProfile]?.['Growth Exposure']?.toFixed(1)}%</div>
+                      <div className="text-center">{RISK_PROFILE_ALLOCATIONS[selectedProductOwnerRiskProfile]?.['Growth Exposure']?.toFixed(1)}%</div>
                       <div className="text-center">—</div>
                       <div className="text-center">—</div>
                     </div>
                     {DEFENSIVE_ASSETS.map(asset => {
-                      const target = RISK_PROFILE_ALLOCATIONS[clientRiskProfile]?.[asset] || 0;
+                      const target = RISK_PROFILE_ALLOCATIONS[selectedProductOwnerRiskProfile]?.[asset] || 0;
                       const current = 0;
                       const div = current - target;
                       return (
@@ -635,7 +690,7 @@ export default function SOARequestPortfolio() {
                     })}
                     <div className="grid grid-cols-4 gap-2 py-1.5 bg-sky-50 font-semibold text-sky-800 text-xs">
                       <div>Def Exp</div>
-                      <div className="text-center">{RISK_PROFILE_ALLOCATIONS[clientRiskProfile]?.['Defensive Exposure']?.toFixed(1)}%</div>
+                      <div className="text-center">{RISK_PROFILE_ALLOCATIONS[selectedProductOwnerRiskProfile]?.['Defensive Exposure']?.toFixed(1)}%</div>
                       <div className="text-center">—</div>
                       <div className="text-center">—</div>
                     </div>
