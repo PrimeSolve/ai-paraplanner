@@ -623,6 +623,20 @@ export default function SOARequestPortfolio() {
                     </span>
                   )}
                 </div>
+                <button 
+                  onClick={() => {
+                    const selectedProduct = products.find(p => p.id === selectedProductId);
+                    alert(
+                      'Selected product: ' + JSON.stringify(selectedProduct, null, 2) + '\n\n' +
+                      'Product owner: ' + selectedProduct?.owner + '\n\n' +
+                      'Risk profile data: ' + JSON.stringify(factFind?.risk_profile || 'NO RISK PROFILE', null, 2) + '\n\n' +
+                      'Personal data keys: ' + Object.keys(factFind?.personal || {}).join(', ')
+                    );
+                  }}
+                  style={{ background: 'red', color: 'white', padding: '8px', margin: '8px' }}
+                >
+                  DEBUG: Show product owner + risk profile
+                </button>
               </CardHeader>
               <CardContent>
                 {!selectedProductId ? (
