@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
 import EntitySelect from '../components/factfind/EntitySelect';
+import { useSOAEntities } from '../components/soa/useSOAEntities';
 import { Plus, Trash2, Pencil, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -91,7 +92,9 @@ export default function SOARequestTransactions() {
   const [soaRequest, setSOARequest] = useState(null);
   const [factFind, setFactFind] = useState(null);
   const [clientId, setClientId] = useState(null);
-  const [principals, setPrincipals] = useState([]);
+  
+  // Load entities from Fact Find via hook
+  const { getByTypes } = useSOAEntities(soaRequest?.id);
   
   // Entity options for dropdowns
   const [ownerOptions, setOwnerOptions] = useState([]);
@@ -161,10 +164,6 @@ export default function SOARequestTransactions() {
 
   const loadEntityOptions = async (clientId, soaReq, buyTxns) => {
     try {
-      // Load Principals
-      const principalsData = await base44.entities.Principal.filter({ client_id: clientId });
-      setPrincipals(principalsData);
-      
       // Load Fact Find for asset data
       let factFindData = null;
       if (soaReq.fact_find_id) {
@@ -361,27 +360,22 @@ export default function SOARequestTransactions() {
   const getTransactionOwnerOptions = () => {
     let owners = [];
     
-    // Principals - CRITICAL: Use the Principal entity records loaded from database
+    // Principals from Fact Find (via useSOAEntities hook)
+    const principals = getByTypes(['principal']);
     principals.forEach(p => {
-      const name = `${p.first_name || ''} ${p.last_name || ''}`.trim();
       owners.push({
         id: p.id,
-        label: name || (p.role === 'client' ? 'Client' : 'Partner'),
+        label: p.label,
         type: 'Principal',
-        color: '#3B82F6'
+        color: p.color
       });
     });
     
-    console.log('getTransactionOwnerOptions - principals:', principals);
-    console.log('getTransactionOwnerOptions - owners so far:', owners);
-    
     // Joint (synthetic)
     if (principals.length === 2) {
-      const name1 = `${principals[0].first_name || ''} ${principals[0].last_name || ''}`.trim();
-      const name2 = `${principals[1].first_name || ''} ${principals[1].last_name || ''}`.trim();
       owners.push({
         id: 'joint',
-        label: `${name1 || 'Client'} & ${name2 || 'Partner'} (Joint)`,
+        label: `${principals[0].label} & ${principals[1].label} (Joint)`,
         type: 'Joint',
         color: '#3B82F6'
       });
@@ -405,7 +399,8 @@ export default function SOARequestTransactions() {
       } else if (fund.acct_type === '2') {
         // Segregated - add each account
         (fund.accounts || []).forEach((acc, ai) => {
-          const ownerName = principals.find(p => p.id === acc.owner)?.first_name || acc.owner;
+          const ownerPrincipal = principals.find(p => p.id === acc.owner);
+          const ownerName = ownerPrincipal?.label || acc.owner;
           owners.push({
             id: `smsf_${fi}_acc_${ai}`,
             label: `${fund.smsf_name || 'SMSF'} - ${ownerName}`,
@@ -435,7 +430,8 @@ export default function SOARequestTransactions() {
         owners.push({ id: `new_smsf_${fi}`, label: `NEW - ${fund.smsf_name || 'SMSF'}`, type: 'SMSF', color: '#92400E' });
       } else if (fund.acct_type === '2') {
         (fund.accounts || []).forEach((acc, ai) => {
-          const ownerName = principals.find(p => p.id === acc.owner)?.first_name || acc.owner;
+          const ownerPrincipal = principals.find(p => p.id === acc.owner);
+          const ownerName = ownerPrincipal?.label || acc.owner;
           owners.push({ id: `new_smsf_${fi}_acc_${ai}`, label: `NEW - ${fund.smsf_name || 'SMSF'} - ${ownerName}`, type: 'SMSF Account', color: '#92400E' });
         });
       }
