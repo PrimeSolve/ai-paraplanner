@@ -21,9 +21,11 @@ export default function SOARequestInsurance() {
   const [soaRequest, setSOARequest] = useState(null);
   const [factFind, setFactFind] = useState(null);
   const [currentPerson, setCurrentPerson] = useState('client');
+  const [activeTab, setActiveTab] = useState('needs');
   const [soaId, setSOAId] = useState(null);
   const { getByTypes } = useSOAEntities(soaId);
   const principals = getByTypes(['principal']);
+  const allEntities = getByTypes(['principal', 'trust', 'company', 'smsf']);
   
   // Modals state
   const [showAssumptionsModal, setShowAssumptionsModal] = useState(false);
