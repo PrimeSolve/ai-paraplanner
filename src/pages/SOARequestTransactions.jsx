@@ -1026,33 +1026,9 @@ function SellDetailPanel({ sell, assetOptions, modelOptions, onUpdate, onClose }
             >
               <option value="">Select asset...</option>
               
-              {assetOptions.filter(a => a.type === 'Superannuation').length > 0 && (
-                <optgroup label="Superannuation">
-                  {assetOptions.filter(a => a.type === 'Superannuation').map(a => (
-                    <option key={a.value} value={a.value}>{a.label}</option>
-                  ))}
-                </optgroup>
-              )}
-              
-              {assetOptions.filter(a => a.type === 'Pension').length > 0 && (
-                <optgroup label="Pension">
-                  {assetOptions.filter(a => a.type === 'Pension').map(a => (
-                    <option key={a.value} value={a.value}>{a.label}</option>
-                  ))}
-                </optgroup>
-              )}
-              
               {assetOptions.filter(a => a.type === 'Investment').length > 0 && (
                 <optgroup label="Investments">
                   {assetOptions.filter(a => a.type === 'Investment').map(a => (
-                    <option key={a.value} value={a.value}>{a.label}</option>
-                  ))}
-                </optgroup>
-              )}
-              
-              {assetOptions.filter(a => a.type?.startsWith('New') && a.type !== 'New Purchase').length > 0 && (
-                <optgroup label="New Products (SOA)">
-                  {assetOptions.filter(a => a.type?.startsWith('New') && a.type !== 'New Purchase').map(a => (
                     <option key={a.value} value={a.value}>{a.label}</option>
                   ))}
                 </optgroup>
