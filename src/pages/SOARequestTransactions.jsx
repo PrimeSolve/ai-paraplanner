@@ -399,7 +399,7 @@ export default function SOARequestTransactions() {
       } else if (fund.acct_type === '2') {
         // Segregated - add each account
         (fund.accounts || []).forEach((acc, ai) => {
-          const ownerPrincipal = principals.find(p => p.id === acc.owner);
+          const ownerPrincipal = getByTypes(['principal']).find(p => p.id === acc.owner);
           const ownerName = ownerPrincipal?.label || acc.owner;
           owners.push({
             id: `smsf_${fi}_acc_${ai}`,
@@ -430,7 +430,7 @@ export default function SOARequestTransactions() {
         owners.push({ id: `new_smsf_${fi}`, label: `NEW - ${fund.smsf_name || 'SMSF'}`, type: 'SMSF', color: '#92400E' });
       } else if (fund.acct_type === '2') {
         (fund.accounts || []).forEach((acc, ai) => {
-          const ownerPrincipal = principals.find(p => p.id === acc.owner);
+          const ownerPrincipal = getByTypes(['principal']).find(p => p.id === acc.owner);
           const ownerName = ownerPrincipal?.label || acc.owner;
           owners.push({ id: `new_smsf_${fi}_acc_${ai}`, label: `NEW - ${fund.smsf_name || 'SMSF'} - ${ownerName}`, type: 'SMSF Account', color: '#92400E' });
         });
