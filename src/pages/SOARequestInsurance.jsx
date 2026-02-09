@@ -518,36 +518,9 @@ export default function SOARequestInsurance() {
           value
         });
       });
-      
-      // 4. SMSF accounts
-      const smsfDetails = factFind.smsf?.smsf_details || [];
-      smsfDetails.forEach((smsf, fi) => {
-        const smsfName = smsf.smsf_name || 'SMSF';
-        const accounts = smsf.accounts || [];
-        accounts.forEach((acc, ai) => {
-          const owner = acc.owner || '';
-          const balance = parseFloat(acc.balance) || 0;
-          assetList.push({
-            id: `smsf_${fi}_${ai}`,
-            label: `SMSF - ${smsfName}${owner ? ` (${owner})` : ''}`,
-            type: 'SMSF',
-            balance
-          });
-        });
-      });
-      
-      // 5. Trusts & Companies
-      const entities = factFind.trusts_companies?.entities || [];
-      entities.forEach((e, i) => {
-        assetList.push({
-          id: `entity_${i}`,
-          label: e.type === 'trust' ? (e.trust_name || 'Trust') : (e.company_name || 'Company'),
-          type: e.type === 'trust' ? 'Trust' : 'Company'
-        });
-      });
     }
     
-    // 6. NEW products from SOA Request
+    // 4. NEW products from SOA Request (excluding entities)
     if (soaRequest) {
       const products = soaRequest.products_entities?.products || {};
       Object.entries(products).forEach(([type, items]) => {
@@ -557,34 +530,6 @@ export default function SOARequestInsurance() {
             label: `NEW - ${p.product_name || type}`,
             type: `New ${type}`
           });
-        });
-      });
-      
-      // 7. NEW entities
-      const newTrusts = soaRequest.products_entities?.new_trusts || [];
-      newTrusts.forEach((t, i) => {
-        assetList.push({
-          id: `new_trust_${i}`,
-          label: `NEW - ${t.trust_name}`,
-          type: 'New Trust'
-        });
-      });
-      
-      const newCompanies = soaRequest.products_entities?.new_companies || [];
-      newCompanies.forEach((c, i) => {
-        assetList.push({
-          id: `new_company_${i}`,
-          label: `NEW - ${c.company_name}`,
-          type: 'New Company'
-        });
-      });
-      
-      const newSMSFs = soaRequest.products_entities?.new_smsf || [];
-      newSMSFs.forEach((s, i) => {
-        assetList.push({
-          id: `new_smsf_${i}`,
-          label: `NEW - ${s.smsf_name}`,
-          type: 'New SMSF'
         });
       });
     }
