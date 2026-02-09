@@ -1110,8 +1110,35 @@ export default function SOARequestInsurance() {
               {/* POLICIES TAB */}
               {activeTab === 'policies' && (
                 <div className="space-y-4 mt-6">
-              {/* Toolbar */}
-              <div className="flex items-center justify-end mb-4">
+              {/* Person Switcher */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-1">
+                  {principals[0] && (
+                    <button
+                      className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
+                        currentPerson === 'client' 
+                          ? 'bg-white text-slate-900 shadow-sm' 
+                          : 'text-slate-500 hover:text-slate-700'
+                      }`}
+                      onClick={() => setCurrentPerson('client')}
+                    >
+                      {principals[0].label || 'Client'}
+                    </button>
+                  )}
+                  {principals[1] && (
+                    <button
+                      className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
+                        currentPerson === 'partner' 
+                          ? 'bg-white text-slate-900 shadow-sm' 
+                          : 'text-slate-500 hover:text-slate-700'
+                      }`}
+                      onClick={() => setCurrentPerson('partner')}
+                    >
+                      {principals[1].label || 'Partner'}
+                    </button>
+                  )}
+                </div>
+                
                 <Button 
                   className="bg-blue-600 hover:bg-blue-700" 
                   onClick={addNewPolicy}
