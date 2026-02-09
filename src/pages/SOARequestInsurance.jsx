@@ -1542,8 +1542,8 @@ export default function SOARequestInsurance() {
                   </div>
                 </div>
               )}
-              </TabsContent>
-              </Tabs>
+              </div>
+              )}
               </div>
               </div>
 
