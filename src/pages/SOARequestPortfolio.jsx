@@ -455,25 +455,46 @@ export default function SOARequestPortfolio() {
       return;
     }
     
-    // Find the product and its owner
+    // Find the product and its owner UUID
     const product = products.find(p => p.id === productId);
-    const owner = product?.owner; // 'client', 'partner', or null (entity)
+    const ownerEntityId = product?.owner_id || product?.owner;
     
-    if (!owner) {
-      // Entity-owned product (e.g., pooled SMSF, trust, company)
+    console.log('=== PRODUCT SELECTION DEBUG ===');
+    console.log('Selected product:', JSON.stringify(product, null, 2));
+    console.log('Owner entity ID:', ownerEntityId);
+    console.log('All principals:', JSON.stringify(principals, null, 2));
+    
+    if (!ownerEntityId) {
+      // No owner specified - entity-owned
       setSelectedProductOwnerRiskProfile('entity');
       return;
     }
     
-    // Get the owner's risk profile from Fact Find
-    let riskProfile = null;
-    if (owner === 'client') {
-      riskProfile = factFind.risk_profile?.client?.adjustedProfile || factFind.risk_profile?.client?.profile;
-    } else if (owner === 'partner') {
-      riskProfile = factFind.risk_profile?.partner?.adjustedProfile || factFind.risk_profile?.partner?.profile;
+    // Find which principal owns this product
+    const ownerPrincipal = principals.find(p => p.id === ownerEntityId);
+    
+    console.log('Owner principal match:', JSON.stringify(ownerPrincipal, null, 2));
+    
+    if (!ownerPrincipal) {
+      // Owner is NOT a principal (could be Trust, Company, SMSF)
+      setSelectedProductOwnerRiskProfile('entity');
+      return;
     }
     
-    setSelectedProductOwnerRiskProfile(riskProfile);
+    // Owner IS a principal - get their role (lowercase: 'client' or 'partner')
+    const ownerRole = ownerPrincipal.role;
+    
+    console.log('Owner role:', ownerRole);
+    console.log('Full risk profile data:', JSON.stringify(factFind?.risk_profile, null, 2));
+    console.log('RISK PROFILE for ' + ownerRole + ':', JSON.stringify(factFind?.risk_profile?.[ownerRole], null, 2));
+    
+    // Get the risk profile for this person
+    const personProfile = factFind?.risk_profile?.[ownerRole];
+    const targetAllocation = personProfile?.targetAllocation || personProfile?.target_allocation;
+    
+    console.log('Target allocation:', JSON.stringify(targetAllocation, null, 2));
+    
+    setSelectedProductOwnerRiskProfile(targetAllocation ? ownerRole : null);
   };
 
   // ============================================================================
