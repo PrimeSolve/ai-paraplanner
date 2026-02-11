@@ -343,6 +343,26 @@ export default function SOARequestAssumptions() {
        });
      }
    });
+
+   // Load debts from Fact Find
+   const existingDebts = factFind.assets_liabilities?.liabilities || [];
+   existingDebts.forEach((debt, i) => {
+     debts.push({
+       value: debt.id || `debt_${i}`,
+       label: debt.d_name || `Debt ${i + 1}`,
+       group: 'Existing Debts'
+     });
+   });
+
+   // Load new debts from transactions
+   const newDebts = soaReq?.transactions?.debts || [];
+   newDebts.forEach(debt => {
+     debts.push({
+       value: debt.id,
+       label: debt.description || 'New Debt',
+       group: 'New Debts'
+     });
+   });
  }
 
  setEntityOptions(entities);
@@ -1113,7 +1133,22 @@ function RatePanel({ item, debtOptions, modelOptions, onUpdate, onClose }) {
  <Select value={item.debt_id || ''} onValueChange={(v) => onUpdate('debt_id', v)}>
  <SelectTrigger className="mt-1"><SelectValue placeholder="Select..." /></SelectTrigger>
  <SelectContent>
- {debtOptions.map(d => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
+   {debtOptions.filter(d => d.group === 'Existing Debts').length > 0 && (
+     <>
+       <div className="px-2 py-1.5 text-xs font-semibold text-slate-500">Existing Debts</div>
+       {debtOptions.filter(d => d.group === 'Existing Debts').map(d => 
+         <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+       )}
+     </>
+   )}
+   {debtOptions.filter(d => d.group === 'New Debts').length > 0 && (
+     <>
+       <div className="px-2 py-1.5 text-xs font-semibold text-slate-500">New Debts</div>
+       {debtOptions.filter(d => d.group === 'New Debts').map(d => 
+         <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+       )}
+     </>
+   )}
  </SelectContent>
  </Select>
  </div>
