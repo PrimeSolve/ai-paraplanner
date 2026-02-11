@@ -208,16 +208,6 @@ export default function SOARequestPortfolio() {
       await loadProducts(soaReq, factFindData, principalsData);
       await loadRiskProfile(soaReq.client_id);
 
-      // Restore selected product (don't save, just restore state)
-      const savedProductId = soaReq?.portfolio?.selectedProductId;
-      if (savedProductId && factFindData && principalsData) {
-        setSelectedProductId(savedProductId);
-        // Wait a bit for state to update then restore display
-        setTimeout(() => {
-          updateRiskProfileDisplay(savedProductId);
-        }, 50);
-      }
-
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Failed to load data');
@@ -415,6 +405,7 @@ export default function SOARequestPortfolio() {
     
     await base44.entities.SOARequest.update(soaRequest.id, {
       portfolio: {
+        ...soaRequest.portfolio,
         selectedProductId: selectedProductId,
         transactions: transactions
       }
@@ -435,6 +426,15 @@ export default function SOARequestPortfolio() {
     }
   };
 
+  // Restore selected product when products are loaded
+  useEffect(() => {
+    if (products.length > 0 && soaRequest?.portfolio?.selectedProductId && !selectedProductId) {
+      const savedId = soaRequest.portfolio.selectedProductId;
+      setSelectedProductId(savedId);
+      updateRiskProfileDisplay(savedId);
+    }
+  }, [products, soaRequest]);
+
   // Save before sidebar navigation
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
@@ -448,7 +448,7 @@ export default function SOARequestPortfolio() {
 
     window.addEventListener('soa-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('soa-save-before-nav', handleSaveBeforeNav);
-  }, [transactions, soaRequest?.id]);
+  }, [transactions, soaRequest?.id, selectedProductId]);
 
   // ============================================================================
   // HELPERS
