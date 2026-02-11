@@ -361,15 +361,21 @@ export default function SOARequestStrategy() {
   // SAVE
   // ============================================================================
 
+  const saveStrategyData = async () => {
+    if (!soaRequest?.id) return;
+    
+    await base44.entities.SOARequest.update(soaRequest.id, {
+      strategy: {
+        models: models,
+        strategies: strategies
+      }
+    });
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      await base44.entities.SOARequest.update(soaRequest.id, {
-        strategy: {
-          models: models,
-          strategies: strategies
-        }
-      });
+      await saveStrategyData();
       toast.success('Strategy saved');
       navigate(createPageUrl('SOARequestAssumptions') + `?id=${soaRequest.id}`);
     } catch (error) {
@@ -379,6 +385,21 @@ export default function SOARequestStrategy() {
       setSaving(false);
     }
   };
+
+  // Save before sidebar navigation
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
+      try {
+        await saveStrategyData();
+      } catch (err) {
+        console.error('Save before nav failed:', err);
+      }
+      window.dispatchEvent(new Event('soa-save-complete'));
+    };
+
+    window.addEventListener('soa-save-before-nav', handleSaveBeforeNav);
+    return () => window.removeEventListener('soa-save-before-nav', handleSaveBeforeNav);
+  }, [models, strategies, soaRequest?.id]);
 
   // ============================================================================
   // HELPERS
