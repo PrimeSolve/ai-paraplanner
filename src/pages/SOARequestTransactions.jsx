@@ -100,6 +100,7 @@ export default function SOARequestTransactions() {
   // Entity options for dropdowns
   const [ownerOptions, setOwnerOptions] = useState([]);
   const [assetOptions, setAssetOptions] = useState([]);
+  const [productOptions, setProductOptions] = useState([]);
   const [smsfOptions, setSmsfOptions] = useState([]);
   const [modelOptions, setModelOptions] = useState([]);
   const [debtOptions, setDebtOptions] = useState([]);
@@ -203,6 +204,45 @@ export default function SOARequestTransactions() {
       });
       
       setAssetOptions(assetOpts);
+      
+      // Build product options
+      const productOpts = [];
+      
+      // Super funds
+      const funds = factFindData?.superannuation?.funds || [];
+      funds.forEach(fund => {
+        productOpts.push({ 
+          value: fund.id, 
+          label: fund.fund_name || 'Superannuation Fund', 
+          group: 'Superannuation' 
+        });
+      });
+      
+      // Pensions
+      const pensions = factFindData?.superannuation?.pensions || [];
+      pensions.forEach(pension => {
+        productOpts.push({ 
+          value: pension.id, 
+          label: pension.fund_name || 'Pension', 
+          group: 'Pensions' 
+        });
+      });
+      
+      // New products from SOA Request
+      const newProducts = soaReq?.products_entities?.products || {};
+      Object.entries(newProducts).forEach(([type, items]) => {
+        (items || []).forEach(product => {
+          if (product.product_name) {
+            productOpts.push({ 
+              value: product.id, 
+              label: `NEW - ${product.product_name}`, 
+              group: 'New Products' 
+            });
+          }
+        });
+      });
+      
+      setProductOptions(productOpts);
       
       // Build debt options (existing debts for offset account, etc.)
       setDebtOptions([]);
@@ -383,22 +423,34 @@ export default function SOARequestTransactions() {
   const getTransactionOwnerOptions = () => {
     let owners = [];
     
-    // Principals from Fact Find (via useSOAEntities hook)
-    const principals = getByTypes(['principal']);
-    principals.forEach(p => {
+    // Principals from Fact Find personal data
+    const personal = factFind?.personal;
+    
+    if (personal?.first_name) {
       owners.push({
-        id: p.id,
-        label: p.label,
+        id: 'client',
+        label: `${personal.first_name} ${personal.last_name}`.trim(),
         type: 'Principal',
-        color: p.color
+        color: '#3B82F6'
       });
-    });
+    }
+    
+    if (personal?.partner?.first_name) {
+      owners.push({
+        id: 'partner',
+        label: `${personal.partner.first_name} ${personal.partner.last_name}`.trim(),
+        type: 'Principal',
+        color: '#8B5CF6'
+      });
+    }
     
     // Joint (synthetic)
-    if (principals.length === 2) {
+    if (personal?.first_name && personal?.partner?.first_name) {
+      const clientName = `${personal.first_name} ${personal.last_name}`.trim();
+      const partnerName = `${personal.partner.first_name} ${personal.partner.last_name}`.trim();
       owners.push({
         id: 'joint',
-        label: `${principals[0].label} & ${principals[1].label} (Joint)`,
+        label: `${clientName} & ${partnerName} (Joint)`,
         type: 'Joint',
         color: '#3B82F6'
       });
@@ -422,8 +474,11 @@ export default function SOARequestTransactions() {
       } else if (fund.acct_type === '2') {
         // Segregated - add each account
         (fund.accounts || []).forEach((acc, ai) => {
-          const ownerPrincipal = getByTypes(['principal']).find(p => p.id === acc.owner);
-          const ownerName = ownerPrincipal?.label || acc.owner;
+          const ownerName = acc.owner === 'client' 
+            ? `${personal?.first_name} ${personal?.last_name}`.trim()
+            : acc.owner === 'partner'
+            ? `${personal?.partner?.first_name} ${personal?.partner?.last_name}`.trim()
+            : acc.owner;
           owners.push({
             id: `smsf_${fi}_acc_${ai}`,
             label: `${fund.smsf_name || 'SMSF'} - ${ownerName}`,
@@ -453,8 +508,11 @@ export default function SOARequestTransactions() {
         owners.push({ id: `new_smsf_${fi}`, label: `NEW - ${fund.smsf_name || 'SMSF'}`, type: 'SMSF', color: '#92400E' });
       } else if (fund.acct_type === '2') {
         (fund.accounts || []).forEach((acc, ai) => {
-          const ownerPrincipal = getByTypes(['principal']).find(p => p.id === acc.owner);
-          const ownerName = ownerPrincipal?.label || acc.owner;
+          const ownerName = acc.owner === 'client' 
+            ? `${personal?.first_name} ${personal?.last_name}`.trim()
+            : acc.owner === 'partner'
+            ? `${personal?.partner?.first_name} ${personal?.partner?.last_name}`.trim()
+            : acc.owner;
           owners.push({ id: `new_smsf_${fi}_acc_${ai}`, label: `NEW - ${fund.smsf_name || 'SMSF'} - ${ownerName}`, type: 'SMSF Account', color: '#92400E' });
         });
       }
