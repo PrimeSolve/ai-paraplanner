@@ -262,7 +262,7 @@ export default function SOARequestAssumptions() {
      entityId: entity.id,
      entityName: entity.name,
      entityType: entity.type,
-     assumption_type: 'use_risk_profile',
+     assumption_type: 'Use risk profile',
      growth_rate: 5,
      income_rate: 4,
      franking_rate: 3
@@ -353,11 +353,11 @@ export default function SOARequestAssumptions() {
    setReturnsEntities(returnsEntities.map(r => {
      if (r.id !== id) return r;
 
-     // If changing assumption type to "use_risk_profile", reset to defaults
-     if (field === 'assumption_type' && value === 'use_risk_profile') {
+     // If changing assumption type to "Use risk profile", reset to defaults
+     if (field === 'assumption_type' && value === 'Use risk profile') {
        return {
          ...r,
-         assumption_type: 'use_risk_profile',
+         assumption_type: 'Use risk profile',
          growth_rate: 5,
          income_rate: 4,
          franking_rate: 3
@@ -686,7 +686,7 @@ export default function SOARequestAssumptions() {
  returnsEntities.map(ret => (
  <TableRow key={ret.id}>
  <TableCell>{ret.entityName || '—'}</TableCell>
- <TableCell>{ret.assumption_type === 'use_risk_profile' ? 'Use risk profile' : ret.assumption_type || '—'}</TableCell>
+ <TableCell>{ret.assumption_type || '—'}</TableCell>
  <TableCell className="text-right">{ret.growth_rate || '—'}</TableCell>
  <TableCell className="text-right">{ret.income_rate || '—'}</TableCell>
  <TableCell className="text-right">{ret.franking_rate || '—'}</TableCell>
@@ -931,7 +931,7 @@ export default function SOARequestAssumptions() {
 function ReturnEntityPanel({ item, entityOptions, onUpdate, onClose }) {
   if (!item) return null;
 
-  const isReadOnly = item.assumption_type === 'use_risk_profile';
+  const isReadOnly = item.assumption_type === 'Use risk profile';
 
   return (
   <div className="m-4 p-6 bg-green-50 border border-green-200 rounded-lg">
@@ -950,7 +950,7 @@ function ReturnEntityPanel({ item, entityOptions, onUpdate, onClose }) {
   </div>
   <div>
   <Label>Growth rate assumption type</Label>
-  <Select value={item.assumption_type || 'use_risk_profile'} onValueChange={(v) => onUpdate('assumption_type', v)}>
+  <Select value={item.assumption_type || 'Use risk profile'} onValueChange={(v) => onUpdate('assumption_type', v)}>
   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
   <SelectContent>
   {GROWTH_ASSUMPTION_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
