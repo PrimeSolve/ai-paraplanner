@@ -321,7 +321,29 @@ export default function SOARequestAssumptions() {
  const debts = [];
  const ownerProducts = [];
 
- // Note: Entity options now deprecated - using factFind data directly
+ // Load assets from Fact Find
+ if (factFind) {
+   const existingAssets = factFind.assets_liabilities?.assets || [];
+   existingAssets.forEach((asset, i) => {
+     assets.push({
+       value: asset.id || `asset_${i}`,
+       label: asset.a_name || `Asset ${i + 1}`,
+       group: 'Existing Assets'
+     });
+   });
+
+   // Load new assets from buy transactions
+   const buyTransactions = soaReq?.transactions?.buy || [];
+   buyTransactions.forEach(tx => {
+     if (tx.description || tx.asset_name) {
+       assets.push({
+         value: tx.id,
+         label: tx.description || tx.asset_name || 'New Asset',
+         group: 'New Assets'
+       });
+     }
+   });
+ }
 
  setEntityOptions(entities);
  setAssetOptions(assets);
@@ -378,7 +400,7 @@ export default function SOARequestAssumptions() {
  const newReturn = {
  id: generateId(),
  asset_id: '',
- override: true,
+ override: 'No',
  growth_rate: '',
  income_rate: ''
  };
@@ -749,7 +771,7 @@ export default function SOARequestAssumptions() {
  returnsAssets.map(ret => (
  <TableRow key={ret.id}>
  <TableCell>{getAssetLabel(ret.asset_id)}</TableCell>
- <TableCell>{ret.override ? 'Yes' : 'No'}</TableCell>
+ <TableCell>{ret.override || 'No'}</TableCell>
  <TableCell className="text-right">{ret.growth_rate || '—'}</TableCell>
  <TableCell className="text-right">{ret.income_rate || '—'}</TableCell>
  <TableCell className="text-right space-x-1">
@@ -1001,46 +1023,80 @@ function ReturnEntityPanel({ item, entityOptions, onUpdate, onClose }) {
 }
 
 function ReturnAssetPanel({ item, assetOptions, onUpdate, onClose }) {
- if (!item) return null;
- return (
- <div className="m-4 p-6 bg-green-50 border border-green-200 rounded-lg">
- <div className="flex justify-between items-center mb-4 pb-4 border-b border-green-200">
- <h3 className="font-bold flex items-center gap-2"><span>📊</span> Asset Override Details</h3>
- <Button variant="ghost" size="sm" onClick={onClose}><X className="w-4 h-4" /></Button>
- </div>
- <div className="grid grid-cols-2 gap-4 mb-4">
- <div>
- <Label>Asset</Label>
- <Select value={item.asset_id || ''} onValueChange={(v) => onUpdate('asset_id', v)}>
- <SelectTrigger className="mt-1"><SelectValue placeholder="Select..." /></SelectTrigger>
- <SelectContent>
- {assetOptions.map(a => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}
- </SelectContent>
- </Select>
- </div>
- <div>
- <Label>Override default assumption</Label>
- <Select value={item.override ? 'true' : 'false'} onValueChange={(v) => onUpdate('override', v === 'true')}>
- <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
- <SelectContent>
- <SelectItem value="true">Yes</SelectItem>
- <SelectItem value="false">No</SelectItem>
- </SelectContent>
- </Select>
- </div>
- </div>
- <div className="grid grid-cols-2 gap-4">
- <div>
- <Label>Growth rate %</Label>
- <Input type="number" step="0.01" value={item.growth_rate || ''} onChange={(e) => onUpdate('growth_rate', e.target.value)} className="mt-1" />
- </div>
- <div>
- <Label>Income yield %</Label>
- <Input type="number" step="0.01" value={item.income_rate || ''} onChange={(e) => onUpdate('income_rate', e.target.value)} className="mt-1" />
- </div>
- </div>
- </div>
- );
+  if (!item) return null;
+
+  const isReadOnly = item.override !== 'Yes';
+
+  return (
+  <div className="m-4 p-6 bg-green-50 border border-green-200 rounded-lg">
+  <div className="flex justify-between items-center mb-4 pb-4 border-b border-green-200">
+  <h3 className="font-bold flex items-center gap-2"><span>📊</span> Asset Override Details</h3>
+  <Button variant="ghost" size="sm" onClick={onClose}><X className="w-4 h-4" /></Button>
+  </div>
+  <div className="grid grid-cols-2 gap-4 mb-4">
+  <div>
+  <Label>Asset</Label>
+  <Select value={item.asset_id || ''} onValueChange={(v) => onUpdate('asset_id', v)}>
+  <SelectTrigger className="mt-1"><SelectValue placeholder="Select..." /></SelectTrigger>
+  <SelectContent>
+    {assetOptions.filter(a => a.group === 'Existing Assets').length > 0 && (
+      <>
+        <div className="px-2 py-1.5 text-xs font-semibold text-slate-500">Existing Assets</div>
+        {assetOptions.filter(a => a.group === 'Existing Assets').map(a => 
+          <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+        )}
+      </>
+    )}
+    {assetOptions.filter(a => a.group === 'New Assets').length > 0 && (
+      <>
+        <div className="px-2 py-1.5 text-xs font-semibold text-slate-500">New Assets</div>
+        {assetOptions.filter(a => a.group === 'New Assets').map(a => 
+          <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+        )}
+      </>
+    )}
+  </SelectContent>
+  </Select>
+  </div>
+  <div>
+  <Label>Override default assumption</Label>
+  <Select value={item.override || 'No'} onValueChange={(v) => onUpdate('override', v)}>
+  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+  <SelectContent>
+  <SelectItem value="Yes">Yes</SelectItem>
+  <SelectItem value="No">No</SelectItem>
+  </SelectContent>
+  </Select>
+  </div>
+  </div>
+  <div className="grid grid-cols-2 gap-4">
+  <div>
+  <Label>Growth rate %</Label>
+  <Input 
+    type="number" 
+    step="0.01" 
+    value={item.growth_rate || ''} 
+    onChange={(e) => onUpdate('growth_rate', e.target.value)} 
+    disabled={isReadOnly}
+    className="mt-1"
+    style={{ backgroundColor: isReadOnly ? '#f3f4f6' : 'white' }}
+  />
+  </div>
+  <div>
+  <Label>Income yield %</Label>
+  <Input 
+    type="number" 
+    step="0.01" 
+    value={item.income_rate || ''} 
+    onChange={(e) => onUpdate('income_rate', e.target.value)} 
+    disabled={isReadOnly}
+    className="mt-1"
+    style={{ backgroundColor: isReadOnly ? '#f3f4f6' : 'white' }}
+  />
+  </div>
+  </div>
+  </div>
+  );
 }
 
 function RatePanel({ item, debtOptions, modelOptions, onUpdate, onClose }) {
