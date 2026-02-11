@@ -7,7 +7,6 @@ import { useRole } from '../RoleContext';
 import { useCompletionLogic } from './useCompletionLogic';
 import { useSectionState } from './useSectionState';
 import { useVoiceSession } from './useVoiceSession';
-import { useFactFind } from './useFactFind';
 
 const sectionGroups = [
   {
@@ -84,8 +83,13 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
   const [showDashboard, setShowDashboard] = useState(false);
   const { calculateAllSectionCompletion, getDisplayState } = useCompletionLogic();
   const { SECTIONS } = useSectionState();
-  const { updateSection } = useFactFind();
   const [activeTabId, setActiveTabId] = useState(currentSection || 'dashboard');
+
+  // Create a placeholder updateSection function (voice updates will be handled by individual pages)
+  const updateSection = (sectionKey, data) => {
+    console.log('[FactFindLayout] Voice update:', sectionKey, data);
+    // Individual pages will handle their own updates via their useFactFind hook
+  };
 
   // Voice session hook
   const { status, writeCount, startVoice, stopVoice } = useVoiceSession({
@@ -94,6 +98,12 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
     activeTabId,
     clientId: factFind?.id || 'default'
   });
+
+  // Debug: Log when startVoice is called
+  useEffect(() => {
+    console.log('[FactFindLayout] Voice hook initialized. Status:', status);
+    console.log('[FactFindLayout] startVoice function:', typeof startVoice);
+  }, [status, startVoice]);
 
   // Update active tab when section changes
   useEffect(() => {
