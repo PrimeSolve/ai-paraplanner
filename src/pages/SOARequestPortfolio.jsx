@@ -597,31 +597,6 @@ export default function SOARequestPortfolio() {
         {/* White Content Card */}
         <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none', padding: '24px 32px' }}>
         <div className="space-y-6">
-          {/* TEST BUTTON - TEMPORARY */}
-          <button 
-            onClick={async () => {
-              try {
-                await base44.entities.SOARequest.update(soaRequest.id, {
-                  portfolio: {
-                    ...soaRequest.portfolio,
-                    selectedProductId: 'TEST_SAVE',
-                    transactions: transactions
-                  }
-                });
-                alert('SAVE OK — check database');
-                
-                // Now read it back
-                const check = await base44.entities.SOARequest.filter({ id: soaRequest.id });
-                alert('READ BACK: ' + JSON.stringify(check[0]?.portfolio?.selectedProductId));
-              } catch (err) {
-                alert('SAVE FAILED: ' + err.message);
-              }
-            }}
-            style={{ background: 'red', color: 'white', padding: '10px', marginBottom: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-          >
-            TEST SAVE & READ
-          </button>
-
           {/* Allocation Analysis Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left: Current Allocation */}
