@@ -7,6 +7,7 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
   const [writeCount, setWriteCount] = useState(0);
   const roomRef = useRef(null);
   const processedIds = useRef(new Set());
+  const statusRef = useRef('idle');
 
   // ---- TAB TO SECTION MAPPING ----
   const sectionMap = {
@@ -103,12 +104,13 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
   // ---- START VOICE SESSION ----
   const startVoice = useCallback(async () => {
     // Prevent multiple simultaneous attempts
-    if (status === 'connecting') {
-      console.log('[Voice] Already connecting, skipping...');
+    if (statusRef.current === 'connecting' || statusRef.current === 'connected') {
+      console.log('[Voice] Already connecting/connected, skipping...');
       return;
     }
 
     try {
+      statusRef.current = 'connecting';
       setStatus('connecting');
 
       // Check if LivekitClient is available
@@ -137,11 +139,13 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
       });
 
       room.on(window.LivekitClient.RoomEvent.Connected, () => {
+        statusRef.current = 'connected';
         setStatus('connected');
         console.log('[Voice] Connected to room');
       });
 
       room.on(window.LivekitClient.RoomEvent.Disconnected, () => {
+        statusRef.current = 'disconnected';
         setStatus('disconnected');
         console.log('[Voice] Disconnected');
       });
@@ -150,13 +154,14 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
 
     } catch (err) {
       console.error('[Voice] Start failed:', err);
+      statusRef.current = 'error';
       setStatus('error');
     }
-  }, [clientId, handleData, status]);
+  }, [clientId, handleData]);
 
   // ---- SEND TAB CHANGE TO AGENT ----
   useEffect(() => {
-    if (!roomRef.current || status !== 'connected' || !activeTabId) return;
+    if (!roomRef.current || statusRef.current !== 'connected' || !activeTabId) return;
 
     const payload = JSON.stringify({
       type: 'TAB_ACTIVATED',
@@ -168,7 +173,7 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
       .publishData(new TextEncoder().encode(payload), { reliable: true })
       .then(() => console.log('[Voice] Sent TAB_ACTIVATED:', activeTabId))
       .catch(err => console.error('[Voice] Tab send error:', err));
-  }, [activeTabId, status]);
+  }, [activeTabId]);
 
   // ---- STOP SESSION ----
   const stopVoice = useCallback(() => {
@@ -176,6 +181,7 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
       roomRef.current.disconnect();
       roomRef.current = null;
     }
+    statusRef.current = 'idle';
     setStatus('idle');
     setWriteCount(0);
     processedIds.current.clear();
