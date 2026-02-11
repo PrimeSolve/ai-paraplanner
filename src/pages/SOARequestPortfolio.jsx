@@ -470,8 +470,23 @@ export default function SOARequestPortfolio() {
   };
 
   // Get risk profile for selected product's owner
-  const handleProductSelection = (productId) => {
+  const handleProductSelection = async (productId) => {
     setSelectedProductId(productId);
+    
+    // Save selected product to database
+    if (soaRequest?.id) {
+      try {
+        await base44.entities.SOARequest.update(soaRequest.id, {
+          portfolio: {
+            ...soaRequest.portfolio,
+            selectedProductId: productId,
+            transactions: transactions
+          }
+        });
+      } catch (err) {
+        console.error('Failed to save selected product:', err);
+      }
+    }
     
     if (!productId || !factFind) {
       setTargetAllocation(null);
