@@ -152,7 +152,9 @@ export default function SOARequestPortfolio() {
 
   // UI state
   const [selectedProductId, setSelectedProductId] = useState('');
-  const [selectedProductOwnerRiskProfile, setSelectedProductOwnerRiskProfile] = useState(null);
+  const [targetAllocation, setTargetAllocation] = useState(null);
+  const [ownerName, setOwnerName] = useState('');
+  const [profileName, setProfileName] = useState('');
   const [editingId, setEditingId] = useState(null);
 
   // ============================================================================
@@ -225,7 +227,7 @@ export default function SOARequestPortfolio() {
           id: `super_${i}`,
           name: `Super - ${acc.fund_name || acc.provider || 'Superannuation'}`,
           type: 'Superannuation',
-          owner: acc.person // 'client' or 'partner'
+          owner: acc.s_owner || acc.person
         });
       });
 
@@ -236,7 +238,7 @@ export default function SOARequestPortfolio() {
           id: `pension_${i}`,
           name: `Pension - ${acc.fund_name || acc.provider || 'Pension'}`,
           type: 'Pension',
-          owner: acc.person // 'client' or 'partner'
+          owner: acc.p_owner || acc.person
         });
       });
 
@@ -247,7 +249,7 @@ export default function SOARequestPortfolio() {
           id: `investment_${i}`,
           name: asset.platform_name || asset.name || 'Investment',
           type: 'Investment',
-          owner: asset.person // 'client' or 'partner'
+          owner: asset.w_owner || asset.person
         });
       });
 
@@ -258,7 +260,7 @@ export default function SOARequestPortfolio() {
           id: `bond_${i}`,
           name: bond.bond_name || bond.name || 'Investment Bond',
           type: 'Investment',
-          owner: bond.person // 'client' or 'partner'
+          owner: bond.b_owner || bond.person
         });
       });
 
@@ -271,7 +273,7 @@ export default function SOARequestPortfolio() {
             id: `smsf_${fi}`, 
             name: fund.smsf_name || 'SMSF', 
             type: 'SMSF',
-            owner: null // Entity owned
+            owner: null
           });
         } else if (fund.acct_type === '2') {
           // Segregated - add each account
@@ -282,7 +284,7 @@ export default function SOARequestPortfolio() {
               id: `smsf_${fi}_acc_${ai}`,
               name: `${fund.smsf_name || 'SMSF'} - ${ownerName}`,
               type: 'SMSF Account',
-              owner: ownerRole // 'client' or 'partner'
+              owner: ownerRole
             });
           });
         }
@@ -296,7 +298,7 @@ export default function SOARequestPortfolio() {
             id: `new_${type}_${i}`,
             name: `NEW - ${p.product_name || type}`,
             type: `New ${type}`,
-            owner: p.person || p.owner // New products may have owner/person field
+            owner: p.person || p.owner
           });
         });
       });
@@ -446,55 +448,83 @@ export default function SOARequestPortfolio() {
     return product ? product.name : '—';
   };
 
+  // Resolve owner value to 'client' or 'partner' role
+  const resolveOwnerRole = (ownerValue) => {
+    if (!ownerValue) return null;
+    
+    // Direct role strings
+    if (ownerValue === 'client' || ownerValue === 'partner') {
+      return ownerValue;
+    }
+    
+    // Pattern-based IDs from Fact Find
+    if (ownerValue === 'principal_client') return 'client';
+    if (ownerValue === 'principal_partner') return 'partner';
+    
+    // UUID - match against loaded principals
+    const matched = principals.find(p => p.id === ownerValue);
+    if (matched) return matched.role; // 'client' or 'partner' (lowercase)
+    
+    // Not a principal - Trust, Company, SMSF etc.
+    return null;
+  };
+
   // Get risk profile for selected product's owner
   const handleProductSelection = (productId) => {
     setSelectedProductId(productId);
     
     if (!productId || !factFind) {
-      setSelectedProductOwnerRiskProfile(null);
+      setTargetAllocation(null);
+      setOwnerName('');
+      setProfileName('');
       return;
     }
     
-    // Find the product and its owner UUID
-    const product = products.find(p => p.id === productId);
-    const ownerEntityId = product?.owner_id || product?.owner;
+    const selectedProduct = products.find(p => p.id === productId);
+    console.log('OWNER CHECK:', selectedProduct?.owner, typeof selectedProduct?.owner);
     
-    console.log('=== PRODUCT SELECTION DEBUG ===');
-    console.log('Selected product:', JSON.stringify(product, null, 2));
-    console.log('Owner entity ID:', ownerEntityId);
-    console.log('All principals:', JSON.stringify(principals, null, 2));
+    const ownerRole = resolveOwnerRole(selectedProduct?.owner);
     
-    if (!ownerEntityId) {
-      // No owner specified - entity-owned
-      setSelectedProductOwnerRiskProfile('entity');
+    if (!ownerRole) {
+      // Entity-owned product - no personal risk profile
+      setTargetAllocation(null);
+      setOwnerName('Entity-owned');
+      setProfileName('');
       return;
     }
     
-    // Find which principal owns this product
-    const ownerPrincipal = principals.find(p => p.id === ownerEntityId);
+    // Get the owner's name for display
+    const ownerPrincipal = principals.find(p => p.role === ownerRole);
+    const displayName = ownerPrincipal
+      ? `${ownerPrincipal.first_name || ''} ${ownerPrincipal.last_name || ''}`.trim()
+      : ownerRole;
     
-    console.log('Owner principal match:', JSON.stringify(ownerPrincipal, null, 2));
+    // Get risk profile
+    const riskProfileData = factFind?.risk_profile;
+    const personProfile = riskProfileData?.[ownerRole];
     
-    if (!ownerPrincipal) {
-      // Owner is NOT a principal (could be Trust, Company, SMSF)
-      setSelectedProductOwnerRiskProfile('entity');
+    // Use adjustedProfile first, fall back to profile
+    const profile = personProfile?.adjustedProfile || personProfile?.profile;
+    
+    console.log('PROFILE NAME:', profile);
+    console.log('AVAILABLE KEYS:', Object.keys(RISK_PROFILE_ALLOCATIONS));
+    
+    // Normalize to lowercase for matching
+    const profileKey = profile?.toLowerCase();
+    const allocation = RISK_PROFILE_ALLOCATIONS[profileKey];
+    
+    console.log('MATCH:', allocation ? 'YES' : 'NO');
+    
+    if (!allocation) {
+      setTargetAllocation(null);
+      setOwnerName(displayName);
+      setProfileName('No risk profile set');
       return;
     }
     
-    // Owner IS a principal - get their role (lowercase: 'client' or 'partner')
-    const ownerRole = ownerPrincipal.role;
-    
-    console.log('Owner role:', ownerRole);
-    console.log('Full risk profile data:', JSON.stringify(factFind?.risk_profile, null, 2));
-    console.log('RISK PROFILE for ' + ownerRole + ':', JSON.stringify(factFind?.risk_profile?.[ownerRole], null, 2));
-    
-    // Get the risk profile for this person
-    const personProfile = factFind?.risk_profile?.[ownerRole];
-    const targetAllocation = personProfile?.targetAllocation || personProfile?.target_allocation;
-    
-    console.log('Target allocation:', JSON.stringify(targetAllocation, null, 2));
-    
-    setSelectedProductOwnerRiskProfile(targetAllocation ? ownerRole : null);
+    setTargetAllocation(allocation);
+    setOwnerName(displayName);
+    setProfileName(RISK_PROFILE_LABELS[profileKey] || profile);
   };
 
   // ============================================================================
@@ -638,26 +668,12 @@ export default function SOARequestPortfolio() {
                   <CardTitle className="flex items-center gap-2">
                     <span>⚖️</span> Target vs Current
                   </CardTitle>
-                  {selectedProductOwnerRiskProfile && selectedProductOwnerRiskProfile !== 'entity' && (
+                  {profileName && ownerName !== 'Entity-owned' && (
                     <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 border border-blue-200 rounded-lg text-sm font-medium text-blue-800">
-                      🎯 {RISK_PROFILE_LABELS[selectedProductOwnerRiskProfile]}
+                      🎯 {ownerName} — {profileName}
                     </span>
                   )}
                 </div>
-                <button 
-                  onClick={() => {
-                    const selectedProduct = products.find(p => p.id === selectedProductId);
-                    alert(
-                      'Selected product: ' + JSON.stringify(selectedProduct, null, 2) + '\n\n' +
-                      'Product owner: ' + selectedProduct?.owner + '\n\n' +
-                      'Risk profile data: ' + JSON.stringify(factFind?.risk_profile || 'NO RISK PROFILE', null, 2) + '\n\n' +
-                      'Personal data keys: ' + Object.keys(factFind?.personal || {}).join(', ')
-                    );
-                  }}
-                  style={{ background: 'red', color: 'white', padding: '8px', margin: '8px' }}
-                >
-                  DEBUG: Show product owner + risk profile
-                </button>
               </CardHeader>
               <CardContent>
                 {!selectedProductId ? (
@@ -665,14 +681,14 @@ export default function SOARequestPortfolio() {
                     <div className="text-4xl mb-3">🎯</div>
                     <p>Select a product to view target allocation</p>
                   </div>
-                ) : selectedProductOwnerRiskProfile === 'entity' ? (
+                ) : ownerName === 'Entity-owned' ? (
                   <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center gap-3">
                     <AlertTriangle className="w-5 h-5 text-slate-600 flex-shrink-0" />
                     <span className="text-sm text-slate-700">
                       Risk profile not applicable for entity-owned products
                     </span>
                   </div>
-                ) : !selectedProductOwnerRiskProfile ? (
+                ) : !targetAllocation ? (
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center gap-3">
                     <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
                     <span className="text-sm text-amber-800">
@@ -681,6 +697,13 @@ export default function SOARequestPortfolio() {
                   </div>
                 ) : (
                   <div className="space-y-1 text-sm">
+                    <div className="mb-3 pb-2 border-b">
+                      <div className="text-xs text-slate-500">Growth / Defensive Split</div>
+                      <div className="text-lg font-semibold text-slate-700">
+                        {targetAllocation['Growth Exposure']}% Growth / {targetAllocation['Defensive Exposure']}% Defensive
+                      </div>
+                    </div>
+                    
                     <div className="grid grid-cols-4 gap-2 font-semibold text-slate-600 pb-2 border-b uppercase text-xs">
                       <div>Asset Class</div>
                       <div className="text-center">Target %</div>
@@ -688,7 +711,7 @@ export default function SOARequestPortfolio() {
                       <div className="text-center">Div</div>
                     </div>
                     {GROWTH_ASSETS.map(asset => {
-                      const target = RISK_PROFILE_ALLOCATIONS[selectedProductOwnerRiskProfile]?.[asset] || 0;
+                      const target = targetAllocation[asset] || 0;
                       const current = 0;
                       const div = current - target;
                       return (
@@ -704,12 +727,12 @@ export default function SOARequestPortfolio() {
                     })}
                     <div className="grid grid-cols-4 gap-2 py-1.5 bg-sky-50 font-semibold text-sky-800 text-xs">
                       <div>Growth Exp</div>
-                      <div className="text-center">{RISK_PROFILE_ALLOCATIONS[selectedProductOwnerRiskProfile]?.['Growth Exposure']?.toFixed(1)}%</div>
+                      <div className="text-center">{targetAllocation['Growth Exposure']?.toFixed(1)}%</div>
                       <div className="text-center">—</div>
                       <div className="text-center">—</div>
                     </div>
                     {DEFENSIVE_ASSETS.map(asset => {
-                      const target = RISK_PROFILE_ALLOCATIONS[selectedProductOwnerRiskProfile]?.[asset] || 0;
+                      const target = targetAllocation[asset] || 0;
                       const current = 0;
                       const div = current - target;
                       return (
@@ -725,7 +748,7 @@ export default function SOARequestPortfolio() {
                     })}
                     <div className="grid grid-cols-4 gap-2 py-1.5 bg-sky-50 font-semibold text-sky-800 text-xs">
                       <div>Def Exp</div>
-                      <div className="text-center">{RISK_PROFILE_ALLOCATIONS[selectedProductOwnerRiskProfile]?.['Defensive Exposure']?.toFixed(1)}%</div>
+                      <div className="text-center">{targetAllocation['Defensive Exposure']?.toFixed(1)}%</div>
                       <div className="text-center">—</div>
                       <div className="text-center">—</div>
                     </div>
