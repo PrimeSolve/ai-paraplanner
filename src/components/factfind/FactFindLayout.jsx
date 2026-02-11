@@ -300,6 +300,28 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
           borderRadius: '8px',
           margin: '0 24px 16px 24px',
         }}>
+          <button 
+            onClick={async () => {
+              console.log('[TEST] Button clicked');
+              try {
+                const res = await fetch('https://solver-cors-proxy.tim-hall.workers.dev/livekit/start', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ ClientId: 'test-001' }),
+                });
+                const data = await res.json();
+                console.log('[TEST] Response:', data);
+                alert('Room created: ' + data.room_name);
+              } catch (err) {
+                console.log('[TEST] Error:', err);
+                alert('Error: ' + err.message);
+              }
+            }}
+            style={{ background: 'red', color: 'white', padding: '10px 20px', fontSize: '16px', margin: '10px' }}
+          >
+            TEST CONNECTION
+          </button>
+          
           {status === 'idle' || status === 'error' || status === 'disconnected' ? (
             <button
               onClick={() => { 
