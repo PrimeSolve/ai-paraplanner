@@ -253,24 +253,38 @@ export default function SOARequestStrategy() {
       if (personal?.first_name) {
         owners.push({
           value: 'client',
-          label: `${personal.first_name} ${personal.last_name}`.trim()
+          label: `${personal.first_name} ${personal.last_name}`.trim(),
+          type: 'Principal',
+          color: '#3B82F6'
         });
       }
       
       if (personal?.partner?.first_name) {
         owners.push({
           value: 'partner',
-          label: `${personal.partner.first_name} ${personal.partner.last_name}`.trim()
+          label: `${personal.partner.first_name} ${personal.partner.last_name}`.trim(),
+          type: 'Principal',
+          color: '#8B5CF6'
         });
       }
       
       // Load trusts & companies from Fact Find
       const entities = factFind?.trusts_companies?.entities || [];
       entities.filter(e => e.type === 'trust').forEach((t, i) => {
-        owners.push({ value: `trust_${i}`, label: `${t.trust_name} (Trust)` });
+        owners.push({ 
+          value: `trust_${i}`, 
+          label: `${t.trust_name} (Trust)`,
+          type: 'Trust',
+          color: '#EF4444'
+        });
       });
       entities.filter(e => e.type === 'company').forEach((c, i) => {
-        owners.push({ value: `company_${i}`, label: `${c.company_name} (Company)` });
+        owners.push({ 
+          value: `company_${i}`, 
+          label: `${c.company_name} (Company)`,
+          type: 'Company',
+          color: '#F97316'
+        });
       });
       
       // Load SMSFs from Fact Find
@@ -278,7 +292,12 @@ export default function SOARequestStrategy() {
       smsfs.forEach((fund, fi) => {
         if (fund.acct_type === '1') {
           // Pooled
-          owners.push({ value: `smsf_${fi}`, label: `${fund.smsf_name || 'SMSF'} (SMSF)` });
+          owners.push({ 
+            value: `smsf_${fi}`, 
+            label: `${fund.smsf_name || 'SMSF'} (SMSF)`,
+            type: 'SMSF',
+            color: '#92400E'
+          });
         } else if (fund.acct_type === '2') {
           // Segregated - add each account
           (fund.accounts || []).forEach((acc, ai) => {
@@ -289,7 +308,9 @@ export default function SOARequestStrategy() {
               : acc.owner;
             owners.push({
               value: `smsf_${fi}_acc_${ai}`,
-              label: `${fund.smsf_name || 'SMSF'} - ${ownerName} (SMSF)`
+              label: `${fund.smsf_name || 'SMSF'} - ${ownerName} (SMSF)`,
+              type: 'SMSF Account',
+              color: '#92400E'
             });
           });
         }
