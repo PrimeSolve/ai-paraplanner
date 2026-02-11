@@ -333,6 +333,30 @@ export default function SOARequestStrategy() {
         });
       });
       
+      const annuities = factFind?.superannuation?.annuities || [];
+      annuities.forEach(annuity => {
+        products.push({ 
+          value: annuity.id, 
+          label: `${annuity.fund_name || annuity.product || 'Annuity'} (Annuity)` 
+        });
+      });
+      
+      const wraps = factFind?.investment?.wraps || [];
+      wraps.forEach(wrap => {
+        products.push({ 
+          value: wrap.id, 
+          label: `${wrap.platform_name || wrap.name || 'Wrap'} (Wrap)` 
+        });
+      });
+      
+      const bonds = factFind?.investment?.bonds || [];
+      bonds.forEach(bond => {
+        products.push({ 
+          value: bond.id, 
+          label: `${bond.bond_name || bond.name || 'Investment Bond'} (Bond)` 
+        });
+      });
+      
       // Load new products from SOA Request
       const newProducts = soaReq?.products_entities?.products || {};
       Object.entries(newProducts).forEach(([type, items]) => {
