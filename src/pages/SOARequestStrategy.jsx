@@ -225,6 +225,23 @@ export default function SOARequestStrategy() {
 
   const loadEntityOptions = async (clientId, soaReq) => {
     try {
+      // Load Fact Find first
+      let factFind = null;
+      if (soaReq.fact_find_id) {
+        const factFinds = await base44.entities.FactFind.filter({ id: soaReq.fact_find_id });
+        factFind = factFinds[0];
+      }
+      
+      // CRITICAL DEBUG - Show data structure
+      console.log('=== FACT FIND DATA STRUCTURE CHECK ===');
+      console.log('1. ENTITIES:', JSON.stringify(factFind?.trusts_companies?.entities?.slice(0, 2), null, 2));
+      console.log('2. SUPER:', JSON.stringify(factFind?.superannuation?.funds?.slice(0, 1), null, 2));
+      console.log('3. ASSETS:', JSON.stringify(factFind?.assets_liabilities?.assets?.slice(0, 1), null, 2));
+      console.log('4. DEBTS:', JSON.stringify(factFind?.assets_liabilities?.liabilities?.slice(0, 1), null, 2));
+      console.log('5. SOA PRODUCTS:', JSON.stringify(soaReq?.products_entities, null, 2));
+      console.log('6. SOA TRANSACTIONS:', JSON.stringify(soaReq?.transactions, null, 2));
+      console.log('=====================================');
+      
       const owners = [];
       const products = [];
       const assets = [];
