@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-const BRIDGE_ENDPOINT = 'https://solver.primesolve.com.au/livekit/start';
+const BRIDGE_ENDPOINT = 'https://solver-cors-proxy.tim-hall.workers.dev/livekit/start';
 
 export function useVoiceSession({ factFind, updateSection, activeTabId, clientId }) {
   const [status, setStatus] = useState('idle');
