@@ -99,11 +99,7 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
     clientId: factFind?.id || 'default'
   });
 
-  // Debug: Log when startVoice is called
-  useEffect(() => {
-    console.log('[FactFindLayout] Voice hook initialized. Status:', status);
-    console.log('[FactFindLayout] startVoice function:', typeof startVoice);
-  }, [status, startVoice]);
+  console.log('[DEBUG] startVoice function exists:', typeof startVoice);
 
   // Update active tab when section changes
   useEffect(() => {
@@ -301,7 +297,10 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
         }}>
           {status === 'idle' || status === 'error' || status === 'disconnected' ? (
             <button
-              onClick={startVoice}
+              onClick={() => { 
+                console.log('[DEBUG] Button clicked'); 
+                startVoice(); 
+              }}
               style={{
                 padding: '8px 16px',
                 background: '#3b82f6',
