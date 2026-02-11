@@ -78,8 +78,9 @@ export default function SOARequestAssumptions() {
  const [loading, setLoading] = useState(true);
  const [saving, setSaving] = useState(false);
  const [soaRequest, setSOARequest] = useState(null);
+ const [factFind, setFactFind] = useState(null);
  const [clientId, setClientId] = useState(null);
- 
+
  // Data
  const [basic, setBasic] = useState(DEFAULT_BASIC);
  const [returnsEntities, setReturnsEntities] = useState([]);
@@ -112,7 +113,7 @@ export default function SOARequestAssumptions() {
  try {
  const urlParams = new URLSearchParams(window.location.search);
  const id = urlParams.get('id');
- 
+
  if (!id) {
  toast.error('No SOA Request ID provided');
  setLoading(false);
@@ -125,26 +126,36 @@ export default function SOARequestAssumptions() {
  setLoading(false);
  return;
  }
- 
+
  const soaReq = requests[0];
  setSOARequest(soaReq);
  setClientId(soaReq.client_id);
- 
+
+ // Load Fact Find
+ let factFindData = null;
+ if (soaReq.fact_find_id) {
+   const factFinds = await base44.entities.FactFind.filter({ id: soaReq.fact_find_id });
+   factFindData = factFinds[0];
+   setFactFind(factFindData);
+ }
+
  // Load assumptions
  const assumptions = soaReq.assumptions || {};
  setBasic({ ...DEFAULT_BASIC, ...assumptions.basic });
- setReturnsEntities(assumptions.returns_entities || []);
  setReturnsAssets(assumptions.returns_assets || []);
  setRateAdjustments(assumptions.rate_adjustments || []);
  setFees(assumptions.fees || []);
- 
+
  // Load models from strategy
  const models = soaReq.scope_of_advice?.strategy?.models || [];
  setModelOptions(models.map(m => ({ value: m.id, label: m.name || '(Unnamed)' })));
- 
+
  // Load entity options
  await loadEntityOptions(soaReq.client_id, soaReq);
- 
+
+ // Auto-populate entity returns
+ await autoPopulateEntityReturns(factFindData, soaReq, assumptions);
+
  } catch (error) {
  console.error('Error loading data:', error);
  toast.error('Failed to load data');
@@ -153,94 +164,170 @@ export default function SOARequestAssumptions() {
  }
  };
 
+ const resolveAccountOwnerName = (ownerValue, factFind) => {
+   const personal = factFind?.personal;
+   if (ownerValue === 'client' && personal?.first_name) {
+     return `${personal.first_name} ${personal.last_name}`.trim();
+   }
+   if (ownerValue === 'partner' && personal?.partner?.first_name) {
+     return `${personal.partner.first_name} ${personal.partner.last_name}`.trim();
+   }
+   return ownerValue || 'Unknown';
+ };
+
+ const buildEntityReturnsList = (factFind, soaRequest) => {
+   const entities = [];
+   const personal = factFind?.personal;
+
+   // Principals
+   if (personal?.first_name) {
+     entities.push({
+       id: 'client',
+       name: `${personal.first_name} ${personal.last_name}`.trim(),
+       type: 'Principal'
+     });
+   }
+
+   if (personal?.partner?.first_name) {
+     entities.push({
+       id: 'partner',
+       name: `${personal.partner.first_name} ${personal.partner.last_name}`.trim(),
+       type: 'Principal'
+     });
+   }
+
+   // Existing Trusts
+   const ffEntities = factFind?.trusts_companies?.entities || [];
+   ffEntities.filter(e => e.type === 'trust').forEach((t, i) => {
+     entities.push({ id: `trust_${i}`, name: t.trust_name, type: 'Trust' });
+   });
+
+   // Existing Companies
+   ffEntities.filter(e => e.type === 'company').forEach((c, i) => {
+     entities.push({ id: `company_${i}`, name: c.company_name, type: 'Company' });
+   });
+
+   // Existing SMSFs
+   const smsfs = factFind?.smsf?.smsf_details || [];
+   smsfs.forEach((fund, fi) => {
+     if (fund.acct_type === '1') {
+       entities.push({ id: `smsf_${fi}`, name: fund.smsf_name || 'SMSF', type: 'SMSF' });
+     } else if (fund.acct_type === '2') {
+       (fund.accounts || []).forEach((acc, ai) => {
+         const ownerName = resolveAccountOwnerName(acc.owner, factFind);
+         entities.push({
+           id: `smsf_${fi}_acc_${ai}`,
+           name: `${fund.smsf_name || 'SMSF'} - ${ownerName}`,
+           type: 'SMSF Account'
+         });
+       });
+     }
+   });
+
+   // New Trusts from SOA
+   const newTrusts = soaRequest?.products_entities?.new_trusts || [];
+   newTrusts.forEach((t, i) => {
+     if (t.trust_name) entities.push({ id: `new_trust_${i}`, name: `NEW - ${t.trust_name}`, type: 'Trust' });
+   });
+
+   // New Companies from SOA
+   const newCompanies = soaRequest?.products_entities?.new_companies || [];
+   newCompanies.forEach((c, i) => {
+     if (c.company_name) entities.push({ id: `new_company_${i}`, name: `NEW - ${c.company_name}`, type: 'Company' });
+   });
+
+   // New SMSFs from SOA
+   const newSmsfs = soaRequest?.products_entities?.new_smsf || [];
+   newSmsfs.forEach((fund, fi) => {
+     if (fund.acct_type === '1') {
+       entities.push({ id: `new_smsf_${fi}`, name: `NEW - ${fund.smsf_name || 'SMSF'}`, type: 'SMSF' });
+     } else if (fund.acct_type === '2') {
+       (fund.accounts || []).forEach((acc, ai) => {
+         const ownerName = resolveAccountOwnerName(acc.owner, factFind);
+         entities.push({
+           id: `new_smsf_${fi}_acc_${ai}`,
+           name: `NEW - ${fund.smsf_name || 'SMSF'} - ${ownerName}`,
+           type: 'SMSF Account'
+         });
+       });
+     }
+   });
+
+   return entities;
+ };
+
+ const createDefaultEntityReturn = (entity) => {
+   return {
+     id: generateId(),
+     entityId: entity.id,
+     entityName: entity.name,
+     entityType: entity.type,
+     assumption_type: 'use_risk_profile',
+     growth_rate: 5,
+     income_rate: 4,
+     franking_rate: 3
+   };
+ };
+
+ const autoPopulateEntityReturns = async (factFind, soaRequest, assumptions) => {
+   if (!factFind) {
+     setReturnsEntities(assumptions.returns_entities || []);
+     return;
+   }
+
+   const existingReturns = assumptions.returns_entities || [];
+
+   if (existingReturns.length === 0) {
+     // First load — auto-populate
+     const entityList = buildEntityReturnsList(factFind, soaRequest);
+     const defaultReturns = entityList.map(createDefaultEntityReturn);
+     setReturnsEntities(defaultReturns);
+
+     // Save to database
+     await base44.entities.SOARequest.update(soaRequest.id, {
+       assumptions: {
+         ...assumptions,
+         returns_entities: defaultReturns
+       }
+     });
+   } else {
+     // Already populated — check for new entities
+     const entityList = buildEntityReturnsList(factFind, soaRequest);
+     const existingIds = existingReturns.map(r => r.entityId);
+     const newEntities = entityList.filter(e => !existingIds.includes(e.id));
+
+     if (newEntities.length > 0) {
+       // Add new entities with defaults
+       const newDefaults = newEntities.map(createDefaultEntityReturn);
+       const merged = [...existingReturns, ...newDefaults];
+       setReturnsEntities(merged);
+
+       await base44.entities.SOARequest.update(soaRequest.id, {
+         assumptions: {
+           ...assumptions,
+           returns_entities: merged
+         }
+       });
+     } else {
+       setReturnsEntities(existingReturns);
+     }
+   }
+ };
+
  const loadEntityOptions = async (clientId, soaReq) => {
  try {
  const entities = [];
  const assets = [];
  const debts = [];
  const ownerProducts = [];
- 
- // Load principals
- try {
- const principals = await base44.entities.Principal?.filter({ client_id: clientId });
- if (principals) {
- principals.forEach(p => {
- const name = `${p.first_name || ''} ${p.last_name || ''}`.trim();
- ownerProducts.push({ value: p.id, label: name || 'Client', type: 'Principal' });
- });
- }
- } catch (e) {}
- 
- // Load trusts
- try {
- const trusts = await base44.entities.Trust?.filter({ client_id: clientId });
- if (trusts) trusts.forEach(t => {
- entities.push({ value: t.id, label: `${t.name} (Trust)` });
- });
- } catch (e) {}
- 
- // Load companies
- try {
- const companies = await base44.entities.Company?.filter({ client_id: clientId });
- if (companies) companies.forEach(c => {
- entities.push({ value: c.id, label: `${c.name} (Company)` });
- });
- } catch (e) {}
- 
- // Load SMSFs
- try {
- const smsfs = await base44.entities.SMSF?.filter({ client_id: clientId });
- if (smsfs) smsfs.forEach(s => {
- entities.push({ value: s.id, label: `${s.name} (SMSF)` });
- });
- } catch (e) {}
- 
- // Load products
- try {
- const superFunds = await base44.entities.SuperFund?.filter({ client_id: clientId });
- if (superFunds) superFunds.forEach(f => {
- entities.push({ value: f.id, label: `${f.name} (Super)` });
- ownerProducts.push({ value: f.id, label: `${f.name} (Super)`, type: 'Product' });
- });
- } catch (e) {}
- 
- try {
- const pensions = await base44.entities.Pension?.filter({ client_id: clientId });
- if (pensions) pensions.forEach(p => {
- entities.push({ value: p.id, label: `${p.name} (Pension)` });
- ownerProducts.push({ value: p.id, label: `${p.name} (Pension)`, type: 'Product' });
- });
- } catch (e) {}
- 
- try {
- const wraps = await base44.entities.Wrap?.filter({ client_id: clientId });
- if (wraps) wraps.forEach(w => {
- entities.push({ value: w.id, label: `${w.name} (Wrap)` });
- ownerProducts.push({ value: w.id, label: `${w.name} (Wrap)`, type: 'Product' });
- });
- } catch (e) {}
- 
- // Load assets
- try {
- const assetList = await base44.entities.Asset?.filter({ client_id: clientId });
- if (assetList) assetList.forEach(a => {
- assets.push({ value: a.id, label: a.name || 'Unnamed Asset' });
- });
- } catch (e) {}
- 
- // Load debts
- try {
- const debtList = await base44.entities.Liability?.filter({ client_id: clientId });
- if (debtList) debtList.forEach(d => {
- debts.push({ value: d.id, label: d.name || 'Unnamed Debt' });
- });
- } catch (e) {}
- 
+
+ // Note: Entity options now deprecated - using factFind data directly
+
  setEntityOptions(entities);
  setAssetOptions(assets);
  setDebtOptions(debts);
  setOwnerProductOptions(ownerProducts);
- 
+
  } catch (error) {
  console.error('Error loading entity options:', error);
  }
@@ -263,7 +350,22 @@ export default function SOARequestAssumptions() {
  };
 
  const updateReturnEntity = (id, field, value) => {
- setReturnsEntities(returnsEntities.map(r => r.id === id ? { ...r, [field]: value } : r));
+   setReturnsEntities(returnsEntities.map(r => {
+     if (r.id !== id) return r;
+
+     // If changing assumption type to "use_risk_profile", reset to defaults
+     if (field === 'assumption_type' && value === 'use_risk_profile') {
+       return {
+         ...r,
+         assumption_type: 'use_risk_profile',
+         growth_rate: 5,
+         income_rate: 4,
+         franking_rate: 3
+       };
+     }
+
+     return { ...r, [field]: value };
+   }));
  };
 
  const deleteReturnEntity = (id) => {
@@ -583,8 +685,8 @@ export default function SOARequestAssumptions() {
  ) : (
  returnsEntities.map(ret => (
  <TableRow key={ret.id}>
- <TableCell>{getEntityLabel(ret.entity_id)}</TableCell>
- <TableCell>{ret.assumption_type || '—'}</TableCell>
+ <TableCell>{ret.entityName || '—'}</TableCell>
+ <TableCell>{ret.assumption_type === 'use_risk_profile' ? 'Use risk profile' : ret.assumption_type || '—'}</TableCell>
  <TableCell className="text-right">{ret.growth_rate || '—'}</TableCell>
  <TableCell className="text-right">{ret.income_rate || '—'}</TableCell>
  <TableCell className="text-right">{ret.franking_rate || '—'}</TableCell>
@@ -827,49 +929,75 @@ export default function SOARequestAssumptions() {
 // DETAIL PANELS
 // ==========================================================================
 function ReturnEntityPanel({ item, entityOptions, onUpdate, onClose }) {
- if (!item) return null;
- return (
- <div className="m-4 p-6 bg-green-50 border border-green-200 rounded-lg">
- <div className="flex justify-between items-center mb-4 pb-4 border-b border-green-200">
- <h3 className="font-bold flex items-center gap-2"><span>📈</span> Return Profile Details</h3>
- <Button variant="ghost" size="sm" onClick={onClose}><X className="w-4 h-4" /></Button>
- </div>
- <div className="grid grid-cols-2 gap-4 mb-4">
- <div>
- <Label>Entity / Wrapper</Label>
- <Select value={item.entity_id || ''} onValueChange={(v) => onUpdate('entity_id', v)}>
- <SelectTrigger className="mt-1"><SelectValue placeholder="Select..." /></SelectTrigger>
- <SelectContent>
- {entityOptions.map(e => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
- </SelectContent>
- </Select>
- </div>
- <div>
- <Label>Growth rate assumption type</Label>
- <Select value={item.assumption_type || ''} onValueChange={(v) => onUpdate('assumption_type', v)}>
- <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
- <SelectContent>
- {GROWTH_ASSUMPTION_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
- </SelectContent>
- </Select>
- </div>
- </div>
- <div className="grid grid-cols-3 gap-4">
- <div>
- <Label>Growth rate (net %)</Label>
- <Input type="number" step="0.01" value={item.growth_rate || ''} onChange={(e) => onUpdate('growth_rate', e.target.value)} className="mt-1" />
- </div>
- <div>
- <Label>Income return (%)</Label>
- <Input type="number" step="0.01" value={item.income_rate || ''} onChange={(e) => onUpdate('income_rate', e.target.value)} className="mt-1" />
- </div>
- <div>
- <Label>Franking percentage (%)</Label>
- <Input type="number" step="0.01" value={item.franking_rate || ''} onChange={(e) => onUpdate('franking_rate', e.target.value)} className="mt-1" />
- </div>
- </div>
- </div>
- );
+  if (!item) return null;
+
+  const isReadOnly = item.assumption_type === 'use_risk_profile';
+
+  return (
+  <div className="m-4 p-6 bg-green-50 border border-green-200 rounded-lg">
+  <div className="flex justify-between items-center mb-4 pb-4 border-b border-green-200">
+  <h3 className="font-bold flex items-center gap-2"><span>📈</span> Return Profile Details</h3>
+  <Button variant="ghost" size="sm" onClick={onClose}><X className="w-4 h-4" /></Button>
+  </div>
+  <div className="grid grid-cols-2 gap-4 mb-4">
+  <div>
+  <Label>Entity / Wrapper</Label>
+  <Input 
+    value={item.entityName || ''} 
+    disabled 
+    className="mt-1 bg-gray-100" 
+  />
+  </div>
+  <div>
+  <Label>Growth rate assumption type</Label>
+  <Select value={item.assumption_type || 'use_risk_profile'} onValueChange={(v) => onUpdate('assumption_type', v)}>
+  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+  <SelectContent>
+  {GROWTH_ASSUMPTION_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+  </SelectContent>
+  </Select>
+  </div>
+  </div>
+  <div className="grid grid-cols-3 gap-4">
+  <div>
+  <Label>Growth rate (net %)</Label>
+  <Input 
+    type="number" 
+    step="0.01" 
+    value={item.growth_rate || ''} 
+    onChange={(e) => onUpdate('growth_rate', e.target.value)} 
+    disabled={isReadOnly}
+    className="mt-1"
+    style={{ backgroundColor: isReadOnly ? '#f3f4f6' : 'white' }}
+  />
+  </div>
+  <div>
+  <Label>Income return (%)</Label>
+  <Input 
+    type="number" 
+    step="0.01" 
+    value={item.income_rate || ''} 
+    onChange={(e) => onUpdate('income_rate', e.target.value)} 
+    disabled={isReadOnly}
+    className="mt-1"
+    style={{ backgroundColor: isReadOnly ? '#f3f4f6' : 'white' }}
+  />
+  </div>
+  <div>
+  <Label>Franking percentage (%)</Label>
+  <Input 
+    type="number" 
+    step="0.01" 
+    value={item.franking_rate || ''} 
+    onChange={(e) => onUpdate('franking_rate', e.target.value)} 
+    disabled={isReadOnly}
+    className="mt-1"
+    style={{ backgroundColor: isReadOnly ? '#f3f4f6' : 'white' }}
+  />
+  </div>
+  </div>
+  </div>
+  );
 }
 
 function ReturnAssetPanel({ item, assetOptions, onUpdate, onClose }) {
