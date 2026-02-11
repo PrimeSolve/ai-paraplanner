@@ -495,9 +495,19 @@ export default function SOARequestPortfolio() {
     
     // Get the owner's name for display
     const ownerPrincipal = principals.find(p => p.role === ownerRole);
-    const displayName = ownerPrincipal
-      ? `${ownerPrincipal.first_name || ''} ${ownerPrincipal.last_name || ''}`.trim()
-      : ownerRole;
+    let displayName = ownerRole;
+    
+    if (ownerPrincipal) {
+      displayName = `${ownerPrincipal.first_name || ''} ${ownerPrincipal.last_name || ''}`.trim();
+    } else if (factFind?.personal && ownerRole === 'client') {
+      displayName = `${factFind.personal.first_name || ''} ${factFind.personal.last_name || ''}`.trim();
+    } else if (factFind?.personal?.partner && ownerRole === 'partner') {
+      displayName = `${factFind.personal.partner.first_name || ''} ${factFind.personal.partner.last_name || ''}`.trim();
+    }
+    
+    if (!displayName || displayName === 'client' || displayName === 'partner') {
+      displayName = ownerRole === 'client' ? 'Client' : 'Partner';
+    }
     
     // Get risk profile
     const riskProfileData = factFind?.risk_profile;
