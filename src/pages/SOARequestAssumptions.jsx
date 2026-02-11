@@ -151,7 +151,7 @@ export default function SOARequestAssumptions() {
  setModelOptions(models.map(m => ({ value: m.id, label: m.name || '(Unnamed)' })));
 
  // Load entity options
- await loadEntityOptions(soaReq.client_id, soaReq);
+ await loadEntityOptions(soaReq.client_id, soaReq, factFindData);
 
  // Auto-populate entity returns
  await autoPopulateEntityReturns(factFindData, soaReq, assumptions);
@@ -314,7 +314,7 @@ export default function SOARequestAssumptions() {
    }
  };
 
- const loadEntityOptions = async (clientId, soaReq) => {
+ const loadEntityOptions = async (clientId, soaReq, factFindData) => {
  try {
  const entities = [];
  const assets = [];
@@ -322,8 +322,8 @@ export default function SOARequestAssumptions() {
  const ownerProducts = [];
 
  // Load assets from Fact Find
- if (factFind) {
-   const existingAssets = factFind.assets_liabilities?.assets || [];
+ if (factFindData) {
+   const existingAssets = factFindData.assets_liabilities?.assets || [];
    existingAssets.forEach((asset, i) => {
      assets.push({
        value: asset.id || `asset_${i}`,
@@ -345,7 +345,7 @@ export default function SOARequestAssumptions() {
    });
 
    // Load debts from Fact Find
-   const existingDebts = factFind.assets_liabilities?.liabilities || [];
+   const existingDebts = factFindData.assets_liabilities?.liabilities || [];
    existingDebts.forEach((debt, i) => {
      debts.push({
        value: debt.id || `debt_${i}`,
