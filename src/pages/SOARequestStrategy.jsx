@@ -247,43 +247,83 @@ export default function SOARequestStrategy() {
       const assets = [];
       const debts = [];
       
-      // Load principals
-      try {
-        const principals = await base44.entities.Principal?.filter({ client_id: clientId });
-        if (principals) {
-          principals.forEach(p => {
-            const name = `${p.first_name || ''} ${p.last_name || ''}`.trim();
-            owners.push({ value: p.id, label: name || (p.role === 'client' ? 'Client' : 'Partner') });
+      // Load principals from Fact Find personal data
+      const personal = factFind?.personal;
+      
+      if (personal?.first_name) {
+        owners.push({
+          value: 'client',
+          label: `${personal.first_name} ${personal.last_name}`.trim()
+        });
+      }
+      
+      if (personal?.partner?.first_name) {
+        owners.push({
+          value: 'partner',
+          label: `${personal.partner.first_name} ${personal.partner.last_name}`.trim()
+        });
+      }
+      
+      // Load trusts & companies from Fact Find
+      const entities = factFind?.trusts_companies?.entities || [];
+      entities.filter(e => e.type === 'trust').forEach((t, i) => {
+        owners.push({ value: `trust_${i}`, label: `${t.trust_name} (Trust)` });
+      });
+      entities.filter(e => e.type === 'company').forEach((c, i) => {
+        owners.push({ value: `company_${i}`, label: `${c.company_name} (Company)` });
+      });
+      
+      // Load SMSFs from Fact Find
+      const smsfs = factFind?.smsf?.smsf_details || [];
+      smsfs.forEach((fund, fi) => {
+        if (fund.acct_type === '1') {
+          // Pooled
+          owners.push({ value: `smsf_${fi}`, label: `${fund.smsf_name || 'SMSF'} (SMSF)` });
+        } else if (fund.acct_type === '2') {
+          // Segregated - add each account
+          (fund.accounts || []).forEach((acc, ai) => {
+            const ownerName = acc.owner === 'client' 
+              ? `${personal?.first_name} ${personal?.last_name}`.trim()
+              : acc.owner === 'partner'
+              ? `${personal?.partner?.first_name} ${personal?.partner?.last_name}`.trim()
+              : acc.owner;
+            owners.push({
+              value: `smsf_${fi}_acc_${ai}`,
+              label: `${fund.smsf_name || 'SMSF'} - ${ownerName} (SMSF)`
+            });
           });
         }
-      } catch (e) {}
+      });
       
-      // Load trusts, companies, SMSFs for owners
-      try {
-        const trusts = await base44.entities.Trust?.filter({ client_id: clientId });
-        if (trusts) trusts.forEach(t => owners.push({ value: t.id, label: `${t.name} (Trust)` }));
-      } catch (e) {}
+      // Load products from Fact Find
+      const funds = factFind?.superannuation?.funds || [];
+      funds.forEach(fund => {
+        products.push({ 
+          value: fund.id, 
+          label: `${fund.fund_name || 'Superannuation Fund'} (Super)` 
+        });
+      });
       
-      try {
-        const companies = await base44.entities.Company?.filter({ client_id: clientId });
-        if (companies) companies.forEach(c => owners.push({ value: c.id, label: `${c.name} (Company)` }));
-      } catch (e) {}
+      const pensions = factFind?.superannuation?.pensions || [];
+      pensions.forEach(pension => {
+        products.push({ 
+          value: pension.id, 
+          label: `${pension.fund_name || 'Pension'} (Pension)` 
+        });
+      });
       
-      try {
-        const smsfs = await base44.entities.SMSF?.filter({ client_id: clientId });
-        if (smsfs) smsfs.forEach(s => owners.push({ value: s.id, label: `${s.name} (SMSF)` }));
-      } catch (e) {}
-      
-      // Load products
-      try {
-        const superFunds = await base44.entities.SuperFund?.filter({ client_id: clientId });
-        if (superFunds) superFunds.forEach(f => products.push({ value: f.id, label: `${f.name} (Super)` }));
-      } catch (e) {}
-      
-      try {
-        const pensions = await base44.entities.Pension?.filter({ client_id: clientId });
-        if (pensions) pensions.forEach(p => products.push({ value: p.id, label: `${p.name} (Pension)` }));
-      } catch (e) {}
+      // Load new products from SOA Request
+      const newProducts = soaReq?.products_entities?.products || {};
+      Object.entries(newProducts).forEach(([type, items]) => {
+        (items || []).forEach(product => {
+          if (product.product_name) {
+            products.push({ 
+              value: product.id, 
+              label: `NEW - ${product.product_name}` 
+            });
+          }
+        });
+      });
       
       // Load assets from Fact Find
       if (factFind?.assets_liabilities?.assets) {
