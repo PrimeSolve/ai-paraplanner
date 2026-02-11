@@ -102,6 +102,12 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
 
   // ---- START VOICE SESSION ----
   const startVoice = useCallback(async () => {
+    // Prevent multiple simultaneous attempts
+    if (status === 'connecting') {
+      console.log('[Voice] Already connecting, skipping...');
+      return;
+    }
+
     try {
       setStatus('connecting');
 
@@ -146,7 +152,7 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
       console.error('[Voice] Start failed:', err);
       setStatus('error');
     }
-  }, [clientId, handleData]);
+  }, [clientId, handleData, status]);
 
   // ---- SEND TAB CHANGE TO AGENT ----
   useEffect(() => {
