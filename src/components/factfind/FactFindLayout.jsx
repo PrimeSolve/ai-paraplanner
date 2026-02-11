@@ -108,6 +108,11 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
     }
   }, [currentSection]);
 
+  // Check if LiveKit SDK is available
+  useEffect(() => {
+    console.log('[Voice] FactFindLayout mounted - LivekitClient available:', typeof window.LivekitClient);
+  }, []);
+
   const handleNavClick = async (e, targetPath) => {
     e.preventDefault();
     

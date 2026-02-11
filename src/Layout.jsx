@@ -16,7 +16,17 @@ export default function Layout({ children, currentPageName }) {
       script.id = 'livekit-sdk';
       script.src = 'https://cdn.jsdelivr.net/npm/livekit-client@2/dist/livekit-client.umd.min.js';
       script.async = true;
+      script.onload = () => {
+        console.log('[Voice] LiveKit SDK loaded successfully');
+        console.log('[Voice] LivekitClient available:', typeof window.LivekitClient);
+      };
+      script.onerror = () => {
+        console.error('[Voice] Failed to load LiveKit SDK');
+      };
       document.head.appendChild(script);
+    } else {
+      console.log('[Voice] LiveKit SDK script tag already exists');
+      console.log('[Voice] LivekitClient available:', typeof window.LivekitClient);
     }
   }, []);
 
