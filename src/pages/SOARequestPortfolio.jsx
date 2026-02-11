@@ -208,6 +208,14 @@ export default function SOARequestPortfolio() {
       await loadProducts(soaReq, factFindData, principalsData);
       await loadRiskProfile(soaReq.client_id);
 
+      // Restore selected product
+      const savedProductId = soaReq?.portfolio?.selectedProductId;
+      if (savedProductId) {
+        setSelectedProductId(savedProductId);
+        // Trigger the product selection logic after products are loaded
+        setTimeout(() => handleProductSelection(savedProductId), 100);
+      }
+
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Failed to load data');
