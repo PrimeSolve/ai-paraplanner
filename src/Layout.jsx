@@ -9,6 +9,17 @@ import AdminLayout from '@/components/admin/AdminLayout';
 export default function Layout({ children, currentPageName }) {
   const [loading, setLoading] = useState(false);
 
+  // Load LiveKit SDK for voice AI
+  useEffect(() => {
+    if (!document.getElementById('livekit-sdk')) {
+      const script = document.createElement('script');
+      script.id = 'livekit-sdk';
+      script.src = 'https://cdn.jsdelivr.net/npm/livekit-client@2/dist/livekit-client.umd.min.js';
+      script.async = true;
+      document.head.appendChild(script);
+    }
+  }, []);
+
 
 
   // Pages that should not have the AppShell navigation

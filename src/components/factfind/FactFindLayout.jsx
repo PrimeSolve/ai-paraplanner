@@ -6,6 +6,8 @@ import { ChevronLeft, ChevronRight, LayoutDashboard } from 'lucide-react';
 import { useRole } from '../RoleContext';
 import { useCompletionLogic } from './useCompletionLogic';
 import { useSectionState } from './useSectionState';
+import { useVoiceSession } from './useVoiceSession';
+import { useFactFind } from './useFactFind';
 
 const sectionGroups = [
   {
@@ -82,6 +84,23 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
   const [showDashboard, setShowDashboard] = useState(false);
   const { calculateAllSectionCompletion, getDisplayState } = useCompletionLogic();
   const { SECTIONS } = useSectionState();
+  const { updateSection } = useFactFind();
+  const [activeTabId, setActiveTabId] = useState(currentSection || 'dashboard');
+
+  // Voice session hook
+  const { status, writeCount, startVoice, stopVoice } = useVoiceSession({
+    factFind,
+    updateSection,
+    activeTabId,
+    clientId: factFind?.id || 'default'
+  });
+
+  // Update active tab when section changes
+  useEffect(() => {
+    if (currentSection) {
+      setActiveTabId(currentSection);
+    }
+  }, [currentSection]);
 
   const handleNavClick = async (e, targetPath) => {
     e.preventDefault();
@@ -259,6 +278,70 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden ml-80 pt-4">
+        {/* Voice Control Bar */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '12px 16px',
+          background: status === 'connected' ? '#f0fdf4' : '#f8fafc',
+          borderBottom: '1px solid #e2e8f0',
+          borderRadius: '8px',
+          margin: '0 24px 16px 24px',
+        }}>
+          {status === 'idle' || status === 'error' || status === 'disconnected' ? (
+            <button
+              onClick={startVoice}
+              style={{
+                padding: '8px 16px',
+                background: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: 600,
+              }}
+            >
+              🎙 Start Voice Session
+            </button>
+          ) : status === 'connecting' ? (
+            <span style={{ color: '#f59e0b', fontWeight: 500 }}>Connecting...</span>
+          ) : (
+            <>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: '#16a34a',
+                fontWeight: 500,
+              }}>
+                <span style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: '#16a34a',
+                  display: 'inline-block',
+                }} />
+                Voice Active — {writeCount} fields written
+              </span>
+              <button
+                onClick={stopVoice}
+                style={{
+                  padding: '6px 12px',
+                  background: '#fee2e2',
+                  color: '#dc2626',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  marginLeft: 'auto',
+                }}
+              >
+                End Session
+              </button>
+            </>
+          )}
+        </div>
+
         {children}
       </div>
     </div>
