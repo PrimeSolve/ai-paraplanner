@@ -324,9 +324,15 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
           
           {status === 'idle' || status === 'error' || status === 'disconnected' ? (
             <button
-              onClick={() => { 
-                console.log('[DEBUG] Button clicked'); 
-                startVoice(); 
+              onClick={async () => {
+                console.log('[Voice] Start button clicked');
+                console.log('[Voice] startVoice type:', typeof startVoice);
+                if (typeof startVoice === 'function') {
+                  await startVoice();
+                } else {
+                  console.error('[Voice] startVoice is not a function!');
+                  alert('Error: startVoice function not available');
+                }
               }}
               style={{
                 padding: '8px 16px',
