@@ -428,8 +428,15 @@ export default function SOARequestPortfolio() {
 
   // Restore selected product when products are loaded
   useEffect(() => {
+    console.log('RESTORE CHECK:', {
+      productsLength: products.length,
+      savedId: soaRequest?.portfolio?.selectedProductId,
+      currentSelection: selectedProductId
+    });
+    
     if (products.length > 0 && soaRequest?.portfolio?.selectedProductId && !selectedProductId) {
       const savedId = soaRequest.portfolio.selectedProductId;
+      console.log('RESTORING PRODUCT:', savedId);
       setSelectedProductId(savedId);
       updateRiskProfileDisplay(savedId);
     }
