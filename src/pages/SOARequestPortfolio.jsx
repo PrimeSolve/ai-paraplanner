@@ -208,12 +208,14 @@ export default function SOARequestPortfolio() {
       await loadProducts(soaReq, factFindData, principalsData);
       await loadRiskProfile(soaReq.client_id);
 
-      // Restore selected product
+      // Restore selected product (don't save, just restore state)
       const savedProductId = soaReq?.portfolio?.selectedProductId;
-      if (savedProductId) {
+      if (savedProductId && factFindData && principalsData) {
         setSelectedProductId(savedProductId);
-        // Trigger the product selection logic after products are loaded
-        setTimeout(() => handleProductSelection(savedProductId), 100);
+        // Wait a bit for state to update then restore display
+        setTimeout(() => {
+          updateRiskProfileDisplay(savedProductId);
+        }, 50);
       }
 
     } catch (error) {
@@ -413,6 +415,7 @@ export default function SOARequestPortfolio() {
     
     await base44.entities.SOARequest.update(soaRequest.id, {
       portfolio: {
+        selectedProductId: selectedProductId,
         transactions: transactions
       }
     });
@@ -477,25 +480,8 @@ export default function SOARequestPortfolio() {
     return null;
   };
 
-  // Get risk profile for selected product's owner
-  const handleProductSelection = async (productId) => {
-    setSelectedProductId(productId);
-    
-    // Save selected product to database
-    if (soaRequest?.id) {
-      try {
-        await base44.entities.SOARequest.update(soaRequest.id, {
-          portfolio: {
-            ...soaRequest.portfolio,
-            selectedProductId: productId,
-            transactions: transactions
-          }
-        });
-      } catch (err) {
-        console.error('Failed to save selected product:', err);
-      }
-    }
-    
+  // Update risk profile display for a product
+  const updateRiskProfileDisplay = (productId) => {
     if (!productId || !factFind) {
       setTargetAllocation(null);
       setOwnerName('');
@@ -504,12 +490,9 @@ export default function SOARequestPortfolio() {
     }
     
     const selectedProduct = products.find(p => p.id === productId);
-    console.log('OWNER CHECK:', selectedProduct?.owner, typeof selectedProduct?.owner);
-    
     const ownerRole = resolveOwnerRole(selectedProduct?.owner);
     
     if (!ownerRole) {
-      // Entity-owned product - no personal risk profile
       setTargetAllocation(null);
       setOwnerName('Entity-owned');
       setProfileName('');
@@ -535,18 +518,9 @@ export default function SOARequestPortfolio() {
     // Get risk profile
     const riskProfileData = factFind?.risk_profile;
     const personProfile = riskProfileData?.[ownerRole];
-    
-    // Use adjustedProfile first, fall back to profile
     const profile = personProfile?.adjustedProfile || personProfile?.profile;
-    
-    console.log('PROFILE NAME:', profile);
-    console.log('AVAILABLE KEYS:', Object.keys(RISK_PROFILE_ALLOCATIONS));
-    
-    // Normalize to lowercase for matching
     const profileKey = profile?.toLowerCase();
     const allocation = RISK_PROFILE_ALLOCATIONS[profileKey];
-    
-    console.log('MATCH:', allocation ? 'YES' : 'NO');
     
     if (!allocation) {
       setTargetAllocation(null);
@@ -558,6 +532,27 @@ export default function SOARequestPortfolio() {
     setTargetAllocation(allocation);
     setOwnerName(displayName);
     setProfileName(RISK_PROFILE_LABELS[profileKey] || profile);
+  };
+
+  // Handle product selection change (user action)
+  const handleProductSelection = async (productId) => {
+    setSelectedProductId(productId);
+    updateRiskProfileDisplay(productId);
+    
+    // Save to database
+    if (soaRequest?.id) {
+      try {
+        await base44.entities.SOARequest.update(soaRequest.id, {
+          portfolio: {
+            ...soaRequest.portfolio,
+            selectedProductId: productId,
+            transactions: transactions
+          }
+        });
+      } catch (err) {
+        console.error('Failed to save selected product:', err);
+      }
+    }
   };
 
   // ============================================================================
