@@ -285,17 +285,21 @@ export default function SOARequestStrategy() {
         if (pensions) pensions.forEach(p => products.push({ value: p.id, label: `${p.name} (Pension)` }));
       } catch (e) {}
       
-      // Load assets
-      try {
-        const assetList = await base44.entities.Asset?.filter({ client_id: clientId });
-        if (assetList) assetList.forEach(a => assets.push({ value: a.id, label: a.name }));
-      } catch (e) {}
+      // Load assets from Fact Find
+      if (factFind?.assets_liabilities?.assets) {
+        factFind.assets_liabilities.assets.forEach((asset, i) => {
+          const name = asset.a_name || `Asset ${i + 1}`;
+          assets.push({ value: `asset_${i}`, label: name });
+        });
+      }
       
-      // Load debts
-      try {
-        const debtList = await base44.entities.Liability?.filter({ client_id: clientId });
-        if (debtList) debtList.forEach(d => debts.push({ value: d.id, label: d.name }));
-      } catch (e) {}
+      // Load debts from Fact Find  
+      if (factFind?.assets_liabilities?.liabilities) {
+        factFind.assets_liabilities.liabilities.forEach((debt, i) => {
+          const name = debt.d_name || `Debt ${i + 1}`;
+          debts.push({ value: `debt_${i}`, label: name });
+        });
+      }
       
       setOwnerOptions(owners);
       setProductOptions(products);
