@@ -52,8 +52,8 @@ export default function AdminAdviceGroups() {
       const dataEnv = testMode ? 'dev' : 'prod';
       
       const [data, advisers] = await Promise.all([
-        base44.entities.AdviceGroup.list('-created_date', 50, { data_env: dataEnv }),
-        base44.entities.Adviser.list('-created_date', 200, { data_env: dataEnv })
+        base44.entities.AdviceGroup.filter({}, '-created_date', 100, { data_env: dataEnv }),
+        base44.entities.Adviser.filter({}, '-created_date', 200, { data_env: dataEnv })
       ]);
       setGroups(data);
       
