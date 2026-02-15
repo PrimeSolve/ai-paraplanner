@@ -31,15 +31,26 @@ export default function AdminAdvisers() {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
+      
+      // Use Test database when in test mode
+      const testMode = localStorage.getItem('test_mode_entity');
+      const dataEnv = testMode ? 'dev' : 'prod';
+      
       const [adviserData, groupsData] = await Promise.all([
-        base44.entities.User.filter({ user_type: 'adviser' }, '-created_date'),
-        base44.entities.AdviceGroup.list('-created_date')
+        base44.entities.Adviser.list('-created_date', 100, { data_env: dataEnv }),
+        base44.entities.AdviceGroup.list('-created_date', 100, { data_env: dataEnv })
       ]);
-      setAdvisers(adviserData.length > 0 ? adviserData : mockAdvisers);
+      
+      // Map adviser data to include full_name
+      const mappedAdvisers = adviserData.map(a => ({
+        ...a,
+        full_name: `${a.first_name} ${a.last_name}`.trim()
+      }));
+      
+      setAdvisers(mappedAdvisers);
       setAdviceGroups(groupsData);
     } catch (error) {
       console.error('Failed to load advisers:', error);
-      setAdvisers(mockAdvisers);
     } finally {
       setLoading(false);
     }
@@ -60,15 +71,7 @@ export default function AdminAdvisers() {
     navigate(createPageUrl('AdviserDashboard'));
   };
 
-  const mockAdvisers = [
-    { id: '1', full_name: 'Tim Smith', email: 'tim@primesolve.com.au', company: 'PrimeSolve Financial', plan: 'unlimited', clients: 12, soas: 8, joined: '15 Nov 2025' },
-    { id: '2', full_name: 'Jane Brown', email: 'jane@wealthpartners.com.au', company: 'Wealth Partners', plan: 'unlimited', clients: 28, soas: 15, joined: '8 Oct 2025' },
-    { id: '3', full_name: 'Rachel Lee', email: 'rachel@futurefinance.com.au', company: 'Future Finance', plan: 'pay_per_soa', clients: 6, soas: 3, joined: '20 Dec 2025' },
-    { id: '4', full_name: 'Kevin White', email: 'kevin@smartwealth.com.au', company: 'Smart Wealth', plan: 'unlimited', clients: 19, soas: 11, joined: '6 Sep 2025' },
-    { id: '5', full_name: 'Nick Parker', email: 'nick@parkeradvisory.com.au', company: 'Parker Advisory', plan: 'trial', clients: 3, soas: 1, joined: '18 Jan 2026' },
-    { id: '6', full_name: 'Sarah Mitchell', email: 'sarah@mitchellfinancial.com.au', company: 'Mitchell Financial', plan: 'trial', clients: 1, soas: 0, joined: '22 Jan 2026' },
-    { id: '7', full_name: 'David Thompson', email: 'david@securefinance.com.au', company: 'Secure Finance', plan: 'cancelled', clients: 8, soas: 5, joined: '1 Aug 2020' }
-  ];
+
 
   const filteredAdvisers = advisers.filter(adviser =>
     adviser.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -124,24 +127,24 @@ export default function AdminAdvisers() {
             <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
               <CheckCircle className="w-6 h-6 text-green-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">18</div>
-            <div className="text-sm text-slate-600">Unlimited Plans</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.status === 'active').length}</div>
+            <div className="text-sm text-slate-600">Active Advisers</div>
           </div>
 
           <div className="bg-white rounded-2xl p-6 border border-slate-200">
             <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center mb-4">
               <Briefcase className="w-6 h-6 text-orange-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">4</div>
-            <div className="text-sm text-slate-600">Pay-per-SOA</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.status === 'pending').length}</div>
+            <div className="text-sm text-slate-600">Pending</div>
           </div>
 
           <div className="bg-white rounded-2xl p-6 border border-slate-200">
             <div className="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center mb-4">
               <Star className="w-6 h-6 text-yellow-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">2</div>
-            <div className="text-sm text-slate-600">On Trial</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{adviceGroups.length}</div>
+            <div className="text-sm text-slate-600">Advice Groups</div>
           </div>
         </div>
 
@@ -190,10 +193,10 @@ export default function AdminAdvisers() {
                     Company
                   </th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    Plan
+                    Status
                   </th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    Activity
+                    Group
                   </th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     Joined
@@ -218,30 +221,35 @@ export default function AdminAdvisers() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-slate-800 font-medium">{adviser.company || 'Company Name'}</div>
-                      <div className="text-xs text-slate-600">AFSL 123456</div>
+                      <div className="text-sm text-slate-800 font-medium">{adviser.company || '-'}</div>
+                      <div className="text-xs text-slate-600">{adviser.phone || '-'}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${getPlanBadge(adviser.plan || 'unlimited').color}`}>
-                        {getPlanBadge(adviser.plan || 'unlimited').label}
+                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${
+                        adviser.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {adviser.status === 'active' ? 'Active' : 'Pending'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium text-slate-800">{adviser.clients || 0}</span>
-                          <span className="text-xs text-slate-600">Clients</span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium text-slate-800">{adviser.soas || 0}</span>
-                          <span className="text-xs text-slate-600">SOAs</span>
-                        </div>
+                      <div className="text-sm text-slate-700">
+                        {adviceGroups.find(g => g.id === adviser.advice_group_id)?.name || '-'}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-slate-800">{adviser.joined || '15 Nov 2025'}</span>
-                        <span className="text-xs text-slate-600">3 months ago</span>
+                        <span className="text-sm font-medium text-slate-800">
+                          {new Date(adviser.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                        <span className="text-xs text-slate-600">
+                          {(() => {
+                            const days = Math.floor((new Date() - new Date(adviser.created_date)) / (1000 * 60 * 60 * 24));
+                            if (days === 0) return 'Today';
+                            if (days === 1) return 'Yesterday';
+                            if (days < 30) return `${days} days ago`;
+                            return `${Math.floor(days / 30)} months ago`;
+                          })()}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
