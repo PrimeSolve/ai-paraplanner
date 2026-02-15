@@ -46,17 +46,22 @@ export default function AdminAdviceGroups() {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
-      const [data, users] = await Promise.all([
-        base44.entities.AdviceGroup.list('-created_date'),
-        base44.entities.User.list()
+      
+      // Use Test database when in test mode
+      const testMode = localStorage.getItem('test_mode_entity');
+      const dataEnv = testMode ? 'dev' : 'prod';
+      
+      const [data, advisers] = await Promise.all([
+        base44.entities.AdviceGroup.list('-created_date', 50, { data_env: dataEnv }),
+        base44.entities.Adviser.list('-created_date', 200, { data_env: dataEnv })
       ]);
       setGroups(data);
       
       // Count advisers per group
       const counts = {};
-      users.forEach(u => {
-        if (u.user_type === 'adviser' && u.advice_group_id) {
-          counts[u.advice_group_id] = (counts[u.advice_group_id] || 0) + 1;
+      advisers.forEach(a => {
+        if (a.advice_group_id) {
+          counts[a.advice_group_id] = (counts[a.advice_group_id] || 0) + 1;
         }
       });
       setAdviserCounts(counts);
@@ -219,7 +224,7 @@ export default function AdminAdviceGroups() {
             <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-blue-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">24</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{Object.values(adviserCounts).reduce((a, b) => a + b, 0)}</div>
             <div className="text-sm text-slate-600">Total Advisers</div>
           </div>
 
