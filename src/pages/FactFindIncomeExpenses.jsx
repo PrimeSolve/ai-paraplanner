@@ -190,7 +190,7 @@ export default function FactFindIncomeExpenses() {
   };
 
   const getAdjustmentTypeLabel = (value) => {
-    const types = { '1': 'Salary', '2': 'Fringe benefits', '3': 'Non taxable income', '4': 'Bonus income', '1000': 'Business turnover' };
+    const types = { '1': 'Salary', '2': 'Fringe benefits', '3': 'Non taxable income', '4': 'Bonus income', '5': 'Inheritance/windfall', '1000': 'Business turnover' };
     return types[value] || '-';
   };
 
@@ -554,6 +554,7 @@ export default function FactFindIncomeExpenses() {
                             <option value="2">Fringe benefits</option>
                             <option value="3">Non taxable income</option>
                             <option value="4">Bonus income</option>
+                            <option value="5">Inheritance/windfall</option>
                             <option value="1000">Business turnover</option>
                           </select>
                         </div>
