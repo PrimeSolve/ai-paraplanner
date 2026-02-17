@@ -130,6 +130,19 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
 
       console.log('[Voice] Room created:', room_name);
 
+      // Explicitly dispatch the agent to join the room
+      try {
+        const dispatchRes = await fetch('https://solver-cors-proxy.tim-hall.workers.dev/livekit/dispatch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ room_name }),
+        });
+        const dispatchData = await dispatchRes.json();
+        console.log('[Voice] Agent dispatch response:', dispatchData);
+      } catch (dispatchErr) {
+        console.warn('[Voice] Agent dispatch call failed:', dispatchErr);
+      }
+
       // 2. Connect to the LiveKit room
       const room = new window.LivekitClient.Room();
       roomRef.current = room;
