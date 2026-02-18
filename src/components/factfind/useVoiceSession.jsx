@@ -155,6 +155,18 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
         statusRef.current = 'connected';
         setStatus('connected');
         console.log('[Voice] Connected to room');
+
+        // Send initial TAB_ACTIVATED so the agent knows which tab to start on
+        const currentTab = activeTabId || 'basic_details';
+        const payload = JSON.stringify({
+          type: 'TAB_ACTIVATED',
+          active_tab_id: currentTab,
+          ts: Date.now(),
+        });
+        room.localParticipant
+          .publishData(new TextEncoder().encode(payload), { reliable: true })
+          .then(() => console.log('[Voice] Sent initial TAB_ACTIVATED:', currentTab))
+          .catch(err => console.error('[Voice] Initial TAB_ACTIVATED error:', err));
       });
 
       room.on(window.LivekitClient.RoomEvent.Disconnected, () => {
