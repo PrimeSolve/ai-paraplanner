@@ -205,9 +205,14 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
     processedIds.current.clear();
   }, []);
 
-  // Cleanup on unmount
+  // Cleanup on unmount only
   useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (roomRef.current) roomRef.current.disconnect();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
       if (roomRef.current) roomRef.current.disconnect();
     };
   }, []);
