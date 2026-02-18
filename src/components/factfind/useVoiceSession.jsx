@@ -163,6 +163,7 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
       });
 
       await room.connect(url, token);
+      await room.localParticipant.setMicrophoneEnabled(true);
 
     } catch (err) {
       console.error('[Voice] Start failed:', err);
