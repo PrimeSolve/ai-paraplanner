@@ -130,6 +130,11 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
 
       console.log('[Voice] Room created:', room_name);
 
+      // Decode and log token grants
+      const parts = token.split('.');
+      const grants = JSON.parse(atob(parts[1]));
+      console.log('TOKEN GRANTS:', JSON.stringify(grants));
+
       // 2. Connect to the LiveKit room
       const room = new window.LivekitClient.Room();
       roomRef.current = room;
