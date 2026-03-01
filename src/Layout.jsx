@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
 import { RoleProvider } from '@/components/RoleContext';
 import AppShell from '@/components/AppShell';
 import AdviceGroupLayout from '@/components/advicegroup/AdviceGroupLayout';
