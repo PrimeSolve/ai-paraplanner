@@ -1,13 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { RoleProvider } from '@/components/RoleContext';
+import React, { useEffect } from 'react';
 import AppShell from '@/components/AppShell';
-import AdviceGroupLayout from '@/components/advicegroup/AdviceGroupLayout';
-import AdviserLayout from '@/components/adviser/AdviserLayout';
-import AdminLayout from '@/components/admin/AdminLayout';
 
 export default function Layout({ children, currentPageName }) {
-  const [loading, setLoading] = useState(false);
-
   // Load LiveKit SDK for voice AI
   useEffect(() => {
     if (!document.getElementById('livekit-sdk')) {
@@ -206,18 +200,16 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
-    <RoleProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100" style={{ paddingTop: isInTestMode ? '40px' : '0' }}>
-        <style>{`
-          :root {
-            --primary: #1e293b;
-            --primary-light: #334155;
-            --accent: #f59e0b;
-            --accent-dark: #d97706;
-          }
-        `}</style>
-        {layoutComponent}
-      </div>
-    </RoleProvider>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100" style={{ paddingTop: isInTestMode ? '40px' : '0' }}>
+      <style>{`
+        :root {
+          --primary: #1e293b;
+          --primary-light: #334155;
+          --accent: #f59e0b;
+          --accent-dark: #d97706;
+        }
+      `}</style>
+      {layoutComponent}
+    </div>
   );
 }
