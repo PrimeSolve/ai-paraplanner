@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRole } from './RoleContext';
+import { useAuth } from '@/lib/AuthContext';
 import { useLocation } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
 
 // Import all sidebars
 import AdminSidebar from './admin/AdminSidebar';
@@ -14,41 +14,56 @@ import AppHeader from './AppHeader';
 
 export default function AppShell({ children, pageActions, pageTitle }) {
   const { navigationChain, originalUser, user, isViewingAs, loadUserData } = useRole();
+  const { user: authUser } = useAuth();
   const location = useLocation();
-  const [loading, setLoading] = useState(true);
+  // If RoleContext already has the user (persisted across navigation), skip loading
+  const [loading, setLoading] = useState(() => !user);
 
-  // Initialize user on mount (only once)
+  // Initialize user role context from the already-authenticated user
   useEffect(() => {
+    // If role context already has user data (persisted from previous navigation), done
+    if (user) {
+      setLoading(false);
+      return;
+    }
+
+    // Wait for auth user to be available
+    if (!authUser) return;
+
     let mounted = true;
-    const initUser = async () => {
+    (async () => {
       try {
-        const currentUser = await base44.auth.me();
-        if (!mounted) return;
-        if (currentUser) {
-          loadUserData(currentUser);
-        }
+        console.log('AppShell: initializing user from auth context:', authUser);
+        console.log('AppShell: user role:', authUser?.role);
+        await loadUserData(authUser);
+        console.log('AppShell: loadUserData complete');
       } catch (error) {
-        if (!mounted) return;
-        console.error('Failed to load user:', error);
+        console.error('Failed to initialize user role:', error);
       } finally {
         if (mounted) {
           setLoading(false);
         }
       }
-    };
-    initUser();
+    })();
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [authUser, user, loadUserData]);
 
   // Determine current navigation level from the chain
-  const currentLevel = navigationChain.length > 0 
-    ? navigationChain[navigationChain.length - 1]?.type 
+  const currentLevel = navigationChain.length > 0
+    ? navigationChain[navigationChain.length - 1]?.type
     : null;
 
   // Get the original user's role (who is actually logged in)
   const originalRole = originalUser?.role || user?.role;
+
+  // Determine effective role considering linked entities (for 'user' role users)
+  const effectiveRole = (() => {
+    if (originalRole && originalRole !== 'user') return originalRole;
+    if (user?.linkedEntity?.type) return user.linkedEntity.type;
+    return originalRole;
+  })();
 
   // RULE 5: isSpecialLayout is an EXPLICIT whitelist
   const SPECIAL_LAYOUT_ROUTES = [
@@ -85,8 +100,23 @@ export default function AppShell({ children, pageActions, pageTitle }) {
   const isSpecialLayout = SPECIAL_LAYOUT_ROUTES.some(route => location.pathname.startsWith(route));
   const sidebarWidth = isSpecialLayout ? '320px' : '260px';
 
-  // Determine which sidebar to render based on navigation chain
-  const renderSidebar = () => {
+  // Helper to extract current page from URL for sidebar highlighting
+  const getCurrentPage = () => {
+    const path = location.pathname;
+    const pageName = path.split('/').pop() || 'Dashboard';
+    return pageName;
+  };
+
+  // Determine which sidebar to render based on navigation chain and role
+  const getSidebarComponent = () => {
+    console.log('=== getSidebarComponent ===');
+    console.log('pathname:', location.pathname);
+    console.log('navigationChain:', navigationChain);
+    console.log('currentLevel:', currentLevel);
+    console.log('originalRole:', originalRole);
+    console.log('effectiveRole:', effectiveRole);
+    console.log('isSpecialLayout:', isSpecialLayout);
+
     if (isSpecialLayout) {
       return null;
     }
@@ -115,29 +145,23 @@ export default function AppShell({ children, pageActions, pageTitle }) {
       return <AdviceGroupSidebar currentPage={getCurrentPage()} />;
     }
 
-    // Not viewing as anyone — show sidebar based on actual logged-in role
-    if (originalRole === 'admin') {
+    // Not viewing as anyone — show sidebar based on effective role
+    if (effectiveRole === 'admin') {
       return <AdminSidebar currentPage={getCurrentPage()} />;
     }
-    if (originalRole === 'advice_group') {
+    if (effectiveRole === 'advice_group') {
       return <AdviceGroupSidebar currentPage={getCurrentPage()} />;
     }
-    if (originalRole === 'adviser') {
+    if (effectiveRole === 'adviser') {
       return <AdviserSidebar currentPage={getCurrentPage()} />;
     }
-    if (originalRole === 'client') {
+    if (effectiveRole === 'client') {
       return <ClientSidebar currentPage={getCurrentPage()} />;
     }
 
     // Fallback
+    console.log('getSidebarComponent returning null - no role matched. effectiveRole:', effectiveRole);
     return null;
-  };
-
-  // Helper to extract current page from URL for sidebar highlighting
-  const getCurrentPage = () => {
-    const path = location.pathname;
-    const pageName = path.split('/').pop() || 'Dashboard';
-    return pageName;
   };
 
   // Check if this is a page that should have no shell (login, public pages, etc.)
@@ -157,27 +181,35 @@ export default function AppShell({ children, pageActions, pageTitle }) {
     );
   }
 
-   // RULE 1: AppShell is the SINGLE source of truth for layout
-   const sidebarElement = isSpecialLayout ? null : renderSidebar();
-   const showSidebar = sidebarElement !== null;
-   const contentWidth = showSidebar ? `calc(100% - ${sidebarWidth})` : '100%';
-   const contentMargin = showSidebar ? sidebarWidth : '0';
+  console.log('AppShell rendering');
+  console.log('isSpecialLayout:', isSpecialLayout);
+  console.log('location.pathname:', location.pathname);
+  console.log('currentLevel:', currentLevel);
+  console.log('originalRole:', originalRole);
+  console.log('effectiveRole:', effectiveRole);
 
-   return (
-      <div className="flex min-h-screen bg-[#f8fafc]">
-        {showSidebar && sidebarElement}
-        <div style={{ 
-          marginLeft: contentMargin, 
-          width: contentWidth,
-          display: 'flex', 
-          flexDirection: 'column',
-          minHeight: '100vh'
-        }}>
-         <AppHeader pageActions={pageActions} pageTitle={pageTitle} />
-         <main className="flex-1">
-           {children}
-         </main>
-       </div>
-     </div>
-   );
+  // RULE 1: AppShell is the SINGLE source of truth for layout
+  // Compute sidebar once (not twice like before)
+  const sidebarComponent = getSidebarComponent();
+  const showSidebar = sidebarComponent !== null;
+  const contentWidth = showSidebar ? `calc(100% - ${sidebarWidth})` : '100%';
+  const contentMargin = showSidebar ? sidebarWidth : '0';
+
+  return (
+    <div className="flex min-h-screen bg-[#f8fafc]">
+      {showSidebar && sidebarComponent}
+      <div style={{
+        marginLeft: contentMargin,
+        width: contentWidth,
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh'
+      }}>
+        <AppHeader pageActions={pageActions} pageTitle={pageTitle} />
+        <main className="flex-1">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
 }
