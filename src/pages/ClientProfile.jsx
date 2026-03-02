@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import ClientLayout from '../components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -89,17 +88,14 @@ export default function ClientProfile() {
 
   if (loading) {
     return (
-      <ClientLayout currentPage="ClientProfile">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b5cf6]"></div>
-        </div>
-      </ClientLayout>
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b5cf6]"></div>
+      </div>
     );
   }
 
   return (
-    <ClientLayout currentPage="ClientProfile">
-      <div className="min-h-screen bg-[#f8fafc] p-8">
+    <div className="bg-[#f8fafc] p-8">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Profile Header Card */}
           <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
@@ -312,7 +308,6 @@ export default function ClientProfile() {
             </Button>
           </div>
         </div>
-      </div>
-    </ClientLayout>
+    </div>
   );
 }

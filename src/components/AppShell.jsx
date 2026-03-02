@@ -24,11 +24,8 @@ export default function AppShell({ children, pageActions, pageTitle }) {
       try {
         const currentUser = await base44.auth.me();
         if (!mounted) return;
-        console.log('AppShell loaded user:', currentUser);
-        console.log('User role:', currentUser?.role);
         if (currentUser) {
           loadUserData(currentUser);
-          console.log('Called loadUserData');
         }
       } catch (error) {
         if (!mounted) return;
@@ -90,26 +87,12 @@ export default function AppShell({ children, pageActions, pageTitle }) {
 
   // Determine which sidebar to render based on navigation chain
   const renderSidebar = () => {
-    console.log('=== renderSidebar ===');
-    console.log('pathname:', location.pathname);
-    console.log('navigationChain:', navigationChain);
-    console.log('currentLevel:', currentLevel);
-    console.log('originalRole:', originalRole);
-    console.log('isSpecialLayout:', isSpecialLayout);
-    
     if (isSpecialLayout) {
-      console.log('Returning null due to special layout');
       return null;
     }
 
-    console.log('renderSidebar called');
-    console.log('currentLevel:', currentLevel);
-    console.log('originalRole:', originalRole);
-    console.log('user:', user);
-
     // Check for test mode entity type
     if (user?.entityType) {
-      console.log('Test mode entity type:', user.entityType);
       if (user.entityType === 'advice_group') {
         return <AdviceGroupSidebar currentPage={getCurrentPage()} />;
       }
@@ -117,7 +100,7 @@ export default function AppShell({ children, pageActions, pageTitle }) {
         return <AdviserSidebar currentPage={getCurrentPage()} />;
       }
       if (user.entityType === 'client') {
-        return null; // Client portal has its own sidebar
+        return <ClientSidebar currentPage={getCurrentPage()} />;
       }
     }
 
@@ -142,9 +125,11 @@ export default function AppShell({ children, pageActions, pageTitle }) {
     if (originalRole === 'adviser') {
       return <AdviserSidebar currentPage={getCurrentPage()} />;
     }
+    if (originalRole === 'client') {
+      return <ClientSidebar currentPage={getCurrentPage()} />;
+    }
 
     // Fallback
-    console.log('renderSidebar returning null - no role matched');
     return null;
   };
 
@@ -172,20 +157,15 @@ export default function AppShell({ children, pageActions, pageTitle }) {
     );
   }
 
-  console.log('AppShell rendering');
-   console.log('isSpecialLayout:', isSpecialLayout);
-   console.log('location.pathname:', location.pathname);
-   console.log('currentLevel:', currentLevel);
-   console.log('originalRole:', originalRole);
-
    // RULE 1: AppShell is the SINGLE source of truth for layout
-   const showSidebar = !isSpecialLayout && renderSidebar() !== null;
+   const sidebarElement = isSpecialLayout ? null : renderSidebar();
+   const showSidebar = sidebarElement !== null;
    const contentWidth = showSidebar ? `calc(100% - ${sidebarWidth})` : '100%';
    const contentMargin = showSidebar ? sidebarWidth : '0';
 
    return (
       <div className="flex min-h-screen bg-[#f8fafc]">
-        {showSidebar && renderSidebar()}
+        {showSidebar && sidebarElement}
         <div style={{ 
           marginLeft: contentMargin, 
           width: contentWidth,

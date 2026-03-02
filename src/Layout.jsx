@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RoleProvider } from '@/components/RoleContext';
 import AppShell from '@/components/AppShell';
-import AdviceGroupLayout from '@/components/advicegroup/AdviceGroupLayout';
-import AdviserLayout from '@/components/adviser/AdviserLayout';
-import AdminLayout from '@/components/admin/AdminLayout';
 
 export default function Layout({ children, currentPageName }) {
   const [loading, setLoading] = useState(false);
