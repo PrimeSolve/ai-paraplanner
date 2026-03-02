@@ -80,14 +80,14 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
   };
 
   const navItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, path: 'AdviserDashboard', id: 'dashboard' },
-    { label: 'Clients', icon: Users, path: 'AdviserClients', id: 'clients' },
-    { label: 'SOA Queue', icon: FileText, path: 'AdviserSOARequests', id: 'soa-requests' },
-    { label: 'Completed SOAs', icon: CheckCircle, path: 'AdviserCompletions', id: 'completed' }
+    { label: 'Dashboard', icon: LayoutDashboard, path: 'AdviserDashboard' },
+    { label: 'Clients', icon: Users, path: 'AdviserClients' },
+    { label: 'SOA Queue', icon: FileText, path: 'AdviserSOARequests' },
+    { label: 'Completed SOAs', icon: CheckCircle, path: 'AdviserCompletions' }
   ];
 
   const accountItems = [
-    { label: 'Settings', icon: Settings, path: 'AdviserSettings', id: 'settings' }
+    { label: 'Settings', icon: Settings, path: 'AdviserSettings' }
   ];
 
   return (
@@ -124,7 +124,7 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
           </div>
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = currentPage === item.id;
+            const isActive = currentPage === item.path;
             return (
               <Link
                 key={item.path}
@@ -151,7 +151,7 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
           </div>
           {accountItems.map((item) => {
             const Icon = item.icon;
-            const isActive = currentPage === item.id;
+            const isActive = currentPage === item.path;
             return (
               <Link
                 key={item.path}

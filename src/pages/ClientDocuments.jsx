@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import ClientLayout from '../components/client/ClientLayout';
 import { 
   FileText, 
   Download, 
@@ -58,8 +57,7 @@ export default function ClientDocuments() {
   const getTypeConfig = (type) => documentTypes[type] || documentTypes['Other'];
 
   return (
-    <ClientLayout currentPage="ClientDocuments">
-      <div style={{ padding: '24px 32px' }}>
+    <div style={{ padding: '24px 32px' }}>
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-800 mb-2">My Documents</h1>
@@ -189,7 +187,6 @@ export default function ClientDocuments() {
             </div>
           </div>
         )}
-      </div>
-    </ClientLayout>
+    </div>
   );
 }

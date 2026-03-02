@@ -118,13 +118,11 @@ export default function AppShell({ children, pageActions, pageTitle }) {
     console.log('isSpecialLayout:', isSpecialLayout);
 
     if (isSpecialLayout) {
-      console.log('Returning null due to special layout');
       return null;
     }
 
     // Check for test mode entity type
     if (user?.entityType) {
-      console.log('Test mode entity type:', user.entityType);
       if (user.entityType === 'advice_group') {
         return <AdviceGroupSidebar currentPage={getCurrentPage()} />;
       }

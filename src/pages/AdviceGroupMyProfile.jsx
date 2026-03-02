@@ -1,9 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
-import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
-import AdminLayout from '../components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -67,32 +62,16 @@ export default function AdviceGroupMyProfile() {
   };
 
   if (loading) {
-    if (user?.role === 'admin') {
-      return (
-        <AdminLayout currentPage="AdminProfile">
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b5cf6]"></div>
-          </div>
-        </AdminLayout>
-      );
-    }
     return (
-     <div className="flex">
-       <AdviceGroupSidebar currentPage="settings" />
-       <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-         <AdviceGroupHeader user={user} />
-         <div className="flex items-center justify-center min-h-screen">
-           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b5cf6]"></div>
-         </div>
-       </div>
-     </div>
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b5cf6]"></div>
+      </div>
     );
-    }
+  }
 
   if (user?.role === 'admin') {
     return (
-      <AdminLayout currentPage="AdminProfile">
-        <div className="min-h-screen bg-[#f8fafc] p-8">
+        <div className="bg-[#f8fafc] p-8">
           <div className="max-w-4xl mx-auto space-y-6">
           {/* Profile Header Card */}
           <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
@@ -348,17 +327,11 @@ export default function AdviceGroupMyProfile() {
           </div>
           </div>
           </div>
-          </AdminLayout>
-          );
-          }
+    );
+  }
 
         return (
-        <>
-        <div className="flex">
-        <AdviceGroupSidebar currentPage="settings" />
-        <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <AdviceGroupHeader user={user} />
-        <div className="min-h-screen bg-[#f8fafc] p-8" style={{ flex: 1 }}>
+        <div className="bg-[#f8fafc] p-8">
         <div className="max-w-4xl mx-auto space-y-6">
         {/* Profile Header Card */}
         <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
@@ -614,8 +587,5 @@ export default function AdviceGroupMyProfile() {
         </div>
         </div>
         </div>
-        </div>
-        </div>
-        </>
         );
   }

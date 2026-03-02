@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import ClientLayout from '../components/client/ClientLayout';
-import { 
+import {
   MessageSquare, 
   Filter,
   Search,
@@ -96,8 +95,7 @@ export default function ClientMessages() {
   const getSourceConfig = (source) => sourceConfig[source] || sourceConfig['General'];
 
   return (
-    <ClientLayout currentPage="ClientMessages">
-      <div style={{ padding: '24px 32px' }}>
+    <div style={{ padding: '24px 32px' }}>
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-800 mb-2">Conversation History</h1>
@@ -238,7 +236,6 @@ export default function ClientMessages() {
             </div>
           </div>
         )}
-      </div>
-    </ClientLayout>
+    </div>
   );
 }
