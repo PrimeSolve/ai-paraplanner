@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import { CheckCircle2, AlertCircle, MinusCircle, ChevronRight } from 'lucide-react';
+import { CheckCircle2, AlertCircle, MinusCircle, ChevronRight, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import { rebuildAdviceModel } from '@/utils/rebuildAdviceModel';
 
 // ==========================================================================
 // SECTION CONFIGURATION
@@ -404,6 +405,38 @@ export default function SOARequestReview() {
               })}
             </div>
             
+            {/* Launch Cashflow Model */}
+            <Card className="border-teal-200 bg-teal-50">
+              <CardContent className="py-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-teal-600 rounded-xl flex items-center justify-center text-2xl text-white">
+                      📈
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900">Launch Cashflow Model</h3>
+                      <p className="text-sm text-slate-600">
+                        Open the cashflow projection tool with this advice request's data.
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={async () => {
+                      await rebuildAdviceModel(soaRequest.id);
+                      window.open(
+                        `https://paraplanner.primesolve.com.au?adviceRequestId=${soaRequest.id}`,
+                        '_blank'
+                      );
+                    }}
+                    className="bg-teal-600 hover:bg-teal-700"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Launch Model
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Submit Section */}
             <Card className="border-slate-200">
               <CardContent className="py-8 text-center">

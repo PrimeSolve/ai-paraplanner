@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
 import { ChevronDown, ChevronRight, GripVertical, Lightbulb } from 'lucide-react';
 import { toast } from 'sonner';
+import { rebuildAdviceModel } from '@/utils/rebuildAdviceModel';
 
 // ==========================================================================
 // SECTION DEFINITIONS
@@ -243,6 +244,7 @@ export default function SOARequestDetails() {
           collapsed_groups: collapsedGroups
         }
       });
+      await rebuildAdviceModel(soaRequest.id);
       toast.success('SOA details saved');
       navigate(createPageUrl('SOARequestReview') + `?id=${soaRequest.id}`);
     } catch (error) {

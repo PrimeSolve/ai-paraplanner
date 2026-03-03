@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import SOARequestLayout from '../components/soa/SOARequestLayout';
 import { Plus, Trash2, Pencil, AlertTriangle, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { rebuildAdviceModel } from '@/utils/rebuildAdviceModel';
 
 // ============================================================================
 // RISK PROFILE TARGET ALLOCATIONS
@@ -416,6 +417,7 @@ export default function SOARequestPortfolio() {
     setSaving(true);
     try {
       await savePortfolioData();
+      await rebuildAdviceModel(soaRequest.id);
       toast.success('Portfolio saved');
       navigate(createPageUrl('SOARequestStrategy') + `?id=${soaRequest.id}`);
     } catch (error) {

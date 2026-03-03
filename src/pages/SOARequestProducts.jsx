@@ -11,6 +11,7 @@ import { useSOAEntities } from '../components/soa/useSOAEntities';
 import EntitySelect from '../components/factfind/EntitySelect';
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { rebuildAdviceModel } from '@/utils/rebuildAdviceModel';
 
 export default function SOARequestProducts() {
   const [loading, setLoading] = useState(true);
@@ -211,6 +212,7 @@ export default function SOARequestProducts() {
           }
         }
       });
+      await rebuildAdviceModel(soaRequest.id);
       navigate(createPageUrl('SOARequestInsurance') + `?id=${soaRequest.id}`);
     } catch (error) {
       console.error('Save failed:', error);

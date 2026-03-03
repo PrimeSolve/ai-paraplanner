@@ -14,6 +14,7 @@ import { useSOAEntities } from '../components/soa/useSOAEntities';
 import { useFactFind } from '../components/factfind/useFactFind';
 import { Settings, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { rebuildAdviceModel } from '@/utils/rebuildAdviceModel';
 
 export default function SOARequestInsurance() {
   const [loading, setLoading] = useState(true);
@@ -639,6 +640,7 @@ export default function SOARequestInsurance() {
     setSaving(true);
     try {
       await saveInsuranceData();
+      await rebuildAdviceModel(soaRequest.id);
       toast.success('Insurance details saved');
       navigate(createPageUrl('SOARequestTransactions') + `?id=${soaRequest.id}`);
     } catch (error) {

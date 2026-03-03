@@ -8,6 +8,7 @@ import {
   Search,
   Inbox
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function ClientDocuments() {
   const [loading, setLoading] = useState(true);
@@ -47,6 +48,24 @@ export default function ClientDocuments() {
       </ClientLayout>
     );
   }
+
+  const formatFileSize = (bytes) => {
+    if (!bytes) return '—';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '—';
+    try {
+      return new Date(dateStr).toLocaleDateString('en-AU', {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      });
+    } catch {
+      return dateStr;
+    }
+  };
 
   return (
     <ClientLayout currentPage="ClientDocuments">

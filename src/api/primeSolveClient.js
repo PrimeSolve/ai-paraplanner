@@ -195,6 +195,91 @@ function createEntityProxy(endpoint, options = {}) {
 }
 
 // ──────────────────────────────────────────────────────────────
+// Document entity proxy (extends standard proxy with upload/download)
+// ──────────────────────────────────────────────────────────────
+
+const ALLOWED_DOCUMENT_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'image/jpeg',
+  'image/png',
+];
+
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+
+function createDocumentEntityProxy(endpoint) {
+  const base = createEntityProxy(endpoint);
+
+  return {
+    ...base,
+
+    /**
+     * Upload a document with metadata.
+     * Sends multipart form data to POST /documents/upload.
+     *
+     * @param {File} file - The file to upload
+     * @param {object} metadata - { clientId, tenantId, adviserId, adviceRequestId, documentType }
+     * @param {function} [onProgress] - Optional progress callback (0-100)
+     * @returns {Promise<object>} The created document record (snake_case keys)
+     */
+    async upload(file, metadata = {}, onProgress) {
+      // Client-side validation
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        throw new Error(`File size (${(file.size / 1024 / 1024).toFixed(1)} MB) exceeds the 10 MB limit.`);
+      }
+      if (ALLOWED_DOCUMENT_TYPES.length > 0 && !ALLOWED_DOCUMENT_TYPES.includes(file.type)) {
+        throw new Error(`File type "${file.type || 'unknown'}" is not allowed. Accepted: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG.`);
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Append metadata fields
+      for (const [key, value] of Object.entries(metadata)) {
+        if (value !== undefined && value !== null) {
+          formData.append(snakeToCamel(key), String(value));
+        }
+      }
+
+      const response = await axiosInstance.post(`/${endpoint}/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: onProgress
+          ? (progressEvent) => {
+              const pct = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+              onProgress(pct);
+            }
+          : undefined,
+      });
+
+      return camelToSnakeKeys(response.data);
+    },
+
+    /**
+     * Get a secure download URL for a document.
+     * Returns a time-limited SAS token URL (15 min).
+     *
+     * @param {string|number} id - Document ID
+     * @returns {Promise<string>} The download URL
+     */
+    async getDownloadUrl(id) {
+      const response = await axiosInstance.get(`/${endpoint}/${id}/download`);
+      return response.data?.url || response.data;
+    },
+
+    /**
+     * Soft-delete a document (sets status to 'deleted').
+     */
+    async softDelete(id) {
+      const response = await axiosInstance.delete(`/${endpoint}/${id}`);
+      return response.data;
+    },
+  };
+}
+
+// ──────────────────────────────────────────────────────────────
 // Entity definitions (Base44 name → PrimeSolve endpoint)
 // ──────────────────────────────────────────────────────────────
 
@@ -211,6 +296,7 @@ const entities = {
   RiskProfile: createEntityProxy('risk-profiles'),
   ModelPortfolio: createEntityProxy('model-portfolios'),
   Principal: createEntityProxy('clients'),
+  Document: createDocumentEntityProxy('documents'),
 };
 
 // ──────────────────────────────────────────────────────────────

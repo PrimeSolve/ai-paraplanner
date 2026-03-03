@@ -14,6 +14,7 @@ import EntitySelect from '../components/factfind/EntitySelect';
 import { useSOAEntities } from '../components/soa/useSOAEntities';
 import { Plus, Trash2, Pencil, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { rebuildAdviceModel } from '@/utils/rebuildAdviceModel';
 
 // ============================================================================
 // DROPDOWN OPTIONS
@@ -276,6 +277,7 @@ export default function SOARequestTransactions() {
     setSaving(true);
     try {
       await saveTransactionsData();
+      await rebuildAdviceModel(soaRequest.id);
       toast.success('Transactions saved');
       navigate(createPageUrl('SOARequestPortfolio') + `?id=${soaRequest.id}`);
     } catch (error) {

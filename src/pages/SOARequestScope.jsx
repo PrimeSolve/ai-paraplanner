@@ -11,6 +11,7 @@ import SOARequestLayout from '../components/soa/SOARequestLayout';
 import SOARequestHeader from '../components/soa/SOARequestHeader';
 import { toast } from 'sonner';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { rebuildAdviceModel } from '@/utils/rebuildAdviceModel';
 
 const adviceAreas = [
   { id: 'superannuation', label: 'Superannuation' },
@@ -107,6 +108,7 @@ export default function SOARequestScope() {
       await base44.entities.SOARequest.update(soaRequest.id, {
         scope_of_advice: scopeData
       });
+      await rebuildAdviceModel(soaRequest.id);
       toast.success('Scope of advice saved');
       navigate(createPageUrl('SOARequestProducts') + `?id=${soaRequest.id}`);
     } catch (error) {
