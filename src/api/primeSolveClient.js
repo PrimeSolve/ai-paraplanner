@@ -231,6 +231,7 @@ const entities = {
   Principal: createEntityProxy('clients'),
   SoaExample: createEntityProxy('soa-examples'),
   SoaDocument: createEntityProxy('soa-documents'),
+  CashflowModel: createEntityProxy('cashflow-models'),
 };
 
 // ──────────────────────────────────────────────────────────────

@@ -82,6 +82,7 @@ import AdviserClientDetail from './pages/AdviserClientDetail';
 import AdviserClients from './pages/AdviserClients';
 import AdviserCompletions from './pages/AdviserCompletions';
 import AdviserDashboard from './pages/AdviserDashboard';
+import AdviserModels from './pages/AdviserModels';
 import AdviserDocuments from './pages/AdviserDocuments';
 import AdviserFactFinds from './pages/AdviserFactFinds';
 import AdviserHelp from './pages/AdviserHelp';
@@ -180,6 +181,7 @@ export const PAGES = {
     "AdviserDocuments": AdviserDocuments,
     "AdviserFactFinds": AdviserFactFinds,
     "AdviserHelp": AdviserHelp,
+    "AdviserModels": AdviserModels,
     "AdviserProfile": AdviserProfile,
     "AdviserSOARequests": AdviserSOARequests,
     "AdviserSOATemplate": AdviserSOATemplate,
