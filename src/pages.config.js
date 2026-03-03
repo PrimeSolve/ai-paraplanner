@@ -121,6 +121,7 @@ import PublicContact from './pages/PublicContact';
 import PublicHome from './pages/PublicHome';
 import PublicPricing from './pages/PublicPricing';
 import Register from './pages/Register';
+import SOABuilder from './pages/SOABuilder';
 import SOAManagement from './pages/SOAManagement';
 import SOARequestAssumptions from './pages/SOARequestAssumptions';
 import SOARequestDetails from './pages/SOARequestDetails';
@@ -215,6 +216,7 @@ export const PAGES = {
     "PublicHome": PublicHome,
     "PublicPricing": PublicPricing,
     "Register": Register,
+    "SOABuilder": SOABuilder,
     "SOAManagement": SOAManagement,
     "SOARequestAssumptions": SOARequestAssumptions,
     "SOARequestDetails": SOARequestDetails,

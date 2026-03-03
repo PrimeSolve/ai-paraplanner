@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 
 import { Input } from '@/components/ui/input';
-import { Search, MoreHorizontal, CheckCircle2, Clock } from 'lucide-react';
+import { Search, MoreHorizontal, CheckCircle2, Clock, Loader2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatDate } from '../utils/dateUtils';
 import NewSOARequestModal from '../components/adviser/NewSOARequestModal.jsx';
@@ -246,9 +246,7 @@ export default function AdviserSOARequests() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <Link to={createPageUrl(`SOARequestWelcome?id=${req.id}`)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
-                          View
-                        </Link>
+                        <AdviserViewButton soaRequestId={req.id} />
                         {req.status === 'completed' && (
                           <button className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
                             Download
@@ -325,3 +323,35 @@ export default function AdviserSOARequests() {
        </div>
        );
        }
+
+function AdviserViewButton({ soaRequestId }) {
+  const navigate = useNavigate();
+  const [checking, setChecking] = useState(false);
+
+  const handleClick = async (e) => {
+    e.preventDefault();
+    setChecking(true);
+    try {
+      const docs = await base44.entities.SoaDocument.filter({ soa_request_id: soaRequestId });
+      if (docs.length > 0) {
+        navigate(`/SOABuilder?id=${docs[0].id}`);
+      } else {
+        navigate(`/SOARequestWelcome?id=${soaRequestId}`);
+      }
+    } catch {
+      navigate(`/SOARequestWelcome?id=${soaRequestId}`);
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={checking}
+      className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+    >
+      {checking ? <Loader2 className="animate-spin w-4 h-4 inline" /> : 'View'}
+    </button>
+  );
+}

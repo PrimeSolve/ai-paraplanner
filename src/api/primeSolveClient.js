@@ -230,6 +230,7 @@ const entities = {
   ModelPortfolio: createEntityProxy('model-portfolios'),
   Principal: createEntityProxy('clients'),
   SoaExample: createEntityProxy('soa-examples'),
+  SoaDocument: createEntityProxy('soa-documents'),
 };
 
 // ──────────────────────────────────────────────────────────────
@@ -377,6 +378,35 @@ const ai = {
     const response = await axiosInstance.post('/ai/refine', payload);
     return response.data;
   },
+};
+
+// ──────────────────────────────────────────────────────────────
+// SOA Document AI API helpers
+// ──────────────────────────────────────────────────────────────
+
+export const aiApi = {
+  async generateSection(documentId, sectionId, additionalInstructions = '') {
+    const response = await axiosInstance.post(
+      `/soa-documents/${documentId}/generate/${sectionId}`,
+      { additionalInstructions }
+    );
+    return response.data;
+  },
+  async generateAll(documentId) {
+    const response = await axiosInstance.post(`/soa-documents/${documentId}/generate-all`);
+    return response.data;
+  },
+  async complianceCheck(documentId) {
+    const response = await axiosInstance.post(`/soa-documents/${documentId}/compliance-check`);
+    return response.data;
+  },
+  async saveSection(documentId, sectionId, content) {
+    const response = await axiosInstance.put(
+      `/soa-documents/${documentId}/sections/${sectionId}`,
+      { content }
+    );
+    return response.data;
+  }
 };
 
 // ──────────────────────────────────────────────────────────────
