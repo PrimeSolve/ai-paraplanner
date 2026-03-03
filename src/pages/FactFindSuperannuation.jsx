@@ -30,15 +30,14 @@ export default function FactFindSuperannuation() {
   
   const [currentItem, setCurrentItem] = useState(null);
 
-  // Debug principals
-  console.log('Principals loaded:', principalsOnly);
-
   // Initialize empty items for each type
   const getEmptySuper = () => ({
     id: `super_${Date.now()}`,
     owner: '',
     fund_name: '',
+    provider: '',
     product: '',
+    fund_type: '',
     balance: '',
     contributions: {
       super_guarantee: '',
@@ -46,7 +45,13 @@ export default function FactFindSuperannuation() {
       after_tax: '',
       spouse_received: '',
       split_received: '',
+      split_out_pct: '',
       concessional: ''
+    },
+    fees: {
+      admin_fee: '',
+      percent_fee: '',
+      insurance_fee: ''
     },
     tax_components: {
       unp_amount: '',
@@ -590,7 +595,8 @@ export default function FactFindSuperannuation() {
                 {mainTab === 'super' && (
                   <>
                     {activeTab === 'fund_details' && (
-                     <div className="grid md:grid-cols-2 gap-4">
+                     <div className="space-y-4">
+                      <div className="grid md:grid-cols-2 gap-4">
                        <div>
                           <label className="block text-sm font-semibold text-slate-700 mb-2">Fund name</label>
                           <input
@@ -598,6 +604,16 @@ export default function FactFindSuperannuation() {
                             value={currentItem.fund_name}
                             onChange={(e) => setCurrentItem({ ...currentItem, fund_name: e.target.value })}
                             placeholder="e.g. Australian Super"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Provider</label>
+                          <input
+                            type="text"
+                            value={currentItem.provider || ''}
+                            onChange={(e) => setCurrentItem({ ...currentItem, provider: e.target.value })}
+                            placeholder="e.g. AMP, MLC, Colonial First State"
                             className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
@@ -610,6 +626,21 @@ export default function FactFindSuperannuation() {
                             placeholder="e.g. MySuper"
                             className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Fund type</label>
+                          <select
+                            value={currentItem.fund_type || ''}
+                            onChange={(e) => setCurrentItem({ ...currentItem, fund_type: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select...</option>
+                            <option value="retail">Retail</option>
+                            <option value="industry">Industry</option>
+                            <option value="corporate">Corporate</option>
+                            <option value="public_sector">Public Sector</option>
+                            <option value="wrap">Wrap / Platform</option>
+                          </select>
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-slate-700 mb-2">Owner</label>
@@ -636,6 +667,54 @@ export default function FactFindSuperannuation() {
                           </div>
                         </div>
                       </div>
+                      <div className="border-t border-slate-200 pt-4 mt-4">
+                        <h4 className="text-sm font-bold text-slate-700 mb-3">Fees</h4>
+                        <div className="grid md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Admin fee ($ p.a.)</label>
+                            <div className="flex items-center">
+                              <span className="text-slate-500 mr-2">$</span>
+                              <input
+                                type="number"
+                                value={currentItem.fees?.admin_fee || ''}
+                                onChange={(e) => setCurrentItem({ ...currentItem, fees: { ...currentItem.fees, admin_fee: e.target.value } })}
+                                placeholder="0.00"
+                                step="0.01"
+                                min="0"
+                                className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Percent-based fee (%)</label>
+                            <input
+                              type="number"
+                              value={currentItem.fees?.percent_fee || ''}
+                              onChange={(e) => setCurrentItem({ ...currentItem, fees: { ...currentItem.fees, percent_fee: e.target.value } })}
+                              placeholder="0.00"
+                              step="0.01"
+                              min="0"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-2">Insurance fee ($ p.a.)</label>
+                            <div className="flex items-center">
+                              <span className="text-slate-500 mr-2">$</span>
+                              <input
+                                type="number"
+                                value={currentItem.fees?.insurance_fee || ''}
+                                onChange={(e) => setCurrentItem({ ...currentItem, fees: { ...currentItem.fees, insurance_fee: e.target.value } })}
+                                placeholder="0.00"
+                                step="0.01"
+                                min="0"
+                                className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                     </div>
                     )}
 
                     {activeTab === 'contributions' && (
@@ -760,6 +839,22 @@ export default function FactFindSuperannuation() {
                               className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                           </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">Split out (%)</label>
+                          <input
+                            type="number"
+                            value={currentItem.contributions?.split_out_pct || ''}
+                            onChange={(e) => setCurrentItem({
+                              ...currentItem,
+                              contributions: { ...currentItem.contributions, split_out_pct: e.target.value }
+                            })}
+                            placeholder="0"
+                            step="1"
+                            min="0"
+                            max="100"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
                         </div>
                       </div>
                     )}

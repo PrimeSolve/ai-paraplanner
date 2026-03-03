@@ -6,7 +6,6 @@ import { ChevronLeft, ChevronRight, LayoutDashboard } from 'lucide-react';
 import { useRole } from '../RoleContext';
 import { useCompletionLogic } from './useCompletionLogic';
 import { useSectionState } from './useSectionState';
-import { useVoiceSession } from './useVoiceSession';
 
 const sectionGroups = [
   {
@@ -85,33 +84,12 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
   const { SECTIONS } = useSectionState();
   const [activeTabId, setActiveTabId] = useState(currentSection || 'dashboard');
 
-  // Create a placeholder updateSection function (voice updates will be handled by individual pages)
-  const updateSection = (sectionKey, data) => {
-    console.log('[FactFindLayout] Voice update:', sectionKey, data);
-    // Individual pages will handle their own updates via their useFactFind hook
-  };
-
-  // Voice session hook
-  const { status, writeCount, startVoice, stopVoice } = useVoiceSession({
-    factFind,
-    updateSection,
-    activeTabId,
-    clientId: factFind?.id || 'default'
-  });
-
-  console.log('[DEBUG] startVoice function exists:', typeof startVoice);
-
   // Update active tab when section changes
   useEffect(() => {
     if (currentSection) {
       setActiveTabId(currentSection);
     }
   }, [currentSection]);
-
-  // Check if LiveKit SDK is available
-  useEffect(() => {
-    console.log('[Voice] FactFindLayout mounted - LivekitClient available:', typeof window.LivekitClient);
-  }, []);
 
   const handleNavClick = async (e, targetPath) => {
     e.preventDefault();
@@ -289,101 +267,6 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden ml-80 pt-4">
-        {/* Voice Control Bar */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '12px 16px',
-          background: status === 'connected' ? '#f0fdf4' : '#f8fafc',
-          borderBottom: '1px solid #e2e8f0',
-          borderRadius: '8px',
-          margin: '0 24px 16px 24px',
-        }}>
-          <button 
-            onClick={async () => {
-              console.log('[TEST] Button clicked');
-              try {
-                const res = await fetch('https://solver-cors-proxy.tim-hall.workers.dev/livekit/start', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ ClientId: 'test-001' }),
-                });
-                const data = await res.json();
-                console.log('[TEST] Response:', data);
-                alert('Room created: ' + data.room_name);
-              } catch (err) {
-                console.log('[TEST] Error:', err);
-                alert('Error: ' + err.message);
-              }
-            }}
-            style={{ background: 'red', color: 'white', padding: '10px 20px', fontSize: '16px', margin: '10px' }}
-          >
-            TEST CONNECTION
-          </button>
-          
-          {status === 'idle' || status === 'error' || status === 'disconnected' ? (
-            <button
-              onClick={async () => {
-                console.log('[Voice] Start button clicked');
-                console.log('[Voice] startVoice type:', typeof startVoice);
-                if (typeof startVoice === 'function') {
-                  await startVoice();
-                } else {
-                  console.error('[Voice] startVoice is not a function!');
-                  alert('Error: startVoice function not available');
-                }
-              }}
-              style={{
-                padding: '8px 16px',
-                background: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: 600,
-              }}
-            >
-              🎙 Start Voice Session
-            </button>
-          ) : status === 'connecting' ? (
-            <span style={{ color: '#f59e0b', fontWeight: 500 }}>Connecting...</span>
-          ) : (
-            <>
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                color: '#16a34a',
-                fontWeight: 500,
-              }}>
-                <span style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  background: '#16a34a',
-                  display: 'inline-block',
-                }} />
-                Voice Active — {writeCount} fields written
-              </span>
-              <button
-                onClick={stopVoice}
-                style={{
-                  padding: '6px 12px',
-                  background: '#fee2e2',
-                  color: '#dc2626',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  marginLeft: 'auto',
-                }}
-              >
-                End Session
-              </button>
-            </>
-          )}
-        </div>
-
         {children}
       </div>
     </div>

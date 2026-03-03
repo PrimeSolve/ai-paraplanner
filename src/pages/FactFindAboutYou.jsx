@@ -48,7 +48,7 @@ export default function FactFindPersonal() {
     state: '',
     country: 'Australia',
     postcode: '',
-    mobile: '',
+    phone: '',
     email: '',
     health_status: '',
     smoker_status: '',
@@ -61,7 +61,7 @@ export default function FactFindPersonal() {
     annual_leave: '',
     sick_leave: '',
     long_service_leave: '',
-    employer_name: '',
+    employer: '',
     employment_length: '',
     has_will: '',
     will_updated: '',
@@ -82,10 +82,10 @@ export default function FactFindPersonal() {
   const calculateCompletion = (clientData, partnerData, hasPartner) => {
     const textFields = [
       'first_name', 'last_name', 'date_of_birth', 'marital_status', 'living_status',
-      'address', 'suburb', 'state', 'country', 'postcode', 'mobile', 'email',
+      'address', 'suburb', 'state', 'country', 'postcode', 'phone', 'email',
       'health_issues',
       'employment_status', 'occupation', 'hours_per_week', 'occupation_type', 
-      'annual_leave', 'sick_leave', 'long_service_leave', 'employer_name', 'employment_length',
+      'annual_leave', 'sick_leave', 'long_service_leave', 'employer', 'employment_length',
       'will_updated', 'power_of_attorney', 'benefit_type'
     ];
     
@@ -106,7 +106,7 @@ export default function FactFindPersonal() {
       const clBenefits = personData.centrelink_benefits;
       const hideCentrelinkFields = clBenefits === '2'; // No
       
-      const conditionalEmpFields = ['occupation', 'hours_per_week', 'occupation_type', 'annual_leave', 'sick_leave', 'long_service_leave', 'employer_name', 'employment_length'];
+      const conditionalEmpFields = ['occupation', 'hours_per_week', 'occupation_type', 'annual_leave', 'sick_leave', 'long_service_leave', 'employer', 'employment_length'];
       const conditionalCentrelinkFields = ['benefit_type', 'concession_cards'];
       
       textFields.forEach(field => {
@@ -196,12 +196,19 @@ export default function FactFindPersonal() {
   
   useEffect(() => {
     if (factFind?.personal && !dataLoaded) {
+      // Migrate old field names to new model-aligned names
+      const migrateFields = (data) => {
+        const migrated = { ...data };
+        if (migrated.mobile && !migrated.phone) { migrated.phone = migrated.mobile; delete migrated.mobile; }
+        if (migrated.employer_name && !migrated.employer) { migrated.employer = migrated.employer_name; delete migrated.employer_name; }
+        return migrated;
+      };
       // Load flat structure directly
-      setClientData({ ...initialFormState, ...factFind.personal });
+      setClientData({ ...initialFormState, ...migrateFields(factFind.personal) });
       
       // Load partner data if exists
       if (factFind.personal.partner) {
-        setPartnerData({ ...initialFormState, ...factFind.personal.partner });
+        setPartnerData({ ...initialFormState, ...migrateFields(factFind.personal.partner) });
         setHasPartner(true);
       }
       
@@ -705,8 +712,8 @@ export default function FactFindPersonal() {
                         <Label className="text-slate-700 font-semibold text-sm">Phone *</Label>
                         <Input
                           type="tel"
-                          value={formData.mobile}
-                          onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                           placeholder="0400 000 000"
                           className="border-slate-300"
                         />
@@ -894,8 +901,8 @@ export default function FactFindPersonal() {
                       <div className="space-y-2">
                         <Label className="text-slate-700 font-semibold text-sm">Employer name</Label>
                         <Input
-                          value={formData.employer_name}
-                          onChange={(e) => setFormData({ ...formData, employer_name: e.target.value })}
+                          value={formData.employer}
+                          onChange={(e) => setFormData({ ...formData, employer: e.target.value })}
                           placeholder="Enter employer name"
                           className="border-slate-300"
                         />

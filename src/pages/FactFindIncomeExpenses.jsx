@@ -341,14 +341,33 @@ export default function FactFindIncomeExpenses() {
               {/* INCOME FIELDS */}
               <Card className="border-slate-200 shadow-sm">
                 <CardContent className="p-6 space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">What is your gross salary?</label>
-                    <input
-                      type="text"
-                      value={currentPersonFields.i_gross || ''}
-                      onChange={(e) => updatePersonField('i_gross', e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Income type</label>
+                      <select
+                        value={currentPersonFields.i_type || ''}
+                        onChange={(e) => updatePersonField('i_type', e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select...</option>
+                        <option value="employment">Employment</option>
+                        <option value="business">Business / Self-employed</option>
+                        <option value="investment">Investment</option>
+                        <option value="rental">Rental</option>
+                        <option value="pension">Pension</option>
+                        <option value="government">Government benefit</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Gross salary / income</label>
+                      <input
+                        type="text"
+                        value={currentPersonFields.i_gross || ''}
+                        onChange={(e) => updatePersonField('i_gross', e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">

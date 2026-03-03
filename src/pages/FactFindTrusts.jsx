@@ -211,6 +211,9 @@ export default function FactFindTrusts() {
       const typeSelect = card.querySelector('select[name="trust_type"]');
       if (typeSelect && data.trust_type) typeSelect.value = data.trust_type;
 
+      const abnInput = card.querySelector('input[name="trust_abn"]');
+      if (abnInput && data.trust_abn) abnInput.value = data.trust_abn;
+
       // Fill beneficiaries
       if (Array.isArray(data.beneficiaries) && data.beneficiaries.length > 0) {
         const benefContainer = card.querySelector('.benef-list');
@@ -231,6 +234,9 @@ export default function FactFindTrusts() {
     } else {
       const nameInput = card.querySelector('input[name="company_name"]');
       if (nameInput && data.company_name) nameInput.value = data.company_name;
+
+      const abnInput = card.querySelector('input[name="company_abn"]');
+      if (abnInput && data.company_abn) abnInput.value = data.company_abn;
 
       const lossesInput = card.querySelector('input[name="co_losses"]');
       if (lossesInput && data.co_losses) lossesInput.value = data.co_losses;
@@ -743,6 +749,10 @@ export default function FactFindTrusts() {
                     <option value="5">Other</option>
                   </select>
                 </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">ABN</label>
+                  <input type="text" name="trust_abn" placeholder="e.g. 12 345 678 901" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
                 </div>
               </div>
             </div>
@@ -812,9 +822,15 @@ export default function FactFindTrusts() {
               </div>
               <div className="p-4">
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Company name</label>
-                  <input type="text" name="company_name" placeholder="e.g. Smith Investments Pty Ltd" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Company name</label>
+                    <input type="text" name="company_name" placeholder="e.g. Smith Investments Pty Ltd" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">ABN</label>
+                    <input type="text" name="company_abn" placeholder="e.g. 12 345 678 901" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">

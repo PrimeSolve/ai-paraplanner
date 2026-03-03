@@ -107,7 +107,15 @@ export default function FactFindInsurance() {
   useEffect(() => {
     if (factFind?.insurance) {
       const insuranceData = factFind.insurance;
-      setPolicies(insuranceData.policies || []);
+      // Migrate old pol_insurer field to pol_provider
+      const migratedPolicies = (insuranceData.policies || []).map(p => {
+        if (p.pol_insurer && !p.pol_provider) {
+          const { pol_insurer, ...rest } = p;
+          return { ...rest, pol_provider: pol_insurer };
+        }
+        return p;
+      });
+      setPolicies(migratedPolicies);
       setActiveIdx(insuranceData.activeIdx || 0);
     }
   }, [factFind]);
@@ -140,7 +148,7 @@ export default function FactFindInsurance() {
       linked_fund_id: '',
       pol_owner: '',
       pol_insured: '',
-      pol_insurer: '',
+      pol_provider: '',
       pol_number: '',
       pol_waiting: '',
       pol_benefit_period: '',
@@ -444,8 +452,8 @@ export default function FactFindInsurance() {
                       <label className="block text-sm font-semibold text-slate-700 mb-2">Insurer</label>
                       <input
                         type="text"
-                        value={currentPolicy.pol_insurer}
-                        onChange={(e) => updatePolicy('pol_insurer', e.target.value)}
+                        value={currentPolicy.pol_provider}
+                        onChange={(e) => updatePolicy('pol_provider', e.target.value)}
                         className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
