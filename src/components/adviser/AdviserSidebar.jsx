@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
-import { LayoutDashboard, Users, FileText, CheckCircle, Settings, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, CheckCircle, Settings, Sparkles, TrendingUp } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useRole } from '../RoleContext';
 import { UserCheck, UsersRound, Database } from 'lucide-react';
@@ -82,6 +82,7 @@ export default function AdviserSidebar({ currentPage, loggedInUser }) {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: 'AdviserDashboard', id: 'dashboard' },
     { label: 'Clients', icon: Users, path: 'AdviserClients', id: 'clients' },
+    { label: 'Models', icon: TrendingUp, path: 'AdviserModels', id: 'models' },
     { label: 'SOA Queue', icon: FileText, path: 'AdviserSOARequests', id: 'soa-requests' },
     { label: 'Completed SOAs', icon: CheckCircle, path: 'AdviserCompletions', id: 'completed' }
   ];

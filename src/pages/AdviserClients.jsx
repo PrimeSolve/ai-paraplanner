@@ -3,7 +3,8 @@ import { base44 } from '@/api/base44Client';
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Users, CheckCircle, Clock, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
+import { Search, Users, CheckCircle, Clock, MoreHorizontal, Edit2, Trash2, TrendingUp } from 'lucide-react';
+import { openModel } from '../utils/modelLauncher';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -248,6 +249,10 @@ export default function AdviserClients() {
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openModel({ clientId: client.id })}>
+                              <TrendingUp className="w-4 h-4 mr-2" />
+                              Open Model
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => toast.info('Email integration coming soon. You can share the Fact Find link manually.')}>
                               <span className="mr-2">📧</span>
                               Send Fact Find

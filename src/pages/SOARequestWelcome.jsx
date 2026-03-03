@@ -4,10 +4,11 @@ import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import { 
+import {
   Upload, Bot, TrendingUp, Shield, PieChart, FileText,
   ArrowRight
 } from 'lucide-react';
+import { openModel } from '../utils/modelLauncher';
 
 export default function SOARequestWelcome() {
   const [loading, setLoading] = useState(true);
@@ -87,10 +88,11 @@ export default function SOARequestWelcome() {
       iconBg: 'bg-purple-100',
       iconColor: 'text-purple-600',
       title: 'Cashflow Models',
-      description: "View your client's existing position to help make strategy decisions as you build the advice.",
-      linkText: 'View existing position',
+      description: "Build a full cashflow model with projections — SOA Request will be auto-populated from the model.",
+      linkText: 'Open Cashflow Model',
       linkColor: 'text-purple-600',
-      onClick: () => navigate(createPageUrl('SOARequestCashflow'))
+      badge: 'NEW',
+      onClick: () => openModel({ clientId: soaRequest?.client_id, soaRequestId: soaRequest?.id })
     },
     {
       icon: Shield,
@@ -139,6 +141,36 @@ export default function SOARequestWelcome() {
               Submit your Statement of Advice request to our AI paraplanner for professional SOA preparation.
             </p>
 
+          </div>
+
+          {/* Two Paths */}
+          <div className="grid md:grid-cols-2 gap-5 mb-4">
+            <div
+              onClick={handleGetStarted}
+              className="bg-white border-2 border-blue-200 rounded-xl p-6 hover:shadow-lg transition-shadow cursor-pointer group"
+            >
+              <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-4">
+                <FileText className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-2">Path A: Basic Form</h3>
+              <p className="text-sm text-slate-600 mb-4">Step through the SOA Request form manually to define scope, products, and strategy.</p>
+              <div className="flex items-center text-blue-600 text-sm font-semibold group-hover:gap-2 transition-all">
+                Continue to SOA Request <ArrowRight className="w-4 h-4 ml-1" />
+              </div>
+            </div>
+            <div
+              onClick={() => openModel({ clientId: soaRequest?.client_id, soaRequestId: soaRequest?.id })}
+              className="bg-white border-2 border-purple-200 rounded-xl p-6 hover:shadow-lg transition-shadow cursor-pointer group"
+            >
+              <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center mb-4">
+                <TrendingUp className="w-6 h-6 text-purple-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-2">Path B: Cashflow Model</h3>
+              <p className="text-sm text-slate-600 mb-4">Build a full cashflow model with projections — SOA Request will be auto-populated.</p>
+              <div className="flex items-center text-purple-600 text-sm font-semibold group-hover:gap-2 transition-all">
+                Open Cashflow Model <ArrowRight className="w-4 h-4 ml-1" />
+              </div>
+            </div>
           </div>
 
           {/* Tools Section - Centered */}

@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
-import { CheckCircle2, AlertCircle, MinusCircle, ChevronRight } from 'lucide-react';
+import { CheckCircle2, AlertCircle, MinusCircle, ChevronRight, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 as primeSolveClient } from '@/api/primeSolveClient';
+import { openModel } from '../utils/modelLauncher';
 
 // ==========================================================================
 // SECTION CONFIGURATION
@@ -358,6 +359,24 @@ export default function SOARequestReview() {
             Review your SOA request across all sections before submitting to the AI paraplanner.
           </p>
         </div>
+
+        {/* Cashflow Model Badge */}
+        {soaRequest?.cashflow_model_id && (
+          <div className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-lg px-5 py-3 mt-4">
+            <div className="flex items-center gap-3">
+              <TrendingUp className="w-5 h-5 text-purple-600" />
+              <span className="text-sm font-semibold text-purple-800">Linked to Cashflow Model</span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-purple-300 text-purple-700 hover:bg-purple-100"
+              onClick={() => openModel({ modelId: soaRequest.cashflow_model_id })}
+            >
+              Open Model
+            </Button>
+          </div>
+        )}
 
         {/* White Content Card */}
         <div style={{ backgroundColor: '#FFFFFF', borderRadius: '0 0 16px 16px', border: '1px solid #E2E8F0', borderTop: 'none' }}>

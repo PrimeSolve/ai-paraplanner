@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Users, FileText, CheckCircle, Clock, Eye, Plus, ArrowRight } from 'lucide-react';
+import { Users, FileText, CheckCircle, Clock, Eye, Plus, ArrowRight, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatRelativeDate } from '../utils/dateUtils';
@@ -225,6 +225,20 @@ export default function AdviserDashboard() {
                         <div>
                           <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>New SOA Request</div>
                           <div style={{ fontSize: '12px', color: '#64748b' }}>Start a new advice document</div>
+                        </div>
+                      </div>
+                      <ArrowRight style={{ width: '16px', height: '16px', color: '#64748b' }} />
+                    </div>
+                  </Link>
+                  <Link to={createPageUrl('AdviserModels')} style={{ textDecoration: 'none' }}>
+                    <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px' }}>
+                          <TrendingUp style={{ width: '20px', height: '20px', color: '#8b5cf6' }} />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>Cashflow Models</div>
+                          <div style={{ fontSize: '12px', color: '#64748b' }}>Build projections & models</div>
                         </div>
                       </div>
                       <ArrowRight style={{ width: '16px', height: '16px', color: '#64748b' }} />
