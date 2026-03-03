@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { GripVertical, ChevronDown, Plus, Edit, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import SectionEditor from '@/components/soa/SectionEditor';
 
 export default function AdminTemplate() {
   const [template, setTemplate] = useState(null);
@@ -16,6 +17,8 @@ export default function AdminTemplate() {
   const [saving, setSaving] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState(['welcome-intro', 'executive-summary', 'financial-analysis']);
   const [sections, setSections] = useState([]);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingSection, setEditingSection] = useState(null);
 
   const defaultSections = [
     {
@@ -125,6 +128,9 @@ export default function AdminTemplate() {
       const templates = await base44.entities.SOATemplate.filter({ owner_type: 'admin' });
       if (templates[0]) {
         setTemplate(templates[0]);
+        if (templates[0].sections) {
+          setSections(templates[0].sections);
+        }
       }
     } catch (error) {
       console.error('Failed to load template:', error);
@@ -138,12 +144,12 @@ export default function AdminTemplate() {
     try {
       if (template?.id) {
         await base44.entities.SOATemplate.update(template.id, {
-          sections: defaultSections
+          sections
         });
       } else {
         await base44.entities.SOATemplate.create({
           owner_type: 'admin',
-          sections: defaultSections
+          sections
         });
       }
       toast.success('Template saved successfully');
@@ -161,29 +167,46 @@ export default function AdminTemplate() {
   };
 
   const handleDragEnd = (result) => {
-    const { source, destination, type, draggableId } = result;
-    
+    const { source, destination, type } = result;
+
     if (!destination) return;
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
     const newSections = Array.from(sections);
 
     if (type === 'GROUP') {
-      // Reorder groups
       const [movedGroup] = newSections.splice(source.index, 1);
       newSections.splice(destination.index, 0, movedGroup);
       setSections(newSections);
     } else if (type === 'SECTION') {
-      // Reorder sections within a group
       const sourceGroupIdx = newSections.findIndex(g => g.group === source.droppableId);
       const destGroupIdx = newSections.findIndex(g => g.group === destination.droppableId);
-      
+
       const [movedSection] = newSections[sourceGroupIdx].sections.splice(source.index, 1);
       newSections[destGroupIdx].sections.splice(destination.index, 0, movedSection);
       setSections(newSections);
     }
 
     toast.success('Order updated');
+  };
+
+  const openEditor = (section) => {
+    setEditingSection(section);
+    setEditorOpen(true);
+  };
+
+  const handleSectionSave = (sectionId, content) => {
+    setSections(prev =>
+      prev.map(group => ({
+        ...group,
+        sections: group.sections.map(s =>
+          s.id === sectionId
+            ? { ...s, content, status: content ? 'configured' : s.status }
+            : s
+        ),
+      }))
+    );
+    toast.success('Section content updated');
   };
 
   return (
@@ -203,15 +226,15 @@ export default function AdminTemplate() {
          <div className="flex gap-4 mb-6 items-center justify-between">
            <div className="flex gap-4">
              <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
-               <span className="text-2xl font-bold text-slate-800">{defaultSections.reduce((acc, g) => acc + g.sections.length, 0)}</span>
+               <span className="text-2xl font-bold text-slate-800">{sections.reduce((acc, g) => acc + g.sections.length, 0)}</span>
                <span className="text-sm text-slate-600">Total sections</span>
              </div>
              <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
-               <span className="text-2xl font-bold text-green-600">{defaultSections.reduce((acc, g) => acc + g.sections.filter(s => s.status === 'configured').length, 0)}</span>
+               <span className="text-2xl font-bold text-green-600">{sections.reduce((acc, g) => acc + g.sections.filter(s => s.status === 'configured').length, 0)}</span>
                <span className="text-sm text-slate-600">Configured</span>
              </div>
              <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
-               <span className="text-2xl font-bold text-orange-600">{defaultSections.reduce((acc, g) => acc + g.sections.filter(s => s.status === 'needs-comment').length, 0)}</span>
+               <span className="text-2xl font-bold text-orange-600">{sections.reduce((acc, g) => acc + g.sections.filter(s => s.status === 'needs-comment').length, 0)}</span>
                <span className="text-sm text-slate-600">Pending</span>
              </div>
            </div>
@@ -303,7 +326,14 @@ export default function AdminTemplate() {
                                                 ⚠ Needs content
                                               </span>
                                             )}
-                                            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                                            <Button
+                                              size="sm"
+                                              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                openEditor(section);
+                                              }}
+                                            >
                                               <Edit className="w-3.5 h-3.5 mr-1" />
                                               Edit
                                             </Button>
@@ -331,6 +361,15 @@ export default function AdminTemplate() {
             )}
           </Droppable>
         </DragDropContext>
+
+        {/* Section Editor Dialog */}
+        <SectionEditor
+          open={editorOpen}
+          onOpenChange={setEditorOpen}
+          section={editingSection}
+          exampleContent={null}
+          onSave={handleSectionSave}
+        />
     </div>
   );
 }
