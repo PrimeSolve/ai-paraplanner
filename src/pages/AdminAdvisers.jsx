@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { formatDate, formatRelativeDate } from '../utils/dateUtils';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -239,16 +240,10 @@ export default function AdminAdvisers() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="text-sm font-medium text-slate-800">
-                          {new Date(adviser.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {formatDate(adviser.created_date)}
                         </span>
                         <span className="text-xs text-slate-600">
-                          {(() => {
-                            const days = Math.floor((new Date() - new Date(adviser.created_date)) / (1000 * 60 * 60 * 24));
-                            if (days === 0) return 'Today';
-                            if (days === 1) return 'Yesterday';
-                            if (days < 30) return `${days} days ago`;
-                            return `${Math.floor(days / 30)} months ago`;
-                          })()}
+                          {formatRelativeDate(adviser.created_date)}
                         </span>
                       </div>
                     </td>

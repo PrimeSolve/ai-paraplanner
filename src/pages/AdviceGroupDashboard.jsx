@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useRole } from '../components/RoleContext';
-import { 
-  FileText, 
-  Clock, 
-  Users, 
-  CheckCircle, 
-  ChevronRight, 
-  Edit,
+import { formatRelativeDate } from '../utils/dateUtils';
+import {
+  FileText,
+  Clock,
+  Users,
+  CheckCircle,
+  ChevronRight,
   Download,
 } from 'lucide-react';
 
@@ -17,14 +17,6 @@ import {
 // DESIGN TOKENS
 // ============================================
 const colors = {
-  sidebar: {
-    bg: '#0f172a',
-    hover: '#1e293b',
-    active: 'rgba(59, 130, 246, 0.15)',
-    text: '#94a3b8',
-    textActive: '#ffffff',
-    accent: '#3b82f6',
-  },
   core: {
     navy: '#1e293b',
     slate: '#475569',
@@ -40,9 +32,7 @@ const colors = {
     success: '#10b981',
     warning: '#f59e0b',
     error: '#ef4444',
-    coral: '#f97316',
     purple: '#8b5cf6',
-    pink: '#ec4899',
     cyan: '#06b6d4',
   }
 };
@@ -58,88 +48,9 @@ const avatarGradients = [
 ];
 
 // ============================================
-// MOCK DATA
-// ============================================
-const mockSoaRequests = [
-  { 
-    id: 1, 
-    client: 'James & Emma Wilson', 
-    clientType: 'Comprehensive Advice',
-    adviser: 'Michael Ross', 
-    status: 'In Progress', 
-    priority: 'HIGH', 
-    submitted: '2 hours ago', 
-    initials: 'JW', 
-    advInitials: 'MR',
-    avatarGradient: 0,
-    advAvatarGradient: 3
-  },
-  { 
-    id: 2, 
-    client: 'Sarah Chen', 
-    clientType: 'Insurance Review',
-    adviser: 'Jessica Taylor', 
-    status: 'Review', 
-    priority: 'NORMAL', 
-    submitted: '5 hours ago', 
-    initials: 'SC', 
-    advInitials: 'JT',
-    avatarGradient: 2,
-    advAvatarGradient: 1
-  },
-  { 
-    id: 3, 
-    client: 'David & Lisa Park', 
-    clientType: 'Retirement Planning',
-    adviser: 'Andrew Walsh', 
-    status: 'Pending', 
-    priority: 'NORMAL', 
-    submitted: 'Yesterday', 
-    initials: 'DP', 
-    advInitials: 'AW',
-    avatarGradient: 5,
-    advAvatarGradient: 4
-  },
-  { 
-    id: 4, 
-    client: 'Robert Brown', 
-    clientType: 'Wealth Accumulation',
-    adviser: 'Michael Ross', 
-    status: 'In Progress', 
-    priority: 'HIGH', 
-    submitted: 'Yesterday', 
-    initials: 'RB', 
-    advInitials: 'MR',
-    avatarGradient: 6,
-    advAvatarGradient: 3
-  },
-  { 
-    id: 5, 
-    client: 'Karen Nguyen', 
-    clientType: 'Super Consolidation',
-    adviser: 'Nicole Harris', 
-    status: 'Pending', 
-    priority: 'NORMAL', 
-    submitted: '2 days ago', 
-    initials: 'KN', 
-    advInitials: 'NH',
-    avatarGradient: 3,
-    advAvatarGradient: 2
-  },
-];
-
-const adviserActivity = [
-  { name: 'Michael Ross', initials: 'MR', active: 3, completed: 12, total: 15, gradient: 3 },
-  { name: 'Jessica Taylor', initials: 'JT', active: 2, completed: 10, total: 12, gradient: 1 },
-  { name: 'Andrew Walsh', initials: 'AW', active: 4, completed: 7, total: 11, gradient: 4 },
-];
-
-
-
-// ============================================
 // STAT CARD COMPONENT
 // ============================================
-const StatCard = ({ icon: Icon, value, label, trend, iconColor }) => (
+const StatCard = ({ icon: Icon, value, label, iconColor }) => (
   <div style={{
     background: colors.core.white,
     borderRadius: '16px',
@@ -166,16 +77,6 @@ const StatCard = ({ icon: Icon, value, label, trend, iconColor }) => (
     }}>
       {value}
     </div>
-    {trend && (
-      <div style={{
-        fontSize: '12px',
-        color: colors.accent.success,
-        marginBottom: '8px',
-        fontWeight: 600,
-      }}>
-        {trend}
-      </div>
-    )}
     <div style={{
       fontSize: '14px',
       color: colors.core.slateLight,
@@ -193,7 +94,7 @@ const Avatar = ({ initials, gradientIndex, size = 40 }) => (
     width: `${size}px`,
     height: `${size}px`,
     borderRadius: size > 40 ? '16px' : '12px',
-    background: avatarGradients[gradientIndex],
+    background: avatarGradients[gradientIndex % avatarGradients.length],
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -209,13 +110,13 @@ const Avatar = ({ initials, gradientIndex, size = 40 }) => (
 // STATUS BADGE COMPONENT
 // ============================================
 const StatusBadge = ({ status }) => {
-  const styles = {
-    'In Progress': { bg: 'rgba(59, 130, 246, 0.1)', color: colors.accent.blue },
-    'Review': { bg: 'rgba(139, 92, 246, 0.1)', color: colors.accent.purple },
-    'Pending': { bg: 'rgba(245, 158, 11, 0.1)', color: colors.accent.warning },
-    'Completed': { bg: 'rgba(16, 185, 129, 0.1)', color: colors.accent.success },
+  const statusMap = {
+    'in_progress': { label: 'In Progress', bg: 'rgba(59, 130, 246, 0.1)', color: colors.accent.blue },
+    'submitted': { label: 'Submitted', bg: 'rgba(245, 158, 11, 0.1)', color: colors.accent.warning },
+    'completed': { label: 'Completed', bg: 'rgba(16, 185, 129, 0.1)', color: colors.accent.success },
+    'draft': { label: 'Draft', bg: 'rgba(100, 116, 139, 0.1)', color: colors.core.slateLight },
   };
-  const style = styles[status] || styles['Pending'];
+  const style = statusMap[status] || statusMap['draft'];
 
   return (
     <span style={{
@@ -229,35 +130,14 @@ const StatusBadge = ({ status }) => {
       fontSize: '13px',
       fontWeight: 500,
     }}>
-      • {status}
+      {style.label}
     </span>
   );
 };
 
-// ============================================
-// PRIORITY BADGE COMPONENT
-// ============================================
-const PriorityBadge = ({ priority }) => {
-  const styles = {
-    'HIGH': { bg: 'rgba(239, 68, 68, 0.1)', color: colors.accent.error },
-    'NORMAL': { bg: 'rgba(100, 116, 139, 0.1)', color: colors.core.slateLight },
-    'LOW': { bg: 'rgba(59, 130, 246, 0.1)', color: colors.accent.blue },
-  };
-  const style = styles[priority] || styles['NORMAL'];
-
-  return (
-    <span style={{
-      display: 'inline-block',
-      padding: '6px 12px',
-      borderRadius: '8px',
-      background: style.bg,
-      color: style.color,
-      fontSize: '12px',
-      fontWeight: 700,
-    }}>
-      {priority}
-    </span>
-  );
+const getInitials = (name) => {
+  if (!name) return '?';
+  return name.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2);
 };
 
 // ============================================
@@ -268,6 +148,9 @@ export default function AdviceGroupDashboard() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [groupName, setGroupName] = useState('');
+  const [soaRequests, setSoaRequests] = useState([]);
+  const [advisers, setAdvisers] = useState([]);
+  const [stats, setStats] = useState({ activeSOAs: 0, completedMonth: 0, avgTurnaround: '—', activeAdvisers: 0 });
 
   useEffect(() => {
     const loadData = async () => {
@@ -280,21 +163,60 @@ export default function AdviceGroupDashboard() {
           const current = group.find(g => g.id === groupId);
           if (current) {
             setGroupName(current.name);
-            // Ensure switchRole is called so breadcrumbs appear
             if (navigationChain.length === 0 || navigationChain[navigationChain.length - 1].id !== groupId) {
-              console.log('AdviceGroupDashboard: calling switchRole for group', current.name, groupId);
               switchRole('advice_group', groupId, current.name);
             }
           }
+
+          const [adviserList, soaList] = await Promise.all([
+            base44.entities.Adviser.filter({ tenant_id: groupId }),
+            base44.entities.SOARequest.list('-created_date', 50),
+          ]);
+
+          setAdvisers(adviserList);
+          setSoaRequests(soaList);
+
+          // Compute stats from real data
+          const now = new Date();
+          const activeSOAs = soaList.filter(s => s.status === 'in_progress' || s.status === 'submitted').length;
+          const completedMonth = soaList.filter(s => {
+            if (s.status !== 'completed' || !s.completed_date) return false;
+            const d = new Date(s.completed_date);
+            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+          }).length;
+
+          const completedWithDates = soaList.filter(s => s.status === 'completed' && s.completed_date && s.submitted_date);
+          let avgTurnaround = '—';
+          if (completedWithDates.length > 0) {
+            const totalDays = completedWithDates.reduce((sum, s) => {
+              return sum + (new Date(s.completed_date) - new Date(s.submitted_date)) / 86400000;
+            }, 0);
+            avgTurnaround = (totalDays / completedWithDates.length).toFixed(1) + 'd';
+          }
+
+          setStats({
+            activeSOAs,
+            completedMonth,
+            avgTurnaround,
+            activeAdvisers: adviserList.length,
+          });
         }
       } catch (error) {
-        console.error('Failed to load user:', error);
+        console.error('Failed to load data:', error);
       } finally {
         setLoading(false);
       }
     };
     loadData();
   }, []);
+
+  if (loading) {
+    return (
+      <div style={{ padding: '24px 32px' }} className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -311,29 +233,27 @@ export default function AdviceGroupDashboard() {
           gap: '20px',
           marginBottom: '24px',
         }}>
-          <StatCard 
-            icon={FileText} 
-            value="12" 
-            label="Active SOA Requests" 
-            trend="↑ 15%"
+          <StatCard
+            icon={FileText}
+            value={stats.activeSOAs}
+            label="Active SOA Requests"
             iconColor={`linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.2))`}
           />
-          <StatCard 
-            icon={CheckCircle} 
-            value="47" 
-            label="Completed This Month" 
-            trend="↑ 8%"
+          <StatCard
+            icon={CheckCircle}
+            value={stats.completedMonth}
+            label="Completed This Month"
             iconColor={`linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2))`}
           />
-          <StatCard 
-            icon={Clock} 
-            value="2.3d" 
+          <StatCard
+            icon={Clock}
+            value={stats.avgTurnaround}
             label="Avg. Turnaround Time"
             iconColor={`linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(8, 145, 178, 0.2))`}
           />
-          <StatCard 
-            icon={Users} 
-            value="8" 
+          <StatCard
+            icon={Users}
+            value={stats.activeAdvisers}
             label="Active Advisers"
             iconColor={`linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(124, 58, 237, 0.2))`}
           />
@@ -361,14 +281,14 @@ export default function AdviceGroupDashboard() {
             }}>
               Recent SOA Requests
             </h3>
-            <a href="#" style={{
+            <Link to={createPageUrl('AdviceGroupSOARequests')} style={{
               fontSize: '14px',
               color: colors.accent.blue,
               textDecoration: 'none',
               fontWeight: 600,
             }}>
               View All →
-            </a>
+            </Link>
           </div>
 
           <div style={{ overflowX: 'auto' }}>
@@ -381,7 +301,7 @@ export default function AdviceGroupDashboard() {
                   borderBottom: `1px solid ${colors.core.greyLight}`,
                   background: colors.core.offWhite,
                 }}>
-                  {['CLIENT', 'ADVISER', 'STATUS', 'PRIORITY', 'SUBMITTED'].map(header => (
+                  {['CLIENT', 'STATUS', 'SUBMITTED'].map(header => (
                     <th key={header} style={{
                       padding: '16px 32px',
                       textAlign: 'left',
@@ -397,56 +317,37 @@ export default function AdviceGroupDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {mockSoaRequests.map((req) => (
-                  <tr key={req.id} style={{
+                {soaRequests.length > 0 ? soaRequests.slice(0, 5).map((req, idx) => (
+                  <tr key={req.id || idx} style={{
                     borderBottom: `1px solid ${colors.core.greyLight}`,
                     transition: 'background-color 0.2s ease',
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.background = colors.core.offWhite}
                   onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
-                    <td style={{
-                      padding: '16px 32px',
-                      fontSize: '14px',
-                    }}>
+                    <td style={{ padding: '16px 32px', fontSize: '14px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <Avatar initials={req.initials} gradientIndex={req.avatarGradient} size={40} />
+                        <Avatar initials={getInitials(req.client_name)} gradientIndex={idx} size={40} />
                         <div>
-                          <div style={{ fontWeight: 600, color: colors.core.navy }}>{req.client}</div>
-                          <div style={{ fontSize: '12px', color: colors.core.slateLight }}>{req.clientType}</div>
+                          <div style={{ fontWeight: 600, color: colors.core.navy }}>{req.client_name || req.client_email || 'Client'}</div>
+                          <div style={{ fontSize: '12px', color: colors.core.slateLight }}>{req.type || 'SOA Request'}</div>
                         </div>
                       </div>
                     </td>
-                    <td style={{
-                      padding: '16px 32px',
-                      fontSize: '14px',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <Avatar initials={req.advInitials} gradientIndex={req.advAvatarGradient} size={40} />
-                        <div style={{ fontWeight: 600, color: colors.core.navy }}>{req.adviser}</div>
-                      </div>
-                    </td>
-                    <td style={{
-                      padding: '16px 32px',
-                      fontSize: '14px',
-                    }}>
+                    <td style={{ padding: '16px 32px', fontSize: '14px' }}>
                       <StatusBadge status={req.status} />
                     </td>
-                    <td style={{
-                      padding: '16px 32px',
-                      fontSize: '14px',
-                    }}>
-                      <PriorityBadge priority={req.priority} />
-                    </td>
-                    <td style={{
-                      padding: '16px 32px',
-                      fontSize: '14px',
-                      color: colors.core.slateLight,
-                    }}>
-                      {req.submitted}
+                    <td style={{ padding: '16px 32px', fontSize: '14px', color: colors.core.slateLight }}>
+                      {formatRelativeDate(req.created_date)}
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan="3" style={{ padding: '32px', textAlign: 'center', color: colors.core.grey, fontSize: '14px' }}>
+                      No SOA requests yet
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -499,19 +400,6 @@ export default function AdviceGroupDashboard() {
                 Edit
               </span>
             </div>
-            <div style={{
-              fontSize: '13px',
-              color: colors.core.slateLight,
-              marginBottom: '8px',
-            }}>
-              26 of 35 sections configured
-            </div>
-            <div style={{
-              fontSize: '12px',
-              color: colors.core.slateLight,
-            }}>
-              Last updated 3 days ago by Sarah Mitchell
-            </div>
           </div>
         </div>
 
@@ -531,89 +419,42 @@ export default function AdviceGroupDashboard() {
             }}>
               Adviser Activity
             </h4>
-            <a href="#" style={{
+            <Link to={createPageUrl('AdviceGroupAdvisers')} style={{
               fontSize: '13px',
               color: colors.accent.blue,
               textDecoration: 'none',
             }}>
               View All →
-            </a>
+            </Link>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {adviserActivity.map((adviser, idx) => (
-              <div key={idx} style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                paddingBottom: idx !== adviserActivity.length - 1 ? '16px' : 0,
-                borderBottom: idx !== adviserActivity.length - 1 ? `1px solid ${colors.core.greyLight}` : 'none',
-              }}>
-                <Avatar initials={adviser.initials} gradientIndex={adviser.gradient} size={40} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, color: colors.core.navy, fontSize: '14px' }}>
-                    {adviser.name}
-                  </div>
-                  <div style={{ fontSize: '12px', color: colors.core.slateLight }}>
-                    {adviser.active} active, {adviser.completed} completed
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 700, color: colors.core.navy, fontSize: '16px' }}>
-                    {adviser.total}
-                  </div>
-                  <div style={{ fontSize: '11px', color: colors.core.slateLight }}>
-                    This month
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Top Clients */}
-        <div style={{
-          background: colors.core.white,
-          borderRadius: '16px',
-          border: `1px solid ${colors.core.greyLight}`,
-          padding: '24px',
-        }}>
-          <h4 style={{
-            fontSize: '16px',
-            fontWeight: 600,
-            color: colors.core.navy,
-            marginBottom: '16px',
-          }}>
-            Top Clients
-          </h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {[
-              { name: 'James & Emma Wilson', adviser: 'Michael Ross', status: 'Active' },
-              { name: 'Sarah Chen', adviser: 'Jessica Taylor', status: 'Active' },
-              { name: 'David & Lisa Park', adviser: 'Andrew Walsh', status: 'Prospect' },
-            ].map((client, idx) => (
-              <div key={idx} style={{
-                paddingBottom: '16px',
-                borderBottom: idx !== 2 ? `1px solid ${colors.core.greyLight}` : 'none',
-              }}>
-                <div style={{ fontWeight: 600, color: colors.core.navy, fontSize: '13px', marginBottom: '4px' }}>
-                  {client.name}
-                </div>
-                <div style={{ fontSize: '12px', color: colors.core.slateLight, marginBottom: '6px' }}>
-                  Adviser: {client.adviser}
-                </div>
-                <span style={{
-                  display: 'inline-block',
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  background: client.status === 'Active' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-                  color: client.status === 'Active' ? colors.accent.success : colors.accent.blue,
-                  fontSize: '11px',
-                  fontWeight: 600,
+            {advisers.length > 0 ? advisers.slice(0, 5).map((adv, idx) => {
+              const name = `${adv.first_name || ''} ${adv.last_name || ''}`.trim() || adv.email;
+              const initials = getInitials(name);
+              return (
+                <div key={adv.id || idx} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  paddingBottom: idx !== Math.min(advisers.length, 5) - 1 ? '16px' : 0,
+                  borderBottom: idx !== Math.min(advisers.length, 5) - 1 ? `1px solid ${colors.core.greyLight}` : 'none',
                 }}>
-                  {client.status}
-                </span>
+                  <Avatar initials={initials} gradientIndex={idx} size={40} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, color: colors.core.navy, fontSize: '14px' }}>
+                      {name}
+                    </div>
+                    <div style={{ fontSize: '12px', color: colors.core.slateLight }}>
+                      {adv.email}
+                    </div>
+                  </div>
+                </div>
+              );
+            }) : (
+              <div style={{ textAlign: 'center', color: colors.core.grey, fontSize: '14px', padding: '16px 0' }}>
+                No advisers yet
               </div>
-            ))}
+            )}
           </div>
         </div>
 

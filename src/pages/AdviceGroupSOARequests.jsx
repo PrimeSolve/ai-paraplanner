@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { UserX, Clock, CheckCircle2, Zap, Search } from 'lucide-react';
+import { formatDate } from '../utils/dateUtils';
 
 
 export default function AdviceGroupSOARequests() {
@@ -226,7 +227,7 @@ export default function AdviceGroupSOARequests() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-slate-600">{new Date(req.created_date).toLocaleDateString()}</span>
+                        <span className="text-sm text-slate-600">{formatDate(req.created_date)}</span>
                       </td>
                       <td className="px-6 py-4">
                         <button className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">

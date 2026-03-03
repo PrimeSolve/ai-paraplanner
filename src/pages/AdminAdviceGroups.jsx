@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Search, Building2, Users, FileText, Settings, ChevronDown, MoreHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { formatDate, formatRelativeDate } from '../utils/dateUtils';
 import { useRole } from '../components/RoleContext';
 
 export default function AdminAdviceGroups() {
@@ -325,17 +326,10 @@ export default function AdminAdviceGroups() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="text-sm font-medium text-slate-800">
-                          {new Date(group.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {formatDate(group.created_date)}
                         </span>
                         <span className="text-xs text-slate-500">
-                          {(() => {
-                            const days = Math.floor((new Date() - new Date(group.created_date)) / (1000 * 60 * 60 * 24));
-                            if (days === 0) return 'Today';
-                            if (days === 1) return 'Yesterday';
-                            if (days < 30) return `${days} days ago`;
-                            if (days < 60) return '1 month ago';
-                            return `${Math.floor(days / 30)} months ago`;
-                          })()}
+                          {formatRelativeDate(group.created_date)}
                         </span>
                       </div>
                     </td>

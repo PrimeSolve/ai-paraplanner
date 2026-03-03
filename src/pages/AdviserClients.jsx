@@ -7,6 +7,7 @@ import { Search, Users, CheckCircle, Clock, MoreHorizontal, Edit2, Trash2 } from
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { formatDate } from '../utils/dateUtils';
 import AddClientModal from '../components/adviser/AddClientModal.jsx';
 import { useRole } from '../components/RoleContext';
 
@@ -209,7 +210,7 @@ export default function AdviserClients() {
                       <div className="text-sm font-medium text-blue-600">{client.soas || 0} SOA{client.soas !== 1 ? 's' : ''}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-slate-800">{new Date(client.created_date).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                      <div className="text-sm font-medium text-slate-800">{formatDate(client.created_date)}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
