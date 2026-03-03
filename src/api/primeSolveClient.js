@@ -229,6 +229,7 @@ const entities = {
   RiskProfile: createEntityProxy('risk-profiles'),
   ModelPortfolio: createEntityProxy('model-portfolios'),
   Principal: createEntityProxy('clients'),
+  SoaExample: createEntityProxy('soa-examples'),
 };
 
 // ──────────────────────────────────────────────────────────────
@@ -358,6 +359,27 @@ const appLogs = {
 };
 
 // ──────────────────────────────────────────────────────────────
+// AI endpoint helpers (use axiosInstance directly for non-entity routes)
+// ──────────────────────────────────────────────────────────────
+
+const ai = {
+  async generateSection(payload) {
+    const response = await axiosInstance.post('/ai/generate-section', payload);
+    return response.data;
+  },
+
+  async extractTemplate(payload) {
+    const response = await axiosInstance.post('/ai/extract-template', payload);
+    return response.data;
+  },
+
+  async refine(payload) {
+    const response = await axiosInstance.post('/ai/refine', payload);
+    return response.data;
+  },
+};
+
+// ──────────────────────────────────────────────────────────────
 // Export the adapter with the same `base44` name
 // ──────────────────────────────────────────────────────────────
 
@@ -366,4 +388,5 @@ export const base44 = {
   entities,
   integrations,
   appLogs,
+  ai,
 };

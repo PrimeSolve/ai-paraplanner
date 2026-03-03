@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronDown, GripVertical, AlertCircle, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import SectionEditor from '@/components/soa/SectionEditor';
+import ExampleSOALibrary from '@/components/soa/ExampleSOALibrary';
 
 
 export default function AdviceGroupSOATemplate() {
@@ -16,6 +18,9 @@ export default function AdviceGroupSOATemplate() {
   const [user, setUser] = useState(null);
   const [expandedGroups, setExpandedGroups] = useState(['welcome-intro', 'executive-summary']);
   const [sections, setSections] = useState([]);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingSection, setEditingSection] = useState(null);
+  const [extractedSections, setExtractedSections] = useState({});
 
   const defaultSections = [
     {
@@ -111,6 +116,9 @@ export default function AdviceGroupSOATemplate() {
         });
         if (groupTemplates[0]) {
           setGroupTemplate(groupTemplates[0]);
+          if (groupTemplates[0].sections) {
+            setSections(groupTemplates[0].sections);
+          }
         }
       }
     } catch (error) {
@@ -149,8 +157,8 @@ export default function AdviceGroupSOATemplate() {
   };
 
   const handleDragEnd = (result) => {
-    const { source, destination, type, draggableId } = result;
-    
+    const { source, destination, type } = result;
+
     if (!destination) return;
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
@@ -163,13 +171,32 @@ export default function AdviceGroupSOATemplate() {
     } else if (type === 'SECTION') {
       const sourceGroupIdx = newSections.findIndex(g => g.group === source.droppableId);
       const destGroupIdx = newSections.findIndex(g => g.group === destination.droppableId);
-      
+
       const [movedSection] = newSections[sourceGroupIdx].sections.splice(source.index, 1);
       newSections[destGroupIdx].sections.splice(destination.index, 0, movedSection);
       setSections(newSections);
     }
 
     toast.success('Order updated');
+  };
+
+  const openEditor = (section) => {
+    setEditingSection(section);
+    setEditorOpen(true);
+  };
+
+  const handleSectionSave = (sectionId, content) => {
+    setSections(prev =>
+      prev.map(group => ({
+        ...group,
+        sections: group.sections.map(s =>
+          s.id === sectionId
+            ? { ...s, content, status: content ? 'configured' : s.status }
+            : s
+        ),
+      }))
+    );
+    toast.success('Section content updated');
   };
 
   return (
@@ -286,7 +313,14 @@ export default function AdviceGroupSOATemplate() {
                                                   ⚠ Needs content
                                                 </span>
                                               )}
-                                              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                                              <Button
+                                                size="sm"
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  openEditor(section);
+                                                }}
+                                              >
                                                 <Edit className="w-3.5 h-3.5 mr-1" />
                                                 Edit
                                               </Button>
@@ -310,6 +344,26 @@ export default function AdviceGroupSOATemplate() {
               )}
             </Droppable>
           </DragDropContext>
+
+          {/* Example SOA Library */}
+          {user?.advice_group_id && (
+            <div className="mt-8">
+              <ExampleSOALibrary
+                ownerType="advice_group"
+                ownerId={user.advice_group_id}
+                onExtractedSections={setExtractedSections}
+              />
+            </div>
+          )}
+
+          {/* Section Editor Dialog */}
+          <SectionEditor
+            open={editorOpen}
+            onOpenChange={setEditorOpen}
+            section={editingSection}
+            exampleContent={editingSection ? extractedSections[editingSection.id] || null : null}
+            onSave={handleSectionSave}
+          />
     </div>
   );
 }
