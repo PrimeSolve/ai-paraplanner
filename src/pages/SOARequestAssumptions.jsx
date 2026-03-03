@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
 import { Plus, Trash2, Pencil, X, Settings, Building2, TrendingUp, Zap, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
+import { rebuildAdviceModel } from '@/utils/rebuildAdviceModel';
 
 // ==========================================================================
 // CONSTANTS
@@ -504,6 +505,7 @@ export default function SOARequestAssumptions() {
  fees
  }
  });
+ await rebuildAdviceModel(soaRequest.id);
  toast.success('Assumptions saved');
  navigate(createPageUrl('SOARequestDetails') + `?id=${soaRequest.id}`);
  } catch (error) {

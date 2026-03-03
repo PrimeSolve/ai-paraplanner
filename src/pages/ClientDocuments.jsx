@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ClientLayout from '../components/client/ClientLayout';
-import { 
-  FileText, 
-  Download, 
-  Upload, 
+import { base44 } from '@/api/base44Client';
+import {
+  FileText,
+  Download,
+  Upload,
   Filter,
   Search,
   File,
   FileCheck,
   FileSpreadsheet,
-  ChevronDown
+  ChevronDown,
+  Loader2,
+  Trash2
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Document type configurations
 const documentTypes = {
@@ -22,18 +26,6 @@ const documentTypes = {
   'Other': { color: 'bg-gray-100 text-gray-600', icon: File },
 };
 
-// Mock document data
-const mockDocuments = [
-  { id: 1, name: 'Fact Find - January 2026', type: 'Fact Find', date: '20/01/2026', size: '1.2 MB', status: 'complete' },
-  { id: 2, name: 'Statement of Advice - Jan 2026.pdf', type: 'SOA', date: '20/01/2026', size: '2.4 MB', status: 'complete' },
-  { id: 3, name: 'Cashflow Projection 2026-2030.pdf', type: 'Cashflow', date: '18/01/2026', size: '856 KB', status: 'complete' },
-  { id: 4, name: 'Tax Return 2024-25.pdf', type: 'Client Upload', date: '15/01/2026', size: '1.8 MB', status: 'uploaded' },
-  { id: 5, name: 'Reverse Fact Find - Dec 2025', type: 'Reverse Fact Find', date: '10/12/2025', size: '980 KB', status: 'complete' },
-  { id: 6, name: 'Super Statement - Dec 2025.pdf', type: 'Client Upload', date: '05/12/2025', size: '2.1 MB', status: 'uploaded' },
-  { id: 7, name: 'Insurance Policy Summary.pdf', type: 'Other', date: '01/12/2025', size: '450 KB', status: 'complete' },
-  { id: 8, name: 'Fact Find - November 2025', type: 'Fact Find', date: '15/11/2025', size: '1.1 MB', status: 'complete' },
-];
-
 const filterOptions = [
   { label: 'All Documents', value: 'all' },
   { label: 'Fact Finds', value: 'Fact Find' },
@@ -43,19 +35,141 @@ const filterOptions = [
   { label: 'Other', value: 'Other' },
 ];
 
+const uploadDocumentTypes = [
+  { value: 'Client Upload', label: 'General Upload' },
+  { value: 'Other', label: 'Tax Documents' },
+  { value: 'Other', label: 'Insurance Documents' },
+  { value: 'Other', label: 'Super Statements' },
+  { value: 'Other', label: 'Other' },
+];
+
 export default function ClientDocuments() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [downloadingId, setDownloadingId] = useState(null);
+  const [uploadDocType, setUploadDocType] = useState('Client Upload');
+  const fileInputRef = useRef(null);
+  const [selectedFile, setSelectedFile] = useState(null);
 
-  const filteredDocuments = mockDocuments.filter(doc => {
-    const matchesFilter = activeFilter === 'all' || doc.type === activeFilter || 
-      (activeFilter === 'Fact Find' && doc.type === 'Reverse Fact Find');
-    const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    loadDocuments();
+  }, []);
+
+  const loadDocuments = async () => {
+    setLoading(true);
+    try {
+      const user = await base44.auth.me();
+      const docs = await base44.entities.Document.filter({ client_email: user.email });
+      setDocuments(docs);
+    } catch (error) {
+      console.error('Error loading documents:', error);
+      setDocuments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      toast.error('Please select a file to upload');
+      return;
+    }
+
+    setUploading(true);
+    setUploadProgress(0);
+    try {
+      const user = await base44.auth.me();
+      await base44.entities.Document.upload(
+        selectedFile,
+        {
+          document_type: uploadDocType,
+          client_id: user.id,
+          uploaded_by: user.email,
+        },
+        (pct) => setUploadProgress(pct)
+      );
+      toast.success('Document uploaded successfully');
+      setShowUploadModal(false);
+      setSelectedFile(null);
+      setUploadDocType('Client Upload');
+      await loadDocuments();
+    } catch (error) {
+      console.error('Upload failed:', error);
+      toast.error(error.message || 'Failed to upload document');
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const handleDownload = async (doc) => {
+    setDownloadingId(doc.id);
+    try {
+      const url = await base44.entities.Document.getDownloadUrl(doc.id);
+      if (url) {
+        window.open(url, '_blank');
+      } else {
+        toast.error('Download URL not available');
+      }
+    } catch (error) {
+      console.error('Download failed:', error);
+      toast.error('Failed to download document');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const handleDelete = async (doc) => {
+    if (!confirm(`Delete "${doc.file_name}"?`)) return;
+    try {
+      await base44.entities.Document.softDelete(doc.id);
+      toast.success('Document deleted');
+      setDocuments(documents.filter(d => d.id !== doc.id));
+    } catch (error) {
+      console.error('Delete failed:', error);
+      toast.error('Failed to delete document');
+    }
+  };
+
+  const filteredDocuments = documents.filter(doc => {
+    const docType = doc.document_type || 'Other';
+    const matchesFilter = activeFilter === 'all' || docType === activeFilter ||
+      (activeFilter === 'Fact Find' && docType === 'Reverse Fact Find');
+    const matchesSearch = (doc.file_name || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
   const getTypeConfig = (type) => documentTypes[type] || documentTypes['Other'];
+
+  const formatFileSize = (bytes) => {
+    if (!bytes) return '—';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '—';
+    try {
+      return new Date(dateStr).toLocaleDateString('en-AU', {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      });
+    } catch {
+      return dateStr;
+    }
+  };
 
   return (
     <ClientLayout currentPage="ClientDocuments">
@@ -117,9 +231,15 @@ export default function ClientDocuments() {
           </div>
 
           <div className="divide-y divide-slate-100">
-            {filteredDocuments.length > 0 ? (
+            {loading ? (
+              <div className="px-6 py-12 text-center">
+                <Loader2 className="w-8 h-8 text-slate-400 mx-auto mb-3 animate-spin" />
+                <p className="text-slate-500">Loading documents...</p>
+              </div>
+            ) : filteredDocuments.length > 0 ? (
               filteredDocuments.map((doc) => {
-                const typeConfig = getTypeConfig(doc.type);
+                const docType = doc.document_type || 'Other';
+                const typeConfig = getTypeConfig(docType);
                 const TypeIcon = typeConfig.icon;
                 return (
                   <div key={doc.id} className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-slate-50 transition-colors items-center">
@@ -128,19 +248,34 @@ export default function ClientDocuments() {
                         <TypeIcon className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-800">{doc.name}</p>
-                        {doc.status === 'uploaded' && <span className="text-xs text-slate-500">Uploaded by you</span>}
+                        <p className="text-sm font-medium text-slate-800">{doc.file_name || 'Untitled'}</p>
+                        {doc.uploaded_by && <span className="text-xs text-slate-500">Uploaded by {doc.uploaded_by}</span>}
                       </div>
                     </div>
                     <div className="col-span-2">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${typeConfig.color}`}>{doc.type}</span>
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${typeConfig.color}`}>{docType}</span>
                     </div>
-                    <div className="col-span-2"><span className="text-sm text-slate-600">{doc.date}</span></div>
-                    <div className="col-span-1"><span className="text-sm text-slate-500">{doc.size}</span></div>
-                    <div className="col-span-2 flex items-center justify-end">
-                      <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">
-                        <Download className="w-4 h-4" />
+                    <div className="col-span-2"><span className="text-sm text-slate-600">{formatDate(doc.created_date)}</span></div>
+                    <div className="col-span-1"><span className="text-sm text-slate-500">{formatFileSize(doc.file_size_bytes)}</span></div>
+                    <div className="col-span-2 flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => handleDownload(doc)}
+                        disabled={downloadingId === doc.id}
+                        className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                      >
+                        {downloadingId === doc.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Download className="w-4 h-4" />
+                        )}
                         Download
+                      </button>
+                      <button
+                        onClick={() => handleDelete(doc)}
+                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -156,35 +291,99 @@ export default function ClientDocuments() {
           </div>
         </div>
 
-        <div className="mt-4 text-sm text-slate-500">Showing {filteredDocuments.length} of {mockDocuments.length} documents</div>
+        <div className="mt-4 text-sm text-slate-500">
+          {!loading && `Showing ${filteredDocuments.length} of ${documents.length} documents`}
+        </div>
 
         {/* Upload Modal */}
         {showUploadModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
               <h3 className="text-lg font-semibold text-slate-800 mb-4">Upload Document</h3>
-              <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center mb-4">
-                <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-                <p className="text-sm text-slate-600 mb-2">Drag and drop your file here, or</p>
-                <button className="text-sm text-blue-600 font-medium hover:text-blue-700">browse to upload</button>
-                <p className="text-xs text-slate-400 mt-3">Supported formats: PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</p>
+
+              <div
+                className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center mb-4 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                  onChange={handleFileSelect}
+                />
+                {selectedFile ? (
+                  <>
+                    <File className="w-10 h-10 text-blue-500 mx-auto mb-3" />
+                    <p className="text-sm font-medium text-slate-800">{selectedFile.name}</p>
+                    <p className="text-xs text-slate-500 mt-1">{formatFileSize(selectedFile.size)}</p>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
+                    <p className="text-sm text-slate-600 mb-2">Drag and drop your file here, or</p>
+                    <span className="text-sm text-blue-600 font-medium hover:text-blue-700">browse to upload</span>
+                    <p className="text-xs text-slate-400 mt-3">Supported: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</p>
+                  </>
+                )}
               </div>
+
+              {uploading && (
+                <div className="mb-4">
+                  <div className="flex justify-between text-sm text-slate-600 mb-1">
+                    <span>Uploading...</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="mb-4">
                 <label className="block text-sm font-medium text-slate-700 mb-2">Document Type</label>
                 <div className="relative">
-                  <select className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="Client Upload">General Upload</option>
-                    <option value="Other">Tax Documents</option>
-                    <option value="Other">Insurance Documents</option>
-                    <option value="Other">Super Statements</option>
-                    <option value="Other">Other</option>
+                  <select
+                    value={uploadDocType}
+                    onChange={(e) => setUploadDocType(e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {uploadDocumentTypes.map((opt, i) => (
+                      <option key={i} value={opt.value}>{opt.label}</option>
+                    ))}
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                 </div>
               </div>
+
               <div className="flex gap-3">
-                <button onClick={() => setShowUploadModal(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">Cancel</button>
-                <button onClick={() => setShowUploadModal(false)} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">Upload</button>
+                <button
+                  onClick={() => {
+                    setShowUploadModal(false);
+                    setSelectedFile(null);
+                  }}
+                  disabled={uploading}
+                  className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpload}
+                  disabled={uploading || !selectedFile}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {uploading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Uploading...
+                    </span>
+                  ) : (
+                    'Upload'
+                  )}
+                </button>
               </div>
             </div>
           </div>

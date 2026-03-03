@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
 import { Plus, Trash2, Pencil, X, BarChart3, Zap } from 'lucide-react';
 import { toast } from 'sonner';
+import { rebuildAdviceModel } from '@/utils/rebuildAdviceModel';
 
 // ============================================================================
 // DROPDOWN OPTIONS
@@ -482,6 +483,7 @@ export default function SOARequestStrategy() {
     setSaving(true);
     try {
       await saveStrategyData();
+      await rebuildAdviceModel(soaRequest.id);
       toast.success('Strategy saved');
       navigate(createPageUrl('SOARequestAssumptions') + `?id=${soaRequest.id}`);
     } catch (error) {
