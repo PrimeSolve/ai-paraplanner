@@ -55,6 +55,10 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
+      console.log('[AuthContext] API returned user:', currentUser);
+      console.log('[AuthContext] API returned role:', currentUser?.role);
+      console.log('[AuthContext] User email:', currentUser?.email);
+      console.log('[AuthContext] User full_name:', currentUser?.full_name);
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
