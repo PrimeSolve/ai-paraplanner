@@ -59,27 +59,6 @@ export default function FactFindWelcome() {
             </p>
           </div>
 
-          {/* Video Card */}
-          <Card className="border-slate-200 shadow-sm overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
-              <h2 className="text-xl font-bold text-white mb-1">
-                Watch this quick guide to get started
-              </h2>
-              <p className="text-blue-50 text-sm">
-                This video walks you through each section of the Fact Find and shows you how to use our AI assistant to complete it faster.
-              </p>
-            </div>
-            <CardContent className="p-0">
-              <div className="aspect-video bg-slate-900 flex items-center justify-center">
-                <div className="text-center text-slate-400">
-                  <FileText className="w-16 h-16 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">Video player would appear here</p>
-                  <p className="text-xs mt-1">Synthesia video embed</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Tools Section */}
           <div className="text-center">
             <h2 className="text-lg font-bold text-slate-800 mb-3">Tools to help you along the way</h2>

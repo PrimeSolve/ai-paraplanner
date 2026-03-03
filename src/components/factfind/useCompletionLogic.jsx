@@ -20,12 +20,12 @@ export function useCompletionLogic() {
       personalData.living_status,
       personalData.resident_status,
       personalData.email,
-      personalData.mobile,
+      personalData.phone || personalData.mobile,
       personalData.address,
       personalData.health_status,
       personalData.smoker_status,
       personalData.employment_status,
-      personalData.employer_name,
+      personalData.employer || personalData.employer_name,
       personalData.occupation
     ];
 
@@ -44,12 +44,12 @@ export function useCompletionLogic() {
         personalData.partner.living_status,
         personalData.partner.resident_status,
         personalData.partner.email,
-        personalData.partner.mobile,
+        personalData.partner.phone || personalData.partner.mobile,
         personalData.partner.address,
         personalData.partner.health_status,
         personalData.partner.smoker_status,
         personalData.partner.employment_status,
-        personalData.partner.employer_name,
+        personalData.partner.employer || personalData.partner.employer_name,
         personalData.partner.occupation
       ];
       totalFields += partnerFields.length;
@@ -340,31 +340,35 @@ export function useCompletionLogic() {
     let totalFields = 0;
     let filledFields = 0;
 
-    // Client super/tax: 6 fields
+    // Client super/tax: 8 fields
     const clientSuper = superTax.client?.super || {};
     const clientTax = superTax.client?.tax || {};
     const clientFields = [
-      clientSuper.salary_sacrifice,
-      clientSuper.personal_contribution,
-      clientSuper.spouse_contribution,
-      clientTax.taxable_income,
-      clientTax.tax_rate,
-      clientTax.tax_file_number
+      clientSuper.sg_mode,
+      clientSuper.tbc_used,
+      clientSuper.ncc_trigger,
+      clientSuper.cc_used,
+      clientSuper.low_rate_used,
+      clientSuper.div293,
+      clientTax.pre_losses,
+      clientTax.pre_cgt_losses
     ];
     totalFields += clientFields.length;
     filledFields += clientFields.filter(f => f || f === 0).length;
 
-    // Partner super/tax (if partner data exists): 6 fields
+    // Partner super/tax (if partner data exists): 8 fields
     if (superTax.partner) {
       const partnerSuper = superTax.partner.super || {};
       const partnerTax = superTax.partner.tax || {};
       const partnerFields = [
-        partnerSuper.salary_sacrifice,
-        partnerSuper.personal_contribution,
-        partnerSuper.spouse_contribution,
-        partnerTax.taxable_income,
-        partnerTax.tax_rate,
-        partnerTax.tax_file_number
+        partnerSuper.sg_mode,
+        partnerSuper.tbc_used,
+        partnerSuper.ncc_trigger,
+        partnerSuper.cc_used,
+        partnerSuper.low_rate_used,
+        partnerSuper.div293,
+        partnerTax.pre_losses,
+        partnerTax.pre_cgt_losses
       ];
       totalFields += partnerFields.length;
       filledFields += partnerFields.filter(f => f || f === 0).length;

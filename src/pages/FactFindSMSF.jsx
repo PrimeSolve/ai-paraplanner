@@ -228,6 +228,15 @@ export default function FactFindSMSF() {
     const trusteeInput = card.querySelector('input[name="individual_trustee"]');
     if (trusteeInput && data.individual_trustee) trusteeInput.value = data.individual_trustee;
 
+    const abnInput = card.querySelector('input[name="smsf_abn"]');
+    if (abnInput && data.smsf_abn) abnInput.value = data.smsf_abn;
+
+    const strategySelect = card.querySelector('select[name="investment_strategy"]');
+    if (strategySelect && data.investment_strategy) strategySelect.value = data.investment_strategy;
+
+    const membersInput = card.querySelector('input[name="smsf_members"]');
+    if (membersInput && data.smsf_members) membersInput.value = data.smsf_members;
+
     // Fill accounts
     if (Array.isArray(data.accounts) && data.accounts.length > 0) {
       const acctContainer = card.querySelector('.acct-list');
@@ -1075,6 +1084,29 @@ export default function FactFindSMSF() {
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Individual trustee</label>
                   <input type="text" name="individual_trustee" placeholder="" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">ABN</label>
+                    <input type="text" name="smsf_abn" placeholder="e.g. 12 345 678 901" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Investment strategy</label>
+                    <select name="investment_strategy" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="">Select...</option>
+                      <option value="1">Conservative</option>
+                      <option value="2">Balanced</option>
+                      <option value="3">Growth</option>
+                      <option value="4">High Growth</option>
+                      <option value="5">Custom</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Members</label>
+                  <input type="text" name="smsf_members" placeholder="e.g. John Smith, Jane Smith" className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
               </div>
             </div>
