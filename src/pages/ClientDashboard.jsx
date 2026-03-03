@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
+import { formatDate } from '../utils/dateUtils';
 import ClientLayout from '../components/client/ClientLayout';
 import { 
   FileText, 
@@ -10,7 +11,6 @@ import {
   Calendar,
   MessageSquare,
   Settings,
-  Play,
   Sparkles,
   ArrowRight,
   FileCheck
@@ -86,7 +86,7 @@ export default function ClientDashboard() {
   const currentFactFind = factFinds.find(ff => ff.status !== 'submitted') || factFinds[0];
   const completedSOAs = soaRequests.filter(s => s.status === 'completed').length;
   const getInitials = (name) => {
-    if (!name) return 'SH';
+    if (!name) return '👤';
     return name.split(' ').map(n => n[0]).toUpperCase().join('');
   };
 
@@ -139,7 +139,7 @@ export default function ClientDashboard() {
                 color: 'white',
                 flexShrink: 0
               }}>
-                {adviser ? getInitials(`${adviser.first_name} ${adviser.last_name}`) : 'SH'}
+                {adviser ? getInitials(`${adviser.first_name} ${adviser.last_name}`) : '👤'}
               </div>
               <div style={{ flex: 1 }}>
                 <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
@@ -149,38 +149,11 @@ export default function ClientDashboard() {
                   I'm excited to help you with your financial planning journey. To get started, please complete your Fact Find below — it takes about 15-20 minutes and helps me understand your current situation, goals, and what you'd like to achieve.
                 </p>
                 <p style={{ fontSize: '13px', color: '#94a3b8', fontStyle: 'italic' }}>
-                  — {adviser ? `${adviser.first_name} ${adviser.last_name}` : 'Stephen Hawke'}, {adviser?.company || 'ABS Wealth'}
+                  — {adviser ? `${adviser.first_name} ${adviser.last_name}` : 'Your Adviser'}{adviser?.company ? `, ${adviser.company}` : ''}
                 </p>
               </div>
             </div>
-            <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #f1f5f9' }}>
-              <button style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 20px',
-                background: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                color: '#475569',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#cbd5e1';
-                e.currentTarget.style.background = '#f8fafc';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#e5e7eb';
-                e.currentTarget.style.background = 'white';
-              }}
-              >
-                <Play className="w-4 h-4" />
-                Watch Welcome Video
-              </button>
-            </div>
+
           </div>
         ) : (
           <div style={{ 
@@ -244,7 +217,7 @@ export default function ClientDashboard() {
               }}
               >
                 <MessageSquare className="w-4 h-4" />
-                Message {adviser?.first_name || 'Stephen'}
+                Message {adviser?.first_name || 'Adviser'}
               </button>
             </Link>
           </div>
@@ -324,9 +297,9 @@ export default function ClientDashboard() {
           {/* Messages */}
           {[
             { 
-              label: 'Messages', 
-              value: '1', 
-              icon: '💬', 
+              label: 'Notifications', 
+              value: '0', 
+              icon: '🔔', 
               color: '#3b82f6',
               bgColor: '#dbeafe'
             }
@@ -510,7 +483,7 @@ export default function ClientDashboard() {
                       Your Plan is Being Prepared
                     </h3>
                     <p style={{ opacity: 0.95, marginBottom: '20px', fontSize: '15px', lineHeight: '1.6' }}>
-                      Great work completing your Fact Find! {adviser?.first_name || 'Stephen'} is now preparing your personalised Statement of Advice. We'll notify you as soon as it's ready.
+                      Great work completing your Fact Find! {adviser?.first_name || 'Your adviser'} is now preparing your personalised Statement of Advice. We'll notify you as soon as it's ready.
                     </p>
                     <Link to={createPageUrl('FactFindWelcome') + `?id=${currentFactFind.id}`} style={{ textDecoration: 'none' }}>
                       <button style={{
@@ -568,7 +541,7 @@ export default function ClientDashboard() {
                       Your Plan is Ready! 🎉
                     </h3>
                     <p style={{ opacity: 0.95, marginBottom: '20px', fontSize: '15px', lineHeight: '1.6' }}>
-                      {adviser?.first_name || 'Stephen'} has completed your personalised Statement of Advice. Click below to review your comprehensive financial plan and next steps.
+                      {adviser?.first_name || 'Your adviser'} has completed your personalised Statement of Advice. Click below to review your comprehensive financial plan and next steps.
                     </p>
                     <Link to={createPageUrl('ClientDocuments')} style={{ textDecoration: 'none' }}>
                       <button style={{
@@ -712,7 +685,7 @@ export default function ClientDashboard() {
                         <MessageSquare className="w-4 h-4 text-slate-500" />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '13px' }}>Message from {adviser?.first_name || 'Stephen'} {adviser?.last_name || 'Hawke'}</div>
+                        <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '13px' }}>Message from {adviser?.first_name || 'your'} {adviser?.last_name || 'adviser'}</div>
                         <div style={{ fontSize: '12px', color: '#94a3b8' }}>
                           25/01/2026
                         </div>
@@ -756,7 +729,7 @@ export default function ClientDashboard() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '13px' }}>Statement of Advice</div>
                         <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                          {new Date(soa.created_date).toLocaleDateString()}
+                          {formatDate(soa.created_date)}
                         </div>
                       </div>
                       <span style={{

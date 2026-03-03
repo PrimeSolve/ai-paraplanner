@@ -6,6 +6,7 @@ import { Search, MoreHorizontal, CheckCircle2, Clock } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { formatDate } from '../utils/dateUtils';
 import NewSOARequestModal from '../components/adviser/NewSOARequestModal.jsx';
 
 export default function AdviserSOARequests() {
@@ -41,15 +42,22 @@ export default function AdviserSOARequests() {
       const requestsWithClientNames = await Promise.all(
         data.map(async (req) => {
           try {
-            const client = await base44.entities.Client.filter({ id: req.client_id });
-            const clientData = client[0];
+            let clientData = null;
+            if (req.client_id) {
+              const clients = await base44.entities.Client.filter({ id: req.client_id });
+              clientData = clients[0];
+            }
+            if (!clientData && req.client_email) {
+              const clients = await base44.entities.Client.filter({ email: req.client_email });
+              clientData = clients[0];
+            }
             const clientName = clientData 
-              ? `${clientData.first_name || ''} ${clientData.last_name || ''}`.trim() 
-              : 'Unknown Client';
+              ? `${clientData.first_name || ''} ${clientData.last_name || ''}`.trim() || req.client_email || 'Client'
+              : req.client_email || 'Client';
             return { ...req, client_name: clientName };
           } catch (err) {
             console.error(`Failed to load client for SOA ${req.id}:`, err);
-            return { ...req, client_name: 'Unknown Client' };
+            return { ...req, client_name: req.client_email || 'Client' };
           }
         })
       );
@@ -228,12 +236,12 @@ export default function AdviserSOARequests() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-slate-800">
-                        {req.submitted_date ? new Date(req.submitted_date).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                        {formatDate(req.submitted_date)}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className={`text-sm font-medium ${req.status === 'completed' ? 'text-green-600' : 'text-red-600'}`}>
-                        {req.completed_date ? new Date(req.completed_date).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                        {formatDate(req.completed_date)}
                       </div>
                     </td>
                     <td className="px-6 py-4">

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { formatDate, formatRelativeDate } from '../utils/dateUtils';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -422,21 +423,10 @@ export default function AdminTeam() {
                     </td>
                     <td className="py-4 px-6">
                       <div className="text-sm text-[#0f172a]">
-                        {new Date(member.created_date).toLocaleDateString('en-US', { 
-                          day: 'numeric', 
-                          month: 'short', 
-                          year: 'numeric' 
-                        })}
+                        {formatDate(member.created_date)}
                       </div>
                       <div className="text-xs text-[#64748b]">
-                        {(() => {
-                          const days = Math.floor((new Date() - new Date(member.created_date)) / (1000 * 60 * 60 * 24));
-                          if (days === 0) return 'today';
-                          if (days === 1) return '1 day ago';
-                          if (days < 30) return `${days} days ago`;
-                          const months = Math.floor(days / 30);
-                          return months === 1 ? '1 month ago' : `${months} months ago`;
-                        })()}
+                        {formatRelativeDate(member.created_date)}
                       </div>
                     </td>
                     <td className="py-4 px-6">

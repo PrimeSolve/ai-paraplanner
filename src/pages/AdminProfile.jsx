@@ -1,3 +1,4 @@
+import { formatMemberSince } from '../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,13 +79,7 @@ export default function AdminProfile() {
     return formData.email?.charAt(0).toUpperCase() || 'A';
   };
 
-  const getMemberSince = () => {
-    if (user?.created_date) {
-      const date = new Date(user.created_date);
-      return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    }
-    return 'June 2025';
-  };
+  const getMemberSince = () => formatMemberSince(user?.created_date, 'June 2025');
 
   if (loading) {
     return (

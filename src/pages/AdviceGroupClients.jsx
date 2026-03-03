@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
+import { formatDate, formatRelativeDate } from '../utils/dateUtils';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -248,8 +249,8 @@ export default function AdviceGroupClients() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium text-slate-800">{new Date(client.created_date).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                          <span className="text-xs text-slate-600">1 month ago</span>
+                          <span className="text-sm font-medium text-slate-800">{formatDate(client.created_date)}</span>
+                          <span className="text-xs text-slate-600">{formatRelativeDate(client.created_date)}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">

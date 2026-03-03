@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { formatMemberSince } from '../utils/dateUtils';
 import { User, Mail, Calendar, Upload, X } from 'lucide-react';
 
 export default function ClientProfile() {
@@ -79,13 +80,7 @@ export default function ClientProfile() {
     return formData.email?.charAt(0).toUpperCase() || 'C';
   };
 
-  const getMemberSince = () => {
-    if (user?.created_date) {
-      const date = new Date(user.created_date);
-      return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    }
-    return 'June 2025';
-  };
+  const getMemberSince = () => formatMemberSince(user?.created_date, 'June 2025');
 
   if (loading) {
     return (

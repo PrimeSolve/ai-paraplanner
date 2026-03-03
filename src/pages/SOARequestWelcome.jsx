@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
 import { 
   Upload, Bot, TrendingUp, Shield, PieChart, FileText,
-  ArrowRight, Play
+  ArrowRight
 } from 'lucide-react';
 
 export default function SOARequestWelcome() {
@@ -138,15 +138,7 @@ export default function SOARequestWelcome() {
             <p className="text-slate-600 text-sm mb-4 text-center">
               Submit your Statement of Advice request to our AI paraplanner for professional SOA preparation.
             </p>
-            <div className="aspect-video bg-slate-900 rounded-lg flex items-center justify-center w-full max-w-4xl mx-auto">
-              <div className="text-white text-center">
-                <Play className="w-16 h-16 mx-auto mb-3 opacity-70" />
-                <p className="text-sm opacity-70">Video Guide Coming Soon</p>
-              </div>
-            </div>
-            <p className="text-slate-600 text-sm mt-4">
-              Watch the below video for more information on how to get started. This video walks you through each section of the SOA request and shows you how to use the AI paraplanner to streamline your workflow.
-            </p>
+
           </div>
 
           {/* Tools Section - Centered */}

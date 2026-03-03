@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Users, FileText, CheckCircle, Clock, Eye, Plus, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { formatRelativeDate } from '../utils/dateUtils';
 
 
 export default function AdviserDashboard() {
@@ -54,13 +55,31 @@ export default function AdviserDashboard() {
         readyForDownload: soas.filter(s => s.status === 'completed').length
       });
 
-      // Mock recent activity
-      const activities = [
-        { type: 'factfind', name: 'John Smith', action: 'completed their Fact Find', time: '2 hrs ago', icon: '📋' },
-        { type: 'soa', name: 'Sarah Jones', action: 'is ready for download', time: '5 hrs ago', icon: '✅' },
-        { type: 'factfind', name: 'David Wilson', action: 'sent to', time: 'Yesterday', icon: '📤' }
-      ];
-      setRecentActivity(activities);
+      // Build recent activity from real data
+      const activities = [];
+
+      factFinds.forEach(ff => {
+        const client = clientsList.find(c => c.email === ff.created_by || c.user_email === ff.created_by);
+        const name = client ? `${client.first_name || ''} ${client.last_name || ''}`.trim() : (ff.created_by || 'Client');
+        if (ff.status === 'submitted' || ff.status === 'completed') {
+          activities.push({ type: 'factfind', name, action: 'completed their Fact Find', time: formatRelativeDate(ff.updated_date || ff.created_date), icon: '📋', date: ff.updated_date || ff.created_date });
+        }
+      });
+
+      soas.forEach(s => {
+        const client = clientsList.find(c => c.email === s.client_email);
+        const name = client ? `${client.first_name || ''} ${client.last_name || ''}`.trim() : (s.client_name || 'Client');
+        if (s.status === 'completed') {
+          activities.push({ type: 'soa', name, action: 'SOA is ready for download', time: formatRelativeDate(s.completed_date || s.updated_date), icon: '✅', date: s.completed_date || s.updated_date });
+        } else if (s.status === 'in_progress') {
+          activities.push({ type: 'soa', name, action: 'SOA is in progress', time: formatRelativeDate(s.updated_date || s.created_date), icon: '📝', date: s.updated_date || s.created_date });
+        } else if (s.status === 'submitted') {
+          activities.push({ type: 'soa', name, action: 'submitted SOA request', time: formatRelativeDate(s.submitted_date || s.created_date), icon: '📤', date: s.submitted_date || s.created_date });
+        }
+      });
+
+      activities.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+      setRecentActivity(activities.slice(0, 5));
     } catch (error) {
       console.error('Failed to load stats:', error);
     } finally {
@@ -225,7 +244,7 @@ export default function AdviserDashboard() {
                   </Link>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {recentActivity.map((activity, idx) => (
+                  {recentActivity.length > 0 ? recentActivity.map((activity, idx) => (
                     <div key={idx} style={{ padding: '12px', background: '#f8fafc', borderRadius: '10px', borderLeft: '3px solid #3b82f6' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                         <div style={{ fontSize: '16px' }}>{activity.icon}</div>
@@ -237,7 +256,11 @@ export default function AdviserDashboard() {
                         {activity.time}
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: '14px' }}>
+                      No recent activity yet
+                    </div>
+                  )}
                 </div>
               </div>
               </div>

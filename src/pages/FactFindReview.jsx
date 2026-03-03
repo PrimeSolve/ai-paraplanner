@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
+import { formatDate } from '../utils/dateUtils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import { useFactFind } from '@/components/factfind/useFactFind';
 import { useCompletionLogic } from '@/components/factfind/useCompletionLogic';
@@ -221,9 +222,7 @@ export default function FactFindReview() {
                 <div className="flex justify-between text-xs text-slate-600">
                   <span>Submitted: {reviewStatus.submitted ? 'Yes' : 'Not yet'}</span>
                   <span>
-                    Last Updated: {factFind?.updated_date
-                      ? new Date(factFind.updated_date).toLocaleDateString()
-                      : 'N/A'}
+                    Last Updated: {formatDate(factFind?.updated_date, undefined, undefined, 'N/A')}
                   </span>
                 </div>
               </div>

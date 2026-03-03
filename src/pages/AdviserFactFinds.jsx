@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { formatDate } from '../utils/dateUtils';
 
 export default function AdviserFactFinds() {
   const [factFinds, setFactFinds] = useState([]);
@@ -128,7 +129,7 @@ export default function AdviserFactFinds() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">
-                      {new Date(ff.updated_date).toLocaleDateString()}
+                      {formatDate(ff.updated_date)}
                     </td>
                     <td className="px-6 py-4">
                       <Link to={createPageUrl('Home') + `?id=${ff.id}`}>

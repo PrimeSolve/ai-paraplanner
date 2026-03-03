@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { formatDate } from '../utils/dateUtils';
 import { Input } from '@/components/ui/input';
 import { CheckCircle2, Clock, Download, MoreHorizontal, FileText, Clipboard, Search } from 'lucide-react';
 
@@ -45,8 +46,18 @@ export default function AdviserCompletions() {
       const now = new Date();
       return completed.getMonth() === now.getMonth() && completed.getFullYear() === now.getFullYear();
     }).length,
-    avgDays: 4.2,
-    onTimeRate: 94
+    avgDays: (() => {
+      const withDates = completedSOAs.filter(s => s.completed_date && s.submitted_date);
+      if (withDates.length === 0) return 0;
+      const total = withDates.reduce((sum, s) => sum + (new Date(s.completed_date) - new Date(s.submitted_date)) / 86400000, 0);
+      return (total / withDates.length).toFixed(1);
+    })(),
+    onTimeRate: (() => {
+      const withDates = completedSOAs.filter(s => s.completed_date && s.submitted_date);
+      if (withDates.length === 0) return 0;
+      const onTime = withDates.filter(s => (new Date(s.completed_date) - new Date(s.submitted_date)) / 86400000 <= 7).length;
+      return Math.round((onTime / withDates.length) * 100);
+    })()
   };
 
   const filteredSOAs = completedSOAs.filter(soa => {
@@ -170,7 +181,7 @@ export default function AdviserCompletions() {
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
                       <span className="text-sm font-medium text-slate-800">
-                        {soa.completed_date ? new Date(soa.completed_date).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                        {formatDate(soa.completed_date)}
                       </span>
                     </div>
                   </td>
