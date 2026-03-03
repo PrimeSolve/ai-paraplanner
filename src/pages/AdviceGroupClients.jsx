@@ -10,13 +10,16 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Users, CheckCircle, Clock, MoreHorizontal, Eye, Edit2, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useRole } from '../components/RoleContext';
 
 export default function AdviceGroupClients() {
   const navigate = useNavigate();
+  const { switchedToId } = useRole();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [adviceGroup, setAdviceGroup] = useState(null);
+  const [advisersList, setAdvisersList] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [adviserFilter, setAdviserFilter] = useState('all');
   const [factFindFilter, setFactFindFilter] = useState('all');
@@ -25,27 +28,31 @@ export default function AdviceGroupClients() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [switchedToId]);
 
   const loadData = async () => {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
 
-      // Get the advice group for this user
-      const adviceGroups = await base44.entities.AdviceGroup.filter({
-        user_id: currentUser.id
-      });
-      
-      if (adviceGroups.length > 0) {
-        const group = adviceGroups[0];
-        setAdviceGroup(group);
+      const groupId = switchedToId || currentUser.advice_group_id;
+      if (groupId) {
+        // Get the advice group details
+        const groups = await base44.entities.AdviceGroup.list();
+        const group = groups.find(g => g.id === groupId);
+        if (group) setAdviceGroup(group);
 
         // Get all clients for this advice group
-        const data = await base44.entities.Client.filter({
-          advice_group_id: group.id
-        }, '-created_date');
+        const [data, adviserList] = await Promise.all([
+          base44.entities.Client.filter({
+            advice_group_id: groupId
+          }, '-created_date'),
+          base44.entities.Adviser.filter({
+            advice_group_id: groupId
+          })
+        ]);
         setClients(data);
+        setAdvisersList(adviserList);
       }
     } catch (error) {
       console.error('Failed to load clients:', error);
@@ -85,6 +92,14 @@ export default function AdviceGroupClients() {
   const ffComplete = clients.filter(c => c.fact_find === 'complete').length;
   const ffPending = clients.filter(c => c.fact_find === 'in_progress' || c.fact_find === 'sent').length;
   const activeSOAs = clients.reduce((sum, c) => sum + (c.soas || 0), 0);
+
+  // Build adviser lookup map
+  const adviserMap = {};
+  advisersList.forEach(a => {
+    const name = `${a.first_name || ''} ${a.last_name || ''}`.trim();
+    if (a.id) adviserMap[a.id] = name;
+    if (a.email) adviserMap[a.email] = name;
+  });
 
   // Get unique advisers for filter
   const uniqueAdvisers = [...new Set(clients.map(c => c.adviser_email).filter(Boolean))];
@@ -229,15 +244,21 @@ export default function AdviceGroupClients() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-8 h-8 rounded-full ${getColorClass(idx)} flex items-center justify-center text-white text-xs font-bold`}>
-                            {client.adviser_email?.charAt(0).toUpperCase() || 'A'}
-                          </div>
-                          <div className="text-sm">
-                            <div className="font-medium text-slate-800">{client.adviser_email?.split('@')[0] || 'N/A'}</div>
-                            <div className="text-xs text-slate-600">Adviser</div>
-                          </div>
-                        </div>
+                        {(() => {
+                          const adviserName = adviserMap[client.adviser_id] || adviserMap[client.adviser_email] || null;
+                          const initials = adviserName ? adviserName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U';
+                          return (
+                            <div className="flex items-center gap-2">
+                              <div className={`w-8 h-8 rounded-full ${getColorClass(idx + 3)} flex items-center justify-center text-white text-xs font-bold`}>
+                                {initials}
+                              </div>
+                              <div className="text-sm">
+                                <div className="font-medium text-slate-800">{adviserName || 'Unassigned'}</div>
+                                {client.adviser_email && <div className="text-xs text-slate-600">{client.adviser_email}</div>}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${factFindBadge.className}`}>

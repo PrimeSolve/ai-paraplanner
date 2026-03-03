@@ -3,70 +3,19 @@ import { base44 } from '@/api/base44Client';
 import { Building2, Users, UserCheck, Clock, Clock3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { formatRelativeDate } from '../utils/dateUtils';
 import { toast } from 'sonner';
-import TestModeSwitcher from '../components/admin/TestModeSwitcher';
-import MockTestMode from '../components/admin/MockTestMode';
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    totalGroups: 1,
+    totalGroups: 0,
     totalAdvisers: 0,
     totalClients: 0,
-    pendingSOAs: 12
+    pendingSOAs: 0
   });
-  const [recentActivity, setRecentActivity] = useState([
-    { 
-      id: 1,
-      client: 'John & Mary Smith', 
-      adviser: 'Sarah Johnson', 
-      group: 'PrimeSolve Financial', 
-      status: 'in_progress',
-      statusLabel: 'in progress',
-      time: '2 hours ago',
-      initial: 'J',
-      bgColor: 'bg-blue-500'
-    },
-    { 
-      id: 2,
-      client: 'Robert Chen', 
-      adviser: 'Michael Wong', 
-      group: 'Wealth Partners', 
-      status: 'pending',
-      statusLabel: 'pending',
-      time: '5 hours ago',
-      initial: 'R',
-      bgColor: 'bg-orange-500'
-    },
-    { 
-      id: 3,
-      client: 'Emma Williams', 
-      adviser: 'Sarah Johnson', 
-      group: 'PrimeSolve Financial', 
-      status: 'submitted',
-      statusLabel: 'submitted',
-      time: 'Yesterday',
-      initial: 'E',
-      bgColor: 'bg-purple-500'
-    },
-    { 
-      id: 4,
-      client: 'David & Lisa Thompson', 
-      adviser: 'James Lee', 
-      group: 'Uptons Advisory', 
-      status: 'completed',
-      statusLabel: 'completed',
-      time: '2 days ago',
-      initial: 'D',
-      bgColor: 'bg-cyan-500'
-    }
-  ]);
-
-  const queueItems = [
-    { name: 'Margaret Hughes', waiting: '6 days waiting', status: 'Overdue', statusColor: 'text-red-600', bgColor: 'bg-red-50' },
-    { name: 'Peter & Jane Walsh', waiting: '4 days waiting', status: 'Attention', statusColor: 'text-amber-600', bgColor: 'bg-amber-50' },
-    { name: 'Simon Clarke', waiting: '2 days waiting', status: 'On Track', statusColor: 'text-green-600', bgColor: 'bg-green-50' }
-  ];
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [queueItems, setQueueItems] = useState([]);
 
   useEffect(() => {
     loadStats();
@@ -74,18 +23,66 @@ export default function AdminDashboard() {
 
   const loadStats = async () => {
     try {
-      const [groups, clients, advisers] = await Promise.all([
+      const [groups, clients, advisers, soaRequests] = await Promise.all([
         base44.entities.AdviceGroup.list(),
         base44.entities.Client.list(),
-        base44.entities.Adviser.list()
+        base44.entities.Adviser.list(),
+        base44.entities.SOARequest.list('-created_date', 50)
       ]);
-      
+
+      const pendingSOAs = soaRequests.filter(s => s.status !== 'completed').length;
+
       setStats({
         totalGroups: groups.length,
         totalAdvisers: advisers.length,
         totalClients: clients.length,
-        pendingSOAs: 12
+        pendingSOAs
       });
+
+      // Build client lookup
+      const clientMap = {};
+      clients.forEach(c => {
+        clientMap[c.id] = `${c.first_name || ''} ${c.last_name || ''}`.trim() || c.email;
+      });
+
+      // Build recent activity from real SOA data
+      const bgColors = ['bg-blue-500', 'bg-orange-500', 'bg-purple-500', 'bg-cyan-500', 'bg-green-500'];
+      const recent = soaRequests.slice(0, 4).map((soa, idx) => {
+        const clientName = clientMap[soa.client_id] || soa.client_name || soa.client_email || 'Client';
+        return {
+          id: soa.id,
+          client: clientName,
+          adviser: soa.adviser_name || '',
+          group: soa.advice_group_name || '',
+          status: soa.status || 'draft',
+          statusLabel: (soa.status || 'draft').replace(/_/g, ' '),
+          time: soa.created_date ? formatRelativeDate(soa.created_date) : '',
+          initial: clientName.charAt(0).toUpperCase(),
+          bgColor: bgColors[idx % bgColors.length]
+        };
+      });
+      setRecentActivity(recent);
+
+      // Build queue items from submitted SOAs sorted by oldest first
+      const submitted = soaRequests
+        .filter(s => s.status === 'submitted' || s.status === 'in_progress')
+        .sort((a, b) => new Date(a.created_date) - new Date(b.created_date))
+        .slice(0, 3);
+
+      const queue = submitted.map(soa => {
+        const clientName = clientMap[soa.client_id] || soa.client_name || 'Unknown';
+        const daysWaiting = soa.created_date ? Math.floor((Date.now() - new Date(soa.created_date)) / 86400000) : 0;
+        let status, statusColor, bgColor;
+        if (daysWaiting > 5) {
+          status = 'Overdue'; statusColor = 'text-red-600'; bgColor = 'bg-red-50';
+        } else if (daysWaiting > 3) {
+          status = 'Attention'; statusColor = 'text-amber-600'; bgColor = 'bg-amber-50';
+        } else {
+          status = 'On Track'; statusColor = 'text-green-600'; bgColor = 'bg-green-50';
+        }
+        return { name: clientName, waiting: `${daysWaiting} days waiting`, status, statusColor, bgColor };
+      });
+      setQueueItems(queue);
     } catch (error) {
       console.error('Failed to load stats:', error);
     } finally {
@@ -116,31 +113,11 @@ export default function AdminDashboard() {
       flexDirection: 'column',
       gap: '24px',
     }}>
-      {/* Header with Test Mode */}
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-slate-800">Admin Dashboard</h1>
           <p className="text-slate-600 text-sm mt-1">Welcome back! Here's an overview of your platform.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <MockTestMode />
-          <button 
-            onClick={async () => {
-              try {
-                await base44.entities.Client.update('697a1a328c8a715a90fc6c02', {
-                  first_name: 'First',
-                  last_name: 'Client', 
-                  email: 'firstclient@hotmail'
-                });
-                toast.success('Client restored');
-              } catch (err) {
-                toast.error('Error: ' + err.message);
-              }
-            }}
-            style={{ background: 'green', color: 'white', padding: '10px 16px', fontSize: '14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
-          >
-            🔧 Restore Client
-          </button>
         </div>
       </div>
 
