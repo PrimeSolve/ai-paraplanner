@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
 import { CheckCircle2, AlertCircle, MinusCircle, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { base44 as primeSolveClient } from '@/api/primeSolveClient';
 
 // ==========================================================================
 // SECTION CONFIGURATION
@@ -458,6 +459,8 @@ export default function SOARequestReview() {
       {/* Success Modal */}
       {showSuccessModal && (
         <SuccessModal
+          soaRequestId={soaRequest?.id}
+          navigate={navigate}
           onClose={() => {
             setShowSuccessModal(false);
             navigate(createPageUrl('SOAManagement'));
@@ -533,7 +536,36 @@ function SectionCard({ section, status, onNavigate, onToggleMark }) {
 // ==========================================================================
 // SUCCESS MODAL
 // ==========================================================================
-function SuccessModal({ onClose }) {
+function SuccessModal({ onClose, soaRequestId, navigate }) {
+  const [opening, setOpening] = useState(false);
+
+  const handleOpenBuilder = async () => {
+    setOpening(true);
+    try {
+      // Check if a SoaDocument already exists for this SOA request
+      const existing = await primeSolveClient.entities.SoaDocument.filter({ soa_request_id: soaRequestId });
+      let docId;
+      if (existing.length > 0) {
+        docId = existing[0].id;
+      } else {
+        const newDoc = await primeSolveClient.entities.SoaDocument.create({
+          soa_request_id: soaRequestId,
+          status: 'draft',
+          section_contents: '{}',
+          section_statuses: '{}',
+          completion_percentage: 0,
+        });
+        docId = newDoc.id;
+      }
+      navigate(`/SOABuilder?id=${docId}`);
+    } catch (error) {
+      console.error('Failed to open SOA Builder:', error);
+      toast.error('Failed to open SOA Builder');
+    } finally {
+      setOpening(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-0" onClick={e => e.stopPropagation()}>
@@ -542,7 +574,7 @@ function SuccessModal({ onClose }) {
             <span className="text-2xl">✓</span> SOA Request Submitted
           </h3>
         </div>
-        
+
         <div className="p-6">
           <p className="text-slate-700 mb-4">
             Your SOA request has been successfully submitted to the AI paraplanner.
@@ -550,7 +582,7 @@ function SuccessModal({ onClose }) {
           <p className="text-sm text-slate-500 mb-6">
             The AI paraplanner will now generate your Statement of Advice. You'll be notified when it's ready for review.
           </p>
-          
+
           <div className="bg-slate-50 rounded-lg p-4 mb-6">
             <h4 className="font-bold text-slate-800 mb-3">What Happens Next</h4>
             <ul className="space-y-2 text-sm text-slate-600">
@@ -572,13 +604,17 @@ function SuccessModal({ onClose }) {
               </li>
             </ul>
           </div>
-          
+
           <div className="flex gap-3">
             <Button variant="outline" onClick={onClose} className="flex-1">
               Close
             </Button>
-            <Button onClick={onClose} className="flex-1 bg-blue-600 hover:bg-blue-700">
-              Back to Dashboard
+            <Button
+              onClick={handleOpenBuilder}
+              disabled={opening}
+              className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+            >
+              {opening ? 'Opening...' : 'Open SOA Builder →'}
             </Button>
           </div>
         </div>

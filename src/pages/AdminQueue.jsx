@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UserX, Clock, CheckCircle2, Zap, Search } from 'lucide-react';
+import { UserX, Clock, CheckCircle2, Zap, Search, Loader2 } from 'lucide-react';
 import { formatDate, formatRelativeDate } from '../utils/dateUtils';
 
 export default function AdminQueue() {
@@ -235,11 +235,7 @@ export default function AdminQueue() {
                           Download
                         </button>
                       )}
-                      <button
-                        onClick={() => navigate(`/SOARequestDetails?id=${item.id}`)}
-                        className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
-                        View
-                      </button>
+                      <ViewButton soaRequestId={item.id} navigate={navigate} />
                     </div>
                   </td>
                 </tr>
@@ -255,5 +251,35 @@ export default function AdminQueue() {
         </div>
       </div>
     </div>
+  );
+}
+
+function ViewButton({ soaRequestId, navigate }) {
+  const [checking, setChecking] = useState(false);
+
+  const handleClick = async () => {
+    setChecking(true);
+    try {
+      const docs = await base44.entities.SoaDocument.filter({ soa_request_id: soaRequestId });
+      if (docs.length > 0) {
+        navigate(`/SOABuilder?id=${docs[0].id}`);
+      } else {
+        navigate(`/SOARequestWelcome?id=${soaRequestId}`);
+      }
+    } catch {
+      navigate(`/SOARequestWelcome?id=${soaRequestId}`);
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={checking}
+      className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors disabled:opacity-50"
+    >
+      {checking ? <Loader2 className="animate-spin w-4 h-4" /> : 'View'}
+    </button>
   );
 }
