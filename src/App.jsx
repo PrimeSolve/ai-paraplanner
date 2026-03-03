@@ -3,10 +3,10 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import { RoleProvider } from '@/components/RoleContext';
+import { RoleProvider, useRole } from '@/components/RoleContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -16,6 +16,49 @@ const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
+
+// Role-based home redirect: sends users to the correct dashboard based on their role
+const RoleBasedHome = () => {
+  const { user } = useRole();
+  const { user: authUser } = useAuth();
+
+  // Determine effective role (same logic as AppShell)
+  const effectiveRole = (() => {
+    const role = user?.role;
+    if (role && role !== 'user') return role;
+    if (user?.linkedEntity?.type) return user.linkedEntity.type;
+    if (user?.entityType) return user.entityType;
+    return role;
+  })();
+
+  console.log('[RoleBasedHome] Auth user from API:', authUser);
+  console.log('[RoleBasedHome] Auth user role from API:', authUser?.role);
+  console.log('[RoleBasedHome] Role context user:', user);
+  console.log('[RoleBasedHome] Effective role:', effectiveRole);
+
+  // If role context hasn't loaded yet, show loading spinner
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-800"></div>
+      </div>
+    );
+  }
+
+  switch (effectiveRole) {
+    case 'admin':
+      return <Navigate to="/AdminAdviceGroups" replace />;
+    case 'advice_group':
+      return <Navigate to="/AdviceGroupDashboard" replace />;
+    case 'adviser':
+      return <Navigate to="/AdviserDashboard" replace />;
+    case 'client':
+      return <Navigate to="/ClientDashboard" replace />;
+    default:
+      console.warn('[RoleBasedHome] Unrecognized role, defaulting to AdminAdviceGroups:', effectiveRole);
+      return <Navigate to="/AdminAdviceGroups" replace />;
+  }
+};
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -45,7 +88,7 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
-          <MainPage />
+          <RoleBasedHome />
         </LayoutWrapper>
       } />
       {Object.entries(Pages).map(([path, Page]) => (
