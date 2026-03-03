@@ -1,24 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, User } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
-export default function AddClientModal({ isOpen, onClose, onSuccess, adviserEmail }) {
+export default function EditClientModal({ isOpen, onClose, onSuccess, client }) {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
     email: '',
     phone: '',
     notes: '',
-    send_fact_find: false
   });
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (client) {
+      setFormData({
+        first_name: client.first_name || '',
+        last_name: client.last_name || '',
+        email: client.email || '',
+        phone: client.phone || '',
+        notes: client.notes || '',
+      });
+    }
+  }, [client]);
+
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: value
     }));
   };
 
@@ -30,38 +41,20 @@ export default function AddClientModal({ isOpen, onClose, onSuccess, adviserEmai
 
     setLoading(true);
     try {
-      // Get current user for adviser_id and tenant_id
-      const currentUser = await base44.auth.me();
-
-      await base44.entities.Client.create({
+      await base44.entities.Client.update(client.id, {
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
         phone: formData.phone,
         notes: formData.notes,
-        adviser_email: adviserEmail || currentUser.email,
-        adviser_id: currentUser.adviser_id || currentUser.id,
-        tenant_id: currentUser.tenant_id,
-        status: 'prospect',
       });
 
-      toast.success('Client added successfully');
-
-      // Reset form
-      setFormData({
-        first_name: '',
-        last_name: '',
-        email: '',
-        phone: '',
-        notes: '',
-        send_fact_find: false
-      });
-
+      toast.success('Client updated successfully');
       onSuccess?.();
       onClose();
     } catch (error) {
-      console.error('Failed to create client:', error);
-      toast.error('Failed to create client: ' + (error.response?.data?.message || error.message));
+      console.error('Failed to update client:', error);
+      toast.error('Failed to update client: ' + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
     }
@@ -102,7 +95,7 @@ export default function AddClientModal({ isOpen, onClose, onSuccess, adviserEmai
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b' }}>Add Client</h2>
+          <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b' }}>Edit Client</h2>
           <button
             onClick={onClose}
             style={{
@@ -257,32 +250,6 @@ export default function AddClientModal({ isOpen, onClose, onSuccess, adviserEmai
               />
             </div>
           </div>
-
-          {/* Send Fact Find Option */}
-          <div style={{
-            background: '#eef2ff',
-            border: '1px solid #c7d2fe',
-            borderRadius: '12px',
-            padding: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px'
-          }}>
-            <div style={{ fontSize: '20px' }}>📧</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b' }}>Send Fact Find</div>
-              <div style={{ fontSize: '13px', color: '#64748b' }}>Email the client a Fact Find form to complete</div>
-            </div>
-            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '8px' }}>
-              <input
-                type="checkbox"
-                name="send_fact_find"
-                checked={formData.send_fact_find}
-                onChange={handleChange}
-                style={{ cursor: 'pointer' }}
-              />
-            </label>
-          </div>
         </div>
 
         {/* Modal Footer */}
@@ -331,7 +298,7 @@ export default function AddClientModal({ isOpen, onClose, onSuccess, adviserEmai
               opacity: loading ? 0.7 : 1
             }}
           >
-            💾 {loading ? 'Saving...' : 'Save Client'}
+            {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>

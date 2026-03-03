@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Building2, Users, UserCheck, Clock, Clock3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { toast } from 'sonner';
 import TestModeSwitcher from '../components/admin/TestModeSwitcher';
 import MockTestMode from '../components/admin/MockTestMode';
 
@@ -131,9 +132,9 @@ export default function AdminDashboard() {
                   last_name: 'Client', 
                   email: 'firstclient@hotmail'
                 });
-                alert('Client restored! Refresh the page.');
+                toast.success('Client restored');
               } catch (err) {
-                alert('ERROR: ' + err.message);
+                toast.error('Error: ' + err.message);
               }
             }}
             style={{ background: 'green', color: 'white', padding: '10px 16px', fontSize: '14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}

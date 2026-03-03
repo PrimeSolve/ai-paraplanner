@@ -207,8 +207,7 @@ export default function AdminTeam() {
       console.log('Step 11: Complete!');
     } catch (error) {
       console.error('ERROR in handleSaveMember:', error);
-      alert('Error: ' + error.message);
-      toast.error(error?.message || 'Failed to save member');
+      toast.error('Error: ' + error.message);
       setInviting(false);
     }
   };
@@ -634,7 +633,6 @@ export default function AdminTeam() {
                 </Button>
                 <Button 
                   onClick={() => {
-                    alert('clicked');
                     handleSaveMember();
                   }}
                   disabled={inviting || !inviteEmail || (!editingMember && !tempPassword)}

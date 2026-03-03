@@ -157,8 +157,7 @@ export default function Register() {
       window.location.href = createPageUrl('VerifyEmail') + `?email=${encodeURIComponent(formData.email)}`;
     } catch (error) {
       console.error('Registration error:', error);
-      alert('Error: ' + error.message);
-      toast.error(error?.message || 'Registration failed');
+      toast.error(error.message);
       setLoading(false);
     }
   };

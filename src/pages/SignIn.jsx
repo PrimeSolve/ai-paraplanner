@@ -19,69 +19,52 @@ export default function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('STEP 1: Login starting for ' + formData.email);
     console.log('=== LOGIN ATTEMPT ===');
     console.log('Email:', formData.email);
 
     try {
       setLoading(true);
-      alert('STEP 2: Calling loginViaEmailPassword...');
       const result = await base44.auth.loginViaEmailPassword(formData.email, formData.password);
-      alert('STEP 3: Login successful');
       console.log('Login success:', result);
 
       // Get authenticated user
-      alert('STEP 4: Getting current user...');
       const user = await base44.auth.me();
-      alert('STEP 5: Got user - ' + user.email + ' (ID: ' + user.id + ')');
       console.log('Current user:', user.email, 'ID:', user.id);
 
       // ROUTING LOGIC: Check entity type and route accordingly
       // FIRST: Check for Admin record
-      alert('STEP 6: Checking for Admin record...');
       const adminRecords = await base44.entities.Admin.filter({ email: user.email });
-      alert('STEP 7: Admin records found: ' + adminRecords.length);
       if (adminRecords.length > 0) {
-        alert('ADMIN FOUND - redirecting to AdminDashboard');
         console.log('Admin found - redirecting to AdminDashboard');
         window.location.href = createPageUrl('AdminDashboard');
         return;
       }
 
       // SECOND: Check for AdviceGroup record by user_id
-      alert('STEP 8: Checking for AdviceGroup record...');
       const adviceGroupRecords = await base44.entities.AdviceGroup.filter({ user_id: user.id });
-      alert('STEP 9: AdviceGroup records found: ' + adviceGroupRecords.length);
       if (adviceGroupRecords.length > 0) {
-        alert('ADVICE GROUP FOUND - redirecting to AdviceGroupDashboard');
         console.log('AdviceGroup found - redirecting to AdviceGroupDashboard');
         window.location.href = createPageUrl('AdviceGroupDashboard');
         return;
       }
 
       // THIRD: Check for Adviser record by user_id
-      alert('STEP 10: Checking for Adviser record...');
       const adviserRecords = await base44.entities.Adviser.filter({ user_id: user.id });
-      alert('STEP 11: Adviser records found: ' + adviserRecords.length);
       if (adviserRecords.length > 0) {
-        alert('ADVISER FOUND - redirecting to AdviserDashboard');
         console.log('Adviser found - redirecting to AdviserDashboard');
         window.location.href = createPageUrl('AdviserDashboard');
         return;
       }
 
       // DEFAULT: Client dashboard
-      alert('STEP 12: No role found - redirecting to ClientDashboard');
       console.log('No role found - redirecting to ClientDashboard');
       window.location.href = createPageUrl('ClientDashboard');
     } catch (error) {
-      alert('ERROR CAUGHT: ' + (error?.message || 'Unknown error'));
       console.error('=== LOGIN ERROR ===');
       console.error('Error message:', error?.message);
 
       // Check if error is due to unverified email
       if (error?.message?.includes('verify') || error?.message?.includes('email')) {
-        alert('Email not verified - redirecting to VerifyEmail');
         console.log('Email not verified, redirecting to VerifyEmail page');
         window.location.href = createPageUrl('VerifyEmail') + `?email=${encodeURIComponent(formData.email)}`;
         return;

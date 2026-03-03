@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { X } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviserEmail }) {
   const navigate = useNavigate();
@@ -76,16 +77,14 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
 
   const handleSubmit = async () => {
     if (!selectedClient) {
-      alert('Please select a client');
+      toast.error('Please select a client');
       return;
     }
 
-    alert('Step 1: Selected client ID = ' + selectedClient);
-    
     try {
      setLoading(true);
      const client = clients.find(c => c.id === selectedClient);
-     alert('Step 2: Client = ' + client?.name + ', fact_find_id = ' + client?.fact_find_id);
+     console.log('Creating SOA request for client:', client?.name, 'fact_find_id:', client?.fact_find_id);
 
      const soaRequest = await base44.entities.SOARequest.create({
        client_id: selectedClient,
@@ -103,19 +102,17 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
        review_status: { sections: {}, submitted: false }
      });
 
-     alert('Step 3: SOA Request created! ID = ' + soaRequest.id);
-     
+     console.log('SOA Request created, ID:', soaRequest.id);
+
      // Close modal
      onClose();
-     
-     alert('Step 4: Modal closed, navigating to SOARequestDetails');
-     
+
      // Navigate to the SOA Request
      navigate(createPageUrl('SOARequestDetails') + '?id=' + soaRequest.id);
-     
+
     } catch (error) {
      console.error('Failed to create SOA request:', error);
-     alert('ERROR: ' + error.message);
+     toast.error('Failed to create SOA request');
     } finally {
      setLoading(false);
     }
