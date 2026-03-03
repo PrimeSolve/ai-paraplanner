@@ -1,21 +1,67 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronUp, GripVertical, AlertCircle, FileText, Sparkles } from 'lucide-react';
-import { toast } from 'sonner';
+import {
+  ChevronDown,
+  ChevronUp,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react';
 import ExampleSOALibrary from '@/components/soa/ExampleSOALibrary';
+import {
+  DEFAULT_SECTION_GROUPS,
+  getSectionStatus,
+  DATA_SOURCES,
+} from '@/utils/soaTemplateDefaults';
+
+function StatusDot({ status }) {
+  const colors = {
+    configured: 'bg-green-500',
+    auto: 'bg-blue-500',
+    partial: 'bg-amber-500',
+    'needs-config': 'bg-slate-300',
+  };
+  return (
+    <span
+      className={`w-2 h-2 rounded-full flex-shrink-0 ${colors[status] || colors['needs-config']}`}
+    />
+  );
+}
+
+function MiniBadge({ label, active }) {
+  return (
+    <span
+      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+        active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-400'
+      }`}
+    >
+      {label}
+    </span>
+  );
+}
+
+function DataFeedChip({ feedKey }) {
+  const [source, field] = feedKey.split('.');
+  const sourceConfig = DATA_SOURCES[source];
+  const fieldConfig = sourceConfig?.fields[field];
+  if (!sourceConfig || !fieldConfig) return null;
+
+  return (
+    <span
+      className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded text-white"
+      style={{ backgroundColor: sourceConfig.color }}
+    >
+      {fieldConfig.label}
+    </span>
+  );
+}
 
 export default function AdviserSOATemplate() {
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
-  const [expandedGroups, setExpandedGroups] = useState(['getting-started']);
+  const [expandedGroups, setExpandedGroups] = useState([]);
   const [effectiveSections, setEffectiveSections] = useState([]);
-  const [extractedSections, setExtractedSections] = useState({});
 
   useEffect(() => {
     loadData();
@@ -26,18 +72,22 @@ export default function AdviserSOATemplate() {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
 
-      // Load the effective template chain: admin -> group -> adviser
-      let mergedSections = [];
+      let mergedSections = JSON.parse(JSON.stringify(DEFAULT_SECTION_GROUPS));
 
-      // Try admin template first
+      // Load admin template
       try {
         const adminTemplates = await base44.entities.SOATemplate.filter({ owner_type: 'admin' });
         if (adminTemplates[0]?.sections) {
-          mergedSections = adminTemplates[0].sections;
+          const loaded = typeof adminTemplates[0].sections === 'string'
+            ? JSON.parse(adminTemplates[0].sections)
+            : adminTemplates[0].sections;
+          if (Array.isArray(loaded) && loaded.length > 0) {
+            mergedSections = loaded;
+          }
         }
       } catch { /* silent */ }
 
-      // Override with group template if available
+      // Override with group template
       if (currentUser.advice_group_id) {
         try {
           const groupTemplates = await base44.entities.SOATemplate.filter({
@@ -45,12 +95,24 @@ export default function AdviserSOATemplate() {
             advice_group_id: currentUser.advice_group_id,
           });
           if (groupTemplates[0]?.sections) {
-            mergedSections = groupTemplates[0].sections;
+            const loaded = typeof groupTemplates[0].sections === 'string'
+              ? JSON.parse(groupTemplates[0].sections)
+              : groupTemplates[0].sections;
+            if (Array.isArray(loaded) && loaded.length > 0) {
+              mergedSections = loaded;
+            }
           }
         } catch { /* silent */ }
       }
 
-      setEffectiveSections(mergedSections);
+      // Filter out disabled sections
+      const filtered = mergedSections.map((group) => ({
+        ...group,
+        sections: group.sections.filter((s) => s.enabled !== false),
+      })).filter((group) => group.sections.length > 0);
+
+      setEffectiveSections(filtered);
+      setExpandedGroups(filtered.map((g) => g.group));
     } catch (error) {
       console.error('Failed to load user:', error);
     } finally {
@@ -58,159 +120,139 @@ export default function AdviserSOATemplate() {
     }
   };
 
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      toast.success('Template saved successfully');
-    } catch (error) {
-      toast.error('Failed to save template');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const toggleGroup = (groupId) => {
-    setExpandedGroups(prev =>
-      prev.includes(groupId) ? prev.filter(g => g !== groupId) : [...prev, groupId]
+    setExpandedGroups((prev) =>
+      prev.includes(groupId)
+        ? prev.filter((g) => g !== groupId)
+        : [...prev, groupId]
     );
   };
 
-  // Fall back to minimal sections if none loaded from the chain
-  const sectionGroups = effectiveSections.length > 0
-    ? effectiveSections
-    : [
-        {
-          group: 'getting-started',
-          groupLabel: 'Getting Started',
-          icon: '🚀',
-          sections: [
-            { id: 'executive-summary', label: 'Executive Summary', enabled: true, required: true },
-            { id: 'scope-of-advice', label: 'Scope of Advice', enabled: true, required: true }
-          ]
-        }
-      ];
-
-  const hasExamples = Object.keys(extractedSections).length > 0;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: '24px 32px' }}>
-      <div className="flex items-center justify-between mb-6">
+    <div className="py-6 px-8" style={{ fontFamily: 'Inter, sans-serif' }}>
+      {/* Header */}
+      <div className="mb-6">
+        <div className="text-xs font-semibold text-teal-600 uppercase tracking-wide mb-1">
+          My SOA Template
+        </div>
+        <h1 className="text-2xl font-bold text-slate-900">
+          SOA Section Configuration
+        </h1>
+        <p className="text-sm text-slate-500 mt-1">
+          View your effective template and upload example SOAs to help the AI match your style
+        </p>
+      </div>
+
+      {/* Info Banner */}
+      <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+        <AlertCircle className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">My SOA Template</h1>
-          <p className="text-sm text-slate-600 mt-1">View your effective template and upload example SOAs</p>
+          <h4 className="font-semibold text-teal-900 mb-0.5">Read-Only View</h4>
+          <p className="text-sm text-teal-700">
+            Your SOA sections are configured by your advice group. You can upload example SOAs below to help the AI match your writing style and preferences.
+          </p>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="bg-teal-600 hover:bg-teal-700">
-          {saving ? 'Saving...' : 'Save Changes'}
-        </Button>
       </div>
 
-      <div>
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <h4 className="font-semibold text-blue-900 mb-1">Template Customization</h4>
-            <p className="text-sm text-blue-700">
-              Your template inherits from your advice group. Changes here only affect your own SOAs. You can upload example SOAs to help AI generate better content.
-            </p>
-          </div>
-        </div>
+      {/* Section Groups */}
+      <div className="space-y-3">
+        {effectiveSections.map((group) => {
+          const isExpanded = expandedGroups.includes(group.group);
 
-        <div className="space-y-4">
-          {sectionGroups.map((group) => {
-            const groupId = group.group || group.id;
-            const isExpanded = expandedGroups.includes(groupId);
-            const groupSections = group.sections || [];
-
-            return (
-              <Card key={groupId}>
-                <div
-                  onClick={() => toggleGroup(groupId)}
-                  className="flex items-center gap-3 p-5 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
-                >
-                  <GripVertical className="w-5 h-5 text-slate-400" />
-                  <div className="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center text-lg">
-                    {group.icon || '📄'}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold">{group.groupLabel || group.label}</div>
-                  </div>
-                  <Badge variant="secondary">{groupSections.length} sections</Badge>
-                  {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          return (
+            <Card key={group.group} className="overflow-hidden">
+              <button
+                onClick={() => toggleGroup(group.group)}
+                className="w-full flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+              >
+                <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center text-base flex-shrink-0">
+                  {group.icon}
                 </div>
-
-                {isExpanded && (
-                  <div className="p-4 space-y-3">
-                    {groupSections.map((section) => {
-                      const sectionHasExample = !!extractedSections[section.id];
-                      const sectionHasContent = !!section.content;
-
-                      return (
-                        <div key={section.id} className="border border-slate-200 rounded-lg p-4">
-                          <div className="flex items-start gap-3">
-                            <Checkbox
-                              checked={section.enabled !== false}
-                              className="mt-1"
-                              disabled
-                            />
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="font-semibold">{section.label}</span>
-                                {section.required && (
-                                  <Badge variant="destructive" className="text-xs">Required</Badge>
-                                )}
-                                {section.status === 'configured' && (
-                                  <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
-                                    ✓ Configured
-                                  </span>
-                                )}
-                              </div>
-                              {section.description && (
-                                <p className="text-sm text-slate-500 mb-2">{section.description}</p>
-                              )}
-
-                              {/* Source indicator */}
-                              <div className="flex flex-wrap items-center gap-2 mt-2">
-                                {sectionHasContent && (
-                                  <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
-                                    <FileText className="w-3 h-3" />
-                                    Template content
-                                  </span>
-                                )}
-                                {sectionHasExample && (
-                                  <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                                    <Sparkles className="w-3 h-3" />
-                                    Your examples
-                                  </span>
-                                )}
-                                {sectionHasContent && sectionHasExample && (
-                                  <span className="text-xs text-slate-400">
-                                    This section uses: [Template content] + [Your examples]
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                <div className="flex-1">
+                  <div className="font-semibold text-slate-800">{group.groupLabel}</div>
+                </div>
+                <Badge variant="secondary" className="text-xs">
+                  {group.sections.length} sections
+                </Badge>
+                {isExpanded ? (
+                  <ChevronUp className="w-4 h-4 text-slate-400" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-slate-400" />
                 )}
-              </Card>
-            );
-          })}
-        </div>
+              </button>
 
-        {/* Example SOA Library */}
-        {user && (
-          <div className="mt-8">
-            <ExampleSOALibrary
-              ownerType="adviser"
-              ownerId={user.id}
-              onExtractedSections={setExtractedSections}
-            />
-          </div>
-        )}
+              {isExpanded && (
+                <div className="border-t border-slate-200 p-3 space-y-2">
+                  {group.sections.map((section) => {
+                    const status = getSectionStatus(section);
+                    const hasPrompt = !!section.prompt?.system;
+                    const hasExample = !!section.example_content;
+                    const feedCount = section.data_feeds?.length || 0;
+
+                    return (
+                      <div
+                        key={section.id}
+                        className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg"
+                      >
+                        <StatusDot status={status} />
+
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm text-slate-800">
+                            {section.label}
+                          </div>
+                          <div className="text-xs text-slate-500 truncate">
+                            {section.desc}
+                          </div>
+                          {feedCount > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {section.data_feeds.slice(0, 5).map((feed) => (
+                                <DataFeedChip key={feed} feedKey={feed} />
+                              ))}
+                              {feedCount > 5 && (
+                                <span className="text-[10px] text-slate-400 font-medium px-1.5 py-0.5">
+                                  +{feedCount - 5} more
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <MiniBadge label="Prompt" active={hasPrompt} />
+                          <MiniBadge label="Example" active={hasExample} />
+                          <MiniBadge
+                            label={feedCount > 0 ? `${feedCount} feeds` : 'Feed'}
+                            active={feedCount > 0}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
+          );
+        })}
       </div>
+
+      {/* Example SOA Library */}
+      {user && (
+        <div className="mt-8">
+          <ExampleSOALibrary
+            ownerType="adviser"
+            ownerId={user.id}
+            onExtractedSections={() => {}}
+          />
+        </div>
+      )}
     </div>
   );
 }
