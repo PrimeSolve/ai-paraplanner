@@ -50,15 +50,33 @@ function snakeToCamelKeys(obj) {
 // ──────────────────────────────────────────────────────────────
 
 const ROLE_MAP = {
-  0: 'admin',        // PlatformAdmin
-  1: 'advice_group', // TenantAdmin
-  2: 'adviser',      // Adviser
-  3: 'adviser',      // SupportStaff (treat as adviser)
-  4: 'client',       // Client
+  0: 'admin',
+  1: 'advice_group',
+  2: 'adviser',
+  3: 'adviser',
+  4: 'client',
+};
+
+const STRING_ROLE_MAP = {
+  'admin': 'admin',
+  'platformadmin': 'admin',
+  'tenantadmin': 'advice_group',
+  'advicegroup': 'advice_group',
+  'advice_group': 'advice_group',
+  'adviser': 'adviser',
+  'advisor': 'adviser',
+  'supportstaff': 'adviser',
+  'client': 'client',
 };
 
 function mapPrimeSolveRole(roleValue) {
-  return ROLE_MAP[roleValue] || 'user';
+  if (typeof roleValue === 'number' || !isNaN(parseInt(roleValue))) {
+    return ROLE_MAP[parseInt(roleValue)] || 'user';
+  }
+  if (typeof roleValue === 'string') {
+    return STRING_ROLE_MAP[roleValue.toLowerCase()] || 'user';
+  }
+  return 'user';
 }
 
 // ──────────────────────────────────────────────────────────────
