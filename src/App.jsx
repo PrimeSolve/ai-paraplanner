@@ -8,6 +8,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { RoleProvider, useRole } from '@/components/RoleContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import PublicHome from '@/pages/PublicHome';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -77,9 +78,11 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
+      return (
+        <Routes>
+          <Route path="*" element={<PublicHome />} />
+        </Routes>
+      );
     }
   }
 

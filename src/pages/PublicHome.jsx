@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { createPageUrl } from '../utils';
-import { Download, ChevronDown } from 'lucide-react';
+import { loginRedirect } from '@/auth/msalInstance';
+import { ChevronDown } from 'lucide-react';
 
 export default function PublicHome() {
   const [scrolled, setScrolled] = useState(false);
@@ -16,7 +15,7 @@ export default function PublicHome() {
     <div className="font-['Poppins']">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
-        
+
         :root {
           --navy-deep: #0a0f1a;
           --navy: #0f172a;
@@ -52,30 +51,29 @@ export default function PublicHome() {
           <div className="flex items-center gap-9">
             <a href="#how-it-works" className="text-[15px] font-medium text-[#334155] hover:text-[#0f172a] no-underline relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-[#3b82f6] after:transition-all hover:after:w-full">How It Works</a>
             <a href="#features" className="text-[15px] font-medium text-[#334155] hover:text-[#0f172a] no-underline relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-[#3b82f6] after:transition-all hover:after:w-full">Features</a>
-            <a href={createPageUrl('AvatarMarketing')} className="text-[15px] font-medium text-[#334155] hover:text-[#0f172a] no-underline relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-[#3b82f6] after:transition-all hover:after:w-full">AI Avatar</a>
             <a href="#pricing" className="text-[15px] font-medium text-[#334155] hover:text-[#0f172a] no-underline relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-[#3b82f6] after:transition-all hover:after:w-full">Pricing</a>
           </div>
 
           <div className="flex items-center gap-4">
-            <a 
-              href={createPageUrl('SignIn')}
-              className="px-6 py-3 rounded-[10px] text-[15px] font-semibold text-[#0f172a] bg-transparent border-2 border-[#e2e8f0] hover:border-[#0f172a] hover:bg-[#0f172a] hover:text-white transition-all no-underline inline-block"
+            <button
+              onClick={() => loginRedirect()}
+              className="px-6 py-3 rounded-[10px] text-[15px] font-semibold text-[#0f172a] bg-transparent border-2 border-[#e2e8f0] hover:border-[#0f172a] hover:bg-[#0f172a] hover:text-white transition-all cursor-pointer"
             >
-              Log In
-            </a>
-            <a 
-              href={createPageUrl('Register')}
-              className="px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all no-underline inline-block"
+              Sign In
+            </button>
+            <button
+              onClick={() => loginRedirect()}
+              className="px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
             >
-              Register
-            </a>
+              Get Started
+            </button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
       <section className="min-h-screen pt-[140px] pb-20 px-12 relative overflow-hidden">
-        <img 
+        <img
           src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/775a01db7_shutterstock_1125352451.jpg"
           alt="Background"
           className="absolute inset-0 w-full h-full object-cover opacity-40"
@@ -83,14 +81,6 @@ export default function PublicHome() {
         <div className="absolute inset-0 bg-gradient-to-br from-[#f0f4f8]/85 via-[#e8eef5]/80 to-[#dce5f0]/85" />
         <div className="max-w-[1400px] mx-auto grid grid-cols-2 gap-20 items-center relative z-10">
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <a 
-              href={createPageUrl('Whitepaper')}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-sm font-semibold text-[#1d4ed8] mb-6 shadow-md hover:bg-[#1d4ed8] hover:text-white hover:-translate-y-0.5 hover:shadow-lg transition-all no-underline"
-            >
-              <Download className="w-4 h-4" />
-              Read: The Future of Paraplanning
-            </a>
-
             <h1 className="font-['Playfair_Display'] text-[60px] leading-[1.15] font-semibold mb-6">
               <span className="text-[#0f172a]">Paraplanning that </span>
               <span className="text-[#3b82f6]">scales</span>
@@ -102,13 +92,13 @@ export default function PublicHome() {
             </p>
 
             <div className="flex gap-4 mb-12">
-              <a 
-                href={createPageUrl('Register')}
-                className="px-8 py-4 rounded-[12px] text-[17px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all no-underline inline-block"
+              <button
+                onClick={() => loginRedirect()}
+                className="px-8 py-4 rounded-[12px] text-[17px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
               >
                 Get Started
-              </a>
-              <a 
+              </button>
+              <a
                 href="#how-it-works"
                 className="px-8 py-4 rounded-[12px] text-[17px] font-semibold text-[#0f172a] bg-white border-2 border-[#e2e8f0] hover:border-[#0f172a] inline-flex items-center gap-2 no-underline transition-all"
               >
@@ -135,7 +125,7 @@ export default function PublicHome() {
 
           <div className="relative animate-in fade-in slide-in-from-right-4 duration-700 delay-300">
             <div className="rounded-2xl overflow-hidden shadow-2xl">
-              <iframe 
+              <iframe
                 src="https://app.heygen.com/embed/67699df2c2294868a5b586c42f2fa217"
                 className="w-full aspect-video border-0"
                 allow="fullscreen"
@@ -147,7 +137,7 @@ export default function PublicHome() {
 
       {/* How It Works Section */}
       <section id="how-it-works" className="py-24 relative overflow-hidden">
-        <img 
+        <img
           src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/06d841c8f_techwaves.png"
           alt="Background"
           className="absolute inset-0 w-full h-full object-cover"
@@ -159,7 +149,7 @@ export default function PublicHome() {
               How It <span className="text-[#22d3ee]">Works</span>
             </h2>
             <p className="text-[19px] text-[#94a3b8] max-w-[700px] mx-auto">
-              From fact find to advice delivery — a seamless 7-step journey powered by AI and backed by humans.
+              From fact find to advice delivery — a seamless journey powered by AI and backed by humans.
             </p>
           </div>
 
@@ -170,14 +160,14 @@ export default function PublicHome() {
             {/* Step 1 */}
             <div className="grid grid-cols-2 gap-16 items-start relative">
               <div className="text-right bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
-                <h3 className="text-[24px] font-bold text-white mb-3">Send AI Fact Find</h3>
+                <h3 className="text-[24px] font-bold text-white mb-3">Build Your Client Profile</h3>
                 <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
-                  Send your client a branded, mobile-friendly fact find powered by AI. Professional first impressions, every time.
+                  Send your client an AI-powered Fact Find. Smart pre-fill extracts data from documents while the AI assistant guides them through every section.
                 </p>
                 <div className="flex gap-2 justify-end flex-wrap">
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Branded Invite</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Mobile Friendly</span>
                   <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">AI-Powered</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Smart Pre-fill</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Mobile Friendly</span>
                 </div>
               </div>
               <div></div>
@@ -188,14 +178,14 @@ export default function PublicHome() {
             <div className="grid grid-cols-2 gap-16 items-start relative">
               <div></div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
-                <h3 className="text-[24px] font-bold text-white mb-3">Client Completes with AI Help</h3>
+                <h3 className="text-[24px] font-bold text-white mb-3">Create a Cashflow Model or SOA Request</h3>
                 <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
-                  Clients don't struggle with forms. AI pre-fills data, guides them through objectives, and captures everything accurately.
+                  Your AI paraplanner guides you through recommendations in real time. It prompts for missing details, validates your strategy, and ensures nothing slips through.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Smart Pre-fill</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">AI Assistant</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Guided Objectives</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Real-time Guidance</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Smart Validation</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Nothing Missed</span>
                 </div>
               </div>
               <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">2</div>
@@ -204,14 +194,14 @@ export default function PublicHome() {
             {/* Step 3 */}
             <div className="grid grid-cols-2 gap-16 items-start relative">
               <div className="text-right bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
-                <h3 className="text-[24px] font-bold text-white mb-3">Build SOA Request with AI</h3>
+                <h3 className="text-[24px] font-bold text-white mb-3">AI Generates a Compliant SOA</h3>
                 <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
-                  Your AI paraplanner guides you through recommendations in real time. It prompts for missing details, validates your strategy, and ensures nothing slips through.
+                  Powered by PrimeSolve's optimised modelling engine, AI generates a compliant, comprehensive Statement of Advice. Every document is reviewed by qualified paraplanners.
                 </p>
                 <div className="flex gap-2 justify-end flex-wrap">
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Real-time Guidance</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Smart Validation</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Nothing Missed</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">PrimeSolve Engine</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Human Reviewed</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Compliant</span>
                 </div>
               </div>
               <div></div>
@@ -222,74 +212,17 @@ export default function PublicHome() {
             <div className="grid grid-cols-2 gap-16 items-start relative">
               <div></div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
-                <h3 className="text-[24px] font-bold text-white mb-3">AI Prepares Your Plan</h3>
+                <h3 className="text-[24px] font-bold text-white mb-3">Review, Refine & Deliver</h3>
                 <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
-                  Powered by PrimeSolve's optimised modelling engine, AI generates a compliant, comprehensive Statement of Advice. Every document is reviewed by qualified paraplanners.
+                  Get your completed SOA in 24 hours. Choose PDF or Word for compliance records, plus interactive HTML for client engagement — you get all three. Review, refine, and deliver to your client.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">PrimeSolve Engine</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Human Reviewed</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Compliant</span>
-                </div>
-              </div>
-              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">4</div>
-            </div>
-
-            {/* Step 5 */}
-            <div className="grid grid-cols-2 gap-16 items-start relative">
-              <div className="text-right bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
-                <h3 className="text-[24px] font-bold text-white mb-3">Receive Your SOA</h3>
-                <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
-                  Get your completed SOA in 24 hours. Choose PDF or Word for compliance records, plus interactive HTML for client engagement — you get all three.
-                </p>
-                <div className="flex gap-2 justify-end flex-wrap">
                   <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">PDF Export</span>
                   <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Word Export</span>
                   <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Interactive HTML</span>
                 </div>
               </div>
-              <div></div>
-              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">5</div>
-            </div>
-
-            {/* Step 6 */}
-            <div className="grid grid-cols-2 gap-16 items-start relative">
-              <div></div>
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
-                <h3 className="text-[24px] font-bold text-white mb-3">Avatar Explains the Advice</h3>
-                <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
-                  Your digital twin walks clients through every recommendation. A fully trained AI model answers their questions, explains key concepts, clarifies trade-offs, and helps them understand why each recommendation makes sense for their situation.
-                </p>
-                <div className="flex gap-2 flex-wrap mb-4">
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Your Avatar</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Trained AI Q&A</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Explains Trade-offs</span>
-                </div>
-                <a 
-                  href={createPageUrl('AvatarMarketing')}
-                  className="inline-flex items-center gap-2 text-[14px] font-semibold text-[#22d3ee] hover:text-white transition-colors no-underline"
-                >
-                  Learn More →
-                </a>
-              </div>
-              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">6</div>
-            </div>
-
-            {/* Step 7 */}
-            <div className="grid grid-cols-2 gap-16 items-start relative">
-              <div className="text-right bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
-                <h3 className="text-[24px] font-bold text-white mb-3">Stress Test Report</h3>
-                <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
-                  Leveraging PrimeSolve's modelling engine, analyse 50+ alternative strategy models. Give clients unparalleled insight into different financial and lifestyle impacts.
-                </p>
-                <div className="flex gap-2 justify-end flex-wrap">
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">50+ Scenarios</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Lifestyle Impacts</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Deep Analysis</span>
-                </div>
-              </div>
-              <div></div>
-              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">7</div>
+              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">4</div>
             </div>
           </div>
         </div>
@@ -308,102 +241,69 @@ export default function PublicHome() {
           </div>
 
           <div className="grid grid-cols-3 gap-8">
-            {/* Feature 1 */}
+            {/* Feature 1 - AI-Powered SOA Generation */}
             <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#f97316] to-[#ea580c] flex items-center justify-center mb-6">
                 <span className="text-2xl">✨</span>
               </div>
-              <h3 className="text-[20px] font-bold text-white mb-3">Smart Pre-Fill</h3>
+              <h3 className="text-[20px] font-bold text-white mb-3">AI-Powered SOA Generation</h3>
               <p className="text-[15px] text-[#94a3b8] leading-relaxed">
-                AI extracts data from documents and pre-fills forms. Clients verify instead of typing. Hours of data entry eliminated.
+                AI generates compliant, comprehensive Statements of Advice. Every document is reviewed by qualified paraplanners for quality assurance.
               </p>
             </div>
 
-            {/* Feature 2 */}
+            {/* Feature 2 - Cashflow Modelling Engine */}
+            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#06b6d4] to-[#0891b2] flex items-center justify-center mb-6">
+                <span className="text-2xl">📈</span>
+              </div>
+              <h3 className="text-[20px] font-bold text-white mb-3">Cashflow Modelling Engine</h3>
+              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
+                PrimeSolve's advanced optimisation modelling ensures the ultimate pathway for your client. Every recommendation is backed by rigorous scenario analysis.
+              </p>
+            </div>
+
+            {/* Feature 3 - Template & Example Library */}
+            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#3b82f6] to-[#1d4ed8] flex items-center justify-center mb-6">
+                <span className="text-2xl">📄</span>
+              </div>
+              <h3 className="text-[20px] font-bold text-white mb-3">Template & Example Library</h3>
+              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
+                Use AI Paraplanner's professionally designed templates or bring your own. Fully customisable to match your brand, your tone, your way of delivering advice.
+              </p>
+            </div>
+
+            {/* Feature 4 - Multi-role Portal */}
+            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] flex items-center justify-center mb-6">
+                <span className="text-2xl">👥</span>
+              </div>
+              <h3 className="text-[20px] font-bold text-white mb-3">Multi-role Portal</h3>
+              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
+                Purpose-built dashboards for Admins, Advice Groups, Advisers, and Clients. Everyone gets the right view with the right permissions.
+              </p>
+            </div>
+
+            {/* Feature 5 - AI Compliance Checking */}
+            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#ef4444] to-[#dc2626] flex items-center justify-center mb-6">
+                <span className="text-2xl">🛡️</span>
+              </div>
+              <h3 className="text-[20px] font-bold text-white mb-3">AI Compliance Checking</h3>
+              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
+                Four independent AI models generate, debate, and vote on every response. Dramatically reduces errors and eliminates hallucinations. Human oversight guaranteed.
+              </p>
+            </div>
+
+            {/* Feature 6 - AI Fact Find Assistant */}
             <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#ec4899] to-[#be185d] flex items-center justify-center mb-6">
                 <span className="text-2xl">💬</span>
               </div>
               <h3 className="text-[20px] font-bold text-white mb-3">AI Fact Find Assistant</h3>
               <p className="text-[15px] text-[#94a3b8] leading-relaxed">
-                Clients chat naturally. The AI asks clarifying questions, explains complex terms, and captures everything accurately.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#ec4899] to-[#be185d] flex items-center justify-center mb-6">
-                <span className="text-2xl">🎯</span>
-              </div>
-              <h3 className="text-[20px] font-bold text-white mb-3">Guided Objectives</h3>
-              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
-                The AI already understands your client's full financial position. It asks the right questions, teases out what really matters, and connects their goals to their reality. Better discovery, better advice.
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#06b6d4] to-[#0891b2] flex items-center justify-center mb-6">
-                <span className="text-2xl">📈</span>
-              </div>
-              <h3 className="text-[20px] font-bold text-white mb-3">Optimised Modelling</h3>
-              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
-                AI Paraplanner leverages PrimeSolve's advanced optimisation modelling to ensure the ultimate pathway for your client can be achieved. Every recommendation is backed by rigorous scenario analysis.
-              </p>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#f59e0b] to-[#d97706] flex items-center justify-center mb-6">
-                <span className="text-2xl">⚡</span>
-              </div>
-              <h3 className="text-[20px] font-bold text-white mb-3">AI SOA Builder</h3>
-              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
-                With the projected position already built, the AI helps you see which decisions will get your client to their goals. It guides your recommendations, highlights trade-offs, and makes the SOA request process effortless.
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] flex items-center justify-center mb-6">
-                <span className="text-2xl">👥</span>
-              </div>
-              <h3 className="text-[20px] font-bold text-white mb-3">LLM Council</h3>
-              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
-                Four independent AI models generate, debate, and vote on every response. The council reviews all perspectives and formulates the optimal answer. Dramatically reduces errors and eliminates hallucinations.
-              </p>
-            </div>
-
-            {/* Feature 7 */}
-            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#ef4444] to-[#dc2626] flex items-center justify-center mb-6">
-                <span className="text-2xl">🛡️</span>
-              </div>
-              <h3 className="text-[20px] font-bold text-white mb-3">Human Oversight</h3>
-              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
-                Every AI-generated SOA is reviewed by qualified paraplanners. Quality and compliance guaranteed.
-              </p>
-            </div>
-
-            {/* Feature 8 */}
-            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#f97316] to-[#ea580c] flex items-center justify-center mb-6">
-                <span className="text-2xl">👤</span>
-              </div>
-              <h3 className="text-[20px] font-bold text-white mb-3">Avatar Delivery</h3>
-              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
-                Your digital twin explains the advice. Clients ask questions anytime. Engagement like never before.
-              </p>
-            </div>
-
-            {/* Feature 9 */}
-            <div className="bg-[#1e293b] rounded-2xl p-8 hover:transform hover:-translate-y-1 transition-all">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#3b82f6] to-[#1d4ed8] flex items-center justify-center mb-6">
-                <span className="text-2xl">📄</span>
-              </div>
-              <h3 className="text-[20px] font-bold text-white mb-3">Your Templates, Your Way</h3>
-              <p className="text-[15px] text-[#94a3b8] leading-relaxed">
-                Use AI Paraplanner's professionally designed templates or bring your own. Fully customisable to match your brand, your tone, your way of delivering advice.
+                Clients chat naturally. The AI asks clarifying questions, explains complex terms, and captures everything accurately with smart pre-fill from documents.
               </p>
             </div>
           </div>
@@ -454,12 +354,12 @@ export default function PublicHome() {
                   </div>
                 </div>
               </div>
-              <a 
-                href={createPageUrl('AvatarMarketing')}
-                className="inline-block px-8 py-4 rounded-[12px] text-[17px] font-bold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all no-underline"
+              <button
+                onClick={() => loginRedirect()}
+                className="inline-block px-8 py-4 rounded-[12px] text-[17px] font-bold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
               >
-                Create Your Avatar
-              </a>
+                Get Started
+              </button>
             </div>
             <div>
               <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
@@ -468,12 +368,12 @@ export default function PublicHome() {
                   <h3 className="text-white font-bold text-[17px]">AI Fact Find Assistant</h3>
                   <p className="text-white/80 text-[14px]">Goals Discovery Session</p>
                 </div>
-                
+
                 {/* Chat Body */}
                 <div className="p-6 space-y-4 bg-slate-50">
                   {/* Avatar Message 1 */}
                   <div className="flex gap-3 items-start">
-                    <img 
+                    <img
                       src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/2b487cd9c_image.png"
                       alt="AI Avatar"
                       className="w-11 h-11 rounded-full object-cover flex-shrink-0"
@@ -499,7 +399,7 @@ export default function PublicHome() {
 
                   {/* Avatar Message 2 */}
                   <div className="flex gap-3 items-start">
-                    <img 
+                    <img
                       src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/2b487cd9c_image.png"
                       alt="AI Avatar"
                       className="w-11 h-11 rounded-full object-cover flex-shrink-0"
@@ -559,9 +459,9 @@ export default function PublicHome() {
                   <span className="text-[15px] text-[#e2e8f0]">PDF + Word + HTML delivery</span>
                 </div>
               </div>
-              <button 
-                onClick={() => base44.auth.redirectToLogin()}
-                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-transparent border-2 border-white/20 hover:border-white hover:bg-white hover:text-[#0f172a] transition-all"
+              <button
+                onClick={() => loginRedirect()}
+                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-transparent border-2 border-white/20 hover:border-white hover:bg-white hover:text-[#0f172a] transition-all cursor-pointer"
               >
                 Get Started
               </button>
@@ -603,12 +503,12 @@ export default function PublicHome() {
                   <span className="text-[15px] text-white">Stress test report</span>
                 </div>
               </div>
-              <a 
-                href={createPageUrl('Register')}
-                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all no-underline inline-block text-center"
+              <button
+                onClick={() => loginRedirect()}
+                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
               >
                 Get Started
-              </a>
+              </button>
             </div>
 
             {/* Tier 3 - Enterprise */}
@@ -640,12 +540,12 @@ export default function PublicHome() {
                   <span className="text-[15px] text-[#e2e8f0]">Custom integrations</span>
                 </div>
               </div>
-              <a 
-                href={createPageUrl('PublicContact')}
-                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-transparent border-2 border-white/20 hover:border-white hover:bg-white hover:text-[#0f172a] transition-all no-underline inline-block text-center"
+              <button
+                onClick={() => loginRedirect()}
+                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-transparent border-2 border-white/20 hover:border-white hover:bg-white hover:text-[#0f172a] transition-all cursor-pointer"
               >
                 Contact Us
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -663,14 +563,14 @@ export default function PublicHome() {
                 AI <span className="text-[#3b82f6]">Paraplanner</span>
               </span>
             </div>
-            
+
             <div className="flex items-center gap-8">
               <a href="#" className="text-[15px] text-[#94a3b8] hover:text-white transition-colors no-underline">Privacy Policy</a>
               <a href="#" className="text-[15px] text-[#94a3b8] hover:text-white transition-colors no-underline">Terms of Service</a>
               <a href="#" className="text-[15px] text-[#94a3b8] hover:text-white transition-colors no-underline">Contact</a>
             </div>
           </div>
-          
+
           <div className="mt-8 pt-8 border-t border-white/10 text-center">
             <p className="text-[14px] text-[#64748b]">© 2026 AI Paraplanner. All rights reserved.</p>
           </div>
