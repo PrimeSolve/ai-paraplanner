@@ -9,7 +9,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatDate } from '../utils/dateUtils';
 import AddClientModal from '../components/adviser/AddClientModal.jsx';
+import EditClientModal from '../components/adviser/EditClientModal.jsx';
 import { useRole } from '../components/RoleContext';
+import { toast } from 'sonner';
 
 export default function AdviserClients() {
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ export default function AdviserClients() {
   const [factFindFilter, setFactFindFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingClient, setEditingClient] = useState(null);
   const itemsPerPage = 8;
 
   useEffect(() => {
@@ -45,6 +48,20 @@ export default function AdviserClients() {
       console.error('Failed to load clients:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteClient = async (client) => {
+    if (!window.confirm(`Are you sure you want to delete ${client.first_name} ${client.last_name}? This cannot be undone.`)) {
+      return;
+    }
+    try {
+      await base44.entities.Client.delete(client.id);
+      toast.success('Client deleted');
+      loadData();
+    } catch (error) {
+      console.error('Failed to delete client:', error);
+      toast.error('Failed to delete client');
     }
   };
 
@@ -231,15 +248,15 @@ export default function AdviserClients() {
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => toast.info('Email integration coming soon. You can share the Fact Find link manually.')}>
                               <span className="mr-2">📧</span>
                               Send Fact Find
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setEditingClient(client)}>
                               <Edit2 className="w-4 h-4 mr-2" />
                               Edit Client
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">
+                            <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteClient(client)}>
                               <Trash2 className="w-4 h-4 mr-2" />
                               Delete
                             </DropdownMenuItem>
@@ -292,11 +309,17 @@ export default function AdviserClients() {
           </div>
         </div>
        </div>
-       <AddClientModal 
-       isOpen={showAddModal} 
+       <AddClientModal
+       isOpen={showAddModal}
        onClose={() => setShowAddModal(false)}
        onSuccess={loadData}
        adviserEmail={user?.email}
+       />
+       <EditClientModal
+       isOpen={!!editingClient}
+       onClose={() => setEditingClient(null)}
+       onSuccess={loadData}
+       client={editingClient}
        />
        </div>
   );

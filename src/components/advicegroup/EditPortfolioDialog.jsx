@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { X, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Select,
   SelectContent,
@@ -101,7 +102,7 @@ export default function EditPortfolioDialog({
 
   const handleSave = () => {
     if (!formData.name.trim()) {
-      alert('Portfolio name is required');
+      toast.error('Portfolio name is required');
       return;
     }
     onSave(formData);
