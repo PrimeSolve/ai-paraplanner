@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { formatMemberSince } from '../utils/dateUtils';
 import AdviceGroupSidebar from '../components/advicegroup/AdviceGroupSidebar';
 import AdviceGroupHeader from '../components/advicegroup/AdviceGroupHeader';
 import AdminLayout from '../components/admin/AdminLayout';
@@ -58,13 +59,7 @@ export default function AdviceGroupMyProfile() {
     return formData.email?.charAt(0).toUpperCase() || 'U';
   };
 
-  const getMemberSince = () => {
-    if (user?.created_date) {
-      const date = new Date(user.created_date);
-      return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    }
-    return 'January 2026';
-  };
+  const getMemberSince = () => formatMemberSince(user?.created_date, 'January 2026');
 
   if (loading) {
     if (user?.role === 'admin') {

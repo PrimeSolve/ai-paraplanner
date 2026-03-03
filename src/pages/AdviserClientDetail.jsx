@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Mail, Phone, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { formatDate } from '../utils/dateUtils';
 
 export default function AdviserClientDetail() {
   const [client, setClient] = useState(null);
@@ -103,7 +104,7 @@ export default function AdviserClientDetail() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-600">Client Since</span>
-                    <span className="font-medium">{new Date(client?.created_date).toLocaleDateString()}</span>
+                    <span className="font-medium">{formatDate(client?.created_date)}</span>
                   </div>
                 </CardContent>
               </Card>
