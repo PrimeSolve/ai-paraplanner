@@ -13,7 +13,6 @@ import {
   Settings, 
   UsersRound,
   Sparkles,
-  Database,
   MessageSquare,
   Settings2
 } from 'lucide-react';
@@ -63,8 +62,7 @@ export default function AdminSidebar({ currentPage }) {
       { label: 'Data Manager', path: 'AdminDataManager', icon: Settings2 },
       { label: 'SOA Template', path: 'AdminTemplate', icon: FileText },
       { label: 'Team', path: 'AdminTeam', icon: UsersRound },
-      { label: 'Settings', path: 'AdminSettings', icon: Settings },
-      { label: 'Test Setup', path: 'AdminTestSetup', icon: Database }
+      { label: 'Settings', path: 'AdminSettings', icon: Settings }
     ]}
   ];
 

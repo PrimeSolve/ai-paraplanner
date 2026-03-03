@@ -20,6 +20,7 @@ export default function AdviceGroupAdvisers() {
     const [groupName, setGroupName] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [showInvite, setShowInvite] = useState(false);
+    const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState({
       first_name: '',
       last_name: '',
@@ -69,10 +70,13 @@ export default function AdviceGroupAdvisers() {
 
   const handleCreateAdviser = async (e) => {
     e.preventDefault();
+    if (saving) return;
+    setSaving(true);
     try {
       const groupId = switchedToId || user.advice_group_id;
       await base44.entities.Adviser.create({
         advice_group_id: groupId,
+        tenant_id: groupId,
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
@@ -87,6 +91,8 @@ export default function AdviceGroupAdvisers() {
     } catch (error) {
       console.error('Error:', error);
       toast.error(error.message || 'Failed to add adviser');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -118,11 +124,6 @@ export default function AdviceGroupAdvisers() {
 
   const getAvatarGradient = (index) => avatarGradients[index % avatarGradients.length];
 
-  const stats = [
-    { label: 'Total Advisers', value: advisers.length },
-    { label: 'Active', value: advisers.length },
-    { label: 'SOAs This Month', value: 47 }
-  ];
 
   const totalPages = Math.ceil(filteredAdvisers.length / itemsPerPage);
   const paginatedAdvisers = filteredAdvisers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -266,7 +267,7 @@ export default function AdviceGroupAdvisers() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-slate-800">5</div>
+                      <div className="text-sm font-medium text-slate-800">{adviser.active_soas || 0}</div>
                     </td>
                     <td className="px-6 py-4">
                        <div className="flex items-center gap-2">
@@ -401,12 +402,12 @@ export default function AdviceGroupAdvisers() {
               <Button type="button" variant="outline" onClick={() => { setShowInvite(false); setFormData({ first_name: '', last_name: '', email: '', phone: '', company: '' }); }}>
                 Cancel
               </Button>
-              <Button type="submit" style={{
+              <Button type="submit" disabled={saving} style={{
                 background: colors.accent.blue,
                 color: colors.core.white,
                 border: 'none',
               }}>
-                Add Adviser
+                {saving ? 'Adding...' : 'Add Adviser'}
               </Button>
             </div>
             </form>

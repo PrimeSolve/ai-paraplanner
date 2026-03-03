@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -6,6 +7,7 @@ import { UserX, Clock, CheckCircle2, Zap, Search } from 'lucide-react';
 import { formatDate, formatRelativeDate } from '../utils/dateUtils';
 
 export default function AdminQueue() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -21,8 +23,24 @@ export default function AdminQueue() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const soaRequests = await base44.entities.SOARequest.list('-created_date', 50);
-        setQueueData(soaRequests);
+        const [soaRequests, clients] = await Promise.all([
+          base44.entities.SOARequest.list('-created_date', 50),
+          base44.entities.Client.list('-created_date', 200)
+        ]);
+
+        // Build client name lookup
+        const clientMap = {};
+        clients.forEach(c => {
+          clientMap[c.id] = `${c.first_name || ''} ${c.last_name || ''}`.trim() || c.email;
+        });
+
+        // Enrich SOA requests with resolved client names
+        const enriched = soaRequests.map(soa => ({
+          ...soa,
+          resolved_client_name: clientMap[soa.client_id] || soa.client_name || soa.client_email || 'Unknown Client'
+        }));
+
+        setQueueData(enriched);
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -79,7 +97,7 @@ export default function AdminQueue() {
 
   const filteredData = queueData.filter(item => {
     const matchesSearch = !searchQuery ||
-      (item.client_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.resolved_client_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (item.client_email || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
     const matchesType = typeFilter === 'all' || (item.type || '').toLowerCase() === typeFilter;
@@ -191,7 +209,7 @@ export default function AdminQueue() {
               {filteredData.length > 0 ? filteredData.map((item) => (
                 <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4">
-                    <div className="font-semibold text-sm text-slate-800">{item.client_name || item.client_email || 'Client'}</div>
+                    <div className="font-semibold text-sm text-slate-800">{item.resolved_client_name}</div>
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-xs font-medium text-slate-700">{item.type || 'SOA'}</span>
@@ -217,7 +235,9 @@ export default function AdminQueue() {
                           Download
                         </button>
                       )}
-                      <button className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
+                      <button
+                        onClick={() => navigate(`/SOARequestDetails?id=${item.id}`)}
+                        className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
                         View
                       </button>
                     </div>

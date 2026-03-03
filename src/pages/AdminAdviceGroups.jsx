@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatDate, formatRelativeDate } from '../utils/dateUtils';
 import { useRole } from '../components/RoleContext';
+import { toast } from 'sonner';
 
 export default function AdminAdviceGroups() {
   const navigate = useNavigate();
@@ -22,8 +23,10 @@ export default function AdminAdviceGroups() {
   const [searchTerm, setSearchTerm] = useState('');
   const [templateFilter, setTemplateFilter] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [adviserCounts, setAdviserCounts] = useState({});
+  const [templateCount, setTemplateCount] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -48,12 +51,14 @@ export default function AdminAdviceGroups() {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
       
-      const [data, advisers] = await Promise.all([
+      const [data, advisers, templates] = await Promise.all([
         base44.entities.AdviceGroup.list('-created_date', 100),
-        base44.entities.Adviser.list('-created_date', 200)
+        base44.entities.Adviser.list('-created_date', 200),
+        base44.entities.SOATemplate.list().catch(() => [])
       ]);
       setGroups(data);
-      
+      setTemplateCount(templates.length);
+
       // Count advisers per group
       const counts = {};
       advisers.forEach(a => {
@@ -80,8 +85,11 @@ export default function AdminAdviceGroups() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (saving) return;
+    setSaving(true);
     try {
       await base44.entities.AdviceGroup.create(formData);
+      toast.success('Advice Group created');
       setDialogOpen(false);
       setFormData({
         name: '',
@@ -95,6 +103,9 @@ export default function AdminAdviceGroups() {
       loadData();
     } catch (error) {
       console.error('Failed to create advice group:', error);
+      toast.error('Failed to create advice group');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -198,8 +209,8 @@ export default function AdminAdviceGroups() {
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" style={{ backgroundColor: '#0F4C5C' }} className="hover:opacity-90">
-                  Create Advice Group
+                <Button type="submit" disabled={saving} style={{ backgroundColor: '#0F4C5C' }} className="hover:opacity-90">
+                  {saving ? 'Creating...' : 'Create Advice Group'}
                 </Button>
               </div>
             </form>
@@ -229,16 +240,16 @@ export default function AdminAdviceGroups() {
             <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center mb-4">
               <FileText className="w-6 h-6 text-teal-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">5</div>
-            <div className="text-sm text-slate-600">Custom Templates</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{templateCount}</div>
+            <div className="text-sm text-slate-600">SOA Templates</div>
           </div>
 
           <div className="bg-white rounded-2xl p-6 border border-slate-200">
             <div className="w-12 h-12 rounded-xl bg-cyan-50 flex items-center justify-center mb-4">
               <Settings className="w-6 h-6 text-cyan-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">3</div>
-            <div className="text-sm text-slate-600">Using Default</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{groups.filter(g => g.status === 'active').length}</div>
+            <div className="text-sm text-slate-600">Active Groups</div>
           </div>
         </div>
 

@@ -47,7 +47,7 @@ const RoleBasedHome = () => {
 
   switch (effectiveRole) {
     case 'admin':
-      return <Navigate to="/AdminAdviceGroups" replace />;
+      return <Navigate to="/AdminDashboard" replace />;
     case 'advice_group':
       return <Navigate to="/AdviceGroupDashboard" replace />;
     case 'adviser':
