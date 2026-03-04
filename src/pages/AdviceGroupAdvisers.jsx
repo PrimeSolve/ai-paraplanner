@@ -22,8 +22,8 @@ export default function AdviceGroupAdvisers() {
     const [showInvite, setShowInvite] = useState(false);
     const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState({
-      first_name: '',
-      last_name: '',
+      firstName: '',
+      lastName: '',
       email: '',
       phone: '',
       company: ''
@@ -78,8 +78,8 @@ export default function AdviceGroupAdvisers() {
     try {
       const groupId = switchedToId || user.adviceGroupId || user.advice_group_id;
       await axiosInstance.post('/advisers', {
-        firstName: formData.first_name,
-        lastName: formData.last_name,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         email: formData.email,
         phone: formData.phone,
         company: formData.company,
@@ -88,7 +88,7 @@ export default function AdviceGroupAdvisers() {
       });
       toast.success('Adviser created with pending status. They can register when ready.');
       setShowInvite(false);
-      setFormData({ first_name: '', last_name: '', email: '', phone: '', company: '' });
+      setFormData({ firstName: '', lastName: '', email: '', phone: '', company: '' });
       await loadData();
     } catch (error) {
       console.error('Error:', error);
@@ -109,7 +109,7 @@ export default function AdviceGroupAdvisers() {
   };
 
   const filteredAdvisers = advisers.filter(a => {
-    const fullName = `${a.first_name || ''} ${a.last_name || ''}`.toLowerCase();
+    const fullName = `${a.firstName || ''} ${a.lastName || ''}`.toLowerCase();
     return fullName.includes(searchTerm.toLowerCase()) || 
            a.email?.toLowerCase().includes(searchTerm.toLowerCase());
   });
@@ -184,7 +184,7 @@ export default function AdviceGroupAdvisers() {
             <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-green-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.status === 'active').length}</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.authorisedRepStatus === 'active').length}</div>
             <div className="text-sm text-slate-600">Active Advisers</div>
           </div>
 
@@ -192,7 +192,7 @@ export default function AdviceGroupAdvisers() {
             <div className="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-yellow-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.status === 'pending').length}</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.authorisedRepStatus === 'pending').length}</div>
             <div className="text-sm text-slate-600">Pending</div>
           </div>
         </div>
@@ -255,26 +255,26 @@ export default function AdviceGroupAdvisers() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-lg ${getColorClass(idx)} flex items-center justify-center text-white font-bold text-sm`}>
-                          {`${adviser.first_name?.[0]}${adviser.last_name?.[0]}`.toUpperCase()}
+                          {`${adviser.firstName?.[0]}${adviser.lastName?.[0]}`.toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-semibold text-sm text-slate-800">{`${adviser.first_name} ${adviser.last_name}` || adviser.email}</div>
+                          <div className="font-semibold text-sm text-slate-800">{`${adviser.firstName} ${adviser.lastName}` || adviser.email}</div>
                           <div className="text-xs text-slate-600">{adviser.email}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${adviser.status === 'pending' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
-                        {adviser.status?.charAt(0).toUpperCase() + adviser.status?.slice(1) || 'Active'}
+                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${adviser.authorisedRepStatus === 'pending' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
+                        {adviser.authorisedRepStatus?.charAt(0).toUpperCase() + adviser.authorisedRepStatus?.slice(1) || 'Active'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-slate-800">{adviser.active_soas || 0}</div>
+                      <div className="text-sm font-medium text-slate-800">{adviser.activeSoas || 0}</div>
                     </td>
                     <td className="px-6 py-4">
                        <div className="flex items-center gap-2">
                          <button onClick={() => {
-                           switchRole('adviser', adviser.id, `${adviser.first_name} ${adviser.last_name}`);
+                           switchRole('adviser', adviser.id, `${adviser.firstName} ${adviser.lastName}`);
                            navigate(createPageUrl(`AdviserDashboard?adviser_email=${adviser.email}`));
                          }} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
                            View As
@@ -359,8 +359,8 @@ export default function AdviceGroupAdvisers() {
                 <Label>First Name *</Label>
                 <Input
                   required
-                  value={formData.first_name}
-                  onChange={(e) => setFormData({...formData, first_name: e.target.value})}
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                   placeholder="John"
                 />
               </div>
@@ -368,8 +368,8 @@ export default function AdviceGroupAdvisers() {
                 <Label>Last Name *</Label>
                 <Input
                   required
-                  value={formData.last_name}
-                  onChange={(e) => setFormData({...formData, last_name: e.target.value})}
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                   placeholder="Smith"
                 />
               </div>
@@ -401,7 +401,7 @@ export default function AdviceGroupAdvisers() {
               />
             </div>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', paddingTop: '8px' }}>
-              <Button type="button" variant="outline" onClick={() => { setShowInvite(false); setFormData({ first_name: '', last_name: '', email: '', phone: '', company: '' }); }}>
+              <Button type="button" variant="outline" onClick={() => { setShowInvite(false); setFormData({ firstName: '', lastName: '', email: '', phone: '', company: '' }); }}>
                 Cancel
               </Button>
               <Button type="submit" disabled={saving} style={{
