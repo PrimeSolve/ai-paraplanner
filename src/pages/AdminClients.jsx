@@ -232,15 +232,22 @@ export default function AdminClients() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-8 h-8 rounded-full ${getColorClass(idx)} flex items-center justify-center text-white text-xs font-bold`}>
-                            {client.adviser_email?.charAt(0).toUpperCase() || 'A'}
-                          </div>
-                          <div className="text-sm">
-                            <div className="font-medium text-slate-800">{client.adviser_email?.split('@')[0] || 'N/A'}</div>
-                            <div className="text-xs text-slate-600">Adviser</div>
-                          </div>
-                        </div>
+                        {(() => {
+                          const adviser = advisers.find(a => a.id === client.adviser_id);
+                          return adviser ? (
+                            <div className="flex items-center gap-2">
+                              <div className={`w-8 h-8 rounded-full ${getColorClass(idx)} flex items-center justify-center text-white text-xs font-bold`}>
+                                {adviser.first_name?.charAt(0).toUpperCase()}{adviser.last_name?.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="text-sm">
+                                <div className="font-medium text-slate-800">{adviser.first_name} {adviser.last_name}</div>
+                                <div className="text-xs text-slate-600">Adviser</div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-sm text-slate-400">Unassigned</div>
+                          );
+                        })()}
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${factFindBadge.className}`}>
