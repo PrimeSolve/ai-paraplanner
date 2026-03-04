@@ -1,4 +1,4 @@
-const MODEL_BASE_URL = import.meta.env.VITE_MODEL_URL || 'https://primesolve-model.azurestaticapps.net';
+const MODEL_BASE_URL = import.meta.env.VITE_CASHFLOW_MODEL_URL || 'https://black-sea-08213fd00.2.azurestaticapps.net';
 
 export function openModel({ clientId, soaRequestId, modelId } = {}) {
   const params = new URLSearchParams();
