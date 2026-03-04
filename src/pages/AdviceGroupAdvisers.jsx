@@ -89,7 +89,7 @@ export default function AdviceGroupAdvisers() {
       toast.success('Adviser created with pending status. They can register when ready.');
       setShowInvite(false);
       setFormData({ first_name: '', last_name: '', email: '', phone: '', company: '' });
-      loadData();
+      await loadData();
     } catch (error) {
       console.error('Error:', error);
       toast.error(error.response?.data?.message || error.message || 'Failed to add adviser');
