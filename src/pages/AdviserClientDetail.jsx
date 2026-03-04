@@ -4,14 +4,34 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Mail, Phone, FileText } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, FileText, ClipboardCheck, ScrollText, TrendingUp, ShieldCheck, Eye, Clock, CheckCircle2, AlertCircle, Archive } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatDate } from '../utils/dateUtils';
 
+const RECORD_TYPE_CONFIG = {
+  fact_find: { label: 'Fact Find', icon: ClipboardCheck, color: 'bg-blue-100 text-blue-700' },
+  strategy_recommendations: { label: 'Strategy Recommendations', icon: ScrollText, color: 'bg-purple-100 text-purple-700' },
+  cashflow_model: { label: 'Cashflow Model', icon: TrendingUp, color: 'bg-orange-100 text-orange-700' },
+  soa_document: { label: 'Statement of Advice', icon: FileText, color: 'bg-teal-100 text-teal-700' },
+  compliance_review: { label: 'Compliance Review', icon: ShieldCheck, color: 'bg-green-100 text-green-700' },
+};
+
+const STATUS_CONFIG = {
+  Pending: { color: 'bg-amber-100 text-amber-700', icon: Clock },
+  'In Progress': { color: 'bg-blue-100 text-blue-700', icon: Clock },
+  Completed: { color: 'bg-green-100 text-green-700', icon: CheckCircle2 },
+  Approved: { color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2 },
+  Archived: { color: 'bg-slate-100 text-slate-500', icon: Archive },
+  Superseded: { color: 'bg-slate-100 text-slate-500', icon: Archive },
+  'Requires Changes': { color: 'bg-red-100 text-red-700', icon: AlertCircle },
+};
+
 export default function AdviserClientDetail() {
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [adviceRecords, setAdviceRecords] = useState([]);
+  const [recordsLoading, setRecordsLoading] = useState(false);
 
   useEffect(() => {
     loadClient();
@@ -21,10 +41,24 @@ export default function AdviserClientDetail() {
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const id = urlParams.get('id');
-      
+
       if (id) {
         const clients = await base44.entities.Client.filter({ id });
         setClient(clients[0]);
+
+        // Load advice records for this client
+        setRecordsLoading(true);
+        try {
+          const records = await base44.entities.AdviceRecord.filter(
+            { client_id: id },
+            '-created_at'
+          );
+          setAdviceRecords(records);
+        } catch (err) {
+          console.error('Failed to load advice records:', err);
+        } finally {
+          setRecordsLoading(false);
+        }
       }
     } catch (error) {
       console.error('Failed to load client:', error);
@@ -82,6 +116,7 @@ export default function AdviserClientDetail() {
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
             <TabsTrigger value="factfinds">Fact Finds</TabsTrigger>
             <TabsTrigger value="soas">SOAs</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
@@ -114,10 +149,99 @@ export default function AdviserClientDetail() {
                   <CardTitle className="text-lg">Recent Activity</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-sm text-slate-600">No recent activity</div>
+                  {adviceRecords.length > 0 ? (
+                    <div className="space-y-3">
+                      {adviceRecords.slice(0, 5).map((record) => {
+                        const typeConfig = RECORD_TYPE_CONFIG[record.record_type] || RECORD_TYPE_CONFIG.fact_find;
+                        const TypeIcon = typeConfig.icon;
+                        return (
+                          <Link key={record.id} to={createPageUrl('AdviserAdviceRecordDetail') + `?id=${record.id}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors no-underline">
+                            <TypeIcon className="w-4 h-4 text-slate-500" />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium text-slate-800 truncate">{record.title}</div>
+                              <div className="text-xs text-slate-500">{formatDate(record.created_at)}</div>
+                            </div>
+                            <Badge variant="secondary" className="text-xs">{record.status}</Badge>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-slate-600">No recent activity</div>
+                  )}
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="history">
+            <Card>
+              <CardContent className="p-0">
+                {recordsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-800"></div>
+                  </div>
+                ) : adviceRecords.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                          <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-3">Type</th>
+                          <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-3">Title</th>
+                          <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-3">Status</th>
+                          <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-3">Version</th>
+                          <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-3">Created</th>
+                          <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-3">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {adviceRecords.map((record) => {
+                          const typeConfig = RECORD_TYPE_CONFIG[record.record_type] || RECORD_TYPE_CONFIG.fact_find;
+                          const statusConfig = STATUS_CONFIG[record.status] || STATUS_CONFIG.Pending;
+                          const TypeIcon = typeConfig.icon;
+                          const StatusIcon = statusConfig.icon;
+                          return (
+                            <tr key={record.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-2">
+                                  <TypeIcon className="w-4 h-4 text-slate-500" />
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${typeConfig.color}`}>
+                                    {typeConfig.label}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-sm font-medium text-slate-800">{record.title}</td>
+                              <td className="px-6 py-4">
+                                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-semibold ${statusConfig.color}`}>
+                                  <StatusIcon className="w-3 h-3" />
+                                  {record.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-sm text-slate-600">v{record.version || 1}</td>
+                              <td className="px-6 py-4 text-sm text-slate-600">{formatDate(record.created_at)}</td>
+                              <td className="px-6 py-4">
+                                <Link to={createPageUrl('AdviserAdviceRecordDetail') + `?id=${record.id}`}>
+                                  <Button size="sm" variant="outline" className="gap-1.5">
+                                    <Eye className="w-3.5 h-3.5" />
+                                    View
+                                  </Button>
+                                </Link>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <ScrollText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                    <h3 className="text-sm font-semibold text-slate-700 mb-1">No advice records yet</h3>
+                    <p className="text-xs text-slate-500">Records will appear here as you work with this client.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="factfinds">

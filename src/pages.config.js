@@ -75,6 +75,8 @@ import AdviceGroupSOARequests from './pages/AdviceGroupSOARequests';
 import AdviceGroupSOATemplate from './pages/AdviceGroupSOATemplate';
 import AdviceGroupSettings from './pages/AdviceGroupSettings';
 import AdviceGroupTickets from './pages/AdviceGroupTickets';
+import AdviserAdviceRecords from './pages/AdviserAdviceRecords';
+import AdviserAdviceRecordDetail from './pages/AdviserAdviceRecordDetail';
 import AdviserAnalytics from './pages/AdviserAnalytics';
 import AdviserAvatarSetup from './pages/AdviserAvatarSetup';
 import AdviserCalendar from './pages/AdviserCalendar';
@@ -171,6 +173,8 @@ export const PAGES = {
     "AdviceGroupSOATemplate": AdviceGroupSOATemplate,
     "AdviceGroupSettings": AdviceGroupSettings,
     "AdviceGroupTickets": AdviceGroupTickets,
+    "AdviserAdviceRecords": AdviserAdviceRecords,
+    "AdviserAdviceRecordDetail": AdviserAdviceRecordDetail,
     "AdviserAnalytics": AdviserAnalytics,
     "AdviserAvatarSetup": AdviserAvatarSetup,
     "AdviserCalendar": AdviserCalendar,

@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
+import { createAdviceRecord } from '@/utils/adviceRecordHelpers';
 
 export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviserEmail }) {
   const navigate = useNavigate();
@@ -103,6 +104,29 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
      });
 
      console.log('SOA Request created, ID:', soaRequest.id);
+
+     // Create an AdviceRecord for strategy recommendations
+     const currentUser = await base44.auth.me();
+     let factFindSnapshot = null;
+     if (client?.fact_find_id) {
+       try {
+         const ffs = await base44.entities.FactFind.filter({ id: client.fact_find_id });
+         if (ffs[0]) factFindSnapshot = ffs[0];
+       } catch { /* skip */ }
+     }
+     createAdviceRecord({
+       recordType: 'strategy_recommendations',
+       title: 'Strategy recommendations',
+       status: 'Pending',
+       clientId: selectedClient,
+       adviserId: currentUser.id,
+       linkedEntities: {
+         adviceRequestId: soaRequest.id,
+         factFindId: client?.fact_find_id || null,
+       },
+       snapshots: { factFind: factFindSnapshot },
+       createdBy: currentUser.email,
+     });
 
      // Close modal
      onClose();

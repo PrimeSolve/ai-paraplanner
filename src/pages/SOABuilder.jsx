@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44, aiApi } from '@/api/primeSolveClient';
 import { toast } from 'sonner';
 import { formatDate } from '../utils/dateUtils';
+import { createAdviceRecord } from '@/utils/adviceRecordHelpers';
 import {
   ChevronLeft, ChevronRight, FileText, Send, Eye, ShieldCheck,
   Sparkles, Loader2, PanelLeftClose, PanelLeft, Check, Save,
@@ -296,6 +297,28 @@ export default function SOABuilder() {
       } else {
         toast.success('No compliance issues found');
       }
+
+      // Create a compliance_review AdviceRecord
+      const currentUser = await base44.auth.me();
+      const hasIssues = result.issues && result.issues.length > 0;
+      createAdviceRecord({
+        recordType: 'compliance_review',
+        title: `Compliance Review - ${doc?.name || 'SOA Document'}`,
+        status: hasIssues ? 'Requires Changes' : 'Approved',
+        clientId: soaRequest?.client_id || client?.id,
+        adviserId: currentUser.id,
+        linkedEntities: {
+          soaDocumentId: documentId,
+          adviceRequestId: soaRequest?.id,
+        },
+        snapshots: {
+          adviceModel: soaRequest || null,
+        },
+        notes: hasIssues
+          ? `${result.issues.length} compliance issue(s) found: ${result.issues.map(i => i.message || i).join('; ')}`
+          : 'No compliance issues found. Document approved.',
+        createdBy: currentUser.email,
+      });
     } catch (error) {
       console.error('Compliance check failed:', error);
       toast.error('Failed to run compliance check');
