@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
+import axiosInstance from '@/api/axiosInstance';
 import { useRole } from '../components/RoleContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,16 +50,18 @@ export default function AdviceGroupAdvisers() {
 
         const groupId = switchedToId || currentUser.advice_group_id;
         if (groupId) {
-          const [advisersData, groups] = await Promise.all([
-            base44.entities.Adviser.filter({
-              advice_group_id: groupId
+          const [advisersRes, groupRes] = await Promise.all([
+            axiosInstance.get('/advisers', {
+              params: { adviceGroupId: groupId }
             }),
-            base44.entities.AdviceGroup.list()
+            axiosInstance.get(`/advicegroups/${groupId}`)
           ]);
+          const advisersData = Array.isArray(advisersRes.data)
+            ? advisersRes.data
+            : advisersRes.data?.items || advisersRes.data?.data || [];
           setAdvisers(advisersData);
-          const currentGroup = groups.find(g => g.id === groupId);
-          if (currentGroup) {
-            setGroupName(currentGroup.name);
+          if (groupRes.data?.name) {
+            setGroupName(groupRes.data.name);
           }
         }
       } catch (error) {
