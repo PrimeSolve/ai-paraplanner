@@ -45,8 +45,8 @@ export default function AdminAdvisers() {
   const loadData = async () => {
     try {
       const [adviserRes, groupsRes] = await Promise.all([
-        axiosInstance.get('/api/v1/advisers'),
-        axiosInstance.get('/api/v1/tenants')
+        axiosInstance.get('/advisers'),
+        axiosInstance.get('/tenants')
       ]);
 
       const adviserData = adviserRes.data;
