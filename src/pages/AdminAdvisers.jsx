@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axiosInstance from '@/api/axiosInstance';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -20,7 +21,7 @@ const safeStr = (val) => {
   if (typeof val === 'object') {
     if (val.name) return safeStr(val.name);
     if (val.value) return safeStr(val.value);
-    if (val.first_name || val.last_name) return `${safeStr(val.first_name)} ${safeStr(val.last_name)}`.trim();
+    if (val.firstName || val.lastName) return `${safeStr(val.firstName)} ${safeStr(val.lastName)}`.trim();
     return JSON.stringify(val);
   }
   return String(val);
@@ -34,7 +35,6 @@ export default function AdminAdvisers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [planFilter, setPlanFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [user, setUser] = useState(null);
   const [adviceGroups, setAdviceGroups] = useState([]);
   const itemsPerPage = 7;
 
@@ -44,22 +44,18 @@ export default function AdminAdvisers() {
 
   const loadData = async () => {
     try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      
-      // Use Test database when in test mode
-      const testMode = localStorage.getItem('test_mode_entity');
-      const dataEnv = testMode ? 'dev' : 'prod';
-      
-      const [adviserData, groupsData] = await Promise.all([
-        base44.entities.Adviser.list('-created_date', 100, { data_env: dataEnv }),
-        base44.entities.AdviceGroup.list('-created_date', 100, { data_env: dataEnv })
+      const [adviserRes, groupsRes] = await Promise.all([
+        axiosInstance.get('/api/v1/advisers'),
+        axiosInstance.get('/api/v1/tenants')
       ]);
-      
+
+      const adviserData = adviserRes.data;
+      const groupsData = groupsRes.data;
+
       // Map adviser data to include full_name (safely handle object values)
       const mappedAdvisers = adviserData.map(a => ({
         ...a,
-        full_name: `${safeStr(a.first_name)} ${safeStr(a.last_name)}`.trim()
+        full_name: `${safeStr(a.firstName)} ${safeStr(a.lastName)}`.trim()
       }));
       
       setAdvisers(mappedAdvisers);
@@ -83,7 +79,7 @@ export default function AdminAdvisers() {
 
   const handleViewAsAdviser = (adviser) => {
     // Push advice group level first if adviser belongs to one
-    const group = adviceGroups.find(g => g.id === adviser.tenant_id);
+    const group = adviceGroups.find(g => g.id === adviser.tenantId);
     if (group) {
       switchRole('advice_group', group.id, safeStr(group.name));
     }
@@ -253,16 +249,16 @@ export default function AdminAdvisers() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-slate-700">
-                        {safeStr(adviceGroups.find(g => g.id === adviser.tenant_id)?.name) || '-'}
+                        {safeStr(adviceGroups.find(g => g.id === adviser.tenantId)?.name) || '-'}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="text-sm font-medium text-slate-800">
-                          {formatDate(adviser.created_date)}
+                          {formatDate(adviser.createdAt)}
                         </span>
                         <span className="text-xs text-slate-600">
-                          {formatRelativeDate(adviser.created_date)}
+                          {formatRelativeDate(adviser.createdAt)}
                         </span>
                       </div>
                     </td>
