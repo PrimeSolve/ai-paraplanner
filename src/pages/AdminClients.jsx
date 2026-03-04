@@ -39,10 +39,10 @@ export default function AdminClients() {
   const loadClients = async () => {
     try {
       const data = await base44.entities.Client.list('-created_date');
-      setClients(data.length > 0 ? data : mockClients);
+      setClients(data);
     } catch (error) {
       console.error('Failed to load clients:', error);
-      setClients(mockClients);
+      setClients([]);
     } finally {
       setLoading(false);
     }
@@ -84,7 +84,7 @@ export default function AdminClients() {
             <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4">
               <Users className="w-6 h-6" />
             </div>
-            <div className="text-4xl font-bold mb-1">142</div>
+            <div className="text-4xl font-bold mb-1">{clients.length}</div>
             <div className="text-sm opacity-90">Total Clients</div>
           </div>
 
@@ -92,7 +92,7 @@ export default function AdminClients() {
             <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
               <CheckCircle className="w-6 h-6 text-green-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">89</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{clients.filter(c => c.fact_find === 'complete' || c.fact_find_status === 'complete').length}</div>
             <div className="text-sm text-slate-600">Fact Finds Complete</div>
           </div>
 
@@ -100,7 +100,7 @@ export default function AdminClients() {
             <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center mb-4">
               <Clock className="w-6 h-6 text-orange-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">34</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{clients.filter(c => c.fact_find === 'in_progress' || c.fact_find === 'sent' || c.fact_find_status === 'pending' || c.fact_find_status === 'in_progress').length}</div>
             <div className="text-sm text-slate-600">Fact Finds Pending</div>
           </div>
 
@@ -108,7 +108,7 @@ export default function AdminClients() {
             <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-blue-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">67</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{clients.reduce((sum, c) => sum + (c.soas || 0), 0)}</div>
             <div className="text-sm text-slate-600">Active SOAs</div>
           </div>
         </div>

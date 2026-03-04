@@ -179,12 +179,26 @@ export default function AppHeader({ pageActions, pageTitle }) {
          )}
          {isViewingAs && (
            <>
-             {/* Breadcrumb trail */}
+             {/* Breadcrumb trail: Admin Portal > [Advice Group] > [Adviser] > [Client] */}
              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-               <span style={{ color: '#64748b' }}>Viewing:</span>
+               <button
+                 onClick={handleGoHome}
+                 style={{
+                   background: 'transparent',
+                   border: 'none',
+                   padding: '4px 8px',
+                   borderRadius: '4px',
+                   cursor: 'pointer',
+                   color: '#64748b',
+                   fontWeight: 500,
+                   fontSize: '14px',
+                 }}
+               >
+                 Admin Portal
+               </button>
                {navigationChain.map((level, index) => (
                  <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                   {index > 0 && <ChevronRight size={14} style={{ color: '#94a3b8' }} />}
+                   <ChevronRight size={14} style={{ color: '#94a3b8' }} />
                    <button
                      onClick={() => handleBreadcrumbClick(index)}
                      style={{
