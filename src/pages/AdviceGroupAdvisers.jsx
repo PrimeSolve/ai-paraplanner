@@ -184,7 +184,7 @@ export default function AdviceGroupAdvisers() {
             <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-green-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.authorisedRepStatus === 'active').length}</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.authorisedRepStatus === 0).length}</div>
             <div className="text-sm text-slate-600">Active Advisers</div>
           </div>
 
@@ -192,7 +192,7 @@ export default function AdviceGroupAdvisers() {
             <div className="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-yellow-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.authorisedRepStatus === 'pending').length}</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.authorisedRepStatus === 1).length}</div>
             <div className="text-sm text-slate-600">Pending</div>
           </div>
         </div>
@@ -264,8 +264,8 @@ export default function AdviceGroupAdvisers() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${adviser.authorisedRepStatus === 'pending' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
-                        {adviser.authorisedRepStatus?.charAt(0).toUpperCase() + adviser.authorisedRepStatus?.slice(1) || 'Active'}
+                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${adviser.authorisedRepStatus === 1 ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
+                        {adviser.authorisedRepStatus === 1 ? 'Pending' : 'Active'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
