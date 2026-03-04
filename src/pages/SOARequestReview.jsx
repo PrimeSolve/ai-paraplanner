@@ -10,6 +10,7 @@ import { CheckCircle2, AlertCircle, MinusCircle, ChevronRight, TrendingUp } from
 import { toast } from 'sonner';
 import { base44 as primeSolveClient } from '@/api/primeSolveClient';
 import { openModel } from '../utils/modelLauncher';
+import { createAdviceRecord } from '@/utils/adviceRecordHelpers';
 
 // ==========================================================================
 // SECTION CONFIGURATION
@@ -575,6 +576,37 @@ function SuccessModal({ onClose, soaRequestId, navigate }) {
           completion_percentage: 0,
         });
         docId = newDoc.id;
+
+        // Create an AdviceRecord for the SOA document generation
+        try {
+          const currentUser = await base44.auth.me();
+          const soaReqs = await base44.entities.SOARequest.filter({ id: soaRequestId });
+          const soaReq = soaReqs[0];
+          let factFindSnapshot = null;
+          if (soaReq?.fact_find_id) {
+            try {
+              const ffs = await base44.entities.FactFind.filter({ id: soaReq.fact_find_id });
+              if (ffs[0]) factFindSnapshot = ffs[0];
+            } catch { /* skip */ }
+          }
+          createAdviceRecord({
+            recordType: 'soa_document',
+            title: `Statement of Advice - ${soaReq?.client_name || 'Client'}`,
+            status: 'Pending',
+            clientId: soaReq?.client_id,
+            adviserId: currentUser.id,
+            linkedEntities: {
+              soaDocumentId: docId,
+              adviceRequestId: soaRequestId,
+              cashflowModelId: soaReq?.cashflow_model_id || null,
+            },
+            snapshots: {
+              factFind: factFindSnapshot,
+              adviceModel: soaReq,
+            },
+            createdBy: currentUser.email,
+          });
+        } catch { /* skip - don't block SOA flow */ }
       }
       navigate(`/SOABuilder?id=${docId}`);
     } catch (error) {

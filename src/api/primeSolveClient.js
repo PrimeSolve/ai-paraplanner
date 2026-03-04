@@ -232,6 +232,7 @@ const entities = {
   SoaExample: createEntityProxy('soa-examples'),
   SoaDocument: createEntityProxy('soa-documents'),
   CashflowModel: createEntityProxy('cashflow-models'),
+  AdviceRecord: createEntityProxy('advice-records'),
 };
 
 // ──────────────────────────────────────────────────────────────

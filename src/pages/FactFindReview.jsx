@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Info, RefreshCw, CheckCircle2, AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { createAdviceRecord } from '@/utils/adviceRecordHelpers';
 import {
   Dialog,
   DialogContent,
@@ -115,6 +116,21 @@ export default function FactFindReview() {
         submitted_at: new Date().toISOString()
       };
       await updateSection('review_status', updatedReviewStatus);
+
+      // Create an immutable AdviceRecord snapshot for the submitted fact find
+      if (user) {
+        createAdviceRecord({
+          recordType: 'fact_find',
+          title: 'Fact Find',
+          status: 'Completed',
+          clientId: factFind.client_id,
+          adviserId: user.id,
+          linkedEntities: { factFindId: factFind.id },
+          snapshots: { factFind },
+          createdBy: user.email,
+        });
+      }
+
       setShowConfirm(false);
       setShowSuccess(true);
     } catch (error) {
