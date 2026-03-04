@@ -20,6 +20,7 @@ import {
 export default function AdminSidebar({ currentPage }) {
   const { navigationChain } = useRole();
   const [businessDetails, setBusinessDetails] = useState(null);
+  const [soaQueueCount, setSoaQueueCount] = useState(0);
 
   useEffect(() => {
     const loadBusinessDetails = () => {
@@ -36,6 +37,19 @@ export default function AdminSidebar({ currentPage }) {
     };
   }, []);
 
+  useEffect(() => {
+    const loadQueueCount = async () => {
+      try {
+        const soaRequests = await base44.entities.SOARequest.list('-created_date', 200);
+        const activeCount = soaRequests.filter(s => s.status === 'submitted' || s.status === 'in_progress').length;
+        setSoaQueueCount(activeCount);
+      } catch (error) {
+        console.error('Failed to load SOA queue count:', error);
+      }
+    };
+    loadQueueCount();
+  }, []);
+
   const getSubtitle = () => {
     if (navigationChain.length === 0) {
       return 'ADMIN PORTAL';
@@ -47,7 +61,7 @@ export default function AdminSidebar({ currentPage }) {
   const navItems = [
     { section: 'OVERVIEW', items: [
       { label: 'Dashboard', path: 'AdminDashboard', icon: LayoutDashboard },
-      { label: 'SOA Queue', path: 'AdminQueue', icon: Layers, badge: '12' },
+      { label: 'SOA Queue', path: 'AdminQueue', icon: Layers, badge: soaQueueCount > 0 ? String(soaQueueCount) : null },
       { label: 'Completed SOAs', path: 'AdminCompleted', icon: CheckCircle }
     ]},
     { section: 'MANAGEMENT', items: [

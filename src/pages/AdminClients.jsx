@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Users, CheckCircle, Clock, MoreHorizontal, Eye, Edit2, Trash2 } from 'lucide-react';
+import { Search, Users, CheckCircle, Clock, MoreHorizontal, Eye, Edit2, Trash2, TrendingUp } from 'lucide-react';
+import { openModel } from '../utils/modelLauncher';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function AdminClients() {
@@ -24,17 +25,6 @@ export default function AdminClients() {
   useEffect(() => {
     loadClients();
   }, []);
-
-  const mockClients = [
-    { id: '1', first_name: 'John', last_name: 'Smith', email: 'john.smith@email.com', adviser_email: 'tim@primesolve.com.au', advice_group_id: 'group1', fact_find: 'complete', soas: 3, created_date: '2025-12-15', status: 'active' },
-    { id: '2', first_name: 'Sarah', last_name: 'Jones', email: 'sarah.jones@email.com', adviser_email: 'tim@primesolve.com.au', advice_group_id: 'group1', fact_find: 'in_progress', soas: 1, created_date: '2026-01-08', status: 'active' },
-    { id: '3', first_name: 'Emma', last_name: 'Clarke', email: 'emma.clarke@email.com', adviser_email: 'jane@wealthpartners.com.au', advice_group_id: 'group2', fact_find: 'complete', soas: 2, created_date: '2025-11-03', status: 'active' },
-    { id: '4', first_name: 'Mary', last_name: 'Chen', email: 'mary.chen@email.com', adviser_email: 'rachel@futurefinance.com.au', advice_group_id: 'group3', fact_find: 'sent', soas: 0, created_date: '2026-01-20', status: 'prospect' },
-    { id: '5', first_name: 'Robert', last_name: 'Taylor', email: 'robert.taylor@email.com', adviser_email: 'kevin@smartwealth.com.au', advice_group_id: 'group4', fact_find: 'complete', soas: 4, created_date: '2025-09-15', status: 'active' },
-    { id: '6', first_name: 'Lisa', last_name: 'Martinez', email: 'lisa.martinez@email.com', adviser_email: 'nick@parkeradvisory.com.au', advice_group_id: 'group5', fact_find: 'not_started', soas: 0, created_date: '2026-01-22', status: 'prospect' },
-    { id: '7', first_name: 'David', last_name: 'Wilson', email: 'david.wilson@email.com', adviser_email: 'tim@primesolve.com.au', advice_group_id: 'group1', fact_find: 'complete', soas: 1, created_date: '2026-01-10', status: 'active' },
-    { id: '8', first_name: 'Andrew', last_name: 'Mitchell', email: 'andrew.mitchell@email.com', adviser_email: 'jane@wealthpartners.com.au', advice_group_id: 'group2', fact_find: 'in_progress', soas: 0, created_date: '2026-01-18', status: 'active' }
-  ];
 
   const loadClients = async () => {
     try {
@@ -133,10 +123,9 @@ export default function AdminClients() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Advisers</SelectItem>
-                  <SelectItem value="tim@primesolve.com.au">Tim Smith</SelectItem>
-                  <SelectItem value="jane@wealthpartners.com.au">Jane Brown</SelectItem>
-                  <SelectItem value="rachel@futurefinance.com.au">Rachel Lee</SelectItem>
-                  <SelectItem value="kevin@smartwealth.com.au">Kevin White</SelectItem>
+                  {[...new Set(clients.map(c => c.adviser_email).filter(Boolean))].map(email => (
+                    <SelectItem key={email} value={email}>{email.split('@')[0]}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -253,6 +242,10 @@ export default function AdminClients() {
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openModel({ clientId: client.id })}>
+                                <TrendingUp className="w-4 h-4 mr-2" />
+                                Open Cashflow Model
+                              </DropdownMenuItem>
                               <DropdownMenuItem>
                                 <Eye className="w-4 h-4 mr-2" />
                                 View Fact Find
