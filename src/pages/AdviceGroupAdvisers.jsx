@@ -74,7 +74,7 @@ export default function AdviceGroupAdvisers() {
     setSaving(true);
     try {
       const groupId = switchedToId || user.advice_group_id;
-      await base44.entities.Adviser.create({
+      const newAdviser = await base44.entities.Adviser.create({
         advice_group_id: groupId,
         tenant_id: groupId,
         first_name: formData.first_name,
@@ -84,6 +84,13 @@ export default function AdviceGroupAdvisers() {
         company: formData.company,
         status: 'pending'
       });
+      // Explicitly assign adviser to the advice group after creation
+      if (newAdviser?.id && groupId) {
+        await base44.entities.Adviser.update(newAdviser.id, {
+          advice_group_id: groupId,
+          tenant_id: groupId,
+        });
+      }
       toast.success('Adviser created with pending status. They can register when ready.');
       setShowInvite(false);
       setFormData({ first_name: '', last_name: '', email: '', phone: '', company: '' });
