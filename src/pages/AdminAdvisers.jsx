@@ -68,7 +68,7 @@ export default function AdminAdvisers() {
   };
 
   const handleViewAsAdviser = (adviser) => {
-    switchRole('adviser', adviser.email, user);
+    switchRole('adviser', adviser.email, adviser.full_name || adviser.email);
     navigate(createPageUrl('AdviserDashboard'));
   };
 
