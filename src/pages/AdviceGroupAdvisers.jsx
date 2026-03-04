@@ -50,18 +50,19 @@ export default function AdviceGroupAdvisers() {
 
         const groupId = switchedToId || currentUser.advice_group_id;
         if (groupId) {
-          const [advisersRes, groupRes] = await Promise.all([
+          const [advisersRes, groups] = await Promise.all([
             axiosInstance.get('/advisers', {
               params: { adviceGroupId: groupId }
             }),
-            axiosInstance.get(`/advicegroups/${groupId}`)
+            base44.entities.AdviceGroup.list()
           ]);
           const advisersData = Array.isArray(advisersRes.data)
             ? advisersRes.data
             : advisersRes.data?.items || advisersRes.data?.data || [];
           setAdvisers(advisersData);
-          if (groupRes.data?.name) {
-            setGroupName(groupRes.data.name);
+          const currentGroup = groups.find(g => g.id === groupId);
+          if (currentGroup) {
+            setGroupName(currentGroup.name);
           }
         }
       } catch (error) {
