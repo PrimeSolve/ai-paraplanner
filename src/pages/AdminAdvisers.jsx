@@ -49,8 +49,8 @@ export default function AdminAdvisers() {
         axiosInstance.get('/tenants')
       ]);
 
-      const adviserData = adviserRes.data;
-      const groupsData = groupsRes.data;
+      const adviserData = adviserRes.data.items || adviserRes.data;
+      const groupsData = groupsRes.data.items || groupsRes.data;
 
       // Map adviser data to include full_name (safely handle object values)
       const mappedAdvisers = adviserData.map(a => ({
