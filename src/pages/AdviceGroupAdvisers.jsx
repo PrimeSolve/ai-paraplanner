@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { base44 } from '@/api/base44Client';
 import axiosInstance from '@/api/axiosInstance';
 import { useRole } from '../components/RoleContext';
 import { Button } from '@/components/ui/button';
@@ -45,24 +44,24 @@ export default function AdviceGroupAdvisers() {
 
     const loadData = async () => {
       try {
-        const currentUser = await base44.auth.me();
+        const meRes = await axiosInstance.get('/me');
+        const currentUser = meRes.data;
         setUser(currentUser);
 
-        const groupId = switchedToId || currentUser.advice_group_id;
+        const groupId = switchedToId || currentUser.adviceGroupId || currentUser.advice_group_id;
         if (groupId) {
-          const [advisersRes, groups] = await Promise.all([
+          const [advisersRes, groupRes] = await Promise.all([
             axiosInstance.get('/advisers', {
               params: { adviceGroupId: groupId }
             }),
-            base44.entities.AdviceGroup.list()
+            axiosInstance.get(`/tenants/${groupId}`)
           ]);
           const advisersData = Array.isArray(advisersRes.data)
             ? advisersRes.data
             : advisersRes.data?.items || advisersRes.data?.data || [];
           setAdvisers(advisersData);
-          const currentGroup = groups.find(g => g.id === groupId);
-          if (currentGroup) {
-            setGroupName(currentGroup.name);
+          if (groupRes.data) {
+            setGroupName(groupRes.data.name || '');
           }
         }
       } catch (error) {
@@ -77,31 +76,23 @@ export default function AdviceGroupAdvisers() {
     if (saving) return;
     setSaving(true);
     try {
-      const groupId = switchedToId || user.advice_group_id;
-      const newAdviser = await base44.entities.Adviser.create({
-        advice_group_id: groupId,
-        tenant_id: groupId,
-        first_name: formData.first_name,
-        last_name: formData.last_name,
+      const groupId = switchedToId || user.adviceGroupId || user.advice_group_id;
+      await axiosInstance.post('/advisers', {
+        firstName: formData.first_name,
+        lastName: formData.last_name,
         email: formData.email,
         phone: formData.phone,
         company: formData.company,
-        status: 'pending'
+        tenantId: groupId,
+        adviceGroupId: groupId,
       });
-      // Explicitly assign adviser to the advice group after creation
-      if (newAdviser?.id && groupId) {
-        await base44.entities.Adviser.update(newAdviser.id, {
-          advice_group_id: groupId,
-          tenant_id: groupId,
-        });
-      }
       toast.success('Adviser created with pending status. They can register when ready.');
       setShowInvite(false);
       setFormData({ first_name: '', last_name: '', email: '', phone: '', company: '' });
       loadData();
     } catch (error) {
       console.error('Error:', error);
-      toast.error(error.message || 'Failed to add adviser');
+      toast.error(error.response?.data?.message || error.message || 'Failed to add adviser');
     } finally {
       setSaving(false);
     }
@@ -109,7 +100,7 @@ export default function AdviceGroupAdvisers() {
 
   const handleSendWelcomeEmail = async (adviser) => {
     try {
-      await base44.users.inviteUser(adviser.email, 'user');
+      await axiosInstance.post(`/advisers/${adviser.id}/invite`, { email: adviser.email });
       toast.success('Welcome email sent');
     } catch (error) {
       console.error('Failed to send welcome email:', error);
