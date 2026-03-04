@@ -11,10 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Users, CheckCircle, Clock, MoreHorizontal, Eye, Edit2, Trash2, TrendingUp } from 'lucide-react';
 import { openModel } from '../utils/modelLauncher';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useRole } from '../components/RoleContext';
 
 export default function AdminClients() {
   const navigate = useNavigate();
+  const { switchRole, resetToOriginal } = useRole();
   const [clients, setClients] = useState([]);
+  const [advisers, setAdvisers] = useState([]);
+  const [adviceGroups, setAdviceGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [adviserFilter, setAdviserFilter] = useState('all');
@@ -28,14 +32,39 @@ export default function AdminClients() {
 
   const loadClients = async () => {
     try {
-      const data = await base44.entities.Client.list('-created_date');
+      const [data, advisersData, groupsData] = await Promise.all([
+        base44.entities.Client.list('-created_date'),
+        base44.entities.Adviser.list(),
+        base44.entities.AdviceGroup.list()
+      ]);
       setClients(data);
+      setAdvisers(advisersData);
+      setAdviceGroups(groupsData);
     } catch (error) {
       console.error('Failed to load clients:', error);
       setClients([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewClient = (client) => {
+    resetToOriginal();
+    const clientName = `${client.first_name || ''} ${client.last_name || ''}`.trim() || client.email;
+
+    if (client.adviser_email) {
+      const adviser = advisers.find(a => a.email === client.adviser_email);
+      if (adviser) {
+        const group = adviceGroups.find(g => g.id === adviser.advice_group_id);
+        if (group) {
+          switchRole('advice_group', group.id, group.name);
+        }
+        switchRole('adviser', adviser.id, `${adviser.first_name} ${adviser.last_name}`);
+      }
+    }
+
+    switchRole('client', client.email, clientName);
+    navigate(createPageUrl('ClientDashboard'));
   };
 
   const getColorClass = (index) => {
@@ -229,8 +258,8 @@ export default function AdminClients() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <button 
-                            onClick={() => navigate(createPageUrl('ClientDashboard') + `?id=${client.id}`)}
+                          <button
+                            onClick={() => handleViewClient(client)}
                             className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
                           >
                             View
