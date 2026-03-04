@@ -83,7 +83,7 @@ export default function AdminAdvisers() {
 
   const handleViewAsAdviser = (adviser) => {
     // Push advice group level first if adviser belongs to one
-    const group = adviceGroups.find(g => g.id === adviser.advice_group_id);
+    const group = adviceGroups.find(g => g.id === adviser.tenant_id);
     if (group) {
       switchRole('advice_group', group.id, safeStr(group.name));
     }
@@ -253,7 +253,7 @@ export default function AdminAdvisers() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-slate-700">
-                        {safeStr(adviceGroups.find(g => g.id === adviser.advice_group_id)?.name) || '-'}
+                        {safeStr(adviceGroups.find(g => g.id === adviser.tenant_id)?.name) || '-'}
                       </div>
                     </td>
                     <td className="px-6 py-4">
