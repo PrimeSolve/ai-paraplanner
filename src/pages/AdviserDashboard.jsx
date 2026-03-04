@@ -6,6 +6,19 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatRelativeDate } from '../utils/dateUtils';
 
+// Safely extract a displayable string from any value (guards against React Error #31)
+const safeStr = (val) => {
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+  if (typeof val === 'object') {
+    if (val.name) return safeStr(val.name);
+    if (val.value) return safeStr(val.value);
+    if (val.first_name || val.last_name) return `${safeStr(val.first_name)} ${safeStr(val.last_name)}`.trim();
+    return JSON.stringify(val);
+  }
+  return String(val);
+};
 
 export default function AdviserDashboard() {
   const [loading, setLoading] = useState(true);
@@ -60,7 +73,7 @@ export default function AdviserDashboard() {
 
       factFinds.forEach(ff => {
         const client = clientsList.find(c => c.email === ff.created_by || c.user_email === ff.created_by);
-        const name = client ? `${client.first_name || ''} ${client.last_name || ''}`.trim() : (ff.created_by || 'Client');
+        const name = client ? `${safeStr(client.first_name)} ${safeStr(client.last_name)}`.trim() : safeStr(ff.created_by || 'Client');
         if (ff.status === 'submitted' || ff.status === 'completed') {
           activities.push({ type: 'factfind', name, action: 'completed their Fact Find', time: formatRelativeDate(ff.updated_date || ff.created_date), icon: '📋', date: ff.updated_date || ff.created_date });
         }
@@ -68,7 +81,7 @@ export default function AdviserDashboard() {
 
       soas.forEach(s => {
         const client = clientsList.find(c => c.email === s.client_email);
-        const name = client ? `${client.first_name || ''} ${client.last_name || ''}`.trim() : (s.client_name || 'Client');
+        const name = client ? `${safeStr(client.first_name)} ${safeStr(client.last_name)}`.trim() : safeStr(s.client_name || 'Client');
         if (s.status === 'completed') {
           activities.push({ type: 'soa', name, action: 'SOA is ready for download', time: formatRelativeDate(s.completed_date || s.updated_date), icon: '✅', date: s.completed_date || s.updated_date });
         } else if (s.status === 'in_progress') {
@@ -162,11 +175,11 @@ export default function AdviserDashboard() {
                         <td style={{ padding: '12px 24px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <div style={{ width: '36px', height: '36px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600', fontSize: '14px' }} className={getAvatarColor(idx)}>
-                              {getClientInitials(client.first_name + ' ' + client.last_name)}
+                              {getClientInitials(safeStr(client.first_name) + ' ' + safeStr(client.last_name))}
                             </div>
                             <div>
-                              <div style={{ fontWeight: '600', color: '#1e293b' }}>{client.first_name} {client.last_name}</div>
-                              <div style={{ fontSize: '12px', color: '#64748b' }}>{client.email}</div>
+                              <div style={{ fontWeight: '600', color: '#1e293b' }}>{safeStr(client.first_name)} {safeStr(client.last_name)}</div>
+                              <div style={{ fontSize: '12px', color: '#64748b' }}>{safeStr(client.email)}</div>
                             </div>
                           </div>
                         </td>
@@ -183,7 +196,7 @@ export default function AdviserDashboard() {
                         </td>
                         <td style={{ padding: '12px 24px' }}>
                           <span style={{ display: 'inline-block', padding: '4px 10px', background: '#dbeafe', color: '#0c4a6e', borderRadius: '6px', fontSize: '12px', fontWeight: '500' }}>
-                            {client.risk_profile || 'Not Set'}
+                            {safeStr(client.risk_profile) || 'Not Set'}
                           </span>
                         </td>
                         <td style={{ padding: '12px 24px' }}>
@@ -263,11 +276,11 @@ export default function AdviserDashboard() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                         <div style={{ fontSize: '16px' }}>{activity.icon}</div>
                         <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '13px' }}>
-                          {activity.name} <span style={{ fontWeight: '400', color: '#64748b' }}>{activity.action}</span>
+                          {safeStr(activity.name)} <span style={{ fontWeight: '400', color: '#64748b' }}>{safeStr(activity.action)}</span>
                         </div>
                       </div>
                       <div style={{ fontSize: '11px', color: '#94a3b8', paddingLeft: '24px' }}>
-                        {activity.time}
+                        {safeStr(activity.time)}
                       </div>
                     </div>
                   )) : (

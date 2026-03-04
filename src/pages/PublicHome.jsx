@@ -73,12 +73,8 @@ export default function PublicHome() {
 
       {/* Hero Section */}
       <section className="min-h-screen pt-[140px] pb-20 px-12 relative overflow-hidden">
-        <img
-          src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/775a01db7_shutterstock_1125352451.jpg"
-          alt="Background"
-          className="absolute inset-0 w-full h-full object-cover opacity-40"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#f0f4f8]/85 via-[#e8eef5]/80 to-[#dce5f0]/85" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#f0f4f8] via-[#e8eef5] to-[#dce5f0]" />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #1d4ed8 1px, transparent 0)', backgroundSize: '40px 40px' }} />
         <div className="max-w-[1400px] mx-auto grid grid-cols-2 gap-20 items-center relative z-10">
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
             <h1 className="font-['Playfair_Display'] text-[60px] leading-[1.15] font-semibold mb-6">
@@ -136,13 +132,8 @@ export default function PublicHome() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-24 relative overflow-hidden">
-        <img
-          src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/06d841c8f_techwaves.png"
-          alt="Background"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-[#0f172a]/85" />
+      <section id="how-it-works" className="py-24 relative overflow-hidden bg-[#0f172a]">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(135deg, #22d3ee 0%, transparent 50%, #3b82f6 100%)' }} />
         <div className="max-w-[1200px] mx-auto px-12 relative z-10">
           <div className="text-center mb-20">
             <h2 className="font-['Playfair_Display'] text-[52px] font-semibold text-white mb-4">
@@ -373,11 +364,9 @@ export default function PublicHome() {
                 <div className="p-6 space-y-4 bg-slate-50">
                   {/* Avatar Message 1 */}
                   <div className="flex gap-3 items-start">
-                    <img
-                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/2b487cd9c_image.png"
-                      alt="AI Avatar"
-                      className="w-11 h-11 rounded-full object-cover flex-shrink-0"
-                    />
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                      AI
+                    </div>
                     <div className="bg-[#f8fafc] rounded-2xl rounded-tl-sm p-4 max-w-[75%]">
                       <p className="text-[14px] text-slate-700 leading-relaxed">
                         "Hi Sarah, we have successfully captured your relevant financial data now. We are going to switch gears now and work together to define your lifestyle and financial goals. Ready to get started?"
@@ -399,11 +388,9 @@ export default function PublicHome() {
 
                   {/* Avatar Message 2 */}
                   <div className="flex gap-3 items-start">
-                    <img
-                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6972a3fd8e7c6c1f67cdacab/2b487cd9c_image.png"
-                      alt="AI Avatar"
-                      className="w-11 h-11 rounded-full object-cover flex-shrink-0"
-                    />
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                      AI
+                    </div>
                     <div className="bg-[#f8fafc] rounded-2xl rounded-tl-sm p-4 max-w-[75%]">
                       <p className="text-[14px] text-slate-700 leading-relaxed">
                         "Great. We can see you have children currently in grade 5 and grade 3. Have you decided on where they might go to high school?"

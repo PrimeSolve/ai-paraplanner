@@ -12,6 +12,20 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useRole } from '../components/RoleContext';
 import { toast } from 'sonner';
 
+// Safely extract a displayable string from any value (guards against React Error #31)
+const safeStr = (val) => {
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+  if (typeof val === 'object') {
+    if (val.name) return safeStr(val.name);
+    if (val.value) return safeStr(val.value);
+    if (val.first_name || val.last_name) return `${safeStr(val.first_name)} ${safeStr(val.last_name)}`.trim();
+    return JSON.stringify(val);
+  }
+  return String(val);
+};
+
 export default function AdminAdvisers() {
   const navigate = useNavigate();
   const { switchRole } = useRole();
@@ -42,10 +56,10 @@ export default function AdminAdvisers() {
         base44.entities.AdviceGroup.list('-created_date', 100, { data_env: dataEnv })
       ]);
       
-      // Map adviser data to include full_name
+      // Map adviser data to include full_name (safely handle object values)
       const mappedAdvisers = adviserData.map(a => ({
         ...a,
-        full_name: `${a.first_name} ${a.last_name}`.trim()
+        full_name: `${safeStr(a.first_name)} ${safeStr(a.last_name)}`.trim()
       }));
       
       setAdvisers(mappedAdvisers);
@@ -68,7 +82,12 @@ export default function AdminAdvisers() {
   };
 
   const handleViewAsAdviser = (adviser) => {
-    switchRole('adviser', adviser.email, adviser.full_name || adviser.email);
+    // Push advice group level first if adviser belongs to one
+    const group = adviceGroups.find(g => g.id === adviser.advice_group_id);
+    if (group) {
+      switchRole('advice_group', group.id, safeStr(group.name));
+    }
+    switchRole('adviser', adviser.email, safeStr(adviser.full_name) || safeStr(adviser.email));
     navigate(createPageUrl('AdviserDashboard'));
   };
 
@@ -216,14 +235,14 @@ export default function AdminAdvisers() {
                           {adviser.full_name?.charAt(0) || adviser.email?.charAt(0)}
                         </div>
                         <div>
-                          <div className="font-semibold text-sm text-slate-800">{adviser.full_name || adviser.email}</div>
-                          <div className="text-xs text-slate-600">{adviser.email}</div>
+                          <div className="font-semibold text-sm text-slate-800">{safeStr(adviser.full_name) || safeStr(adviser.email)}</div>
+                          <div className="text-xs text-slate-600">{safeStr(adviser.email)}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-slate-800 font-medium">{adviser.company || '-'}</div>
-                      <div className="text-xs text-slate-600">{adviser.phone || '-'}</div>
+                      <div className="text-sm text-slate-800 font-medium">{safeStr(adviser.company) || '-'}</div>
+                      <div className="text-xs text-slate-600">{safeStr(adviser.phone) || '-'}</div>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${
@@ -234,7 +253,7 @@ export default function AdminAdvisers() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-slate-700">
-                        {adviceGroups.find(g => g.id === adviser.advice_group_id)?.name || '-'}
+                        {safeStr(adviceGroups.find(g => g.id === adviser.advice_group_id)?.name) || '-'}
                       </div>
                     </td>
                     <td className="px-6 py-4">
