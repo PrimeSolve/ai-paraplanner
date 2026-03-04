@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { RoleProvider, useRole } from '@/components/RoleContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import PublicHome from '@/pages/PublicHome';
+import Register from '@/pages/Register';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -76,10 +77,16 @@ const AuthenticatedApp = () => {
   // Handle authentication errors
   if (authError) {
     if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
+      return (
+        <Routes>
+          <Route path="/Register" element={<Register />} />
+          <Route path="*" element={<UserNotRegisteredError />} />
+        </Routes>
+      );
     } else if (authError.type === 'auth_required') {
       return (
         <Routes>
+          <Route path="/Register" element={<Register />} />
           <Route path="*" element={<PublicHome />} />
         </Routes>
       );

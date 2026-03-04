@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { loginRedirect } from '@/auth/msalInstance';
 import { ChevronDown } from 'lucide-react';
 
 export default function PublicHome() {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -62,7 +64,7 @@ export default function PublicHome() {
               Sign In
             </button>
             <button
-              onClick={() => loginRedirect()}
+              onClick={() => navigate('/Register')}
               className="px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
             >
               Get Started
@@ -93,7 +95,7 @@ export default function PublicHome() {
 
             <div className="flex gap-4 mb-12">
               <button
-                onClick={() => loginRedirect()}
+                onClick={() => navigate('/Register')}
                 className="px-8 py-4 rounded-[12px] text-[17px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
               >
                 Get Started
@@ -355,7 +357,7 @@ export default function PublicHome() {
                 </div>
               </div>
               <button
-                onClick={() => loginRedirect()}
+                onClick={() => navigate('/Register')}
                 className="inline-block px-8 py-4 rounded-[12px] text-[17px] font-bold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
               >
                 Get Started
@@ -460,7 +462,7 @@ export default function PublicHome() {
                 </div>
               </div>
               <button
-                onClick={() => loginRedirect()}
+                onClick={() => navigate('/Register')}
                 className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-transparent border-2 border-white/20 hover:border-white hover:bg-white hover:text-[#0f172a] transition-all cursor-pointer"
               >
                 Get Started
@@ -504,7 +506,7 @@ export default function PublicHome() {
                 </div>
               </div>
               <button
-                onClick={() => loginRedirect()}
+                onClick={() => navigate('/Register')}
                 className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
               >
                 Get Started
@@ -541,7 +543,7 @@ export default function PublicHome() {
                 </div>
               </div>
               <button
-                onClick={() => loginRedirect()}
+                onClick={() => navigate('/Register')}
                 className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-transparent border-2 border-white/20 hover:border-white hover:bg-white hover:text-[#0f172a] transition-all cursor-pointer"
               >
                 Contact Us
