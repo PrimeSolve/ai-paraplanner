@@ -16,7 +16,7 @@ import {
   FileCheck,
   TrendingUp
 } from 'lucide-react';
-import { openModel } from '../utils/modelLauncher';
+
 
 export default function ClientDashboard() {
   const [loading, setLoading] = useState(true);
@@ -876,27 +876,28 @@ export default function ClientDashboard() {
                   </div>
                 </Link>
 
-                <div
-                  onClick={() => openModel({ clientId: client?.id })}
-                  style={{
-                    padding: '12px 14px',
-                    background: '#f8fafc',
-                    borderRadius: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    cursor: 'pointer',
-                    transition: 'background 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = '#f8fafc'}
-                >
-                  <TrendingUp className="w-4 h-4 text-purple-500" />
-                  <div>
-                    <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '13px' }}>Cashflow Model</div>
-                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>View projections</div>
+                <Link to={createPageUrl('ClientCashflow')} style={{ textDecoration: 'none' }}>
+                  <div
+                    style={{
+                      padding: '12px 14px',
+                      background: '#f8fafc',
+                      borderRadius: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      cursor: 'pointer',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = '#f8fafc'}
+                  >
+                    <TrendingUp className="w-4 h-4 text-purple-500" />
+                    <div>
+                      <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '13px' }}>Cashflow Model</div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>View projections</div>
+                    </div>
                   </div>
-                </div>
+                </Link>
 
                 <Link to={createPageUrl('ClientSettings')} style={{ textDecoration: 'none' }}>
                   <div style={{
