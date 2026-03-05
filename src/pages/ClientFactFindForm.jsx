@@ -1,9 +1,9 @@
 import React from 'react';
-import ClientLayout from '../components/client/ClientLayout';
 import FactFindWelcome from './FactFindWelcome';
 
 // Wraps the existing FactFindWelcome page for the client fact find form route.
-// ClientLayout currentPage is set so the sidebar highlights correctly.
+// skipLayout prevents FactFindLayout from rendering its own sidebar so the
+// client sidebar provided by AppShell remains visible.
 export default function ClientFactFindForm() {
-  return <FactFindWelcome />;
+  return <FactFindWelcome skipLayout />;
 }
