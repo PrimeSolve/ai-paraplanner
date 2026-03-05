@@ -3,12 +3,12 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useRole } from './RoleContext';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { User, HelpCircle, LogOut, Home, ChevronRight, MessageSquare, RefreshCw, Info } from 'lucide-react';
 import {
@@ -22,29 +22,43 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
+const ROLE_PORTAL_LABELS = {
+  admin: 'Admin Portal',
+  advice_group: 'Advice Group Portal',
+  adviser: 'Adviser Portal',
+  client: 'Client Portal',
+};
+
+const ROLE_DASHBOARDS = {
+  admin: 'AdminDashboard',
+  advice_group: 'AdviceGroupDashboard',
+  adviser: 'AdviserDashboard',
+  client: 'ClientDashboard',
+};
+
+const ROLE_PROFILES = {
+  admin: 'AdminProfile',
+  advice_group: 'AdviceGroupMyProfile',
+  adviser: 'AdviserProfile',
+  client: 'ClientProfile',
+};
+
 export default function AppHeader({ pageActions, pageTitle }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { 
-    user, 
-    originalUser, 
-    navigationChain, 
-    isViewingAs, 
-    navigateToLevel, 
-    resetToOriginal 
+  const {
+    user,
+    originalUser,
+    navigationChain,
+    isViewingAs,
+    navigateToLevel,
+    resetToOriginal
   } = useRole();
-  
-  console.log('=== AppHeader render ===');
-  console.log('isViewingAs:', isViewingAs);
-  console.log('navigationChain:', navigationChain);
-  console.log('navigationChain.length:', navigationChain?.length);
-  console.log('originalUser:', originalUser?.full_name, originalUser?.role);
-  console.log('shouldRenderHomeButton:', isViewingAs && navigationChain?.length > 0);
-  
+
   const [showRefreshWarning, setShowRefreshWarning] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  
+
   const isFactFindAnyPage = location.pathname.includes('FactFind');
    const isSOARequestPage = location.pathname.includes('SOARequestDetails');
    const isSOARequestAnyPage = location.pathname.includes('SOARequest');
@@ -52,20 +66,21 @@ export default function AppHeader({ pageActions, pageTitle }) {
 
    // The actual logged-in user (for profile display)
    const loggedInUser = originalUser || user;
+   const userRole = loggedInUser?.role || 'admin';
 
    // Calculate header left position based on sidebar width
    const isSpecialLayout = location.pathname.includes('FactFind') || location.pathname.includes('SOARequest');
    const headerLeft = isSpecialLayout ? '320px' : '260px';
 
+  const getPortalLabel = () => {
+    return ROLE_PORTAL_LABELS[userRole] || 'Portal';
+  };
+
   const handleGoHome = () => {
     resetToOriginal();
-    // Navigate to the original user's dashboard
-    if (loggedInUser?.role === 'admin') {
-      navigate(createPageUrl('AdminDashboard'));
-    } else if (loggedInUser?.role === 'advice_group') {
-      navigate(createPageUrl('AdviceGroupDashboard'));
-    } else if (loggedInUser?.role === 'adviser') {
-      navigate(createPageUrl('AdviserDashboard'));
+    const dashboard = ROLE_DASHBOARDS[userRole];
+    if (dashboard) {
+      navigate(createPageUrl(dashboard));
     }
   };
 
@@ -83,15 +98,7 @@ export default function AppHeader({ pageActions, pageTitle }) {
   };
 
   const getProfileUrl = () => {
-    // Profile is always the ORIGINAL user's profile page
-    if (loggedInUser?.role === 'admin') {
-      return createPageUrl('AdminProfile');
-    } else if (loggedInUser?.role === 'advice_group') {
-      return createPageUrl('AdviceGroupMyProfile');
-    } else if (loggedInUser?.role === 'adviser') {
-      return createPageUrl('AdviserProfile');
-    }
-    return createPageUrl('AdminProfile');
+    return createPageUrl(ROLE_PROFILES[userRole] || 'AdminProfile');
   };
 
   const getInitials = () => {
@@ -179,7 +186,7 @@ export default function AppHeader({ pageActions, pageTitle }) {
          )}
          {isViewingAs && (
            <>
-             {/* Breadcrumb trail: Admin Portal > [Advice Group] > [Adviser] > [Client] */}
+             {/* Breadcrumb trail: [Portal Label] > [Advice Group] > [Adviser] > [Client] */}
              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
                <button
                  onClick={handleGoHome}
@@ -194,7 +201,7 @@ export default function AppHeader({ pageActions, pageTitle }) {
                    fontSize: '14px',
                  }}
                >
-                 Admin Portal
+                 {getPortalLabel()}
                </button>
                {navigationChain.map((level, index) => (
                  <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -361,15 +368,15 @@ export default function AppHeader({ pageActions, pageTitle }) {
               fontWeight: 500,
             }}>
               {loggedInUser.profile_image_url ? (
-                <img 
-                  src={loggedInUser.profile_image_url} 
-                  alt="Profile" 
+                <img
+                  src={loggedInUser.profile_image_url}
+                  alt="Profile"
                   style={{
                     width: '32px',
                     height: '32px',
                     borderRadius: '8px',
                     objectFit: 'cover',
-                  }} 
+                  }}
                 />
               ) : (
                 <div style={{

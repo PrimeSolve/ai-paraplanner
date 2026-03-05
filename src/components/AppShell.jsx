@@ -33,10 +33,7 @@ export default function AppShell({ children, pageActions, pageTitle }) {
     let mounted = true;
     (async () => {
       try {
-        console.log('AppShell: initializing user from auth context:', authUser);
-        console.log('AppShell: user role:', authUser?.role);
         await loadUserData(authUser);
-        console.log('AppShell: loadUserData complete');
       } catch (error) {
         console.error('Failed to initialize user role:', error);
       } finally {
@@ -109,22 +106,12 @@ export default function AppShell({ children, pageActions, pageTitle }) {
 
   // Determine which sidebar to render based on navigation chain and role
   const getSidebarComponent = () => {
-    console.log('=== getSidebarComponent ===');
-    console.log('pathname:', location.pathname);
-    console.log('navigationChain:', navigationChain);
-    console.log('currentLevel:', currentLevel);
-    console.log('originalRole:', originalRole);
-    console.log('effectiveRole:', effectiveRole);
-    console.log('isSpecialLayout:', isSpecialLayout);
-
     if (isSpecialLayout) {
-      console.log('Returning null due to special layout');
       return null;
     }
 
     // Check for test mode entity type
     if (user?.entityType) {
-      console.log('Test mode entity type:', user.entityType);
       if (user.entityType === 'advice_group') {
         return <AdviceGroupSidebar currentPage={getCurrentPage()} />;
       }
@@ -161,8 +148,6 @@ export default function AppShell({ children, pageActions, pageTitle }) {
       return <ClientSidebar currentPage={getCurrentPage()} />;
     }
 
-    // Fallback
-    console.log('getSidebarComponent returning null - no role matched. effectiveRole:', effectiveRole);
     return null;
   };
 
@@ -183,15 +168,7 @@ export default function AppShell({ children, pageActions, pageTitle }) {
     );
   }
 
-  console.log('AppShell rendering');
-  console.log('isSpecialLayout:', isSpecialLayout);
-  console.log('location.pathname:', location.pathname);
-  console.log('currentLevel:', currentLevel);
-  console.log('originalRole:', originalRole);
-  console.log('effectiveRole:', effectiveRole);
-
   // RULE 1: AppShell is the SINGLE source of truth for layout
-  // Compute sidebar once (not twice like before)
   const sidebarComponent = getSidebarComponent();
   const showSidebar = sidebarComponent !== null;
   const contentWidth = showSidebar ? `calc(100% - ${sidebarWidth})` : '100%';
