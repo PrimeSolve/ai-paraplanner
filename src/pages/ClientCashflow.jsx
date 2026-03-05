@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getAccessToken } from '@/auth/msalInstance';
 
 export default function ClientCashflow() {
   const [loading, setLoading] = useState(true);
@@ -21,7 +22,16 @@ export default function ClientCashflow() {
         }
 
         if (clientId) {
-          window.location.href = `https://paraplanner.primesolve.com.au/?client_id=${clientId}`;
+          let redirectUrl = `https://paraplanner.primesolve.com.au/?client_id=${clientId}`;
+          try {
+            const token = await getAccessToken();
+            if (token) {
+              redirectUrl += `&access_token=${encodeURIComponent(token)}`;
+            }
+          } catch (tokenErr) {
+            console.warn('Failed to acquire MSAL token for redirect, continuing without it:', tokenErr);
+          }
+          window.location.href = redirectUrl;
         } else {
           setError(true);
           setLoading(false);
