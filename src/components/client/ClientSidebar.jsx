@@ -13,6 +13,9 @@ import {
   ChevronDown,
   ChevronRight,
   Sparkles,
+  ClipboardList,
+  BarChart2,
+  Clock,
 } from 'lucide-react';
 
 export default function ClientSidebar({ currentPage }) {
@@ -142,8 +145,8 @@ export default function ClientSidebar({ currentPage }) {
             isOpen={factFindOpen}
             onToggle={() => setFactFindOpen(!factFindOpen)}
           >
-            <NavLink path="ClientFactFindForm" label="Form View" indent />
-            <NavLink path="ClientFactFindAI" label="AI Fact Find" indent />
+            <NavLink path="ClientFactFindForm" label="Form View" icon={ClipboardList} indent />
+            <NavLink path="ClientFactFindAI" label="AI Fact Find" icon={Sparkles} indent />
           </ExpandableSection>
 
           <ExpandableSection
@@ -152,8 +155,8 @@ export default function ClientSidebar({ currentPage }) {
             isOpen={adviceOpen}
             onToggle={() => setAdviceOpen(!adviceOpen)}
           >
-            <NavLink path="ClientCashflow" label="Cashflow Model" indent />
-            <NavLink path="ClientAdviceHistory" label="Advice History" indent />
+            <NavLink path="ClientCashflow" label="Cashflow Model" icon={BarChart2} indent />
+            <NavLink path="ClientAdviceHistory" label="Advice History" icon={Clock} indent />
           </ExpandableSection>
 
           <NavLink path="ClientDocuments" label="Documents" icon={FileCheck} />
