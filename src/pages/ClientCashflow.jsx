@@ -1,20 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useRole } from '../components/RoleContext';
 import { CASHFLOW_MODEL_URL } from '@/utils/config';
+import { apiToEngine } from '@/utils/apiToEngine';
 
 export default function ClientCashflow() {
   const [iframeUrl, setIframeUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [clientData, setClientData] = useState(null);
+  const iframeRef = useRef(null);
   const { navigationChain, user } = useRole();
   const navigate = useNavigate();
+
+  const sendClientData = useCallback(() => {
+    if (!clientData || !iframeRef.current?.contentWindow) return;
+    iframeRef.current.contentWindow.postMessage(
+      { type: 'CLIENT_DATA', payload: clientData },
+      CASHFLOW_MODEL_URL
+    );
+  }, [clientData]);
 
   useEffect(() => {
     if (!user) return;
 
-    const resolveClientId = async () => {
+    const loadClient = async () => {
       try {
         const params = new URLSearchParams(window.location.search);
         const idFromUrl = params.get('id');
@@ -36,23 +47,40 @@ export default function ClientCashflow() {
           }
         }
 
-        console.log('[ClientCashflow] resolved clientId:', clientId, 'navigationChain:', JSON.stringify(navigationChain), 'user:', JSON.stringify(user));
-
-        if (clientId) {
-          setIframeUrl(`${CASHFLOW_MODEL_URL}?client_id=${clientId}`);
-          setLoading(false);
-        } else {
+        if (!clientId) {
           setError(true);
           setLoading(false);
+          return;
         }
+
+        // Fetch full client record via standard API and convert for engine
+        const clients = await base44.entities.Client.filter({ id: clientId });
+        const client = clients[0];
+
+        if (!client) {
+          console.error('[ClientCashflow] client not found for id:', clientId);
+          setError(true);
+          setLoading(false);
+          return;
+        }
+
+        const engineData = apiToEngine(client);
+        setClientData(engineData);
+        setIframeUrl(`${CASHFLOW_MODEL_URL}?client_id=${clientId}`);
+        setLoading(false);
       } catch (err) {
-        console.error('Failed to load client ID:', err);
+        console.error('Failed to load client:', err);
         setError(true);
         setLoading(false);
       }
     };
-    resolveClientId();
+    loadClient();
   }, [navigationChain, user]);
+
+  const handleIframeLoad = useCallback(() => {
+    setLoading(false);
+    sendClientData();
+  }, [sendClientData]);
 
   if (error) {
     return (
@@ -84,11 +112,12 @@ export default function ClientCashflow() {
 
       {iframeUrl && (
         <iframe
+          ref={iframeRef}
           src={iframeUrl}
           title="Cashflow Model"
           className="w-full h-full border-0"
           allow="clipboard-write"
-          onLoad={() => setLoading(false)}
+          onLoad={handleIframeLoad}
         />
       )}
     </div>
