@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useRole } from '../components/RoleContext';
-import { getAccessToken } from '@/auth/msalInstance';
+import { getAccessToken, msalInstance, initializeMsal } from '@/auth/msalInstance';
+import { tokenRequest } from '@/auth/msalConfig';
 
 export default function ClientCashflow() {
   const [loading, setLoading] = useState(true);
@@ -38,7 +39,22 @@ export default function ClientCashflow() {
         if (clientId) {
           let redirectUrl = `https://paraplanner.primesolve.com.au/?client_id=${clientId}`;
           try {
-            const token = await getAccessToken();
+            // Use the same getAccessToken() that the axios interceptor uses for all API calls
+            let token = await getAccessToken();
+
+            // If getAccessToken() returned null (no cached accounts), try interactive popup
+            if (!token) {
+              await initializeMsal();
+              const accounts = msalInstance.getAllAccounts();
+              const request = { ...tokenRequest, ...(accounts.length > 0 ? { account: accounts[0] } : {}) };
+              try {
+                const response = await msalInstance.acquireTokenPopup(request);
+                token = response.accessToken;
+              } catch (popupErr) {
+                console.warn('Interactive token acquisition failed:', popupErr);
+              }
+            }
+
             if (token) {
               redirectUrl += `&access_token=${encodeURIComponent(token)}`;
             }
