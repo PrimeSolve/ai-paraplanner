@@ -36,6 +36,8 @@ export default function ClientCashflow() {
           }
         }
 
+        console.log('[ClientCashflow] resolved clientId:', clientId, 'navigationChain:', JSON.stringify(navigationChain), 'user:', JSON.stringify(user));
+
         if (clientId) {
           setIframeUrl(`${CASHFLOW_MODEL_URL}?client_id=${clientId}`);
           setLoading(false);
