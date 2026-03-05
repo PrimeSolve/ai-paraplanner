@@ -11,7 +11,7 @@ import {
   Upload, TrendingUp, ArrowRight, FileText, Mic
 } from 'lucide-react';
 
-export default function FactFindWelcome() {
+export default function FactFindWelcome({ skipLayout = false }) {
   const navigate = useNavigate();
   const { factFind, loading: ffLoading } = useFactFind();
   const [user, setUser] = useState(null);
@@ -34,18 +34,22 @@ export default function FactFindWelcome() {
     }
   };
 
+  const Wrapper = skipLayout
+    ? ({ children }) => <>{children}</>
+    : ({ children }) => <FactFindLayout currentSection="welcome" factFind={factFind}>{children}</FactFindLayout>;
+
   if (ffLoading) {
     return (
-      <FactFindLayout currentSection="welcome" factFind={factFind}>
+      <Wrapper>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
-      </FactFindLayout>
+      </Wrapper>
     );
   }
 
   return (
-    <FactFindLayout currentSection="welcome" factFind={factFind}>
+    <Wrapper>
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
         <div className="w-full space-y-4">
@@ -162,6 +166,6 @@ export default function FactFindWelcome() {
           </Card>
         </div>
       </div>
-    </FactFindLayout>
+    </Wrapper>
   );
 }
