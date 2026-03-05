@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useRole } from '../components/RoleContext';
-import { getAccessToken } from '@/auth/msalInstance';
+import { CASHFLOW_MODEL_URL } from '@/utils/config';
 
 export default function ClientCashflow() {
+  const [iframeUrl, setIframeUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const { navigationChain, user } = useRole();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) return;
 
-    const redirectToCashflow = async () => {
+    const resolveClientId = async () => {
       try {
         const params = new URLSearchParams(window.location.search);
         const idFromUrl = params.get('id');
         let clientId = idFromUrl;
 
         if (!clientId) {
-          // Get client from navigation chain (admin viewing as client)
           const currentLevel = navigationChain.length > 0
             ? navigationChain[navigationChain.length - 1]
             : null;
@@ -30,22 +32,13 @@ export default function ClientCashflow() {
               clientId = clients[0].id;
             }
           } else if (user?.linkedEntity?.type === 'client') {
-            // Direct client login
             clientId = user.linkedEntity.data.id;
           }
         }
 
         if (clientId) {
-          let redirectUrl = `https://paraplanner.primesolve.com.au/?client_id=${clientId}`;
-          try {
-            const token = await getAccessToken();
-            if (token) {
-              redirectUrl += `&access_token=${encodeURIComponent(token)}`;
-            }
-          } catch (tokenErr) {
-            console.warn('Failed to acquire MSAL token for redirect, continuing without it:', tokenErr);
-          }
-          window.location.href = redirectUrl;
+          setIframeUrl(`${CASHFLOW_MODEL_URL}?client_id=${clientId}`);
+          setLoading(false);
         } else {
           setError(true);
           setLoading(false);
@@ -56,20 +49,46 @@ export default function ClientCashflow() {
         setLoading(false);
       }
     };
-    redirectToCashflow();
+    resolveClientId();
   }, [navigationChain, user]);
 
   if (error) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-white">
+      <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
         <p className="text-slate-600">Unable to load client information.</p>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-white">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+    <div className="fixed inset-0 z-50 bg-white">
+      {/* Close button overlay */}
+      <button
+        onClick={() => navigate(-1)}
+        className="absolute top-4 right-4 z-[60] flex items-center gap-2 rounded-lg bg-white/90 backdrop-blur px-3 py-2 text-sm font-medium text-slate-700 shadow-md border border-slate-200 hover:bg-slate-100 transition-colors"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+        Close
+      </button>
+
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+        </div>
+      )}
+
+      {iframeUrl && (
+        <iframe
+          src={iframeUrl}
+          title="Cashflow Model"
+          className="w-full h-full border-0"
+          allow="clipboard-write"
+          onLoad={() => setLoading(false)}
+        />
+      )}
     </div>
   );
 }
