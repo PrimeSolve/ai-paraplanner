@@ -16,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Save, X, Upload, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import DataFeedPicker from './DataFeedPicker';
@@ -83,7 +82,7 @@ export default function SectionConfigEditor({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-5xl w-[95vw] h-[92vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold" style={{ fontFamily: 'Inter, sans-serif' }}>
             {section.label}
@@ -233,22 +232,22 @@ export default function SectionConfigEditor({
           </TabsContent>
 
           {/* Tab 3: Data Feed */}
-          <TabsContent value="datafeed" className="flex-1 min-h-0 mt-4 space-y-4">
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start gap-2">
+          <TabsContent value="datafeed" className="flex-1 min-h-0 mt-4 flex flex-col overflow-hidden">
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start gap-2 flex-shrink-0">
               <Info className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-purple-700">
                 Select which client data fields the AI receives when generating this section. More data = better output but higher token cost.
               </p>
             </div>
 
-            <ScrollArea className="max-h-[400px]">
+            <div className="flex-1 min-h-0 overflow-y-auto mt-3 pr-1">
               <DataFeedPicker
                 selected={dataFeeds}
                 onChange={setDataFeeds}
                 sectionLabel={section.label || ''}
                 sectionPrompt={prompt.system || ''}
               />
-            </ScrollArea>
+            </div>
           </TabsContent>
         </Tabs>
 
