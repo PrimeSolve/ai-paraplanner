@@ -245,6 +245,8 @@ export default function SectionConfigEditor({
               <DataFeedPicker
                 selected={dataFeeds}
                 onChange={setDataFeeds}
+                sectionLabel={section.label || ''}
+                sectionPrompt={prompt.system || ''}
               />
             </ScrollArea>
           </TabsContent>
