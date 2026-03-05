@@ -1,0 +1,2151 @@
+import React, { useState, useEffect, useRef } from "react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area, AreaChart, Cell, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, PieChart, Pie, ReferenceLine, Customized } from "recharts";
+
+import { THEME_STYLE_ID, _psInitialDark, injectThemeCSS, T } from "./constants/theme.jsx";
+import { useFactFind } from "./hooks/useFactFind.js";
+import { buildProjectionSetup, mergeAdviceEntities, buildDynamicTabs, makeOwnerLabel, buildAssetHelpers, buildEntityOwnerOptions } from "./utils/helpers.js";
+import { runProjectionEngine } from "./engine/orchestrator.js";
+import { ENTITY_REGISTRY, ENTITY_MAP, ENTITY_LIST, ENTITY_ALIASES, resolveEntity, EntityBadge, entityColor } from "./constants/entities.jsx";
+import { NAV_STRUCTURE, TOP_TABS } from "./constants/navigation.js";
+import { formatNumber } from "./utils/formatters.js";
+import { STRAT_DRAWDOWN, STRAT_PORTFOLIO, STRAT_SURPLUS, STRAT_GROUPS, STRAT_OPTIONS, STRAT_YEARS, STRAT_END_YEARS, stratId, stratLbl, EMPTY_MODEL, EMPTY_STRATEGY } from "./constants/strategyOptions.js";
+import { AGE_PENSION_PARAMS } from "./constants/assumptions.js";
+import { calcNetSalary, calcMarginalRate } from "./utils/taxCalc.js";
+import { assetTypeMap, debtDeductible, offsetWeightFactor, debtFreqLabel } from "./utils/projectionHelpers.js";
+import { ffLabelStyle, ffInputStyle, ffSelectStyle, ffRowStyle, ffFullRowStyle, FFField, FFInput, FFSelect, FFToggle, FFRadioRow } from "./components/common/FormFields.jsx";
+import { PlaceholderContent, SectionTable } from "./components/common/SectionTable.jsx";
+import { CashflowSavingsPage, TaxSchedulePage, CGTPage, UnrealisedCGTPage, AssetChartPage, DebtChartPage, AssetTable, TrustPage, TrustDistOverride, CompanyPage, SMSFPage, SUPER1_DATA, PENSION1_DATA, PROPERTY_TYPES, DEFENSIVE_ASSET_TYPES, GROWTH_ASSET_TYPES, LIFESTYLE_ASSET_TYPES } from "./components/schedules/index.jsx";
+import { ModelComparisonDashboard, ModelComparisonDetail, AdviceSummaryTable, ScopeDashboard, ObjectivesDashboard, RecommendationsTable, ProductProjectionTable, PortfolioTransactionsTable, BenefitOfAdviceDashboard, PortfolioDashboard, RetirementDashboard, HealthCheckTable, RetirementBalanceChart, ContributionsChart, IncomeInRetirementChart, CashflowDashboard, IncomeChart, ExpensesChart, CapitalDashboard, DebtChart, PropertyChart, AssetsPerEntityChart, AssetTypeChart, AssetsLiabilitiesChart, FinancialSummaryDashboard, MilestonesDashboard, RebalancingTable, ANNUITY1_DATA, NET_EQUITY_DATA } from "./components/dashboards/index.jsx";
+import { AgedCarePage, SocialSecurityTable, EligibilityTable, SuperAssumptionsTable, SuperProductPage, PensionProductPage, BondProductPage, AnnuityProductPage, InsurancePremiumProjection, InsuranceProjectionPage, WrapProjectionPage, PotentialDeathTaxPage, AssumptionsPanel, BasicAssumptionsForm, AssetOverridesPage, AssetAssumptionsPage, SOADocumentBuilder, altEx, altSurvivalPct } from "./components/products/index.jsx";
+import { PRINCIPAL_SUB_SECTIONS, CHILD_DEFAULTS, DEPENDANT_DEFAULTS, SUPER_DEFAULTS, PENSION_DEFAULTS, ANNUITY_DEFAULTS, DB_DEFAULTS, WRAP_DEFAULTS, INV_BOND_DEFAULTS, PrincipalsForm, DependantsForm, SuperannuationForm, InvestmentsForm, TrustsCompaniesForm, SMSFForm, AssetsForm, LiabilitiesForm, InsurancePoliciesForm, IncomeForm, ExpensesForm, GoalsForm, RiskProfileForm, ScopeOfAdviceForm } from "./components/factfind/index.jsx";
+import { TransactionsForm, ProductReplacementForm, AiFactFind, AiParaplanner, StrategyForm, AdviceProductsEntitiesForm, AdviceInsuranceForm, TaxSuperPlanningForm, AssumptionsForm, PortfolioForm } from "./components/advice/index.jsx";
+class CashflowErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) {
+      return React.createElement("div", { style: { padding: 40, fontFamily: "monospace" } },
+        React.createElement("h2", { style: { color: "var(--ps-red)" } }, "Runtime Error"),
+        React.createElement("pre", { style: { background: "#fef2f2", padding: 16, borderRadius: 8, whiteSpace: "pre-wrap", fontSize: 13 } },
+          this.state.error.message + "\n\n" + this.state.error.stack
+        ),
+        React.createElement("button", { onClick: () => this.setState({ error: null }), style: { marginTop: 12, padding: "8px 16px", cursor: "pointer" } }, "Retry")
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.primesolve.com.au';
+const AI_PARAPLANNER_URL = import.meta.env.VITE_AI_PARAPLANNER_URL || 'https://app.aiparaplanner.com.au';
+
+function CashflowModelInner({ initialData, onDataChange }) {
+  const [activeTop, setActiveTop] = useState("Summary of Results");
+
+  // Read clientId from URL parameter (passed from AI Paraplanner)
+  const [clientId] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('clientId') || params.get('client_id');
+  });
+  const [clientInfo, setClientInfo] = useState(null);
+  const [fetchedInitialData, setFetchedInitialData] = useState(null);
+  const [clientLoading, setClientLoading] = useState(false);
+  const [clientLoadError, setClientLoadError] = useState(null);
+
+  // Client data fetching is handled by the useEffect below (lines ~86+)
+  // which calls getClientFullProfile(clientId) via apiClient with the
+  // Bearer token wired by App.jsx's ClientIdApp/AuthenticatedRouter.
+
+  const backToParaplannerUrl = clientId
+    ? `${AI_PARAPLANNER_URL}/ClientCashflow`
+    : AI_PARAPLANNER_URL;
+
+  const {
+    factFind, setFactFind, adviceModel1, setAdviceModel1,
+    updateFF, updateAdvice, resetAdviceModel,
+    addPrincipal, removePrincipal,
+    debtFreqOverrides, setDebtFreqOverrides,
+    debtIOOverrides, setDebtIOOverrides,
+    darkMode, setDarkMode,
+  } = useFactFind(initialData);
+
+  // Fetch client data when clientId is present and no initialData was provided.
+  // Writes directly into factFind via setFactFind (not through useFactFind's initialData
+  // param, which only works on first render via useState).
+  useEffect(() => {
+    if (!clientId || initialData) return;
+    let cancelled = false;
+    setClientLoading(true);
+    setClientLoadError(null);
+
+    (async () => {
+      try {
+        const { getClientFullProfile } = await import('./api/clients.js');
+        const { apiToEngine } = await import('./api/dataMapper.js');
+        const profile = await getClientFullProfile(clientId);
+        if (cancelled) return;
+        if (profile) {
+          const engineData = apiToEngine(profile);
+          setFactFind(engineData);
+          setAdviceModel1(JSON.parse(JSON.stringify(engineData)));
+          setClientInfo(profile);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error("[CashflowModel] Failed to load client:", err);
+          setClientLoadError(err.message || "Failed to load client data");
+        }
+      } finally {
+        if (!cancelled) setClientLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [clientId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Show loading state while fetching client data (prevents Catherine/Paul default from flashing)
+  if (clientLoading) {
+    return React.createElement("div", {
+      style: { display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", fontFamily: "system-ui", color: "#64748b" }
+    }, "Loading client data...");
+  }
+
+  if (clientLoadError && !initialData) {
+    return React.createElement("div", {
+      style: { padding: 40, fontFamily: "system-ui", textAlign: "center" }
+    },
+      React.createElement("p", { style: { color: "#ef4444", marginBottom: 16 } }, `Error loading client: ${clientLoadError}`),
+      React.createElement("p", { style: { color: "#64748b", fontSize: 14 } }, "Please check the client ID and try again.")
+    );
+  }
+
+  // Notify parent when factFind data changes (for API auto-save)
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    if (onDataChange) onDataChange(factFind, adviceModel1?.advice_request?.strategy?.strategies);
+  }, [factFind]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [activeSub, setActiveSub] = useState("Timeline");
+  const [activeSubSub, setActiveSubSub] = useState("Financial Summary");
+  const [selectedModel, setSelectedModel] = useState("advice1");
+  const isAdviceModel = selectedModel === "advice1";
+  const [factFindOpen, setFactFindOpen] = useState(false);
+  const [factFindSection, setFactFindSection] = useState(null);
+  const [factFindMode, setFactFindMode] = useState("manual"); // "manual" | "ai"
+  const [adviceOpen, setAdviceOpen] = useState(false);
+  const [adviceSection, setAdviceSection] = useState(null);
+  const [adviceMode, setAdviceMode] = useState("manual"); // "manual" | "ai"
+  const [showSOABuilder, setShowSOABuilder] = useState(false);
+
+  // factFind, adviceModel1, and helpers are provided by useFactFind()
+  const topConfig = NAV_STRUCTURE[activeTop];
+
+  // Shared CPI index toggle handler — works correctly for both base and advice model
+  // fundIdx = index into engineData.superProducts (merged array)
+  // field = e.g. "salary_sacrifice_indexed"
+  // value = true/false
+  const handleSuperCpiToggle = (fundIdx, field, value) => {
+    const mergedProds = engineData.superProducts || [];
+    const sp = mergedProds[fundIdx];
+    if (!sp) return;
+    if (sp._isAdviceProduct) {
+      // New advice-only product — write into advice_request transactions newSuper list
+      const newSuperList = (adviceModel1 || factFind).advice_request?.transactions?.newSuper || [];
+      const advIdx = newSuperList.findIndex(a => a.id === sp._adviceId);
+      if (advIdx >= 0) {
+        const updated = newSuperList.map((a, i) => i === advIdx ? { ...a, contributions: { ...a.contributions, [field]: value } } : a);
+        updateAdvice("advice_request.transactions.newSuper", updated);
+      }
+    } else {
+      // Base fund — write to the active model (factFind or adviceModel1)
+      const sourceProds = isAdviceModel
+        ? [...((adviceModel1?.superProducts) || [])]
+        : [...(factFind.superProducts || [])];
+      if (sourceProds[fundIdx]) {
+        sourceProds[fundIdx] = { ...sourceProds[fundIdx], contributions: { ...sourceProds[fundIdx].contributions, [field]: value } };
+        if (isAdviceModel) {
+          updateAdvice("superProducts", sourceProds);
+        } else {
+          updateFF("superProducts", sourceProds);
+        }
+      }
+    }
+  };
+  // subTabs is computed after smsfSubTabs is built (see below)
+  let subTabs = topConfig?.subTabs || [];
+
+  // ═══════════════════════════════════════════════════════════════
+  // ENGINE DATA SOURCE — All engine computations read from this.
+  // Base model = factFind (read-only projection of existing position)
+  // Advice model = adviceModel1 (adviser-modified clone of factFind)
+  // Fact Find forms ALWAYS read from factFind directly.
+  // ═══════════════════════════════════════════════════════════════
+  const engineData = isAdviceModel ? (adviceModel1 || factFind) : factFind;
+  const activeUpdate = isAdviceModel ? updateAdvice : updateFF;
+
+  // Merge advice entities/products into engineData (mutates in place)
+  mergeAdviceEntities(engineData, isAdviceModel);
+
+  // Map generic tab keys to actual principal names for display
+  const c1First = engineData.client1?.first_name || "";
+  const c1Last = engineData.client1?.last_name || "";
+  const c2First = engineData.client2?.first_name || "";
+  const c2Last = engineData.client2?.last_name || "";
+  const c1Display = (c1First + " " + c1Last).trim() || "Client 1";
+  const c2Display = (c2First + " " + c2Last).trim() || "Client 2";
+
+  // Build dynamic sub-sub tabs for Super and Pension from seed data
+  const c1Short = c1First || "Client 1";
+  const c2Short = c2First || "Client 2";
+
+  // Build tab metadata from engine data
+  const {
+    superFundTabs, pensionTabs, annuityTabs, bondTabs, dbTabs,
+    trustTabs, companyTabs, smsfTabs, smsfSubTabs, smsfSubSubMap,
+  } = buildDynamicTabs(engineData, c1Short, c2Short);
+
+  // Now override subTabs for Entities to expand SMSF into per-fund sub-tabs
+  if (activeTop === "Entities") {
+    subTabs = (topConfig?.subTabs || []).flatMap(s => s === "SMSF" ? smsfSubTabs : [s]);
+  }
+
+  // Filter out advice-only sub tabs when on base model
+  if (selectedModel === "base" && topConfig?.adviceOnlySubTabs) {
+    subTabs = subTabs.filter(s => !topConfig.adviceOnlySubTabs.includes(s));
+  }
+
+  const richTabMap = {};
+  superFundTabs.forEach(t => { richTabMap[t.key] = t; });
+  pensionTabs.forEach(t => { richTabMap[t.key] = t; });
+  annuityTabs.forEach(t => { richTabMap[t.key] = t; });
+  bondTabs.forEach(t => { richTabMap[t.key] = t; });
+  dbTabs.forEach(t => { richTabMap[t.key] = t; });
+  // Entity tabs only register in richTabMap when viewing Entities or CGT sections
+  if (activeTop === "Entities" || (activeTop === "Cashflow/Tax" && (activeSub === "CGT" || activeSub === "Unrealised CGT"))) {
+    trustTabs.forEach(t => { richTabMap[t.key] = t; });
+    companyTabs.forEach(t => { richTabMap[t.key] = t; });
+    smsfTabs.forEach(t => { richTabMap[t.key] = t; });
+  }
+  // Tax/CGT tabs just show entity badge (no product prefix)
+  [c1Short, c2Short].forEach(name => { richTabMap[name] = { key: name, product: null, owner: name }; });
+
+  // CGT entity tab names (prefixed to avoid collision with entity section tabs)
+  const cgtEntityTabs = [];
+  (engineData.trusts || []).forEach(t => { const n = t.trust_name || "Trust"; cgtEntityTabs.push(n); });
+  (engineData.companies || []).forEach(c => { const n = c.company_name || "Company"; cgtEntityTabs.push(n); });
+  (engineData.smsfs || []).forEach(s => { const n = s.smsf_name || "SMSF"; cgtEntityTabs.push(n); });
+
+  // Override subSubTabs for Products and Cashflow/Tax with client names
+  const dynamicSubSubTabs = {
+    ...(topConfig?.subSubTabs || {}),
+    "Super": superFundTabs.length > 0 ? superFundTabs.map(t => t.key) : ["Super 1", "Super 2"],
+    "Pension": pensionTabs.length > 0 ? pensionTabs.map(t => t.key) : ["Pension 1"],
+    "Annuity": annuityTabs.length > 0 ? annuityTabs.map(t => t.key) : ["Annuity 1"],
+    "Investment Bond": bondTabs.length > 0 ? bondTabs.map(t => t.key) : ["Bond 1"],
+    "Defined Benefit": dbTabs.length > 0 ? dbTabs.map(t => t.key) : [],
+    "Trusts": trustTabs.length > 0 ? trustTabs.map(t => t.key) : [],
+    "Companies": companyTabs.length > 0 ? companyTabs.map(t => t.key) : [],
+    ...(activeTop === "Entities" ? smsfSubSubMap : {}),
+    "SMSF": smsfTabs.length > 0 ? smsfTabs.map(t => t.key) : [],
+    "Tax": [c1Short, c2Short],
+    "CGT": [c1Short, c2Short, ...cgtEntityTabs],
+    "Unrealised CGT": [c1Short, c2Short, ...cgtEntityTabs],
+  };
+  const subSubTabs = dynamicSubSubTabs[activeSub] || topConfig?.subSubTabs?.[activeSub] || [];
+
+  const tabDisplayName = (tab) => {
+    if (tab === "Client 1") return c1Display;
+    if (tab === "Client 2") return c2Display;
+    if (tab === "Client") return c1Display;
+    if (tab === "Partner") return c2Display;
+    return tab;
+  };
+
+  // =========================================================================
+  // Build projection year range + asset helpers
+  // =========================================================================
+  const { currentFY, ageAtFYStart, c1AgeNow, c2AgeNow, c1Gender, c2Gender, PROJ_YEARS, N_YEARS, shortYears } = buildProjectionSetup(engineData);
+
+  const ownerLabel = makeOwnerLabel(engineData, c1Display, c2Display);
+
+  const { ffAssets, ffDebts, adviceDebts, newDebtDrawdowns, sellLookup, offsetAssetIndices, strat67All, getAssetRates, getAssetDRP } = buildAssetHelpers(engineData, factFind, isAdviceModel, N_YEARS, currentFY);
+
+  const entityOwnerOptions = buildEntityOwnerOptions(factFind);
+
+  // =========================================================================
+  // Run full projection engine pipeline
+  // =========================================================================
+  const {
+    propertyHoldings, defensiveHoldings, growthHoldings, lifestyleHoldings,
+    entityDist,
+    c1InsPremiums, c2InsPremiums, combinedNonSuperIns,
+    annuity1Data, annuity2Data, allDBData,
+    bondDataList, trustDataList, companyDataList, smsfDataList,
+    superProj, penRollIn, penRollOut, rollInDetailPerPension, rollOutDetailPerPension,
+    netWorthChartData, fsCashflowChartData, summaryMeta,
+    financialSummaryData,
+    ssData,
+    agedCareC1, agedCareC2,
+    c1PensionShare, c2PensionShare, combinedPension,
+    c1CGT, c2CGT, trustCGTList, companyCGTList, smsfCGTList,
+    streamedCGTToClient1, streamedCGTToClient2,
+    taxClient1Data, taxClient1ChartData, taxClient2Data, taxClient2ChartData,
+    savingsData, cashflowChartData, txnChartData, assetOpenBals,
+    homeLoanData, investmentLoansData, otherDebtsData,
+    allSuperData, allPensionData, super1Data, super2Data, pension1Data, pension2Data,
+    dynamicAssetTypeChartData, dynamicMilestones,
+    smsfMembersDataMap, smsfSegAccountDataMap,
+  } = runProjectionEngine({
+    engineData, factFind, isAdviceModel,
+    currentFY, ageAtFYStart, N_YEARS, PROJ_YEARS, shortYears,
+    c1Display, c2Display, c1Short, c2Short, c1Gender, c2Gender,
+    ffAssets, ffDebts, adviceDebts, newDebtDrawdowns,
+    sellLookup, offsetAssetIndices, strat67All,
+    getAssetRates, getAssetDRP, ownerLabel,
+    superFundTabs, pensionTabs, annuityTabs, bondTabs,
+    smsfTabs, smsfSubTabs,
+    debtFreqOverrides, debtIOOverrides,
+  });
+
+  // Build dynamic annuity tabs
+  function handleTopChange(tab) {
+    setActiveTop(tab);
+    const config = NAV_STRUCTURE[tab];
+    const newSubTabs = tab === "Entities"
+      ? (config?.subTabs || []).flatMap(s => s === "SMSF" ? smsfSubTabs : [s])
+      : (config?.subTabs || []);
+    const firstSub = newSubTabs[0] || config?.subTabs?.[0] || "";
+    setActiveSub(firstSub);
+    const freshSubSubTabs = { ...(config?.subSubTabs || {}) };
+    if (tab === "Superannuation") {
+      Object.assign(freshSubSubTabs,
+        { "Super": superFundTabs.length > 0 ? superFundTabs.map(t => t.key) : freshSubSubTabs["Super"] },
+        { "Pension": pensionTabs.length > 0 ? pensionTabs.map(t => t.key) : freshSubSubTabs["Pension"] },
+        { "Annuity": annuityTabs.length > 0 ? annuityTabs.map(t => t.key) : freshSubSubTabs["Annuity"] },
+        { "Defined Benefit": dbTabs.length > 0 ? dbTabs.map(t => t.key) : freshSubSubTabs["Defined Benefit"] },
+      );
+    }
+    if (tab === "Investment Products") {
+      Object.assign(freshSubSubTabs,
+        { "Investment Bond": bondTabs.length > 0 ? bondTabs.map(t => t.key) : freshSubSubTabs["Investment Bond"] },
+      );
+    }
+    if (tab === "Cashflow/Tax") {
+      Object.assign(freshSubSubTabs,
+        { "Tax": [c1Short, c2Short], "CGT": [c1Short, c2Short], "Unrealised CGT": [c1Short, c2Short] },
+      );
+    }
+    if (tab === "Entities") {
+      Object.assign(freshSubSubTabs,
+        { "Trusts": trustTabs.length > 0 ? trustTabs.map(t => t.key) : [] },
+        { "Companies": companyTabs.length > 0 ? companyTabs.map(t => t.key) : [] },
+        smsfSubSubMap,
+      );
+    }
+    const firstSubSub = freshSubSubTabs[firstSub]?.[0] || "";
+    setActiveSubSub(firstSubSub);
+  }
+
+  function handleSubChange(tab) {
+    setActiveSub(tab);
+    const firstSubSub = dynamicSubSubTabs[tab]?.[0] || topConfig?.subSubTabs?.[tab]?.[0] || "";
+    setActiveSubSub(firstSubSub);
+  }
+
+  // Navigate to a specific page from source tags: [topTab, subTab, subSubTab]
+  function navigateTo(navPath) {
+    if (!navPath || navPath.length < 2) return;
+    let [top, sub, subSub] = navPath;
+
+    // Auto-remap old "Products" nav paths to new top-level sections
+    if (top === "Products") {
+      const superTypes = ["Superannuation", "Super", "Pension", "Annuity", "Defined Benefit"];
+      const investTypes = ["Wrap", "Investment Bond"];
+      if (superTypes.includes(sub)) {
+        top = "Superannuation";
+        if (sub === "Superannuation") sub = "Super";
+      } else if (investTypes.includes(sub)) {
+        top = "Investment Products";
+      }
+    }
+
+    setActiveTop(top);
+    setActiveSub(sub);
+    if (subSub) setActiveSubSub(subSub);
+    else {
+      const useDynamic = top === "Superannuation" || top === "Investment Products" || top === "Cashflow/Tax" || top === "Entities";
+      const dynSST = useDynamic ? dynamicSubSubTabs : NAV_STRUCTURE[top]?.subSubTabs;
+      const firstSubSub = dynSST?.[sub]?.[0] || NAV_STRUCTURE[top]?.subSubTabs?.[sub]?.[0] || "";
+      setActiveSubSub(firstSubSub);
+    }
+  }
+
+  const isFinancialSummary =
+    activeTop === "Summary of Results" &&
+    activeSub === "Timeline";
+
+  const isMilestones =
+    activeTop === "Summary of Results" &&
+    activeSub === "Milestones";
+
+  const isCapitalDashboard = false; // removed — Capital is now its own top-level section
+
+  const isNetEquity =
+    activeTop === "Capital" &&
+    activeSub === "Projection";
+
+  const isNetEquityProperty = false;
+  const isNetEquityDebt = false;
+
+  const isCashflowDashboard =
+    activeTop === "Summary of Results" &&
+    activeSub === "Cashflow";
+
+  const isRetirementDashboard =
+    activeTop === "Summary of Results" &&
+    activeSub === "Retirement";
+
+  const isHealthCheck = false; // removed — replaced by retirement tiles
+
+  const isAdviceSummary =
+    activeTop === "Summary of Results" &&
+    activeSub === "Advice Summary";
+
+  const isPortfolio =
+    activeTop === "Summary of Results" &&
+    activeSub === "Portfolio";
+
+  const isBenefitOfAdvice =
+    activeTop === "Advice Detail" &&
+    activeSub === "Advice Impact";
+
+  const isProductProjection = false;
+  const isPortfolioTransactions = false;
+
+  const isObjectives =
+    activeTop === "Advice Detail" &&
+    activeSub === "Objectives";
+
+  const isRecommendations =
+    activeTop === "Advice Detail" &&
+    activeSub === "Recommendations";
+
+  const isScope = false;
+
+  const isEligibility1 =
+    activeTop === "Rates" &&
+    activeSub === "Client 1" &&
+    activeSubSub === "Eligibility";
+
+  const isRebalancing =
+    activeTop === "Rates" &&
+    activeSub === "Model" &&
+    activeSubSub === "Rebalancing";
+
+  const isEligibility2 =
+    activeTop === "Rates" &&
+    activeSub === "Client 2" &&
+    activeSubSub === "Eligibility";
+
+  const isAssumptionsSuper1 =
+    activeTop === "Rates" &&
+    activeSub === "Client 1" &&
+    activeSubSub === "Superannuation";
+
+  const isAssumptionsSuper2 =
+    activeTop === "Rates" &&
+    activeSub === "Client 2" &&
+    activeSubSub === "Superannuation";
+
+  const isAgedCare =
+    activeTop === "Aged Care" &&
+    activeSub === "Assessment";
+
+  const isSS =
+    activeTop === "Social Security" &&
+    activeSub === "Assessment";
+
+  const isModelComparison =
+    activeTop === "Summary of Results" &&
+    activeSub === "Model Comparison";
+
+  const isSOADocument =
+    activeTop === "SOA Document" &&
+    activeSub === "Builder";
+
+  const isModelComparisonDetail = false;
+
+  const isSavings =
+    activeTop === "Cashflow/Tax" &&
+    activeSub === "Cashflow" &&
+    activeSubSub === "Savings";
+
+  const isTaxClient1 =
+    activeTop === "Cashflow/Tax" &&
+    activeSub === "Tax" &&
+    (activeSubSub === c1Short || activeSubSub === c1Display || activeSubSub === "Client 1");
+
+  const isTaxClient2 =
+    activeTop === "Cashflow/Tax" &&
+    activeSub === "Tax" &&
+    (activeSubSub === c2Short || activeSubSub === c2Display || activeSubSub === "Client 2");
+
+  const isCGTClient1 =
+    activeTop === "Cashflow/Tax" &&
+    activeSub === "CGT" &&
+    (activeSubSub === c1Short || activeSubSub === c1Display || activeSubSub === "Client 1");
+
+  const isCGTClient2 =
+    activeTop === "Cashflow/Tax" &&
+    activeSub === "CGT" &&
+    (activeSubSub === c2Short || activeSubSub === c2Display || activeSubSub === "Client 2");
+
+  const matchedCGTTrustIdx = activeTop === "Cashflow/Tax" && activeSub === "CGT"
+    ? trustCGTList.findIndex(t => t.name === activeSubSub) : -1;
+  const matchedCGTCompanyIdx = activeTop === "Cashflow/Tax" && activeSub === "CGT"
+    ? companyCGTList.findIndex(c => c.name === activeSubSub) : -1;
+  const matchedCGTSmsfIdx = activeTop === "Cashflow/Tax" && activeSub === "CGT"
+    ? smsfCGTList.findIndex(s => s.name === activeSubSub) : -1;
+
+  const isUCGTClient1 =
+    activeTop === "Cashflow/Tax" &&
+    activeSub === "Unrealised CGT" &&
+    (activeSubSub === c1Short || activeSubSub === c1Display || activeSubSub === "Client 1");
+
+  const isUCGTClient2 =
+    activeTop === "Cashflow/Tax" &&
+    activeSub === "Unrealised CGT" &&
+    (activeSubSub === c2Short || activeSubSub === c2Display || activeSubSub === "Client 2");
+
+  const matchedUCGTTrustIdx = activeTop === "Cashflow/Tax" && activeSub === "Unrealised CGT"
+    ? trustCGTList.findIndex(t => t.name === activeSubSub) : -1;
+  const matchedUCGTCompanyIdx = activeTop === "Cashflow/Tax" && activeSub === "Unrealised CGT"
+    ? companyCGTList.findIndex(c => c.name === activeSubSub) : -1;
+  const matchedUCGTSmsfIdx = activeTop === "Cashflow/Tax" && activeSub === "Unrealised CGT"
+    ? smsfCGTList.findIndex(s => s.name === activeSubSub) : -1;
+
+  const isDeathTax =
+    activeTop === "Cashflow/Tax" &&
+    activeSub === "Potential Death Tax";
+
+  const matchedSuperIdx = activeTop === "Superannuation" && activeSub === "Super"
+    ? superFundTabs.findIndex(t => t.key === activeSubSub) : -1;
+  const isSuper1 = matchedSuperIdx === 0;
+  const isSuper2 = matchedSuperIdx === 1;
+
+  const matchedPensionIdx = activeTop === "Superannuation" && activeSub === "Pension"
+    ? pensionTabs.findIndex(t => t.key === activeSubSub) : -1;
+  const isPension1 = matchedPensionIdx === 0;
+  const isPension2 = matchedPensionIdx === 1;
+
+  const matchedBondIdx = activeTop === "Investment Products" && activeSub === "Investment Bond"
+    ? bondTabs.findIndex(t => t.key === activeSubSub) : -1;
+
+  const matchedDBIdx = activeTop === "Superannuation" && activeSub === "Defined Benefit"
+    ? dbTabs.findIndex(t => t.key === activeSubSub) : -1;
+
+  const isDefensiveAssets =
+    activeTop === "Assets & Liabilities" &&
+    activeSub === "Assets" &&
+    activeSubSub === "Defensive Assets";
+
+  const isGrowthAssets =
+    activeTop === "Assets & Liabilities" &&
+    activeSub === "Assets" &&
+    activeSubSub === "Growth Assets";
+
+  const isPropertyAssets =
+    activeTop === "Assets & Liabilities" &&
+    activeSub === "Assets" &&
+    activeSubSub === "Property";
+
+  const isLifestyleAssets =
+    activeTop === "Assets & Liabilities" &&
+    activeSub === "Assets" &&
+    activeSubSub === "Lifestyle Assets";
+
+  const isHomeLoan =
+    activeTop === "Assets & Liabilities" &&
+    activeSub === "Debts" &&
+    activeSubSub === "Home Loan";
+
+  const isInvestmentLoans =
+    activeTop === "Assets & Liabilities" &&
+    activeSub === "Debts" &&
+    activeSubSub === "Investment Loans";
+
+  const isOtherDebts =
+    activeTop === "Assets & Liabilities" &&
+    activeSub === "Debts" &&
+    activeSubSub === "Other";
+
+  const matchedTrustIdx = activeTop === "Entities" && activeSub === "Trusts"
+    ? trustTabs.findIndex(t => t.key === activeSubSub) : -1;
+  const matchedCompanyIdx = activeTop === "Entities" && activeSub === "Companies"
+    ? companyTabs.findIndex(t => t.key === activeSubSub) : -1;
+  const isSmsfSubTab = activeTop === "Entities" && smsfSubTabs.includes(activeSub);
+  const matchedSmsfIdx = isSmsfSubTab
+    ? smsfDataList.findIndex(s => s.name === activeSubSub) : -1;
+  const matchedSmsfMembers = isSmsfSubTab
+    ? smsfMembersDataMap[activeSubSub] : null;
+  const matchedSmsfSegAccount = isSmsfSubTab
+    ? smsfSegAccountDataMap[activeSubSub] : null;
+  // Fund summary: when activeSubSub matches the fund name itself
+  const matchedSmsfFund = isSmsfSubTab
+    ? smsfDataList.find(s => s.name === activeSubSub) : null;
+
+  const isAnnuity1 =
+    activeTop === "Superannuation" &&
+    activeSub === "Annuity" &&
+    activeSubSub === (annuityTabs[0]?.key || "Annuity 1");
+
+  const isAnnuity2 =
+    activeTop === "Superannuation" &&
+    activeSub === "Annuity" &&
+    activeSubSub === (annuityTabs[1]?.key || "Annuity 2");
+
+  const isWrap1 =
+    activeTop === "Investment Products" &&
+    activeSub === "Wrap";
+
+  const isInsuranceClient =
+    activeTop === "Insurance" &&
+    activeSub === "Projection" &&
+    activeSubSub === "Client";
+
+  const isInsurancePartner =
+    activeTop === "Insurance" &&
+    activeSub === "Projection" &&
+    activeSubSub === "Partner";
+
+  const isPremiumCostClient =
+    activeTop === "Insurance" &&
+    activeSub === "Premium Costs" &&
+    activeSubSub === "Client";
+
+  const isPremiumCostPartner =
+    activeTop === "Insurance" &&
+    activeSub === "Premium Costs" &&
+    activeSubSub === "Partner";
+
+  const activePageData = isFinancialSummary ? financialSummaryData
+    : isNetEquity ? NET_EQUITY_DATA
+    : null;
+
+  // Fact Find sections
+  const FACT_FIND_SECTIONS = [
+    { id: "principals", icon: "👤", label: "Principals", desc: "Client details, DOB, salary, deductions", color: "#4F46E5" },
+    { id: "dependants", icon: "👥", label: "Dependants", desc: "Children & other dependants", color: "#EC4899" },
+    { id: "trusts_companies", icon: "🏛️", label: "Trusts & Companies", desc: "Trusts, Pty Ltd entities, shareholders", color: "#D97706" },
+    { id: "smsf", icon: "🔒", label: "SMSF", desc: "Self-managed super fund accounts", color: "#6366F1" },
+    { id: "superannuation", icon: "🏦", label: "Superannuation", desc: "Super funds, pensions, annuities", color: "#0891B2" },
+    { id: "investments", icon: "📊", label: "Investments", desc: "Wraps, master trusts, investment bonds", color: "var(--ps-green)" },
+    { id: "assets", icon: "🏠", label: "Assets", desc: "Property, vehicles, investments, cash", color: "#0891B2" },
+    { id: "liabilities", icon: "💳", label: "Liabilities", desc: "Loans, mortgages, credit cards", color: "var(--ps-red)" },
+    { id: "income", icon: "💵", label: "Income", desc: "Salary, benefits, bonuses, adjustments", color: "var(--ps-green)" },
+    { id: "expenses", icon: "🧾", label: "Expenses", desc: "Spending, savings, expense adjustments", color: "var(--ps-red)" },
+    { id: "goals", icon: "🎯", label: "Goals", desc: "Advice reasons, objectives & retirement planning", color: "#DB2777" },
+    { id: "risk-profile", icon: "📋", label: "Risk Profile", desc: "Risk questionnaire, attitude to investing", color: "#9333EA" },
+    { id: "insurance-policies", icon: "🛡️", label: "Insurance Policies", desc: "Life, TPD, Trauma, IP policies", color: "#7C3AED" },
+    { id: "assumptions", icon: "⚙️", label: "Modelling", desc: "Growth rates, inflation, modelling parameters", color: "var(--ps-text-muted)" },
+    { id: "tax-super-planning", icon: "📊", label: "Tax & Super Planning", desc: "Low rate threshold, bring forward, transfer balance cap", color: "#0891B2" },
+  ];
+
+  const FACT_FIND_GROUPS = [
+    { label: "People", ids: ["principals", "dependants"] },
+    { label: "Entities", ids: ["trusts_companies", "smsf"] },
+    { label: "Products", ids: ["superannuation", "investments"] },
+    { label: "Capital", ids: ["assets", "liabilities"] },
+    { label: "Cashflow", ids: ["income", "expenses"] },
+    { label: "Goals & Risk Profile", ids: ["goals", "risk-profile"] },
+    { label: "Wealth Protection", ids: ["insurance-policies"] },
+    { label: "Assumptions", ids: ["assumptions", "tax-super-planning"] },
+  ];
+
+  const factFindPanelJSX = (
+    <div style={{
+      position: "fixed", top: 0, right: 0, bottom: 0,
+      width: factFindMode === "ai" ? "100vw" : (factFindSection ? "65vw" : 400),
+      background: "var(--ps-surface)",
+      boxShadow: "-4px 0 24px var(--ps-shadow-sm)",
+      zIndex: 1000,
+      display: "flex",
+      transition: "width 0.2s ease",
+      borderLeft: "1px solid var(--ps-border)",
+    }}>
+      {/* Left: Section icons */}
+      <div style={{
+        width: (factFindSection || factFindMode === "ai") ? 280 : "100%",
+        borderRight: (factFindSection || factFindMode === "ai") ? "1px solid var(--ps-border)" : "none",
+        overflowY: "auto",
+        background: "var(--ps-surface-alt)",
+      }}>
+        <div style={{
+          padding: "16px 20px",
+          borderBottom: "1px solid var(--ps-border)",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 18 }}>{factFindMode === "ai" ? "🎙️" : "📋"}</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ps-text-primary)" }}>{factFindMode === "ai" ? "AI Fact Find" : "Fact Find"}</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{
+              display: "flex", background: "var(--ps-surface)", border: "1px solid var(--ps-border)",
+              borderRadius: 8, overflow: "hidden",
+            }}>
+              <button onClick={() => setFactFindMode("manual")} style={{
+                padding: "5px 12px", border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer",
+                background: factFindMode === "manual" ? "var(--ps-surface-teal)" : "transparent",
+                color: factFindMode === "manual" ? "#0D9488" : "var(--ps-text-muted)",
+                transition: "all 0.15s",
+              }}>Manual</button>
+              <button onClick={() => { setFactFindMode("ai"); if (!factFindSection) setFactFindSection("principals"); }} style={{
+                padding: "5px 12px", border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer",
+                background: factFindMode === "ai" ? "#0D948820" : "transparent",
+                color: factFindMode === "ai" ? "#0D9488" : "var(--ps-text-muted)",
+                transition: "all 0.15s",
+                display: "flex", alignItems: "center", gap: 4,
+              }}>🎙️ AI</button>
+            </div>
+            <button onClick={() => { setFactFindOpen(false); setFactFindSection(null); setFactFindMode("manual"); }} style={{
+              width: 28, height: 28, borderRadius: 6, border: "1px solid var(--ps-border)",
+              background: "var(--ps-surface)", cursor: "pointer", fontSize: 14, color: "var(--ps-text-muted)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>✕</button>
+          </div>
+        </div>
+
+        <div style={{ padding: (factFindSection || factFindMode === "ai") ? "12px 10px" : "16px 20px" }}>
+          {FACT_FIND_GROUPS.map((group, gi) => (
+            <div key={gi} style={{ marginBottom: (factFindSection || factFindMode === "ai") ? 10 : 16 }}>
+              <div style={{
+                fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)",
+                textTransform: "uppercase", letterSpacing: "0.06em",
+                marginBottom: (factFindSection || factFindMode === "ai") ? 4 : 8,
+                padding: (factFindSection || factFindMode === "ai") ? "0 6px" : 0,
+              }}>{group.label}</div>
+
+              {(factFindSection || factFindMode === "ai") ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  {group.ids.map(id => {
+                    const s = FACT_FIND_SECTIONS.find(x => x.id === id);
+                    const isActive = factFindSection === id;
+                    return (
+                      <button key={id} onClick={() => setFactFindSection(id)} style={{
+                        display: "flex", alignItems: "center", gap: 8,
+                        padding: "7px 10px", borderRadius: 6,
+                        border: "none", cursor: "pointer",
+                        background: isActive ? "var(--ps-surface-indigo)" : "transparent",
+                        transition: "all 0.1s ease",
+                      }}>
+                        <span style={{ fontSize: 14, width: 20, textAlign: "center" }}>{s.icon}</span>
+                        <span style={{
+                          fontSize: 12, fontWeight: isActive ? 600 : 400,
+                          color: isActive ? "#4F46E5" : "var(--ps-text-secondary)",
+                        }}>{s.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  {group.ids.map(id => {
+                    const s = FACT_FIND_SECTIONS.find(x => x.id === id);
+                    return (
+                      <button key={id} onClick={() => setFactFindSection(id)} style={{
+                        display: "flex", flexDirection: "column", alignItems: "center",
+                        gap: 6, padding: "14px 8px", borderRadius: 10,
+                        border: "1px solid var(--ps-border)", cursor: "pointer",
+                        background: "var(--ps-surface)",
+                        transition: "all 0.15s ease",
+                      }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = s.color; e.currentTarget.style.background = s.color + "08"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ps-border)"; e.currentTarget.style.background = "var(--ps-surface)"; }}
+                      >
+                        <div style={{
+                          width: 40, height: 40, borderRadius: 10,
+                          background: s.color + "12",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 20,
+                        }}>{s.icon}</div>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "var(--ps-text-primary)", textAlign: "center", lineHeight: "1.3" }}>{s.label}</span>
+                        <span style={{ fontSize: 10, color: "var(--ps-text-subtle)", textAlign: "center", lineHeight: "1.3" }}>{s.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right: Form area */}
+      {factFindSection && (
+        <div style={{ flex: 1, overflowY: "auto", background: "var(--ps-surface)", display: "flex", flexDirection: "row" }}>
+          {/* Form content */}
+          <div style={{ flex: 1, overflowY: "auto", minWidth: 0 }}>
+            <div style={{
+            padding: "16px 20px",
+            borderBottom: "1px solid var(--ps-border)",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{
+                width: 34, height: 34, borderRadius: 8,
+                background: (FACT_FIND_SECTIONS.find(s => s.id === factFindSection)?.color || "#4F46E5") + "15",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 17,
+              }}>
+                {FACT_FIND_SECTIONS.find(s => s.id === factFindSection)?.icon}
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ps-text-primary)" }}>
+                  {FACT_FIND_SECTIONS.find(s => s.id === factFindSection)?.label}
+                </div>
+                <div style={{ fontSize: 11, color: "var(--ps-text-subtle)" }}>
+                  {FACT_FIND_SECTIONS.find(s => s.id === factFindSection)?.desc}
+                </div>
+              </div>
+            </div>
+            <button onClick={() => setFactFindSection(null)} style={{
+              padding: "4px 10px", borderRadius: 5, border: "1px solid var(--ps-border)",
+              background: "var(--ps-surface)", cursor: "pointer", fontSize: 11, color: "var(--ps-text-muted)", fontWeight: 500,
+            }}>← Back</button>
+          </div>
+
+          <div style={{ padding: "24px 28px" }}>
+            {factFindSection === "principals" ? (
+              <PrincipalsForm
+                factFind={factFind}
+                updateFF={updateFF}
+                addPrincipal={addPrincipal}
+                removePrincipal={removePrincipal}
+              />
+            ) : factFindSection === "dependants" ? (
+              <DependantsForm
+                factFind={factFind}
+                updateFF={updateFF}
+              />
+            ) : factFindSection === "superannuation" ? (
+              <SuperannuationForm
+                factFind={factFind}
+                updateFF={updateFF}
+              />
+            ) : factFindSection === "investments" ? (
+              <InvestmentsForm
+                factFind={factFind}
+                updateFF={updateFF}
+              />
+            ) : factFindSection === "trusts_companies" ? (
+              <TrustsCompaniesForm
+                factFind={factFind}
+                updateFF={updateFF}
+              />
+            ) : factFindSection === "smsf" ? (
+              <SMSFForm
+                factFind={factFind}
+                updateFF={updateFF}
+              />
+            ) : factFindSection === "assets" ? (
+              <AssetsForm
+                factFind={factFind}
+                updateFF={updateFF}
+                entityOwnerOptions={entityOwnerOptions}
+              />
+            ) : factFindSection === "liabilities" ? (
+              <LiabilitiesForm
+                factFind={factFind}
+                updateFF={updateFF}
+                entityOwnerOptions={entityOwnerOptions}
+              />
+            ) : factFindSection === "insurance-policies" ? (
+              <InsurancePoliciesForm
+                factFind={factFind}
+                updateFF={updateFF}
+              />
+            ) : factFindSection === "income" ? (
+              <IncomeForm
+                factFind={factFind}
+                updateFF={updateFF}
+              />
+            ) : factFindSection === "expenses" ? (
+              <ExpensesForm
+                factFind={factFind}
+                updateFF={updateFF}
+              />
+            ) : factFindSection === "goals" ? (
+              <GoalsForm
+                factFind={factFind}
+                updateFF={updateFF}
+              />
+            ) : factFindSection === "risk-profile" ? (
+              <RiskProfileForm
+                factFind={factFind}
+                updateFF={updateFF}
+              />
+            ) : factFindSection === "assumptions" ? (
+              <AssumptionsPanel factFind={factFind} updateFF={updateFF} />
+            ) : factFindSection === "tax-super-planning" ? (
+              <TaxSuperPlanningForm factFind={factFind} updateFF={updateFF} />
+            ) : (
+              <div style={{
+                padding: "40px 24px", borderRadius: 12,
+                border: "2px dashed var(--ps-border)",
+                textAlign: "center",
+              }}>
+                <div style={{ fontSize: 36, marginBottom: 12 }}>
+                  {FACT_FIND_SECTIONS.find(s => s.id === factFindSection)?.icon}
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ps-text-secondary)", marginBottom: 6 }}>
+                  {FACT_FIND_SECTIONS.find(s => s.id === factFindSection)?.label} Form
+                </div>
+                <div style={{ fontSize: 12, color: "var(--ps-text-subtle)" }}>
+                  Input fields will be built here
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+          {/* AI Fact Find Chat — embedded right column */}
+          {factFindMode === "ai" && (
+            <div style={{
+              width: 440, minWidth: 440, borderLeft: "1px solid var(--ps-border)",
+              display: "flex", flexDirection: "column", background: "var(--ps-surface)",
+            }}>
+              <AiFactFind
+                factFind={factFind}
+                updateFF={updateFF}
+                embedded={true}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* AI mode — no section selected: show full AI Fact Find */}
+      {!factFindSection && factFindMode === "ai" && (
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--ps-surface)" }}>
+          <AiFactFind
+            factFind={factFind}
+            updateFF={updateFF}
+            embedded={true}
+          />
+        </div>
+      )}
+    </div>
+  );
+
+  // =========================================================================
+  // QUICK RECS FORM
+  // =========================================================================
+  const QuickRecsForm = ({ factFind, baseFf, updateFF }) => {
+    const ff = baseFf || factFind;
+    const qr = factFind?.advice_request?.quick_recs || {};
+    const save = (patch) => updateFF("advice_request.quick_recs", { ...qr, ...patch });
+
+    const c1 = ff.client1 || {};
+    const c2 = ff.client2 || {};
+    const c1Name = [c1.first_name, c1.last_name].filter(Boolean).join(" ") || "Client 1";
+    const c2Name = [c2.first_name, c2.last_name].filter(Boolean).join(" ") || "Client 2";
+    const hasPartner = !!ff.client2?.first_name;
+    const FUNERAL_BOND_MAX = 15500;
+
+    // Pull entity lists from fact find
+    const entities = ff.advice_request?.entities || {};
+    const trusts = (entities.trusts || []).filter(t => t.name);
+    const companies = (entities.companies || []).filter(c => c.name);
+    // Also check existing entities register
+    const ffTrusts = (ff.trusts || []).filter(t => t.e_name);
+    const ffCompanies = (ff.companies || []).filter(c => c.e_name);
+    const allTrusts = [...ffTrusts.map(t => t.e_name), ...trusts.map(t => t.name)];
+    const allCompanies = [...ffCompanies.map(c => c.e_name), ...companies.map(c => c.name)];
+
+    const toggleRec = (key) => save({ [key]: !qr[key] });
+
+    const RecCard = ({ id, icon, title, desc, note, children }) => {
+      const selected = !!qr[id];
+      return (
+        <div onClick={() => toggleRec(id)} style={{
+          border: `2px solid ${selected ? "#4F46E5" : "var(--ps-border)"}`,
+          borderRadius: 10, padding: "14px 16px", marginBottom: 10,
+          background: selected ? "var(--ps-surface-indigo)" : "var(--ps-surface-alt)",
+          cursor: "pointer", transition: "all 0.15s",
+        }}>
+          <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+            <div style={{ fontSize: 22, lineHeight: 1, marginTop: 1 }}>{icon}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: selected ? "#3730A3" : "var(--ps-text-primary)" }}>{title}</div>
+                {selected && <span style={{ fontSize: 10, fontWeight: 700, color: "var(--ps-surface)", background: "#4F46E5", padding: "2px 8px", borderRadius: 10 }}>INCLUDED</span>}
+              </div>
+              <div style={{ fontSize: 11, color: "var(--ps-text-muted)", lineHeight: 1.5 }}>{desc}</div>
+              {note && <div style={{ fontSize: 11, color: "var(--ps-text-subtle)", marginTop: 4, fontStyle: "italic" }}>{note}</div>}
+            </div>
+          </div>
+          {selected && children && (
+            <div onClick={e => e.stopPropagation()} style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--ps-ring-indigo)" }}>
+              {children}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const inputStyle = { border: "1px solid var(--ps-ring-indigo)", borderRadius: 6, padding: "5px 10px", fontSize: 12, outline: "none", background: "var(--ps-surface)", width: "100%" };
+    const labelStyle = { fontSize: 11, fontWeight: 600, color: "#3730A3", marginBottom: 4 };
+
+    const SectionHead = ({ label }) => (
+      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ps-text-subtle)", textTransform: "uppercase", letterSpacing: "0.06em", margin: "20px 0 10px" }}>{label}</div>
+    );
+
+    return (
+      <div style={{ padding: "24px 28px", maxWidth: 740 }}>
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "var(--ps-text-primary)", marginBottom: 4 }}>Quick Recs</div>
+          <div style={{ fontSize: 13, color: "var(--ps-text-muted)" }}>Select the strategies to include in your recommendations. Each selected item will be added to the advice provided to the client.</div>
+        </div>
+
+        <SectionHead label="Estate Planning" />
+        <RecCard id="will_c1" icon="📜" title={`Update Will — ${c1Name}`}
+          desc="Ensure the will is current, valid and reflects the client's current wishes, assets and family situation." />
+        {hasPartner && <RecCard id="will_c2" icon="📜" title={`Update Will — ${c2Name}`}
+          desc="Ensure the will is current, valid and reflects the client's current wishes, assets and family situation." />}
+        <RecCard id="test_trust_c1" icon="🏛️" title={`Testamentary Trust — ${c1Name}`}
+          desc="A testamentary trust established through the will allows tax-effective distribution of estate assets to beneficiaries, including income splitting to minor children at adult tax rates." />
+        {hasPartner && <RecCard id="test_trust_c2" icon="🏛️" title={`Testamentary Trust — ${c2Name}`}
+          desc="A testamentary trust established through the will allows tax-effective distribution of estate assets to beneficiaries, including income splitting to minor children at adult tax rates." />}
+
+        <SectionHead label="Assets & Liabilities" />
+        <RecCard id="credit_card" icon="💳" title="Use Credit Card for Monthly Expenses"
+          desc="Pay all monthly living expenses on an interest-free credit card. Leave cash sitting in the offset account for the full month before clearing the card, maximising daily offset balance and reducing mortgage interest. Card must be cleared in full each month." />
+        <RecCard id="mda" icon="📊" title="Establish a Managed Discretionary Account (MDA)"
+          desc="An MDA allows a licensed investment manager to make portfolio decisions on the client's behalf without requiring prior approval for each transaction. Provides professional, timely portfolio management within an agreed investment mandate.">
+          <div>
+            <div style={labelStyle}>MDA Provider / Platform Name</div>
+            <input style={inputStyle} value={qr.mda_name || ""} onChange={e => save({ mda_name: e.target.value })} placeholder="e.g. Macquarie MDA, Praemium, Managed Portfolio" />
+          </div>
+        </RecCard>
+
+        <SectionHead label="Centrelink Strategy" />
+        <RecCard id="gifting" icon="🎁" title="Maximum Gifting"
+          desc="Gift assets to reduce assessable assets and income for Centrelink means testing. Gifting limits: $10,000 per financial year, $30,000 over any rolling 5-year period per couple. Amounts above these limits are treated as deprived assets for 5 years. Set the specific amount in Modelling Strategies."
+          note="Gifting limits apply per couple. Centrelink deems deprived assets for 5 years above the limits." />
+        <RecCard id="funeral_bond_c1" icon="⚰️" title={`Funeral Bond — ${c1Name}`}
+          desc={`A prepaid funeral bond is exempt from the Centrelink assets test up to $${FUNERAL_BOND_MAX.toLocaleString()} per person (current indexed limit). Reduces assessable assets dollar-for-dollar, potentially increasing Age Pension entitlement. Set the amount in Modelling Strategies.`}
+          note={`Current exempt limit: $${FUNERAL_BOND_MAX.toLocaleString()} per person, indexed annually by CPI.`} />
+        {hasPartner && <RecCard id="funeral_bond_c2" icon="⚰️" title={`Funeral Bond — ${c2Name}`}
+          desc={`A prepaid funeral bond is exempt from the Centrelink assets test up to $${FUNERAL_BOND_MAX.toLocaleString()} per person (current indexed limit). Reduces assessable assets dollar-for-dollar, potentially increasing Age Pension entitlement. Set the amount in Modelling Strategies.`}
+          note={`Current exempt limit: $${FUNERAL_BOND_MAX.toLocaleString()} per person, indexed annually by CPI.`} />}
+
+      </div>
+    );
+  };
+
+    // =========================================================================
+  // ADVICE PANEL JSX
+  const ADVICE_SECTIONS = [
+    { id: "scope", icon: "📐", label: "Scope of Advice", desc: "Define what areas the advice will cover", color: "#0D9488" },
+    { id: "advice-models", icon: "📊", label: "Advice Models", desc: "Define drawdown, surplus & portfolio models", color: "#4F46E5" },
+    { id: "entities", icon: "🏢", label: "Entities", desc: "Trusts, companies, SMSFs & structures", color: "#0891B2" },
+    { id: "retirement-products", icon: "🏖️", label: "Retirement Products", desc: "Super funds & pensions", color: "#D97706" },
+    { id: "investment-products", icon: "💼", label: "Investment Products", desc: "Wraps, bonds & managed accounts", color: "var(--ps-green)" },
+    { id: "product-replacement", icon: "🔁", label: "Product Replacement", desc: "Rollovers & fund transfers", color: "var(--ps-red)" },
+    { id: "transactions", icon: "🔄", label: "Transactions", desc: "Buy & sell assets, new debts", color: "#D97706" },
+    { id: "portfolio", icon: "📊", label: "Portfolio", desc: "Asset allocation & investment selection", color: "var(--ps-green)" },
+    { id: "insurance-needs", icon: "🛡️", label: "Insurance Needs", desc: "Needs analysis & gap assessment", color: "#7C3AED" },
+    { id: "insurance-policies", icon: "📋", label: "Insurance Policies", desc: "Policy recommendations & changes", color: "#7C3AED" },
+    { id: "quick-recs", icon: "✅", label: "Quick Recs", desc: "Simple recommendations from modelling", color: "var(--ps-green)" },
+    { id: "strategies", icon: "⚡", label: "Modelling Strategies", desc: "Strategic recommendations & rationale", color: "#4F46E5" },
+    { id: "assumptions", icon: "⚙️", label: "Modelling", desc: "Growth rates, inflation, modelling parameters", color: "var(--ps-text-muted)" },
+    { id: "tax-super-planning", icon: "📊", label: "Tax & Super Planning", desc: "Low rate threshold, bring forward, transfer balance cap", color: "#0891B2" },
+  ];
+
+  const ADVICE_GROUPS = [
+    { label: "Advice Framework", ids: ["scope", "advice-models"] },
+    { label: "Entities & Product", ids: ["entities", "retirement-products", "investment-products", "product-replacement"] },
+    { label: "Transactions", ids: ["transactions", "portfolio"] },
+    { label: "Wealth Protection", ids: ["insurance-needs", "insurance-policies"] },
+    { label: "Strategy", ids: ["quick-recs", "strategies"] },
+    { label: "Assumptions", ids: ["assumptions", "tax-super-planning"] },
+  ];
+
+  const advicePanelJSX = (
+    <div style={{
+      position: "fixed", top: 0, right: 0, bottom: 0,
+      width: adviceMode === "ai" ? "100vw" : (adviceSection ? "72vw" : 400),
+      maxWidth: adviceMode === "ai" ? "100vw" : (adviceSection ? 1300 : 400),
+      background: "var(--ps-surface)",
+      boxShadow: "-4px 0 24px var(--ps-shadow-sm)",
+      zIndex: 1000,
+      display: "flex",
+      transition: "width 0.2s ease",
+      borderLeft: "1px solid var(--ps-border)",
+    }}>
+      {/* Left: Section nav */}
+      <div style={{
+        width: (adviceSection || adviceMode === "ai") ? 200 : "100%",
+        minWidth: (adviceSection || adviceMode === "ai") ? 200 : undefined,
+        borderRight: (adviceSection || adviceMode === "ai") ? "1px solid var(--ps-border)" : "none",
+        overflowY: "auto",
+        background: "var(--ps-surface-alt)",
+      }}>
+        <div style={{
+          padding: "16px 20px",
+          borderBottom: "1px solid var(--ps-border)",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 18 }}>{adviceMode === "ai" ? "🧠" : "💡"}</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ps-text-primary)" }}>{adviceMode === "ai" ? "AI Paraplanner" : "Advice"}</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{
+              display: "flex", background: "var(--ps-surface)", border: "1px solid var(--ps-border)",
+              borderRadius: 8, overflow: "hidden",
+            }}>
+              <button onClick={() => setAdviceMode("manual")} style={{
+                padding: "5px 12px", border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer",
+                background: adviceMode === "manual" ? "var(--ps-surface-teal)" : "transparent",
+                color: adviceMode === "manual" ? "#0D9488" : "var(--ps-text-muted)",
+                transition: "all 0.15s",
+              }}>Manual</button>
+              <button onClick={() => { setAdviceMode("ai"); if (!adviceSection) setAdviceSection("strategies"); }} style={{
+                padding: "5px 12px", border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer",
+                background: adviceMode === "ai" ? "#4F46E520" : "transparent",
+                color: adviceMode === "ai" ? "#4F46E5" : "var(--ps-text-muted)",
+                transition: "all 0.15s",
+                display: "flex", alignItems: "center", gap: 4,
+              }}>🧠 AI</button>
+            </div>
+            <button onClick={() => { setAdviceOpen(false); setAdviceSection(null); setAdviceMode("manual"); }} style={{
+              width: 28, height: 28, borderRadius: 6, border: "1px solid var(--ps-border)",
+              background: "var(--ps-surface)", cursor: "pointer", fontSize: 14, color: "var(--ps-text-muted)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>✕</button>
+          </div>
+        </div>
+
+        <div style={{ padding: (adviceSection || adviceMode === "ai") ? "12px 10px" : "16px 20px" }}>
+          {ADVICE_GROUPS.map((group, gi) => (
+            <div key={gi} style={{ marginBottom: (adviceSection || adviceMode === "ai") ? 10 : 16 }}>
+              <div style={{
+                fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)",
+                textTransform: "uppercase", letterSpacing: "0.06em",
+                marginBottom: (adviceSection || adviceMode === "ai") ? 4 : 8,
+                padding: (adviceSection || adviceMode === "ai") ? "0 6px" : 0,
+              }}>{group.label}</div>
+
+              {(adviceSection || adviceMode === "ai") ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  {group.ids.map(id => {
+                    const s = ADVICE_SECTIONS.find(x => x.id === id);
+                    const isActive = adviceSection === id;
+                    return (
+                      <button key={id} onClick={() => setAdviceSection(id)} style={{
+                        display: "flex", alignItems: "center", gap: 8,
+                        padding: "7px 10px", borderRadius: 6,
+                        border: "none", cursor: "pointer",
+                        background: isActive ? (s.color + "15") : "transparent",
+                        transition: "all 0.1s",
+                      }}>
+                        <span style={{ fontSize: 14 }}>{s.icon}</span>
+                        <span style={{ fontSize: 12, fontWeight: isActive ? 700 : 500, color: isActive ? s.color : "var(--ps-text-muted)" }}>{s.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: group.ids.length === 1 ? "1fr" : "1fr 1fr", gap: 8 }}>
+                  {group.ids.map(id => {
+                    const s = ADVICE_SECTIONS.find(x => x.id === id);
+                    return (
+                      <button key={id} onClick={() => setAdviceSection(id)} style={{
+                        padding: "14px 16px",
+                        borderRadius: 10,
+                        border: "1px solid var(--ps-border)",
+                        background: "var(--ps-surface)",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        transition: "all 0.15s ease",
+                      }}>
+                        <div style={{ fontSize: 22, marginBottom: 6 }}>{s.icon}</div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ps-text-primary)" }}>{s.label}</div>
+                        <div style={{ fontSize: 10, color: "var(--ps-text-subtle)", marginTop: 2 }}>{s.desc}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right: Form area */}
+      {adviceSection && (
+        <div style={{ flex: 1, overflowY: "auto", background: "var(--ps-surface)", display: "flex", flexDirection: "row" }}>
+          {/* Form content */}
+          <div style={{ flex: 1, overflowY: "auto", minWidth: 0 }}>
+            <div style={{
+              padding: "16px 20px",
+              borderBottom: "1px solid var(--ps-border)",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{
+                  width: 34, height: 34, borderRadius: 8,
+                  background: (ADVICE_SECTIONS.find(s => s.id === adviceSection)?.color || "#0D9488") + "15",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 17,
+                }}>
+                  {ADVICE_SECTIONS.find(s => s.id === adviceSection)?.icon}
+                </div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ps-text-primary)" }}>
+                    {ADVICE_SECTIONS.find(s => s.id === adviceSection)?.label}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--ps-text-subtle)" }}>
+                    {ADVICE_SECTIONS.find(s => s.id === adviceSection)?.desc}
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setAdviceSection(null)} style={{
+                padding: "4px 10px", borderRadius: 5, border: "1px solid var(--ps-border)",
+                background: "var(--ps-surface)", cursor: "pointer", fontSize: 11, color: "var(--ps-text-muted)", fontWeight: 500,
+              }}>← Back</button>
+            </div>
+
+            <div style={{ padding: 16, overflowX: "auto" }}>
+              {adviceSection === "scope" ? (
+                <ScopeOfAdviceForm factFind={factFind} updateFF={updateFF} />
+              ) : adviceSection === "advice-models" ? (
+                <StrategyForm factFind={adviceModel1 || factFind} baseFf={factFind} updateFF={updateAdvice} tab="models" />
+              ) : adviceSection === "strategies" ? (
+                <StrategyForm factFind={adviceModel1 || factFind} baseFf={factFind} updateFF={updateAdvice} tab="strategies" />
+              ) : adviceSection === "entities" ? (
+                <AdviceProductsEntitiesForm factFind={factFind} updateFF={updateFF} />
+              ) : adviceSection === "retirement-products" ? (
+                <TransactionsForm factFind={factFind} updateFF={updateFF} updateAdvice={updateAdvice} initialTab="retirement" />
+              ) : adviceSection === "investment-products" ? (
+                <TransactionsForm factFind={factFind} updateFF={updateFF} updateAdvice={updateAdvice} initialTab="investment" />
+              ) : adviceSection === "product-replacement" ? (
+                <ProductReplacementForm factFind={factFind} updateFF={updateFF} updateAdvice={updateAdvice} />
+              ) : adviceSection === "transactions" ? (
+                <TransactionsForm factFind={factFind} updateFF={updateFF} updateAdvice={updateAdvice} initialTab="buy" />
+              ) : adviceSection === "portfolio" ? (
+                <PortfolioForm factFind={factFind} updateFF={updateFF} />
+              ) : adviceSection === "insurance-needs" ? (
+                <AdviceInsuranceForm factFind={factFind} updateFF={updateFF} tab="needs" />
+              ) : adviceSection === "insurance-policies" ? (
+                <AdviceInsuranceForm factFind={factFind} updateFF={updateFF} tab="policies" />
+              ) : adviceSection === "quick-recs" ? (
+                <QuickRecsForm factFind={adviceModel1 || factFind} baseFf={factFind} updateFF={updateAdvice} />
+              ) : adviceSection === "assumptions" ? (
+                <AssumptionsForm factFind={factFind} updateFF={updateFF} />
+              ) : adviceSection === "tax-super-planning" ? (
+                <TaxSuperPlanningForm factFind={factFind} updateFF={updateFF} />
+              ) : (
+                /* Placeholder for remaining sections */
+                <div style={{ border: "2px dashed var(--ps-border)", borderRadius: 12, padding: "40px 24px", textAlign: "center" }}>
+                  <div style={{ fontSize: 36, marginBottom: 12 }}>
+                    {ADVICE_SECTIONS.find(s => s.id === adviceSection)?.icon}
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ps-text-primary)", marginBottom: 4 }}>
+                    {ADVICE_SECTIONS.find(s => s.id === adviceSection)?.label}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--ps-text-subtle)", maxWidth: 360, margin: "0 auto" }}>
+                    This section will contain the {ADVICE_SECTIONS.find(s => s.id === adviceSection)?.label.toLowerCase()} configuration. Upload the Base44 page to populate.
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* AI Paraplanner Chat — embedded right column */}
+          {adviceMode === "ai" && (
+            <div style={{
+              width: 440, minWidth: 440, borderLeft: "1px solid var(--ps-border)",
+              display: "flex", flexDirection: "column", background: "var(--ps-surface)",
+            }}>
+              <AiParaplanner
+                factFind={adviceModel1 || factFind}
+                engineData={engineData}
+                updateAdvice={updateAdvice}
+                summaryMeta={summaryMeta}
+                isOpen={true}
+                onClose={() => setAdviceMode("manual")}
+                embedded={true}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* AI mode — no section selected: show full AI Paraplanner */}
+      {!adviceSection && adviceMode === "ai" && (
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--ps-surface)" }}>
+          <AiParaplanner
+            factFind={adviceModel1 || factFind}
+            engineData={engineData}
+            updateAdvice={updateAdvice}
+            summaryMeta={summaryMeta}
+            isOpen={true}
+            onClose={() => setAdviceMode("manual")}
+            embedded={true}
+          />
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div style={{
+      fontFamily: "'DM Sans', 'Segoe UI', system-ui, sans-serif",
+      background: "var(--ps-surface)",
+      minHeight: "100vh",
+      color: "var(--ps-text-primary)",
+    }}>
+      {/* Demo mode banner */}
+      {/* Header Bar */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "12px 24px",
+        borderBottom: "1px solid var(--ps-border)",
+        background: "var(--ps-surface-alt)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <a
+            href={backToParaplannerUrl}
+            style={{
+              display: "flex", alignItems: "center", gap: 5,
+              color: "#4F46E5", fontSize: 13, fontWeight: 600,
+              textDecoration: "none", whiteSpace: "nowrap",
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = "#3730A3"}
+            onMouseLeave={e => e.currentTarget.style.color = "#4F46E5"}
+          >
+            <span style={{ fontSize: 16 }}>&larr;</span> AI Paraplanner
+          </a>
+          <div style={{ width: 1, height: 24, background: "var(--ps-border)" }} />
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ fontSize: 18, fontWeight: 700, color: "var(--ps-text-primary)", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+              Cashflow Model
+            </span>
+            {clientInfo && (
+              <span style={{ fontSize: 12, color: "var(--ps-text-muted)", fontWeight: 500 }}>
+                {clientInfo.name || `${clientInfo.first_name || ''} ${clientInfo.last_name || ''}`.trim()}
+              </span>
+            )}
+            {!clientInfo && c1Display && c1Display !== "Client 1" && (
+              <span style={{ fontSize: 12, color: "var(--ps-text-muted)", fontWeight: 500 }}>
+                {c1Display}{c2Display && c2Display !== "Client 2" ? ` & ${c2Display}` : ""}
+              </span>
+            )}
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <label style={{ fontSize: 13, color: "var(--ps-text-muted)", fontWeight: 500 }}>Select Model</label>
+          <select
+            value={selectedModel}
+            onChange={e => {
+              const val = e.target.value;
+              setSelectedModel(val);
+              // Auto-initialise advice model if switching to it for first time
+              if (val === "advice1" && !adviceModel1) setAdviceModel1(JSON.parse(JSON.stringify(factFind)));
+              // If switching to base and current page is advice-only, redirect
+              if (val === "base") {
+                const config = NAV_STRUCTURE[activeTop];
+                if (config?.adviceOnly) {
+                  setActiveTop("Summary of Results");
+                  setActiveSub("Timeline");
+                  setActiveSubSub("Financial Summary");
+                } else if (config?.adviceOnlySubTabs?.includes(activeSub)) {
+                  setActiveSub(config.subTabs.find(s => !config.adviceOnlySubTabs.includes(s)) || config.subTabs[0]);
+                }
+              }
+            }}
+            style={{
+              padding: "6px 12px", borderRadius: 6,
+              border: selectedModel === "advice1" ? "2px solid #6366F1" : "1px solid var(--ps-border-input)",
+              fontSize: 13,
+              background: selectedModel === "advice1" ? "var(--ps-surface-indigo)" : "var(--ps-surface)",
+              color: "var(--ps-text-primary)", fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            <option value="base">Base Plan (Existing)</option>
+            <option value="advice1">Advice Model 1</option>
+          </select>
+          {selectedModel === "advice1" && (
+            <button onClick={resetAdviceModel} style={{
+              padding: "6px 12px", borderRadius: 6,
+              border: "1px solid var(--ps-ring-red)", background: "var(--ps-surface-red)",
+              fontSize: 11, color: "var(--ps-red)", cursor: "pointer", fontWeight: 600,
+            }}>Reset to Base</button>
+          )}
+          <button
+            onClick={() => setDarkMode(d => !d)}
+            style={{
+              padding: "6px 10px", borderRadius: 6,
+              border: "1px solid var(--ps-border-input)", background: "var(--ps-surface)",
+              fontSize: 13, color: "var(--ps-text-secondary)", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 34, height: 34,
+            }}
+            title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {darkMode ? "☀️" : "🌙"}
+          </button>
+          <div style={{ width: 1, height: 24, background: "var(--ps-border)", margin: "0 2px" }} />
+          {/* ── Input tools ── */}
+          <button
+            onClick={() => { setFactFindOpen(!factFindOpen); if (!factFindOpen) { setAdviceOpen(false); setAdviceSection(null); } }}
+            style={{
+              padding: "6px 14px", borderRadius: 6,
+              border: factFindOpen ? "1px solid #6366f1" : "1px solid var(--ps-border-input)",
+              background: factFindOpen ? "var(--ps-surface-indigo)" : "var(--ps-surface)",
+              fontSize: 12, color: factFindOpen ? "#4F46E5" : "var(--ps-text-secondary)",
+              cursor: "pointer", fontWeight: 600,
+              display: "flex", alignItems: "center", gap: 5,
+              transition: "all 0.15s ease",
+            }}
+          >
+            <span style={{ fontSize: 14 }}>{factFindOpen && factFindMode === "ai" ? "🎙️" : "📋"}</span> Fact Find
+          </button>
+          <button
+            onClick={() => { setAdviceOpen(!adviceOpen); if (!adviceOpen) { setFactFindOpen(false); setFactFindSection(null); } }}
+            style={{
+              padding: "6px 14px", borderRadius: 6,
+              border: adviceOpen ? "1px solid #0D9488" : "1px solid var(--ps-border-input)",
+              background: adviceOpen ? "var(--ps-surface-teal)" : "var(--ps-surface)",
+              fontSize: 12, color: adviceOpen ? "#0D9488" : "var(--ps-text-secondary)",
+              cursor: "pointer", fontWeight: 600,
+              display: "flex", alignItems: "center", gap: 5,
+              transition: "all 0.15s ease",
+            }}
+          >
+            <span style={{ fontSize: 14 }}>{adviceOpen && adviceMode === "ai" ? "🧠" : "💡"}</span> Advice
+          </button>
+          <div style={{ width: 1, height: 24, background: "var(--ps-border)", margin: "0 2px" }} />
+          {/* ── Outputs ── */}
+          <button
+            onClick={() => setShowSOABuilder(true)}
+            style={{
+              padding: "6px 18px", borderRadius: 8,
+              border: "none",
+              background: "linear-gradient(135deg, #059669 0%, #10B981 100%)",
+              fontSize: 12, color: "#fff",
+              cursor: "pointer", fontWeight: 700,
+              display: "flex", alignItems: "center", gap: 6,
+              boxShadow: "0 2px 8px rgba(5,150,105,0.35)",
+              letterSpacing: "0.01em",
+              transition: "all 0.15s ease",
+            }}
+          >
+            <span style={{ fontSize: 14 }}>📄</span> Build SOA
+          </button>
+        </div>
+      </div>
+
+      {/* Top-level navigation */}
+      <div style={{
+        display: "flex",
+        gap: 0,
+        padding: "0 16px",
+        borderBottom: "1px solid var(--ps-border)",
+        background: "var(--ps-surface-alt)",
+        overflowX: "auto",
+      }}>
+        {TOP_TABS.filter(tab => {
+          const config = NAV_STRUCTURE[tab];
+          if (config.adviceOnly && selectedModel === "base") return false;
+          return true;
+        }).map(tab => {
+          const isActive = activeTop === tab;
+          const config = NAV_STRUCTURE[tab];
+          return (
+            <button
+              key={tab}
+              onClick={() => handleTopChange(tab)}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 3,
+                padding: "10px 14px 8px",
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+                borderBottom: isActive ? "3px solid #4f46e5" : "3px solid transparent",
+                color: isActive ? "#4f46e5" : "var(--ps-text-muted)",
+                fontWeight: isActive ? 600 : 500,
+                fontSize: 11,
+                whiteSpace: "nowrap",
+                transition: "all 0.15s ease",
+              }}
+            >
+              <span style={{ fontSize: 17 }}>{config.icon}</span>
+              <span>{tab}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Second-level tabs */}
+      {subTabs.length > 0 && (
+        <div style={{
+          display: "flex",
+          gap: 0,
+          padding: "0 24px",
+          borderBottom: "1px solid var(--ps-border)",
+          background: "var(--ps-surface)",
+        }}>
+          {subTabs.map(tab => {
+            const isActive = activeSub === tab;
+            // Check if this sub-tab is a new advice entity (SMSF funds appear as sub-tabs under Entities)
+            const isNewEntity = activeTop === "Entities" && (engineData.smsfs || []).some(s => s.smsf_name === tab && (s.id || "").startsWith("adv_"));
+            return (
+              <button
+                key={tab}
+                onClick={() => handleSubChange(tab)}
+                style={{
+                  padding: "12px 20px 10px",
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  borderBottom: isActive ? "2px solid #4f46e5" : "2px solid transparent",
+                  color: isActive ? "#4f46e5" : "var(--ps-text-muted)",
+                  fontWeight: isActive ? 600 : 400,
+                  fontSize: 14,
+                  whiteSpace: "nowrap",
+                  transition: "all 0.15s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                {tabDisplayName(tab)}
+                {isNewEntity && <span style={{ fontSize: 9, fontWeight: 700, color: "var(--ps-green)", background: "var(--ps-surface-emerald)", padding: "1px 5px", borderRadius: 4, border: "1px solid var(--ps-ring-green)", letterSpacing: "0.03em" }}>NEW</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Third-level tabs */}
+      {subSubTabs.length > 0 && (
+        <div style={{
+          display: "flex",
+          gap: 0,
+          padding: "0 24px",
+          borderBottom: "1px solid var(--ps-border-input)",
+          background: "var(--ps-surface)",
+        }}>
+          {subSubTabs.map(tab => {
+            const isActive = activeSubSub === tab;
+            const isTableTab = tab === "Health Check" || tab === "Detail";
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveSubSub(tab)}
+                style={{
+                  padding: "10px 18px 8px",
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  borderBottom: isActive ? "2px solid #6366f1" : "2px solid transparent",
+                  color: isActive ? "#4f46e5" : "var(--ps-text-subtle)",
+                  fontWeight: isActive ? 600 : 400,
+                  fontSize: 13,
+                  whiteSpace: "nowrap",
+                  transition: "all 0.15s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                }}
+              >
+                {isTableTab && <span style={{ fontSize: 11 }}>☷</span>}
+                {richTabMap[tab] ? (
+                  <>
+                    {richTabMap[tab].product && <span>{richTabMap[tab].product}</span>}
+                    {richTabMap[tab].owner && <EntityBadge name={richTabMap[tab].owner} size="sm" />}
+                    {richTabMap[tab].isNew && <span style={{ marginLeft: 4, fontSize: 9, fontWeight: 700, color: "var(--ps-green)", background: "var(--ps-surface-emerald)", padding: "1px 5px", borderRadius: 4, border: "1px solid var(--ps-ring-green)", letterSpacing: "0.03em" }}>NEW</span>}
+                  </>
+                ) : tabDisplayName(tab)}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Content area */}
+      <div style={{ padding: "16px 32px" }}>
+        {/* Breadcrumb + Edit on same row */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          marginBottom: 6,
+        }}>
+          <div style={{
+            fontSize: 13, color: "var(--ps-text-subtle)",
+            display: "flex", alignItems: "center", gap: 6,
+          }}>
+            <span style={{ color: "var(--ps-text-muted)", fontWeight: 500 }}>{activeTop}</span>
+            {activeSub && <><span>›</span><span style={{ color: "var(--ps-text-muted)" }}>{tabDisplayName(activeSub)}</span></>}
+            {activeSubSub && <><span>›</span><span style={{ color: "#4f46e5", fontWeight: 500 }}>{tabDisplayName(activeSubSub)}</span></>}
+          </div>
+          {activePageData && (
+            <button style={{
+              padding: "5px 14px", borderRadius: 6,
+              border: "1px solid var(--ps-border-input)", background: "var(--ps-surface)",
+              fontSize: 12, color: "var(--ps-text-secondary)", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 6,
+            }}>
+              ✏️ Edit
+            </button>
+          )}
+        </div>
+
+        {/* Render content */}
+        {isDefensiveAssets ? (
+          <AssetChartPage holdings={defensiveHoldings} years={PROJ_YEARS} assetTypes={DEFENSIVE_ASSET_TYPES} title="Defensive Assets — End Value by Holding" />
+        ) : isGrowthAssets ? (
+          <AssetChartPage holdings={growthHoldings} years={PROJ_YEARS} assetTypes={GROWTH_ASSET_TYPES} title="Growth Assets — End Value by Holding" />
+        ) : isPropertyAssets ? (
+          <AssetChartPage holdings={propertyHoldings} years={PROJ_YEARS} assetTypes={PROPERTY_TYPES} title="Property Assets — End Value by Holding" />
+        ) : isLifestyleAssets ? (
+          <AssetChartPage holdings={lifestyleHoldings} years={PROJ_YEARS} assetTypes={LIFESTYLE_ASSET_TYPES} title="Lifestyle Assets — End Value by Holding" />
+        ) : isMilestones ? (
+          <MilestonesDashboard dynamicMilestones={dynamicMilestones} />
+        ) : isNetEquity ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <AssetsLiabilitiesChart />
+            <SectionTable
+              data={{
+                ...financialSummaryData,
+                sections: (financialSummaryData?.sections || []).filter(s => s.id === "net-worth" || s.id === "debts"),
+              }}
+              onNavigate={navigateTo}
+            />
+          </div>
+        ) : isNetEquityProperty ? (
+          <PropertyChart />
+        ) : isNetEquityDebt ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <DebtChartPage data={investmentLoansData} title="Investment Loans — Outstanding Balance" onCellEdit={isAdviceModel ? (ref, val, type, yearIdx) => type === "io" ? setDebtIOOverrides(prev => ({ ...prev, [ref]: { ...(prev[ref] || {}), [yearIdx]: val } })) : setDebtFreqOverrides(prev => ({...prev, [ref]: val})) : undefined} />
+            <DebtChartPage data={homeLoanData} title="Home Loan — Outstanding Balance" onCellEdit={isAdviceModel ? (ref, val, type, yearIdx) => type === "io" ? setDebtIOOverrides(prev => ({ ...prev, [ref]: { ...(prev[ref] || {}), [yearIdx]: val } })) : setDebtFreqOverrides(prev => ({...prev, [ref]: val})) : undefined} />
+          </div>
+        ) : isCapitalDashboard ? (
+          <CapitalDashboard dynamicChartData={dynamicAssetTypeChartData} />
+        ) : isCashflowDashboard ? (
+          <CashflowDashboard txnChartData={txnChartData} />
+        ) : isRetirementDashboard ? (
+          <RetirementDashboard
+            meta={summaryMeta}
+            superProj={superProj}
+            pensionFunds={engineData.pensions || []}
+            contribData={(() => {
+              const c1SG = taxClient1Data.sections.find(s => s.id === "tax-deductions")?.rows.find(r => r.label === "Concessional Contributions")?.values || [];
+              const c2SG = taxClient2Data.sections.find(s => s.id === "tax-deductions")?.rows.find(r => r.label === "Concessional Contributions")?.values || [];
+              return { c1Total: c1SG.reduce((s,v) => s+(v||0), 0), c2Total: c2SG.reduce((s,v) => s+(v||0), 0) };
+            })()}
+          />
+        ) : isHealthCheck ? (
+          <HealthCheckTable />
+        ) : isAdviceSummary ? (
+          <AdviceSummaryTable navigateTo={navigateTo} />
+        ) : isPortfolio ? (
+          <PortfolioDashboard />
+        ) : isBenefitOfAdvice ? (
+          <BenefitOfAdviceDashboard />
+        ) : isProductProjection ? (
+          <ProductProjectionTable />
+        ) : isPortfolioTransactions ? (
+          <PortfolioTransactionsTable />
+        ) : isObjectives ? (
+          <ObjectivesDashboard />
+        ) : isRecommendations ? (
+          <RecommendationsTable />
+        ) : isScope ? (
+          <ScopeDashboard />
+        ) : isSavings ? (
+          <CashflowSavingsPage savingsData={savingsData} cashflowChartData={cashflowChartData} />
+        ) : isCGTClient1 ? (
+          <CGTPage data={c1CGT.cgtData} chartData={c1CGT.cgtChartData} clientName={c1Display} />
+        ) : isCGTClient2 ? (
+          <CGTPage data={c2CGT.cgtData} chartData={c2CGT.cgtChartData} clientName={c2Display} />
+        ) : matchedCGTTrustIdx >= 0 ? (
+          <CGTPage
+            data={trustCGTList[matchedCGTTrustIdx].cgtData}
+            chartData={trustCGTList[matchedCGTTrustIdx].cgtChartData}
+            clientName={trustCGTList[matchedCGTTrustIdx].name}
+            isTrust={true}
+            trustIdx={matchedCGTTrustIdx}
+            beneficiaries={(engineData.trusts || [])[matchedCGTTrustIdx]?.beneficiaries || []}
+            streamingConfig={engineData.advice_request?.cgt_streaming?.[`trust_${matchedCGTTrustIdx}`]}
+            onUpdateStreaming={(cfg) => {
+              const current = engineData.advice_request?.cgt_streaming || {};
+              activeUpdate("advice_request.cgt_streaming", { ...current, [`trust_${matchedCGTTrustIdx}`]: cfg });
+            }}
+          />
+        ) : matchedCGTCompanyIdx >= 0 ? (
+          <CGTPage data={companyCGTList[matchedCGTCompanyIdx].cgtData} chartData={companyCGTList[matchedCGTCompanyIdx].cgtChartData} clientName={companyCGTList[matchedCGTCompanyIdx].name} />
+        ) : matchedCGTSmsfIdx >= 0 ? (
+          <CGTPage data={smsfCGTList[matchedCGTSmsfIdx].cgtData} chartData={smsfCGTList[matchedCGTSmsfIdx].cgtChartData} clientName={smsfCGTList[matchedCGTSmsfIdx].name} />
+        ) : isTaxClient1 ? (
+          <TaxSchedulePage data={taxClient1Data} chartData={taxClient1ChartData} clientName={c1Display} />
+        ) : isTaxClient2 ? (
+          <TaxSchedulePage data={taxClient2Data} chartData={taxClient2ChartData} clientName={c2Display} />
+        ) : isUCGTClient1 ? (
+          <UnrealisedCGTPage data={c1CGT.ucgtData} chartData={c1CGT.ucgtChartData} clientName={c1Display} />
+        ) : isUCGTClient2 ? (
+          <UnrealisedCGTPage data={c2CGT.ucgtData} chartData={c2CGT.ucgtChartData} clientName={c2Display} />
+        ) : matchedUCGTTrustIdx >= 0 ? (
+          <UnrealisedCGTPage data={trustCGTList[matchedUCGTTrustIdx].ucgtData} chartData={trustCGTList[matchedUCGTTrustIdx].ucgtChartData} clientName={trustCGTList[matchedUCGTTrustIdx].name} />
+        ) : matchedUCGTCompanyIdx >= 0 ? (
+          <UnrealisedCGTPage data={companyCGTList[matchedUCGTCompanyIdx].ucgtData} chartData={companyCGTList[matchedUCGTCompanyIdx].ucgtChartData} clientName={companyCGTList[matchedUCGTCompanyIdx].name} />
+        ) : matchedUCGTSmsfIdx >= 0 ? (
+          <UnrealisedCGTPage data={smsfCGTList[matchedUCGTSmsfIdx].ucgtData} chartData={smsfCGTList[matchedUCGTSmsfIdx].ucgtChartData} clientName={smsfCGTList[matchedUCGTSmsfIdx].name} />
+        ) : matchedCompanyIdx >= 0 && companyDataList[matchedCompanyIdx] ? (
+          <div>
+            {companyTabs[matchedCompanyIdx]?.isNew && (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", background: "var(--ps-surface-emerald)", border: "1px solid var(--ps-ring-green)", borderRadius: 8, marginBottom: 12, fontSize: 12, fontWeight: 600, color: "var(--ps-green)" }}>
+                ✨ New — Added via Advice Model
+              </div>
+            )}
+            <CompanyPage data={companyDataList[matchedCompanyIdx].data} chartData={companyDataList[matchedCompanyIdx].chartData} companyName={companyDataList[matchedCompanyIdx].name} companyIdx={matchedCompanyIdx} factFind={factFind} updateFF={updateFF} />
+          </div>
+        ) : matchedSmsfMembers ? (
+          <SMSFPage data={matchedSmsfMembers.data} accountName={matchedSmsfMembers.name} entityName="Members" memberPctData={matchedSmsfMembers.pctChartData} />
+        ) : matchedSmsfSegAccount ? (
+          <SMSFPage data={matchedSmsfSegAccount.data} accountName={matchedSmsfSegAccount.name} entityName={matchedSmsfSegAccount.name} segChartData={matchedSmsfSegAccount.segChartData} />
+        ) : matchedSmsfFund ? (
+          <SMSFPage data={matchedSmsfFund.data} accountName={matchedSmsfFund.name} entityName={matchedSmsfFund.name} memberChartData={matchedSmsfFund.memberChartData} />
+        ) : matchedSmsfIdx >= 0 && smsfDataList[matchedSmsfIdx] ? (
+          <div>
+            {smsfTabs.find(t => t.key === activeSubSub)?.isNew && (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", background: "var(--ps-surface-emerald)", border: "1px solid var(--ps-ring-green)", borderRadius: 8, marginBottom: 12, fontSize: 12, fontWeight: 600, color: "var(--ps-green)" }}>
+                ✨ New — Added via Advice Model
+              </div>
+            )}
+            <SMSFPage data={smsfDataList[matchedSmsfIdx].data} accountName={smsfDataList[matchedSmsfIdx].name} entityName={smsfDataList[matchedSmsfIdx].name} memberChartData={smsfDataList[matchedSmsfIdx].memberChartData} />
+          </div>
+        ) : isInvestmentLoans ? (
+          <DebtChartPage data={investmentLoansData} title="Investment Loans — Outstanding Balance" onCellEdit={isAdviceModel ? (ref, val, type, yearIdx) => type === "io" ? setDebtIOOverrides(prev => ({ ...prev, [ref]: { ...(prev[ref] || {}), [yearIdx]: val } })) : setDebtFreqOverrides(prev => ({...prev, [ref]: val})) : undefined} />
+        ) : isHomeLoan ? (
+          <DebtChartPage data={homeLoanData} title="Home Loan — Outstanding Balance" onCellEdit={isAdviceModel ? (ref, val, type, yearIdx) => type === "io" ? setDebtIOOverrides(prev => ({ ...prev, [ref]: { ...(prev[ref] || {}), [yearIdx]: val } })) : setDebtFreqOverrides(prev => ({...prev, [ref]: val})) : undefined} />
+        ) : isOtherDebts ? (
+          <DebtChartPage data={otherDebtsData} title="Other Debts — Outstanding Balance" onCellEdit={isAdviceModel ? (ref, val, type, yearIdx) => type === "io" ? setDebtIOOverrides(prev => ({ ...prev, [ref]: { ...(prev[ref] || {}), [yearIdx]: val } })) : setDebtFreqOverrides(prev => ({...prev, [ref]: val})) : undefined} />
+        ) : matchedTrustIdx >= 0 && trustDataList[matchedTrustIdx] ? (
+          <div>
+            {trustTabs[matchedTrustIdx]?.isNew && (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", background: "var(--ps-surface-emerald)", border: "1px solid var(--ps-ring-green)", borderRadius: 8, marginBottom: 12, fontSize: 12, fontWeight: 600, color: "var(--ps-green)" }}>
+                ✨ New — Added via Advice Model
+              </div>
+            )}
+            <TrustPage data={trustDataList[matchedTrustIdx].data} chartData={trustDataList[matchedTrustIdx].chartData} trustName={trustDataList[matchedTrustIdx].name} trustEntity={trustDataList[matchedTrustIdx].name} />
+            <TrustDistOverride
+              data={trustDataList[matchedTrustIdx].data}
+              beneficiaries={(engineData.trusts || [])[matchedTrustIdx]?.beneficiaries || []}
+              config={engineData.advice_request?.trust_dist_override?.[`trust_${matchedTrustIdx}`]}
+              onUpdate={(cfg) => {
+                const current = engineData.advice_request?.trust_dist_override || {};
+                activeUpdate("advice_request.trust_dist_override", { ...current, [`trust_${matchedTrustIdx}`]: cfg });
+              }}
+            />
+          </div>
+        ) : isRebalancing ? (
+          <RebalancingTable model={(() => {
+            const models = engineData.advice_request?.strategy?.models || [];
+            return models[0] || null;
+          })()} />
+        ) : isEligibility1 ? (
+          <EligibilityTable data={(() => {
+            const dob = engineData.client1?.date_of_birth;
+            const gender = engineData.client1?.gender;
+            const empStatus = engineData.client1?.employment_status;
+            const alreadyRetired = empStatus === '7';
+            const corMet = engineData.client1?.condition_of_release === true || engineData.client1?.condition_of_release === 'yes';
+            const hasPrincipalResidence = (engineData.assets || []).some(a => a.a_type === '1');
+            const receivingAllowance = engineData.client1?.centrelink_benefits === '1' && engineData.client1?.benefit_type === '4';
+            const retAge = parseFloat(engineData.advice_reason?.quick?.client1?.ret_age) || 67;
+            const maritalStatus = engineData.client1?.marital_status;
+            const startedAsCouple = maritalStatus === '1' || maritalStatus === '2';
+            const partnerDob = engineData.client2?.date_of_birth;
+            const partnerGender = engineData.client2?.gender;
+            const calcAge = (d) => { if (!d) return null; const bd = new Date(d), n = new Date(currentFY, 6, 1); let a = n.getFullYear() - bd.getFullYear(); if (n.getMonth() < bd.getMonth() || (n.getMonth() === bd.getMonth() && n.getDate() < bd.getDate())) a--; return a; };
+            const startAge = calcAge(dob) ?? 60;
+            const partnerStartAge = calcAge(partnerDob);
+            const presAge = (() => { if (!dob) return 60; const d = new Date(dob); const y = d.getFullYear(), m = d.getMonth()+1; if (y < 1960 || (y===1960 && m<=6)) return 55; if (y<1961) return 56; if (y<1963) return 57; if (y<1964) return 58; if (y<1965) return 59; return 60; })();
+            const N = Math.max(17, Math.ceil(altEx(startAge, gender)) + 1);
+            const ages = Array.from({length: N}, (_, i) => startAge + i);
+            const partnerAlive = (a) => {
+              if (!startedAsCouple || partnerStartAge === null) return false;
+              const pa = partnerStartAge + (a - startAge);
+              return altSurvivalPct(partnerStartAge, pa, partnerGender) > 20;
+            };
+            // Preservation met at age a: pres age reached AND (already retired, OR age >= 67, OR COR manually flagged)
+            const presMet = (a) => a >= presAge && (alreadyRetired || corMet || a >= 67 || a >= retAge);
+            // TTR eligible: pres age reached but preservation conditions NOT yet fully met (still working, under 67)
+            const ttrElig = (a) => a >= presAge && !presMet(a);
+            return [
+              { label: 'Age at start of year', values: ages, type: 'number' },
+              { label: 'Life expectancy', values: ages.map(a => Math.round(altEx(a, gender)*10)/10), type: 'number' },
+              { label: 'Probability still alive', values: ages.map(a => altSurvivalPct(startAge, a, gender) + '%'), type: 'text' },
+              { label: 'Alive', values: ages.map(a => altSurvivalPct(startAge, a, gender) > 5 ? 1 : 0), type: 'bool' },
+              { label: 'Single', values: ages.map(a => startedAsCouple && partnerAlive(a) ? 0 : 1), type: 'bool' },
+              { label: 'Couple', values: ages.map(a => startedAsCouple && partnerAlive(a) ? 1 : 0), type: 'bool' },
+              { label: 'Still working', values: ages.map(a => alreadyRetired ? 0 : a < retAge ? 1 : 0), type: 'bool' },
+              { label: 'Under 60', values: ages.map(a => a < 60 ? 1 : 0), type: 'bool' },
+              { label: 'Over 60', values: ages.map(a => a >= 60 ? 1 : 0), type: 'bool' },
+              { label: 'Preservation age', values: ages.map(() => presAge), type: 'number' },
+              { label: 'Preservation met', values: ages.map(a => presMet(a) ? 1 : 0), type: 'bool' },
+              { label: 'Eligible for TTR', values: ages.map(a => ttrElig(a) ? 1 : 0), type: 'bool' },
+              { label: 'Eligible for age pension', values: ages.map(a => a >= 67 ? 1 : 0), type: 'bool' },
+              { label: 'Eligible for full pension', values: ages.map(a => presMet(a) ? 1 : 0), type: 'bool' },
+              { label: 'Receiving age pension', values: ages.map(() => 0), type: 'bool' },
+              { label: 'Eligible for allowance', values: ages.map(a => receivingAllowance && a < 67 ? 1 : 0), type: 'bool' },
+              { label: 'Eligible for tax free annuity', values: ages.map(a => a >= 60 ? 1 : 0), type: 'bool' },
+              { label: 'SGC Eligible', values: ages.map(a => !alreadyRetired && a < 75 && a < retAge ? 1 : 0), type: 'bool' },
+              { label: 'Eligible to make concessional contributions', values: ages.map(a => a < 75 ? 1 : 0), type: 'bool' },
+              { label: 'Eligible to make government co-contribution', values: ages.map(a => a < 71 ? 1 : 0), type: 'bool' },
+              { label: 'Eligible to make non-concessional contribution', values: ages.map(a => a < 75 ? 1 : 0), type: 'bool' },
+              { label: 'Eligible to make spouse contribution', values: ages.map(a => startedAsCouple && partnerAlive(a) && a < 75 ? 1 : 0), type: 'bool' },
+              { label: 'Living in principal residence', values: ages.map(() => hasPrincipalResidence ? 1 : 0), type: 'bool' },
+              { label: 'Renting out principal residence', values: ages.map(() => 0), type: 'bool' },
+              { label: 'Renting', values: ages.map(() => hasPrincipalResidence ? 0 : 1), type: 'bool' },
+            ];
+          })()} />
+        ) : isEligibility2 ? (
+          <EligibilityTable data={(() => {
+            const dob = engineData.client2?.date_of_birth;
+            const gender = engineData.client2?.gender;
+            const empStatus = engineData.client2?.employment_status;
+            const alreadyRetired = empStatus === '7';
+            const corMet = engineData.client2?.condition_of_release === true || engineData.client2?.condition_of_release === 'yes';
+            const hasPrincipalResidence = (engineData.assets || []).some(a => a.a_type === '1');
+            const receivingAllowance = engineData.client2?.centrelink_benefits === '1' && engineData.client2?.benefit_type === '4';
+            const retAge = parseFloat(engineData.advice_reason?.quick?.client2?.ret_age) || 67;
+            const maritalStatus = engineData.client2?.marital_status;
+            const startedAsCouple = maritalStatus === '1' || maritalStatus === '2';
+            const partnerDob = engineData.client1?.date_of_birth;
+            const partnerGender = engineData.client1?.gender;
+            const calcAge = (d) => { if (!d) return null; const bd = new Date(d), n = new Date(currentFY, 6, 1); let a = n.getFullYear() - bd.getFullYear(); if (n.getMonth() < bd.getMonth() || (n.getMonth() === bd.getMonth() && n.getDate() < bd.getDate())) a--; return a; };
+            const startAge = calcAge(dob) ?? 56;
+            const partnerStartAge = calcAge(partnerDob);
+            const presAge = (() => { if (!dob) return 60; const d = new Date(dob); const y = d.getFullYear(), m = d.getMonth()+1; if (y < 1960 || (y===1960 && m<=6)) return 55; if (y<1961) return 56; if (y<1963) return 57; if (y<1964) return 58; if (y<1965) return 59; return 60; })();
+            const N = Math.max(17, Math.ceil(altEx(startAge, gender)) + 1);
+            const ages = Array.from({length: N}, (_, i) => startAge + i);
+            const partnerAlive = (a) => {
+              if (!startedAsCouple || partnerStartAge === null) return false;
+              const pa = partnerStartAge + (a - startAge);
+              return altSurvivalPct(partnerStartAge, pa, partnerGender) > 20;
+            };
+            // Preservation met at age a: pres age reached AND (already retired, OR age >= 67, OR COR manually flagged)
+            const presMet = (a) => a >= presAge && (alreadyRetired || corMet || a >= 67 || a >= retAge);
+            // TTR eligible: pres age reached but preservation conditions NOT yet fully met (still working, under 67)
+            const ttrElig = (a) => a >= presAge && !presMet(a);
+            return [
+              { label: 'Age at start of year', values: ages, type: 'number' },
+              { label: 'Life expectancy', values: ages.map(a => Math.round(altEx(a, gender)*10)/10), type: 'number' },
+              { label: 'Probability still alive', values: ages.map(a => altSurvivalPct(startAge, a, gender) + '%'), type: 'text' },
+              { label: 'Alive', values: ages.map(a => altSurvivalPct(startAge, a, gender) > 5 ? 1 : 0), type: 'bool' },
+              { label: 'Single', values: ages.map(a => startedAsCouple && partnerAlive(a) ? 0 : 1), type: 'bool' },
+              { label: 'Couple', values: ages.map(a => startedAsCouple && partnerAlive(a) ? 1 : 0), type: 'bool' },
+              { label: 'Still working', values: ages.map(a => alreadyRetired ? 0 : a < retAge ? 1 : 0), type: 'bool' },
+              { label: 'Under 60', values: ages.map(a => a < 60 ? 1 : 0), type: 'bool' },
+              { label: 'Over 60', values: ages.map(a => a >= 60 ? 1 : 0), type: 'bool' },
+              { label: 'Preservation age', values: ages.map(() => presAge), type: 'number' },
+              { label: 'Preservation met', values: ages.map(a => presMet(a) ? 1 : 0), type: 'bool' },
+              { label: 'Eligible for TTR', values: ages.map(a => ttrElig(a) ? 1 : 0), type: 'bool' },
+              { label: 'Eligible for age pension', values: ages.map(a => a >= 67 ? 1 : 0), type: 'bool' },
+              { label: 'Eligible for full pension', values: ages.map(a => presMet(a) ? 1 : 0), type: 'bool' },
+              { label: 'Receiving age pension', values: ages.map(() => 0), type: 'bool' },
+              { label: 'Eligible for allowance', values: ages.map(a => receivingAllowance && a < 67 ? 1 : 0), type: 'bool' },
+              { label: 'Eligible for tax free annuity', values: ages.map(a => a >= 60 ? 1 : 0), type: 'bool' },
+              { label: 'SGC Eligible', values: ages.map(a => !alreadyRetired && a < 75 && a < retAge ? 1 : 0), type: 'bool' },
+              { label: 'Eligible to make concessional contributions', values: ages.map(a => a < 75 ? 1 : 0), type: 'bool' },
+              { label: 'Eligible to make government co-contribution', values: ages.map(a => a < 71 ? 1 : 0), type: 'bool' },
+              { label: 'Eligible to make non-concessional contribution', values: ages.map(a => a < 75 ? 1 : 0), type: 'bool' },
+              { label: 'Eligible to make spouse contribution', values: ages.map(a => startedAsCouple && partnerAlive(a) && a < 75 ? 1 : 0), type: 'bool' },
+              { label: 'Living in principal residence', values: ages.map(() => hasPrincipalResidence ? 1 : 0), type: 'bool' },
+              { label: 'Renting out principal residence', values: ages.map(() => 0), type: 'bool' },
+              { label: 'Renting', values: ages.map(() => hasPrincipalResidence ? 0 : 1), type: 'bool' },
+            ];
+          })()} />
+        ) : isAssumptionsSuper1 ? (
+          <SuperAssumptionsTable data={(() => {
+            const ck = "client1";
+            const pensions = engineData.pensions || [];
+            const TBC = 1900000;
+            const startAge_sa = engineData[ck]?.date_of_birth ? (() => { const d = new Date(engineData[ck].date_of_birth), n = new Date(currentFY, 6, 1); let a = n.getFullYear() - d.getFullYear(); if (n.getMonth() < d.getMonth() || (n.getMonth() === d.getMonth() && n.getDate() < d.getDate())) a--; return a; })() : 60;
+            const N_SA = Math.max(17, Math.ceil(altEx(startAge_sa, engineData[ck]?.gender)) + 1);
+            // Regular ABP pensions (not TTR) — rollins
+            const tbcUsed = new Array(N_SA).fill(0);
+            pensions.forEach((p, pi) => {
+              if ((p.pension_type || "account-based") === "ttr") return;
+              if (p.owner !== ck) return;
+              if (!penRollIn?.[pi]) return;
+              for (let y = 0; y < N_SA; y++) tbcUsed[y] += (penRollIn[pi][y] || 0);
+            });
+            // TTR→ABP conversions — balance at conversion year counts against TBC
+            allPensionData.forEach(pd => {
+              if (!pd?.isTTR || pd.owner !== ck) return;
+              for (let y = 0; y < N_SA; y++) tbcUsed[y] += (pd.ttrConversionTBC?.[y] || 0);
+            });
+            // SMSF pension accounts — opening balance year 0, then SOY inflows in subsequent years
+            smsfDataList.forEach(fund => {
+              if (!fund?.memberData) return;
+              fund.memberData.forEach((m, mi) => {
+                if (m.taxEnv !== "pension") return;
+                const acc = fund.accounts?.[mi];
+                if (!acc || acc.owner !== ck) return;
+                tbcUsed[0] += m.startBal || 0;
+                for (let y = 1; y < N_SA; y++) tbcUsed[y] += (fund.mSOYInflows?.[mi]?.[y] || 0);
+              });
+            });
+            let runningTBC = 0;
+            const tbcUsedCum = tbcUsed.map(v => { runningTBC += v; return runningTBC; });
+            const tbcRemaining = tbcUsedCum.map(u => Math.max(0, TBC - u));
+            const tbcExceeded = tbcUsedCum.map(u => u > TBC ? 1 : 0);
+            const startAge = startAge_sa;
+            const ages = Array.from({length: N_SA}, (_, i) => startAge + i);
+            return [
+              { label: "Concessional contributions cap", values: Array(N_SA).fill(30000), type: "number" },
+              { label: "Non-concessional contributions cap", values: Array(N_SA).fill(120000), type: "number" },
+              { label: "Transfer balance cap", values: Array(N_SA).fill(TBC), type: "number" },
+              { label: "TBC used", values: tbcUsedCum, type: "number" },
+              { label: "TBC remaining", values: tbcRemaining, type: "number" },
+              { label: "TBC exceeded", values: tbcExceeded, type: "bool" },
+              { label: "Minimum pension drawdown rate", values: ages.map(a => a < 65 ? "4%" : a < 75 ? "5%" : a < 80 ? "6%" : a < 85 ? "7%" : a < 90 ? "9%" : "11%"), type: "text" },
+              { label: "Super guarantee rate", values: Array(N_SA).fill("12%"), type: "text" },
+              { label: "Maximum super guarantee salary", values: Array(N_SA).fill(245680), type: "number" },
+              { label: "Government co-contribution max", values: Array(N_SA).fill(500), type: "number" },
+              { label: "Low income super tax offset", values: Array(N_SA).fill(500), type: "number" },
+              { label: "Div 293 threshold", values: Array(N_SA).fill(250000), type: "number" },
+            ];
+          })()} />
+        ) : isAssumptionsSuper2 ? (
+          <SuperAssumptionsTable data={(() => {
+            const ck = "client2";
+            const pensions = engineData.pensions || [];
+            const TBC = 1900000;
+            const startAge_sa = engineData[ck]?.date_of_birth ? (() => { const d = new Date(engineData[ck].date_of_birth), n = new Date(currentFY, 6, 1); let a = n.getFullYear() - d.getFullYear(); if (n.getMonth() < d.getMonth() || (n.getMonth() === d.getMonth() && n.getDate() < d.getDate())) a--; return a; })() : 56;
+            const N_SA = Math.max(17, Math.ceil(altEx(startAge_sa, engineData[ck]?.gender)) + 1);
+            const tbcUsed = new Array(N_SA).fill(0);
+            // Regular ABP pensions (not TTR) — rollins
+            pensions.forEach((p, pi) => {
+              if ((p.pension_type || "account-based") === "ttr") return;
+              if (p.owner !== ck) return;
+              if (!penRollIn?.[pi]) return;
+              for (let y = 0; y < N_SA; y++) tbcUsed[y] += (penRollIn[pi][y] || 0);
+            });
+            // TTR→ABP conversions — balance at conversion year counts against TBC
+            allPensionData.forEach(pd => {
+              if (!pd?.isTTR || pd.owner !== ck) return;
+              for (let y = 0; y < N_SA; y++) tbcUsed[y] += (pd.ttrConversionTBC?.[y] || 0);
+            });
+            // SMSF pension accounts — opening balance in year 0, then SOY inflows to pension accounts
+            smsfDataList.forEach(fund => {
+              if (!fund?.memberData) return;
+              fund.memberData.forEach((m, mi) => {
+                if (m.taxEnv !== 'pension') return;
+                const acc = fund.accounts?.[mi];
+                if (!acc || acc.owner !== ck) return;
+                if (tbcUsed[0] !== undefined) tbcUsed[0] += m.startBal || 0;
+                for (let y = 1; y < N_SA; y++) tbcUsed[y] += (fund.mSOYInflows?.[mi]?.[y] || 0);
+              });
+            });
+            let runningTBC = 0;
+            const tbcUsedCum = tbcUsed.map(v => { runningTBC += v; return runningTBC; });
+            const tbcRemaining = tbcUsedCum.map(u => Math.max(0, TBC - u));
+            const tbcExceeded = tbcUsedCum.map(u => u > TBC ? 1 : 0);
+            const startAge = startAge_sa;
+            const ages = Array.from({length: N_SA}, (_, i) => startAge + i);
+            return [
+              { label: "Concessional contributions cap", values: Array(N_SA).fill(30000), type: "number" },
+              { label: "Non-concessional contributions cap", values: Array(N_SA).fill(120000), type: "number" },
+              { label: "Transfer balance cap", values: Array(N_SA).fill(TBC), type: "number" },
+              { label: "TBC used", values: tbcUsedCum, type: "number" },
+              { label: "TBC remaining", values: tbcRemaining, type: "number" },
+              { label: "TBC exceeded", values: tbcExceeded, type: "bool" },
+              { label: "Minimum pension drawdown rate", values: ages.map(a => a < 65 ? "4%" : a < 75 ? "5%" : a < 80 ? "6%" : a < 85 ? "7%" : a < 90 ? "9%" : "11%"), type: "text" },
+              { label: "Super guarantee rate", values: Array(N_SA).fill("12%"), type: "text" },
+              { label: "Maximum super guarantee salary", values: Array(N_SA).fill(245680), type: "number" },
+              { label: "Government co-contribution max", values: Array(N_SA).fill(500), type: "number" },
+              { label: "Low income super tax offset", values: Array(N_SA).fill(500), type: "number" },
+              { label: "Div 293 threshold", values: Array(N_SA).fill(250000), type: "number" },
+            ];
+          })()} />
+        ) : isAgedCare ? (
+          <AgedCarePage
+            data={activeSubSub === "Client 2" || activeSubSub === c2Short || activeSubSub === c2Display ? agedCareC2 : agedCareC1}
+            shortYears={shortYears}
+            projYears={PROJ_YEARS}
+            onUpdate={(field, value) => {
+              const acData = activeSubSub === "Client 2" || activeSubSub === c2Short || activeSubSub === c2Display ? agedCareC2 : agedCareC1;
+              if (!acData) return;
+              const strats = engineData.advice_request?.strategy?.strategies || [];
+              const idx = strats.findIndex(s => s.strategy_id === "57" && (s.owner_id === acData.clientKey || s.owner_id === "joint"));
+              if (idx < 0) return;
+              const updated = [...strats];
+              updated[idx] = { ...updated[idx], [field]: value };
+              activeUpdate("advice_request.strategy.strategies", updated);
+            }}
+          />
+        ) : isSS ? (
+          <SocialSecurityTable ssData={ssData} />
+        ) : isModelComparison ? (
+          <ModelComparisonDashboard />
+        ) : isModelComparisonDetail ? (
+          <ModelComparisonDetail />
+        ) : isInsuranceClient ? (
+          <InsuranceProjectionPage clientKey="client" />
+        ) : isInsurancePartner ? (
+          <InsuranceProjectionPage clientKey="partner" />
+        ) : isPremiumCostClient ? (
+          <InsurancePremiumProjection personKey="client1" factFind={engineData} updateFF={activeUpdate} />
+        ) : isPremiumCostPartner ? (
+          <InsurancePremiumProjection personKey="client2" factFind={engineData} updateFF={activeUpdate} />
+        ) : isWrap1 ? (
+          <WrapProjectionPage />
+        ) : isSuper1 ? (
+          <SuperProductPage data={super1Data || SUPER1_DATA} fundIdx={0} factFind={engineData} updateFF={activeUpdate} onToggleIndex={handleSuperCpiToggle} />
+        ) : isSuper2 ? (
+          <SuperProductPage data={super2Data || SUPER1_DATA} fundIdx={1} factFind={engineData} updateFF={activeUpdate} onToggleIndex={handleSuperCpiToggle} />
+        ) : matchedSuperIdx > 1 && allSuperData[matchedSuperIdx] ? (
+          <SuperProductPage data={allSuperData[matchedSuperIdx]} fundIdx={matchedSuperIdx} factFind={engineData} updateFF={activeUpdate} onToggleIndex={handleSuperCpiToggle} />
+        ) : isPension1 ? (
+          <PensionProductPage data={pension1Data || PENSION1_DATA} />
+        ) : isPension2 ? (
+          <PensionProductPage data={pension2Data || PENSION1_DATA} />
+        ) : matchedPensionIdx > 1 && allPensionData[matchedPensionIdx] ? (
+          <PensionProductPage data={allPensionData[matchedPensionIdx]} />
+        ) : matchedBondIdx >= 0 && bondDataList[matchedBondIdx] ? (
+          <SMSFPage data={bondDataList[matchedBondIdx].data} accountName={bondDataList[matchedBondIdx].name} entityName={bondDataList[matchedBondIdx].name} memberChartData={bondDataList[matchedBondIdx].chartData} />
+        ) : matchedDBIdx >= 0 && allDBData[matchedDBIdx] ? (
+          <SectionTable data={allDBData[matchedDBIdx]} onNavigate={navigateTo} />
+        ) : isAnnuity1 ? (
+          <AnnuityProductPage data={annuity1Data || ANNUITY1_DATA} />
+        ) : isAnnuity2 ? (
+          <AnnuityProductPage data={annuity2Data || ANNUITY1_DATA} />
+        ) : isDeathTax ? (
+          <PotentialDeathTaxPage />
+        ) : activePageData ? (
+          <div>
+            {isFinancialSummary && netWorthChartData && summaryMeta && (
+              <FinancialSummaryDashboard
+                chartData={netWorthChartData}
+                cashflowData={fsCashflowChartData}
+                meta={summaryMeta}
+                projYears={PROJ_YEARS}
+              />
+            )}
+            <SectionTable data={activePageData} onNavigate={navigateTo} />
+          </div>
+        ) : (
+          <PlaceholderContent topTab={activeTop} subTab={activeSub} subSubTab={activeSubSub} />
+        )}
+      </div>
+
+      {/* Fact Find overlay */}
+      {factFindOpen && (
+        <>
+          <div onClick={() => { setFactFindOpen(false); setFactFindSection(null); }} style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            background: "var(--ps-overlay)",
+            zIndex: 999,
+          }} />
+          {factFindPanelJSX}
+        </>
+      )}
+
+      {/* Advice overlay */}
+      {adviceOpen && (
+        <>
+          <div onClick={() => { setAdviceOpen(false); setAdviceSection(null); }} style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            background: "var(--ps-overlay)",
+            zIndex: 999,
+          }} />
+          {advicePanelJSX}
+        </>
+      )}
+
+      {/* ── SOA Builder Full-Screen Overlay ── */}
+      {showSOABuilder && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          zIndex: 9999, background: darkMode ? "#0F172A" : "#F8FAFC",
+          display: "flex", flexDirection: "column",
+        }}>
+          {/* SOA header bar */}
+          <div style={{
+            padding: "10px 24px", borderBottom: "1px solid var(--ps-border)",
+            background: "var(--ps-surface)", display: "flex", alignItems: "center", gap: 16,
+            flexShrink: 0,
+          }}>
+            <button
+              onClick={() => setShowSOABuilder(false)}
+              style={{
+                padding: "6px 14px", borderRadius: 6, border: "1px solid var(--ps-border-input)",
+                background: "var(--ps-surface)", fontSize: 12, color: "var(--ps-text-secondary)",
+                cursor: "pointer", fontWeight: 500, display: "flex", alignItems: "center", gap: 5,
+              }}
+            >← Back to Model</button>
+            <div style={{ width: 1, height: 24, background: "var(--ps-border)" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 20 }}>📄</span>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "var(--ps-text-primary)", letterSpacing: "-0.02em" }}>
+                  Statement of Advice
+                </div>
+                <div style={{ fontSize: 11, color: "var(--ps-text-muted)" }}>
+                  {`${(factFind.client1?.first_name || "")} ${(factFind.client1?.last_name || "")}`.trim() || "Client"}{factFind.client2?.first_name ? ` & ${factFind.client2.first_name} ${factFind.client2.last_name || ""}`.trim() : ""} · {new Date().toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })}
+                </div>
+              </div>
+            </div>
+            <div style={{ flex: 1 }} />
+            <button style={{
+              padding: "6px 14px", borderRadius: 6, border: "1px solid var(--ps-border-input)",
+              background: "var(--ps-surface)", fontSize: 12, color: "var(--ps-text-secondary)",
+              cursor: "pointer", fontWeight: 500,
+            }}>Preview</button>
+            <button style={{
+              padding: "6px 18px", borderRadius: 8, border: "none",
+              background: "linear-gradient(135deg, #059669 0%, #10B981 100%)",
+              fontSize: 12, color: "#fff", cursor: "pointer", fontWeight: 700,
+              boxShadow: "0 2px 8px rgba(5,150,105,0.35)",
+            }}>Generate Document</button>
+          </div>
+          {/* SOA body — full screen, no model leaking through */}
+          <div style={{ flex: 1, overflow: "auto" }}>
+            <SOADocumentBuilder
+              factFind={factFind}
+              engineData={engineData}
+              summaryMeta={summaryMeta}
+              ssData={ssData}
+              strategies={(engineData.advice_request?.strategy?.strategies || [])}
+              projYears={PROJ_YEARS}
+              superProj={superProj}
+              c1Display={c1Display}
+              c2Display={c2Display}
+              navigateTo={(path) => { setShowSOABuilder(false); navigateTo(path); }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function CashflowModel({ initialData, onDataChange } = {}) {
+  return React.createElement(CashflowErrorBoundary, null,
+    React.createElement(CashflowModelInner, { initialData, onDataChange })
+  );
+}

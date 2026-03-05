@@ -94,6 +94,7 @@ import AdviserSOATemplate from './pages/AdviserSOATemplate';
 import AdviserSettings from './pages/AdviserSettings';
 import AdviserTickets from './pages/AdviserTickets';
 import AvatarMarketing from './pages/AvatarMarketing';
+import Cashflow from './pages/Cashflow';
 import ClientAdviceHistory from './pages/ClientAdviceHistory';
 import ClientCashflow from './pages/ClientCashflow';
 import ClientDashboard from './pages/ClientDashboard';
@@ -196,6 +197,7 @@ export const PAGES = {
     "AdviserSettings": AdviserSettings,
     "AdviserTickets": AdviserTickets,
     "AvatarMarketing": AvatarMarketing,
+    "Cashflow": Cashflow,
     "ClientAdviceHistory": ClientAdviceHistory,
     "ClientCashflow": ClientCashflow,
     "ClientDashboard": ClientDashboard,
