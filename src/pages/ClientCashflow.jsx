@@ -31,6 +31,15 @@ export default function ClientCashflow() {
           } catch (tokenErr) {
             console.warn('Failed to acquire MSAL token for redirect, continuing without it:', tokenErr);
           }
+          console.log('[Cashflow Debug] Redirect URL:', redirectUrl);
+          console.log('[Cashflow Debug] URL length:', redirectUrl.length);
+          console.log('[Cashflow Debug] Has access_token:', redirectUrl.includes('access_token='));
+          const tokenMatch = redirectUrl.match(/access_token=([^&]*)/);
+          if (tokenMatch) {
+            const decoded = decodeURIComponent(tokenMatch[1]);
+            const parts = decoded.split('.');
+            console.log('[Cashflow Debug] Token parts:', parts.length, '| Token length:', decoded.length);
+          }
           window.location.href = redirectUrl;
         } else {
           setError(true);
