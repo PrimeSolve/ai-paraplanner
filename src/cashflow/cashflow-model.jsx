@@ -42,23 +42,9 @@ const AI_PARAPLANNER_URL = import.meta.env.VITE_AI_PARAPLANNER_URL || 'https://a
 function CashflowModelInner({ initialData, onDataChange }) {
   const [activeTop, setActiveTop] = useState("Summary of Results");
 
-  // Read clientId from URL parameter (passed from AI Paraplanner)
-  const [clientId] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('clientId') || params.get('client_id');
-  });
   const [clientInfo, setClientInfo] = useState(null);
-  const [fetchedInitialData, setFetchedInitialData] = useState(null);
-  const [clientLoading, setClientLoading] = useState(false);
-  const [clientLoadError, setClientLoadError] = useState(null);
 
-  // Client data fetching is handled by the useEffect below (lines ~86+)
-  // which calls getClientFullProfile(clientId) via apiClient with the
-  // Bearer token wired by App.jsx's ClientIdApp/AuthenticatedRouter.
-
-  const backToParaplannerUrl = clientId
-    ? `${AI_PARAPLANNER_URL}/ClientCashflow`
-    : AI_PARAPLANNER_URL;
+  const backToParaplannerUrl = AI_PARAPLANNER_URL;
 
   const {
     factFind, setFactFind, adviceModel1, setAdviceModel1,
@@ -68,56 +54,6 @@ function CashflowModelInner({ initialData, onDataChange }) {
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
   } = useFactFind(initialData);
-
-  // Fetch client data when clientId is present and no initialData was provided.
-  // Writes directly into factFind via setFactFind (not through useFactFind's initialData
-  // param, which only works on first render via useState).
-  useEffect(() => {
-    if (!clientId || initialData) return;
-    let cancelled = false;
-    setClientLoading(true);
-    setClientLoadError(null);
-
-    (async () => {
-      try {
-        const { getClientFullProfile } = await import('./api/clients.js');
-        const { apiToEngine } = await import('./api/dataMapper.js');
-        const profile = await getClientFullProfile(clientId);
-        if (cancelled) return;
-        if (profile) {
-          const engineData = apiToEngine(profile);
-          setFactFind(engineData);
-          setAdviceModel1(JSON.parse(JSON.stringify(engineData)));
-          setClientInfo(profile);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          console.error("[CashflowModel] Failed to load client:", err);
-          setClientLoadError(err.message || "Failed to load client data");
-        }
-      } finally {
-        if (!cancelled) setClientLoading(false);
-      }
-    })();
-
-    return () => { cancelled = true; };
-  }, [clientId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Show loading state while fetching client data (prevents Catherine/Paul default from flashing)
-  if (clientLoading) {
-    return React.createElement("div", {
-      style: { display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", fontFamily: "system-ui", color: "#64748b" }
-    }, "Loading client data...");
-  }
-
-  if (clientLoadError && !initialData) {
-    return React.createElement("div", {
-      style: { padding: 40, fontFamily: "system-ui", textAlign: "center" }
-    },
-      React.createElement("p", { style: { color: "#ef4444", marginBottom: 16 } }, `Error loading client: ${clientLoadError}`),
-      React.createElement("p", { style: { color: "#64748b", fontSize: 14 } }, "Please check the client ID and try again.")
-    );
-  }
 
   // Notify parent when factFind data changes (for API auto-save)
   const isFirstRender = useRef(true);
