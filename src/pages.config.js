@@ -94,8 +94,12 @@ import AdviserSOATemplate from './pages/AdviserSOATemplate';
 import AdviserSettings from './pages/AdviserSettings';
 import AdviserTickets from './pages/AdviserTickets';
 import AvatarMarketing from './pages/AvatarMarketing';
+import ClientAdviceHistory from './pages/ClientAdviceHistory';
+import ClientCashflow from './pages/ClientCashflow';
 import ClientDashboard from './pages/ClientDashboard';
 import ClientDocuments from './pages/ClientDocuments';
+import ClientFactFindAI from './pages/ClientFactFindAI';
+import ClientFactFindForm from './pages/ClientFactFindForm';
 import ClientHelp from './pages/ClientHelp';
 import ClientMessages from './pages/ClientMessages';
 import ClientProfile from './pages/ClientProfile';
@@ -192,8 +196,12 @@ export const PAGES = {
     "AdviserSettings": AdviserSettings,
     "AdviserTickets": AdviserTickets,
     "AvatarMarketing": AvatarMarketing,
+    "ClientAdviceHistory": ClientAdviceHistory,
+    "ClientCashflow": ClientCashflow,
     "ClientDashboard": ClientDashboard,
     "ClientDocuments": ClientDocuments,
+    "ClientFactFindAI": ClientFactFindAI,
+    "ClientFactFindForm": ClientFactFindForm,
     "ClientHelp": ClientHelp,
     "ClientMessages": ClientMessages,
     "ClientProfile": ClientProfile,
