@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useAuth } from "../auth/AuthProvider.jsx";
 import { getClients } from "../api/clients.js";
 import { createAdviceRequest, getAdviceRequests } from "../api/adviceRequests.js";
 
-export default function ClientListPage({ onNavigate }) {
-  const { user, logout } = useAuth();
+export default function ClientListPage({ onNavigate, user, onLogout }) {
   const [clients, setClients] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -72,7 +70,7 @@ export default function ClientListPage({ onNavigate }) {
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <span style={{ fontSize: 13, color: "#64748b" }}>{user?.name || user?.email}</span>
           <button
-            onClick={logout}
+            onClick={onLogout}
             style={{
               padding: "6px 16px", borderRadius: 6,
               border: "1px solid #e2e8f0", background: "#fff",
