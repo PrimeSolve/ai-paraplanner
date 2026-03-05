@@ -82,6 +82,8 @@ export default function AppShell({ children, pageActions, pageTitle }) {
     '/FactFindReview',
     '/FactFindDashboard',
     '/FactFindAssistant',
+    '/ClientFactFindForm',
+    '/ClientFactFindAI',
     '/SOARequestWelcome',
     '/SOARequestPrefill',
     '/SOARequestScope',
