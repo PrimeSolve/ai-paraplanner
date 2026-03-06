@@ -2,22 +2,15 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
-import { ChevronLeft, ChevronRight, LayoutDashboard } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRole } from '../RoleContext';
 import { useCompletionLogic } from './useCompletionLogic';
 import { useSectionState } from './useSectionState';
 
 const sectionGroups = [
   {
-    title: 'OVERVIEW',
-    sections: [
-      { id: 'dashboard', label: 'Dashboard', path: 'FactFindDashboard', icon: LayoutDashboard }
-    ]
-  },
-  {
     title: 'GETTING STARTED',
     sections: [
-      { id: 'welcome', label: 'Welcome', path: 'FactFindWelcome' },
       { id: 'prefill', label: 'Pre-fill (upload documents)', path: 'FactFindPrefill' }
     ]
   },
@@ -82,7 +75,7 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
   const [showDashboard, setShowDashboard] = useState(false);
   const { calculateAllSectionCompletion, getDisplayState } = useCompletionLogic();
   const { SECTIONS } = useSectionState();
-  const [activeTabId, setActiveTabId] = useState(currentSection || 'dashboard');
+  const [activeTabId, setActiveTabId] = useState(currentSection || 'prefill');
 
   // Update active tab when section changes
   useEffect(() => {
