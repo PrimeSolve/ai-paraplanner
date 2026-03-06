@@ -13,6 +13,8 @@ import { AGE_PENSION_PARAMS } from "./constants/assumptions.js";
 import { calcNetSalary, calcMarginalRate } from "./utils/taxCalc.js";
 import { assetTypeMap, debtDeductible, offsetWeightFactor, debtFreqLabel } from "./utils/projectionHelpers.js";
 import { ffLabelStyle, ffInputStyle, ffSelectStyle, ffRowStyle, ffFullRowStyle, FFField, FFInput, FFSelect, FFToggle, FFRadioRow } from "./components/common/FormFields.jsx";
+import { SOASubmissionModal, NoCreditModal } from "./components/common/SOAModals.jsx";
+import { getBillingStatus } from "../api/billing";
 import { PlaceholderContent, SectionTable } from "./components/common/SectionTable.jsx";
 import { CashflowSavingsPage, TaxSchedulePage, CGTPage, UnrealisedCGTPage, AssetChartPage, DebtChartPage, AssetTable, TrustPage, TrustDistOverride, CompanyPage, SMSFPage, SUPER1_DATA, PENSION1_DATA, PROPERTY_TYPES, DEFENSIVE_ASSET_TYPES, GROWTH_ASSET_TYPES, LIFESTYLE_ASSET_TYPES } from "./components/schedules/index.jsx";
 import { ModelComparisonDashboard, ModelComparisonDetail, AdviceSummaryTable, ScopeDashboard, ObjectivesDashboard, RecommendationsTable, ProductProjectionTable, PortfolioTransactionsTable, BenefitOfAdviceDashboard, PortfolioDashboard, RetirementDashboard, HealthCheckTable, RetirementBalanceChart, ContributionsChart, IncomeInRetirementChart, CashflowDashboard, IncomeChart, ExpensesChart, CapitalDashboard, DebtChart, PropertyChart, AssetsPerEntityChart, AssetTypeChart, AssetsLiabilitiesChart, FinancialSummaryDashboard, MilestonesDashboard, RebalancingTable, ANNUITY1_DATA, NET_EQUITY_DATA } from "./components/dashboards/index.jsx";
@@ -74,6 +76,17 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
   const [adviceSection, setAdviceSection] = useState(null);
   const [adviceMode, setAdviceMode] = useState("manual"); // "manual" | "ai"
   const [showSOABuilder, setShowSOABuilder] = useState(false);
+
+  // ── Billing status for SOA button logic ──
+  const [billingStatus, setBillingStatus] = useState(null);
+  const [showSOASubmitModal, setShowSOASubmitModal] = useState(false);
+  const [showNoCreditModal, setShowNoCreditModal] = useState(false);
+
+  useEffect(() => {
+    getBillingStatus()
+      .then(setBillingStatus)
+      .catch(err => console.warn("Failed to fetch billing status:", err.message));
+  }, []);
 
   // factFind, adviceModel1, and helpers are provided by useFactFind()
   const topConfig = NAV_STRUCTURE[activeTop];
@@ -1395,22 +1408,65 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
             <>
               <div style={{ width: 1, height: 24, background: "var(--ps-border)", margin: "0 2px" }} />
               {/* ── Outputs ── */}
-              <button
-                onClick={() => setShowSOABuilder(true)}
-                style={{
-                  padding: "6px 18px", borderRadius: 8,
-                  border: "none",
-                  background: "linear-gradient(135deg, #059669 0%, #10B981 100%)",
-                  fontSize: 12, color: "#fff",
-                  cursor: "pointer", fontWeight: 700,
-                  display: "flex", alignItems: "center", gap: 6,
-                  boxShadow: "0 2px 8px rgba(5,150,105,0.35)",
-                  letterSpacing: "0.01em",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                <span style={{ fontSize: 14 }}>📄</span> Build SOA
-              </button>
+              {(() => {
+                const isFullPlatform = billingStatus?.licenceType === "full" && billingStatus?.subscriptionActive === true;
+                const hasCredits = (billingStatus?.soaCredits ?? 0) > 0;
+
+                if (isFullPlatform) {
+                  // Case 1 — Full Platform: green "Build SOA"
+                  return (
+                    <button
+                      onClick={() => setShowSOABuilder(true)}
+                      style={{
+                        padding: "6px 18px", borderRadius: 8, border: "none",
+                        background: "linear-gradient(135deg, #059669 0%, #10B981 100%)",
+                        fontSize: 12, color: "#fff", cursor: "pointer", fontWeight: 700,
+                        display: "flex", alignItems: "center", gap: 6,
+                        boxShadow: "0 2px 8px rgba(5,150,105,0.35)",
+                        letterSpacing: "0.01em", transition: "all 0.15s ease",
+                      }}
+                    >
+                      <span style={{ fontSize: 14 }}>📄</span> Build SOA
+                    </button>
+                  );
+                }
+
+                if (hasCredits) {
+                  // Case 2 — Transaction with credits: blue "Request SOA"
+                  return (
+                    <button
+                      onClick={() => setShowSOASubmitModal(true)}
+                      style={{
+                        padding: "6px 18px", borderRadius: 8, border: "none",
+                        background: "linear-gradient(135deg, #2563EB 0%, #3B82F6 100%)",
+                        fontSize: 12, color: "#fff", cursor: "pointer", fontWeight: 700,
+                        display: "flex", alignItems: "center", gap: 6,
+                        boxShadow: "0 2px 8px rgba(37,99,235,0.35)",
+                        letterSpacing: "0.01em", transition: "all 0.15s ease",
+                      }}
+                    >
+                      <span style={{ fontSize: 14 }}>📄</span> Request SOA
+                    </button>
+                  );
+                }
+
+                // Case 3 — No credits: red "No Credits Remaining"
+                return (
+                  <button
+                    onClick={() => setShowNoCreditModal(true)}
+                    style={{
+                      padding: "6px 18px", borderRadius: 8, border: "none",
+                      background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
+                      fontSize: 12, color: "#fff", cursor: "pointer", fontWeight: 700,
+                      display: "flex", alignItems: "center", gap: 6,
+                      boxShadow: "0 2px 8px rgba(220,38,38,0.35)",
+                      letterSpacing: "0.01em", transition: "all 0.15s ease",
+                    }}
+                  >
+                    <span style={{ fontSize: 14 }}>📄</span> No Credits Remaining
+                  </button>
+                );
+              })()}
             </>
           )}
         </div>
@@ -2042,6 +2098,17 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
       )}
 
       {/* ── SOA Builder Full-Screen Overlay ── */}
+      {/* ── SOA Billing Modals ── */}
+      {showSOASubmitModal && (
+        <SOASubmissionModal
+          onClose={() => setShowSOASubmitModal(false)}
+          onCreditUsed={(newBalance) => setBillingStatus(prev => ({ ...prev, soaCredits: newBalance }))}
+        />
+      )}
+      {showNoCreditModal && (
+        <NoCreditModal onClose={() => setShowNoCreditModal(false)} />
+      )}
+
       {showSOABuilder && (
         <div style={{
           position: "fixed", top: 0, left: 0, right: 0, bottom: 0,

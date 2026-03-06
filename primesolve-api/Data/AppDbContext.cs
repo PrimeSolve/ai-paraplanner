@@ -9,6 +9,7 @@ namespace PrimeSolve.Api.Data
             : base(options) { }
 
         public DbSet<Document> Documents { get; set; }
+        public DbSet<Tenant> Tenants { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
