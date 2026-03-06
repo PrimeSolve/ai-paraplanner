@@ -1,13 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import ClientLayout from '../components/client/ClientLayout';
 import { base44 } from '@/api/base44Client';
+import { documentsApi } from '@/api/primeSolveClient';
 import { formatDate } from '../utils/dateUtils';
+import { Badge } from '@/components/ui/badge';
 import {
   FileText,
   Download,
   Search,
-  Inbox
+  Inbox,
+  CheckCircle2,
+  Loader2,
+  AlertTriangle
 } from 'lucide-react';
+
+const STATUS_CONFIG = {
+  Processing: {
+    icon: Loader2,
+    label: 'Processing',
+    className: 'text-amber-700 border-amber-300 bg-amber-50',
+    animate: true,
+  },
+  Extracted: {
+    icon: CheckCircle2,
+    label: 'Extracted',
+    className: 'text-green-700 border-green-300 bg-green-50',
+    animate: false,
+  },
+  Confirmed: {
+    icon: CheckCircle2,
+    label: 'Confirmed',
+    className: 'text-blue-700 border-blue-300 bg-blue-50',
+    animate: false,
+  },
+};
 
 export default function ClientDocuments() {
   const [loading, setLoading] = useState(true);
@@ -18,11 +44,24 @@ export default function ClientDocuments() {
     const loadDocuments = async () => {
       try {
         const user = await base44.auth.me();
+
+        // Try loading from the documents endpoint first (with client ID)
         try {
-          const docs = await base44.entities.Document?.filter({ client_email: user.email }) || [];
-          setDocuments(docs);
+          const clients = await base44.entities.Client.filter({ email: user.email });
+          if (clients[0]?.id) {
+            const docs = await documentsApi.getByClient(clients[0].id);
+            setDocuments(docs);
+          } else {
+            setDocuments([]);
+          }
         } catch {
-          setDocuments([]);
+          // Fallback to entity proxy
+          try {
+            const docs = await base44.entities.Document?.filter({ client_email: user.email }) || [];
+            setDocuments(docs);
+          } catch {
+            setDocuments([]);
+          }
         }
       } catch (error) {
         console.error('Failed to load documents:', error);
@@ -35,7 +74,8 @@ export default function ClientDocuments() {
   }, []);
 
   const filteredDocuments = documents.filter(doc => {
-    return (doc.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const name = doc.file_name || doc.name || '';
+    return name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   if (loading) {
@@ -79,42 +119,67 @@ export default function ClientDocuments() {
               <Inbox className="w-16 h-16 text-slate-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-slate-700 mb-2">No documents yet</h3>
               <p className="text-slate-500 max-w-md mx-auto">
-                Documents will appear here once your adviser uploads them.
+                Documents will appear here once your adviser uploads them or you upload documents via the Fact Find.
               </p>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-slate-50 border-b border-slate-200">
-                <div className="col-span-5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Document</div>
+                <div className="col-span-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Document</div>
                 <div className="col-span-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Type</div>
+                <div className="col-span-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</div>
                 <div className="col-span-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</div>
-                <div className="col-span-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">Size</div>
                 <div className="col-span-2 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</div>
               </div>
 
               <div className="divide-y divide-slate-100">
                 {filteredDocuments.length > 0 ? (
-                  filteredDocuments.map((doc) => (
-                    <div key={doc.id} className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-slate-50 transition-colors items-center">
-                      <div className="col-span-5 flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
-                          <FileText className="w-5 h-5" />
+                  filteredDocuments.map((doc) => {
+                    const displayName = doc.file_name || doc.name || 'Untitled';
+                    const displayType = doc.file_type || doc.type || 'Document';
+                    const displayDate = doc.uploaded_at || doc.created_date || doc.date;
+                    const status = doc.status || 'Processing';
+                    const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.Processing;
+                    const StatusIcon = statusConfig.icon;
+
+                    return (
+                      <div key={doc.id} className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-slate-50 transition-colors items-center">
+                        <div className="col-span-4 flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+                            <FileText className="w-5 h-5" />
+                          </div>
+                          <p className="text-sm font-medium text-slate-800 truncate">{displayName}</p>
                         </div>
-                        <p className="text-sm font-medium text-slate-800">{doc.name}</p>
+                        <div className="col-span-2">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                            {displayType.replace(/_/g, ' ')}
+                          </span>
+                        </div>
+                        <div className="col-span-2">
+                          <Badge variant="outline" className={statusConfig.className}>
+                            <StatusIcon className={`w-3 h-3 mr-1 ${statusConfig.animate ? 'animate-spin' : ''}`} />
+                            {statusConfig.label}
+                          </Badge>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="text-sm text-slate-600">{formatDate(displayDate)}</span>
+                        </div>
+                        <div className="col-span-2 flex items-center justify-end">
+                          {doc.blob_url && (
+                            <a
+                              href={doc.blob_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                            >
+                              <Download className="w-4 h-4" />
+                              Download
+                            </a>
+                          )}
+                        </div>
                       </div>
-                      <div className="col-span-2">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{doc.type || 'Document'}</span>
-                      </div>
-                      <div className="col-span-2"><span className="text-sm text-slate-600">{formatDate(doc.created_date || doc.date)}</span></div>
-                      <div className="col-span-1"><span className="text-sm text-slate-500">{doc.size || '\u2014'}</span></div>
-                      <div className="col-span-2 flex items-center justify-end">
-                        <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">
-                          <Download className="w-4 h-4" />
-                          Download
-                        </button>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="px-6 py-12 text-center">
                     <p className="text-slate-500">No documents match your search</p>

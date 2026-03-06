@@ -233,6 +233,7 @@ const entities = {
   SoaDocument: createEntityProxy('soa-documents'),
   CashflowModel: createEntityProxy('cashflow-models'),
   AdviceRecord: createEntityProxy('advice-records'),
+  Document: createEntityProxy('documents'),
 };
 
 // ──────────────────────────────────────────────────────────────
@@ -383,6 +384,72 @@ const ai = {
 };
 
 // ──────────────────────────────────────────────────────────────
+// Document upload & extraction API helpers
+// ──────────────────────────────────────────────────────────────
+
+export const documentsApi = {
+  /**
+   * Upload a document for AI extraction.
+   * @param {File} file - The file to upload
+   * @param {string} clientId - The client ID
+   * @param {string} [fileType] - Document type hint (tax_return, super_statements, etc.)
+   * @returns {{ id, fileName, fileType, blobUrl, status, uploadedAt }}
+   */
+  async upload(file, clientId, fileType) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('clientId', clientId);
+    if (fileType) formData.append('fileType', fileType);
+
+    const response = await axiosInstance.post('/documents/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return camelToSnakeKeys(response.data);
+  },
+
+  /**
+   * Get all documents for a client.
+   * @param {string} clientId
+   * @returns {Array} documents
+   */
+  async getByClient(clientId) {
+    const response = await axiosInstance.get('/documents', {
+      params: { clientId },
+    });
+    const data = Array.isArray(response.data) ? response.data : [];
+    return data.map(camelToSnakeKeys);
+  },
+
+  /**
+   * Get a single document by ID (includes extractedSections).
+   * @param {string} documentId
+   * @returns {object} document
+   */
+  async getById(documentId) {
+    const response = await axiosInstance.get(`/documents/${documentId}`);
+    return camelToSnakeKeys(response.data);
+  },
+
+  /**
+   * Poll a document until extraction completes or times out.
+   * @param {string} documentId
+   * @param {number} [maxAttempts=30] - Max polling attempts
+   * @param {number} [intervalMs=2000] - Polling interval in ms
+   * @returns {object} document with extractedSections
+   */
+  async pollUntilExtracted(documentId, maxAttempts = 30, intervalMs = 2000) {
+    for (let i = 0; i < maxAttempts; i++) {
+      const doc = await this.getById(documentId);
+      if (doc.status === 'Extracted' || doc.status === 'Confirmed') {
+        return doc;
+      }
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
+    }
+    throw new Error('Document extraction timed out');
+  },
+};
+
+// ──────────────────────────────────────────────────────────────
 // SOA Document AI API helpers
 // ──────────────────────────────────────────────────────────────
 
@@ -421,4 +488,5 @@ export const base44 = {
   integrations,
   appLogs,
   ai,
+  documentsApi,
 };
