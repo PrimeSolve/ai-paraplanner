@@ -39,7 +39,8 @@ class CashflowErrorBoundary extends React.Component {
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.primesolve.com.au';
 const AI_PARAPLANNER_URL = import.meta.env.VITE_AI_PARAPLANNER_URL || 'https://app.aiparaplanner.com.au';
 
-function CashflowModelInner({ initialData, onDataChange, onBack }) {
+function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvice }) {
+  const isFactfindMode = mode === "factfind";
   const [activeTop, setActiveTop] = useState("Summary of Results");
 
   const [clientInfo, setClientInfo] = useState(null);
@@ -64,7 +65,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack }) {
 
   const [activeSub, setActiveSub] = useState("Timeline");
   const [activeSubSub, setActiveSubSub] = useState("Financial Summary");
-  const [selectedModel, setSelectedModel] = useState("advice1");
+  const [selectedModel, setSelectedModel] = useState(isFactfindMode ? "base" : "advice1");
   const isAdviceModel = selectedModel === "advice1";
   const [factFindOpen, setFactFindOpen] = useState(false);
   const [factFindSection, setFactFindSection] = useState(null);
@@ -1302,44 +1303,48 @@ function CashflowModelInner({ initialData, onDataChange, onBack }) {
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <label style={{ fontSize: 13, color: "var(--ps-text-muted)", fontWeight: 500 }}>Select Model</label>
-          <select
-            value={selectedModel}
-            onChange={e => {
-              const val = e.target.value;
-              setSelectedModel(val);
-              // Auto-initialise advice model if switching to it for first time
-              if (val === "advice1" && !adviceModel1) setAdviceModel1(JSON.parse(JSON.stringify(factFind)));
-              // If switching to base and current page is advice-only, redirect
-              if (val === "base") {
-                const config = NAV_STRUCTURE[activeTop];
-                if (config?.adviceOnly) {
-                  setActiveTop("Summary of Results");
-                  setActiveSub("Timeline");
-                  setActiveSubSub("Financial Summary");
-                } else if (config?.adviceOnlySubTabs?.includes(activeSub)) {
-                  setActiveSub(config.subTabs.find(s => !config.adviceOnlySubTabs.includes(s)) || config.subTabs[0]);
-                }
-              }
-            }}
-            style={{
-              padding: "6px 12px", borderRadius: 6,
-              border: selectedModel === "advice1" ? "2px solid #6366F1" : "1px solid var(--ps-border-input)",
-              fontSize: 13,
-              background: selectedModel === "advice1" ? "var(--ps-surface-indigo)" : "var(--ps-surface)",
-              color: "var(--ps-text-primary)", fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            <option value="base">Base Plan (Existing)</option>
-            <option value="advice1">Advice Model 1</option>
-          </select>
-          {selectedModel === "advice1" && (
-            <button onClick={resetAdviceModel} style={{
-              padding: "6px 12px", borderRadius: 6,
-              border: "1px solid var(--ps-ring-red)", background: "var(--ps-surface-red)",
-              fontSize: 11, color: "var(--ps-red)", cursor: "pointer", fontWeight: 600,
-            }}>Reset to Base</button>
+          {!isFactfindMode && (
+            <>
+              <label style={{ fontSize: 13, color: "var(--ps-text-muted)", fontWeight: 500 }}>Select Model</label>
+              <select
+                value={selectedModel}
+                onChange={e => {
+                  const val = e.target.value;
+                  setSelectedModel(val);
+                  // Auto-initialise advice model if switching to it for first time
+                  if (val === "advice1" && !adviceModel1) setAdviceModel1(JSON.parse(JSON.stringify(factFind)));
+                  // If switching to base and current page is advice-only, redirect
+                  if (val === "base") {
+                    const config = NAV_STRUCTURE[activeTop];
+                    if (config?.adviceOnly) {
+                      setActiveTop("Summary of Results");
+                      setActiveSub("Timeline");
+                      setActiveSubSub("Financial Summary");
+                    } else if (config?.adviceOnlySubTabs?.includes(activeSub)) {
+                      setActiveSub(config.subTabs.find(s => !config.adviceOnlySubTabs.includes(s)) || config.subTabs[0]);
+                    }
+                  }
+                }}
+                style={{
+                  padding: "6px 12px", borderRadius: 6,
+                  border: selectedModel === "advice1" ? "2px solid #6366F1" : "1px solid var(--ps-border-input)",
+                  fontSize: 13,
+                  background: selectedModel === "advice1" ? "var(--ps-surface-indigo)" : "var(--ps-surface)",
+                  color: "var(--ps-text-primary)", fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                <option value="base">Base Plan (Existing)</option>
+                <option value="advice1">Advice Model 1</option>
+              </select>
+              {selectedModel === "advice1" && (
+                <button onClick={resetAdviceModel} style={{
+                  padding: "6px 12px", borderRadius: 6,
+                  border: "1px solid var(--ps-ring-red)", background: "var(--ps-surface-red)",
+                  fontSize: 11, color: "var(--ps-red)", cursor: "pointer", fontWeight: 600,
+                }}>Reset to Base</button>
+              )}
+            </>
           )}
           <button
             onClick={() => setDarkMode(d => !d)}
@@ -1370,38 +1375,44 @@ function CashflowModelInner({ initialData, onDataChange, onBack }) {
           >
             <span style={{ fontSize: 14 }}>{factFindOpen && factFindMode === "ai" ? "🎙️" : "📋"}</span> Fact Find
           </button>
-          <button
-            onClick={() => { setAdviceOpen(!adviceOpen); if (!adviceOpen) { setFactFindOpen(false); setFactFindSection(null); } }}
-            style={{
-              padding: "6px 14px", borderRadius: 6,
-              border: adviceOpen ? "1px solid #0D9488" : "1px solid var(--ps-border-input)",
-              background: adviceOpen ? "var(--ps-surface-teal)" : "var(--ps-surface)",
-              fontSize: 12, color: adviceOpen ? "#0D9488" : "var(--ps-text-secondary)",
-              cursor: "pointer", fontWeight: 600,
-              display: "flex", alignItems: "center", gap: 5,
-              transition: "all 0.15s ease",
-            }}
-          >
-            <span style={{ fontSize: 14 }}>{adviceOpen && adviceMode === "ai" ? "🧠" : "💡"}</span> Advice
-          </button>
-          <div style={{ width: 1, height: 24, background: "var(--ps-border)", margin: "0 2px" }} />
-          {/* ── Outputs ── */}
-          <button
-            onClick={() => setShowSOABuilder(true)}
-            style={{
-              padding: "6px 18px", borderRadius: 8,
-              border: "none",
-              background: "linear-gradient(135deg, #059669 0%, #10B981 100%)",
-              fontSize: 12, color: "#fff",
-              cursor: "pointer", fontWeight: 700,
-              display: "flex", alignItems: "center", gap: 6,
-              boxShadow: "0 2px 8px rgba(5,150,105,0.35)",
-              letterSpacing: "0.01em",
-              transition: "all 0.15s ease",
-            }}
-          >
-            <span style={{ fontSize: 14 }}>📄</span> Build SOA
-          </button>
+          {!isFactfindMode && (
+            <button
+              onClick={() => { setAdviceOpen(!adviceOpen); if (!adviceOpen) { setFactFindOpen(false); setFactFindSection(null); } }}
+              style={{
+                padding: "6px 14px", borderRadius: 6,
+                border: adviceOpen ? "1px solid #0D9488" : "1px solid var(--ps-border-input)",
+                background: adviceOpen ? "var(--ps-surface-teal)" : "var(--ps-surface)",
+                fontSize: 12, color: adviceOpen ? "#0D9488" : "var(--ps-text-secondary)",
+                cursor: "pointer", fontWeight: 600,
+                display: "flex", alignItems: "center", gap: 5,
+                transition: "all 0.15s ease",
+              }}
+            >
+              <span style={{ fontSize: 14 }}>{adviceOpen && adviceMode === "ai" ? "🧠" : "💡"}</span> Advice
+            </button>
+          )}
+          {!isFactfindMode && (
+            <>
+              <div style={{ width: 1, height: 24, background: "var(--ps-border)", margin: "0 2px" }} />
+              {/* ── Outputs ── */}
+              <button
+                onClick={() => setShowSOABuilder(true)}
+                style={{
+                  padding: "6px 18px", borderRadius: 8,
+                  border: "none",
+                  background: "linear-gradient(135deg, #059669 0%, #10B981 100%)",
+                  fontSize: 12, color: "#fff",
+                  cursor: "pointer", fontWeight: 700,
+                  display: "flex", alignItems: "center", gap: 6,
+                  boxShadow: "0 2px 8px rgba(5,150,105,0.35)",
+                  letterSpacing: "0.01em",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <span style={{ fontSize: 14 }}>📄</span> Build SOA
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -1417,6 +1428,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack }) {
         {TOP_TABS.filter(tab => {
           const config = NAV_STRUCTURE[tab];
           if (config.adviceOnly && selectedModel === "base") return false;
+          if (isFactfindMode && tab === "Advice Detail") return false;
           return true;
         }).map(tab => {
           const isActive = activeTop === tab;
@@ -2096,8 +2108,8 @@ function CashflowModelInner({ initialData, onDataChange, onBack }) {
   );
 }
 
-export default function CashflowModel({ initialData, onDataChange, onBack } = {}) {
+export default function CashflowModel({ initialData, onDataChange, onBack, mode, hideAdvice } = {}) {
   return React.createElement(CashflowErrorBoundary, null,
-    React.createElement(CashflowModelInner, { initialData, onDataChange, onBack })
+    React.createElement(CashflowModelInner, { initialData, onDataChange, onBack, mode, hideAdvice })
   );
 }
