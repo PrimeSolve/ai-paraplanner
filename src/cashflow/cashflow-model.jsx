@@ -39,7 +39,7 @@ class CashflowErrorBoundary extends React.Component {
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.primesolve.com.au';
 const AI_PARAPLANNER_URL = import.meta.env.VITE_AI_PARAPLANNER_URL || 'https://app.aiparaplanner.com.au';
 
-function CashflowModelInner({ initialData, onDataChange }) {
+function CashflowModelInner({ initialData, onDataChange, onBack }) {
   const [activeTop, setActiveTop] = useState("Summary of Results");
 
   const [clientInfo, setClientInfo] = useState(null);
@@ -1256,18 +1256,34 @@ function CashflowModelInner({ initialData, onDataChange }) {
         background: "var(--ps-surface-alt)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <a
-            href={backToParaplannerUrl}
-            style={{
-              display: "flex", alignItems: "center", gap: 5,
-              color: "#4F46E5", fontSize: 13, fontWeight: 600,
-              textDecoration: "none", whiteSpace: "nowrap",
-            }}
-            onMouseEnter={e => e.currentTarget.style.color = "#3730A3"}
-            onMouseLeave={e => e.currentTarget.style.color = "#4F46E5"}
-          >
-            <span style={{ fontSize: 16 }}>&larr;</span> AI Paraplanner
-          </a>
+          {onBack ? (
+            <button
+              onClick={onBack}
+              style={{
+                display: "flex", alignItems: "center", gap: 5,
+                color: "#4F46E5", fontSize: 13, fontWeight: 600,
+                background: "none", border: "none", cursor: "pointer",
+                whiteSpace: "nowrap", padding: 0,
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = "#3730A3"}
+              onMouseLeave={e => e.currentTarget.style.color = "#4F46E5"}
+            >
+              <span style={{ fontSize: 16 }}>&larr;</span> Back to Client
+            </button>
+          ) : (
+            <a
+              href={backToParaplannerUrl}
+              style={{
+                display: "flex", alignItems: "center", gap: 5,
+                color: "#4F46E5", fontSize: 13, fontWeight: 600,
+                textDecoration: "none", whiteSpace: "nowrap",
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = "#3730A3"}
+              onMouseLeave={e => e.currentTarget.style.color = "#4F46E5"}
+            >
+              <span style={{ fontSize: 16 }}>&larr;</span> AI Paraplanner
+            </a>
+          )}
           <div style={{ width: 1, height: 24, background: "var(--ps-border)" }} />
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span style={{ fontSize: 18, fontWeight: 700, color: "var(--ps-text-primary)", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
@@ -2080,8 +2096,8 @@ function CashflowModelInner({ initialData, onDataChange }) {
   );
 }
 
-export default function CashflowModel({ initialData, onDataChange } = {}) {
+export default function CashflowModel({ initialData, onDataChange, onBack } = {}) {
   return React.createElement(CashflowErrorBoundary, null,
-    React.createElement(CashflowModelInner, { initialData, onDataChange })
+    React.createElement(CashflowModelInner, { initialData, onDataChange, onBack })
   );
 }
