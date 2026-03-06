@@ -70,11 +70,11 @@ export function useFactFind() {
           console.log('Creating new FactFind for client:', client.id);
           const newFactFind = await base44.entities.FactFind.create({
             personal: {
-              client: {
-                first_name: client.first_name || '',
-                last_name: client.last_name || '',
-                email: clientEmail
-              }
+              first_name: client.first_name || '',
+              last_name: client.last_name || '',
+              email: clientEmail,
+              phone: client.phone || '',
+              notes: client.notes || '',
             },
             status: 'in_progress',
             sections_completed: []

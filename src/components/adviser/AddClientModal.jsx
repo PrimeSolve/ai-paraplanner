@@ -33,7 +33,7 @@ export default function AddClientModal({ isOpen, onClose, onSuccess, adviserEmai
       // Get current user for adviser_id and tenant_id
       const currentUser = await base44.auth.me();
 
-      await base44.entities.Client.create({
+      const newClient = await base44.entities.Client.create({
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
@@ -43,6 +43,23 @@ export default function AddClientModal({ isOpen, onClose, onSuccess, adviserEmai
         adviser_id: currentUser.adviser_id || currentUser.id,
         tenant_id: currentUser.tenant_id,
         status: 'prospect',
+      });
+
+      // Auto-create a FactFind record and link it to the client
+      const newFactFind = await base44.entities.FactFind.create({
+        personal: {
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          email: formData.email,
+          phone: formData.phone,
+          notes: formData.notes,
+        },
+        status: 'in_progress',
+        sections_completed: []
+      });
+
+      await base44.entities.Client.update(newClient.id, {
+        fact_find_id: newFactFind.id
       });
 
       toast.success('Client added successfully');

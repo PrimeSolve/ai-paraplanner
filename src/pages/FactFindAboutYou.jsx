@@ -69,7 +69,8 @@ export default function FactFindPersonal() {
     power_of_attorney: '',
     centrelink_benefits: '',
     benefit_type: '',
-    concession_cards: ''
+    concession_cards: '',
+    notes: ''
   };
   
   const [clientData, setClientData] = useState(initialFormState);
@@ -177,11 +178,14 @@ export default function FactFindPersonal() {
         };
         await updateSection('personal', personalData);
         
-        // Sync client name to Client entity for breadcrumb
+        // Sync shared fields to Client entity
         if (clientId && clientData.first_name && clientData.last_name) {
           await base44.entities.Client.update(clientId, {
             first_name: clientData.first_name,
-            last_name: clientData.last_name
+            last_name: clientData.last_name,
+            email: clientData.email,
+            phone: clientData.phone,
+            notes: clientData.notes,
           });
         }
       }
@@ -237,7 +241,10 @@ export default function FactFindPersonal() {
       
       base44.entities.Client.update(clientId, {
         first_name: factFind.personal.first_name,
-        last_name: factFind.personal.last_name || ''
+        last_name: factFind.personal.last_name || '',
+        email: factFind.personal.email || '',
+        phone: factFind.personal.phone || '',
+        notes: factFind.personal.notes || '',
       })
         .then(() => console.log('=== CLIENT ENTITY UPDATED ==='))
         .catch(err => console.error('=== CLIENT UPDATE FAILED ===', err));
@@ -323,11 +330,14 @@ export default function FactFindPersonal() {
       // 1. Save to FactFind
       const result = await updateSection('personal', personalData);
       
-      // 2. Sync client name to Client entity (for breadcrumb)
+      // 2. Sync shared fields to Client entity
       if (clientId && clientData.first_name && clientData.last_name) {
         await base44.entities.Client.update(clientId, {
           first_name: clientData.first_name,
-          last_name: clientData.last_name
+          last_name: clientData.last_name,
+          email: clientData.email,
+          phone: clientData.phone,
+          notes: clientData.notes,
         });
         // Update navigation context so sidebar/breadcrumb refresh
         const fullName = `${clientData.first_name} ${clientData.last_name}`;
@@ -729,6 +739,18 @@ export default function FactFindPersonal() {
                         />
                       </div>
                     </div>
+
+                    {activeTab === 'client' && (
+                      <div className="space-y-2">
+                        <Label className="text-slate-700 font-semibold text-sm">Notes</Label>
+                        <textarea
+                          value={formData.notes}
+                          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                          placeholder="Any additional notes about this client..."
+                          className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    )}
                   </>
                 )}
 
