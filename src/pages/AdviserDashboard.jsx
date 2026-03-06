@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getBillingStatus, createCheckout } from '@/api/billing';
 import { Button } from '@/components/ui/button';
 import { Users, FileText, CheckCircle, Clock, Eye, Plus, ArrowRight, TrendingUp } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatRelativeDate } from '../utils/dateUtils';
+import { toast } from 'sonner';
+import BillingBanner from '@/components/billing/BillingBanner';
 
 // Safely extract a displayable string from any value (guards against React Error #31)
 const safeStr = (val) => {
@@ -31,10 +34,67 @@ export default function AdviserDashboard() {
     readyForDownload: 0
   });
   const [recentActivity, setRecentActivity] = useState([]);
+  const [billingStatus, setBillingStatus] = useState(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     loadData();
+    loadBillingStatus();
   }, []);
+
+  // Show success toast on return from Stripe
+  useEffect(() => {
+    if (searchParams.get('payment') === 'success') {
+      toast.success('Credits added to your account');
+      searchParams.delete('payment');
+      setSearchParams(searchParams, { replace: true });
+      loadBillingStatus();
+    }
+  }, []);
+
+  const loadBillingStatus = async () => {
+    try {
+      const status = await getBillingStatus();
+      setBillingStatus(status);
+    } catch (error) {
+      console.error('Failed to load billing status:', error);
+    }
+  };
+
+  const handleCheckout = async (priceType) => {
+    if (priceType === 'manage') {
+      // Redirect to Stripe customer portal
+      try {
+        setCheckoutLoading(true);
+        const result = await createCheckout('manage', window.location.href, window.location.href);
+        if (result.url) {
+          window.location.href = result.url;
+        }
+      } catch (error) {
+        console.error('Failed to open billing portal:', error);
+        toast.error('Failed to open billing portal');
+      } finally {
+        setCheckoutLoading(false);
+      }
+      return;
+    }
+
+    try {
+      setCheckoutLoading(true);
+      const successUrl = window.location.origin + window.location.pathname + '?payment=success';
+      const cancelUrl = window.location.origin + window.location.pathname;
+      const result = await createCheckout(priceType, successUrl, cancelUrl);
+      if (result.url) {
+        window.location.href = result.url;
+      }
+    } catch (error) {
+      console.error('Checkout failed:', error);
+      toast.error('Failed to start checkout');
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -146,6 +206,17 @@ export default function AdviserDashboard() {
               </div>
             ))}
           </div>
+
+          {/* Billing Banner */}
+          {billingStatus && (
+            <BillingBanner
+              licenceType={billingStatus.licence_type}
+              soaCredits={billingStatus.soa_credits}
+              subscriptionActive={billingStatus.subscription_active}
+              onCheckout={handleCheckout}
+              checkoutLoading={checkoutLoading}
+            />
+          )}
 
           {/* Content Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
