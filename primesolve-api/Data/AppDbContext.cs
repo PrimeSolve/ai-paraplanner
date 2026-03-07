@@ -9,6 +9,7 @@ namespace PrimeSolve.Api.Data
             : base(options) { }
 
         public DbSet<Document> Documents { get; set; }
+        public DbSet<Client> Clients { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -21,6 +22,13 @@ namespace PrimeSolve.Api.Data
                 entity.Property(e => e.Status)
                       .HasConversion<string>()
                       .HasMaxLength(20);
+            });
+
+            modelBuilder.Entity<Client>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.TenantId, e.AdviserId });
+                entity.HasIndex(e => e.Email);
             });
         }
     }
