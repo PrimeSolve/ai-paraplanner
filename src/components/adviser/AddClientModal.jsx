@@ -45,22 +45,27 @@ export default function AddClientModal({ isOpen, onClose, onSuccess, adviserEmai
         status: 'prospect',
       });
 
-      // Auto-create a FactFind record and link it to the client
-      const newFactFind = await base44.entities.FactFind.create({
-        personal: {
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          email: formData.email,
-          phone: formData.phone,
-          notes: formData.notes,
-        },
-        status: 'in_progress',
-        sections_completed: []
-      });
+      // Auto-create a FactFind record and link it to the client.
+      // This is non-critical — don't let it block modal close or list refresh.
+      try {
+        const newFactFind = await base44.entities.FactFind.create({
+          personal: {
+            first_name: formData.first_name,
+            last_name: formData.last_name,
+            email: formData.email,
+            phone: formData.phone,
+            notes: formData.notes,
+          },
+          status: 'in_progress',
+          sections_completed: []
+        });
 
-      await base44.entities.Client.update(newClient.id, {
-        fact_find_id: newFactFind.id
-      });
+        await base44.entities.Client.update(newClient.id, {
+          fact_find_id: newFactFind.id
+        });
+      } catch (ffError) {
+        console.error('Failed to create linked FactFind:', ffError);
+      }
 
       toast.success('Client added successfully');
 
