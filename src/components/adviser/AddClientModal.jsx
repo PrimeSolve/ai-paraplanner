@@ -30,18 +30,15 @@ export default function AddClientModal({ isOpen, onClose, onSuccess, adviserEmai
 
     setLoading(true);
     try {
-      // Get current user for adviser_id and tenant_id
-      const currentUser = await base44.auth.me();
-
+      // adviser_id and tenant_id are stamped server-side from the JWT —
+      // do not send them in the body.
       const newClient = await base44.entities.Client.create({
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
         phone: formData.phone,
         notes: formData.notes,
-        adviser_email: adviserEmail || currentUser.email,
-        adviser_id: currentUser.adviser_id || currentUser.id,
-        tenant_id: currentUser.tenant_id,
+        adviser_email: adviserEmail,
         status: 'prospect',
       });
 

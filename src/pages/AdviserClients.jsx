@@ -41,9 +41,9 @@ export default function AdviserClients() {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
 
-      const data = await base44.entities.Client.filter({
-        adviser_email: currentUser.email
-      }, '-created_date');
+      // The backend scopes clients by adviser_id from the JWT automatically,
+      // so no need to send adviser_email as a filter parameter.
+      const data = await base44.entities.Client.filter({}, '-created_date');
       setClients(data);
     } catch (error) {
       console.error('Failed to load clients:', error);
