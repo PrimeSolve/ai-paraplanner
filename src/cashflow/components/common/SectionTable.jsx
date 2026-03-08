@@ -25,25 +25,242 @@ export function PlaceholderContent({ topTab, subTab, subSubTab }) {
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   STYLE TOKENS — SectionTable Style Rules
+   ═══════════════════════════════════════════════════════════════ */
+
+// H1 section-break variants (border-left + tinted background)
+const H1V = {
+  income:  { borderLeft: "4px solid #4F46E5", background: "#E2E5F5", color: "#312E81" },
+  expense: { borderLeft: "4px solid #EA580C", background: "#F5E8E0", color: "#7C2D12" },
+  super:   { borderLeft: "4px solid #7C3AED", background: "#EDE5F5", color: "#4C1D95" },
+  nw:      { borderLeft: "4px solid #059669", background: "#E0F0EA", color: "#064E3B" },
+  debt:    { borderLeft: "4px solid #DC2626", background: "#F5E0E0", color: "#7F1D1D" },
+  amb:     { borderLeft: "4px solid #D97706", background: "#F5EFE0", color: "#78350F" },
+  slate:   { borderLeft: "4px solid #64748B", background: "#E8ECF2", color: "#1E293B" },
+};
+
+// H2 sub-header variants
+const H2V = {
+  cath: { bg: "rgba(79,70,229,0.06)", bl: "3px solid #4F46E5", color: "#4338CA", bb: "1px solid rgba(79,70,229,0.08)", dot: "#4F46E5" },
+  paul: { bg: "rgba(8,145,178,0.06)", bl: "3px solid #0891B2", color: "#0369A1", bb: "1px solid rgba(8,145,178,0.08)", dot: "#0891B2" },
+  neu:  { bg: "#F8FAFC",              bl: "3px solid #94A3B8", color: "#475569", bb: "1px solid #F1F5F9",              dot: "#94A3B8" },
+  grn:  { bg: "rgba(5,150,105,0.05)", bl: "3px solid #059669", color: "#065F46", bb: "1px solid rgba(5,150,105,0.06)", dot: "#059669" },
+};
+
+// H4 entity bracket styles (coloured left + bottom border)
+const H4B = {
+  cath: { bg: "rgba(79,70,229,0.13)", color: "#3730A3", bl: "3px solid rgba(79,70,229,0.5)", bt: "1px solid rgba(79,70,229,0.18)", bb: "2px solid rgba(79,70,229,0.15)" },
+  paul: { bg: "rgba(8,145,178,0.13)", color: "#0C4A6E", bl: "3px solid rgba(8,145,178,0.5)", bt: "1px solid rgba(8,145,178,0.18)", bb: "2px solid rgba(8,145,178,0.15)" },
+  grn:  { bg: "rgba(5,150,105,0.11)", color: "#064E3B", bl: "3px solid rgba(5,150,105,0.5)", bt: "1px solid rgba(5,150,105,0.15)", bb: "2px solid rgba(5,150,105,0.12)" },
+};
+
+// Section accent colours for grand-total border-left
+const SECTION_ACCENT = {
+  income: "#4F46E5", expense: "#EA580C", super: "#7C3AED",
+  nw: "#059669", debt: "#DC2626", amb: "#D97706", slate: "#64748B",
+};
+
+// Entity badge inline styles (spec §6)
+const BADGE_STYLES = {
+  cath:  { background: "rgba(79,70,229,0.08)", border: "1px solid rgba(79,70,229,0.2)", color: "#4F46E5" },
+  paul:  { background: "rgba(8,145,178,0.08)", border: "1px solid rgba(8,145,178,0.2)", color: "#0891B2" },
+  joint: { background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)", color: "#7C3AED" },
+};
+
+/* ── Helpers ── */
+
+function inferVariant(section) {
+  const id = (section.id || "").toLowerCase();
+  const t = (section.title || "").toLowerCase();
+  if (id.includes("income") || t.includes("income")) return "income";
+  if (id.includes("expense") || t.includes("expense")) return "expense";
+  if (id.includes("super") || t.includes("super")) return "super";
+  if (id.includes("net-worth") || t.includes("net worth") || id.includes("networth")) return "nw";
+  if (id.includes("debt") || t.includes("debt")) return "debt";
+  if (id.includes("cgt") || t.includes("capital gain") || t.includes("cgt")) return "amb";
+  return "slate";
+}
+
+function entityType(entity) {
+  if (!entity) return null;
+  const resolved = resolveEntity(entity);
+  if (resolved.color === "#4F46E5") return "cath";
+  if (resolved.color === "#0891B2") return "paul";
+  if (resolved.color === "#7C3AED") return "joint";
+  return null;
+}
+
+function isAllNil(values) {
+  if (!values || values.length === 0) return true;
+  return values.every(v => v === null || v === undefined || v === 0);
+}
+
+function renderVal(val, format) {
+  if (val === null || val === undefined) return "–";
+  if (format === "pct") return `${val}%`;
+  return formatNumber(val);
+}
+
 // Reusable Section Table component
 export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
   const [collapsed, setCollapsed] = useState({});
-  const [popupOpen, setPopupOpen] = useState(null); // section id or null
+  const [popupOpen, setPopupOpen] = useState(null);
 
   function toggleSection(id) {
     setCollapsed(prev => ({ ...prev, [id]: !prev[id] }));
   }
 
+  // Backward-compatible STYLE_MAP for standard data rows
   const STYLE_MAP = {
-    "header": { bg: "var(--ps-border-light)", color: "var(--ps-text-primary)", weight: 600, indent: 0 },
-    "child": { bg: "var(--ps-surface)", color: "var(--ps-text-secondary)", weight: 400, indent: 24 },
-    "child-negative": { bg: "var(--ps-surface)", color: "var(--ps-red)", weight: 400, indent: 24 },
-    "subtotal": { bg: "var(--ps-surface-alt)", color: "var(--ps-text-body)", weight: 600, indent: 16 },
-    "total": { bg: "var(--ps-surface-alt)", color: "var(--ps-text-primary)", weight: 700, indent: 0, borderTop: true },
-    "highlight": { bg: "var(--ps-surface-indigo)", color: "#4338ca", weight: 700, indent: 0 },
-    "current-value": { bg: "rgba(37,99,235,0.08)", color: "#2563eb", weight: 700, indent: 0 },
-    "end-value": { bg: "rgba(5,150,105,0.08)", color: "var(--ps-green)", weight: 700, indent: 0 },
+    "header":         { bg: "#F1F5F9", color: "#1E293B",   weight: 600, indent: 0 },
+    "child":          { bg: "#FFFFFF", color: "#475569",   weight: 400, indent: 20 },
+    "child-negative": { bg: "#FFFFFF", color: "#DC2626",   weight: 400, indent: 20 },
+    "subtotal":       { bg: "#F1F5F9", color: "#334155",   weight: 600, indent: 0, isSub: true },
+    "total":          { bg: "#F1F5F9", color: "#1E293B",   weight: 700, indent: 0, borderTop: true, isSub: true },
+    "highlight":      { bg: "rgba(79,70,229,0.07)", color: "#3730A3", weight: 700, indent: 0, isHl: true },
+    "current-value":  { bg: "rgba(37,99,235,0.08)", color: "#2563EB", weight: 700, indent: 0 },
+    "end-value":      { bg: "rgba(5,150,105,0.08)", color: "#059669", weight: 700, indent: 0 },
+    "subheader":      { bg: "#F8FAFC", color: "#475569",   weight: 600, indent: 0 },
   };
+
+  // H4 bracket rule — entity bracket or neutral
+  function getH4(sectionEntity) {
+    const et = entityType(sectionEntity);
+    if (et === "cath" || et === "paul") return H4B[et];
+    return null; // neutral
+  }
+
+  // Grand total style for a given section
+  function grandStyle(section) {
+    const variant = inferVariant(section);
+    return { accent: SECTION_ACCENT[variant] || "#059669" };
+  }
+
+  // Value cell colour for grand total (dark bg)
+  function grandValColor(val) {
+    if (val === null || val === undefined) return "#475569";
+    if (val < 0) return "#FCA5A5";
+    if (val > 0) return "#6EE7B7";
+    return "#475569";
+  }
+
+  // Value cell colour for hl rows
+  function hlValColor(val) {
+    if (val === null || val === undefined) return "#E2E8F0";
+    if (val < 0) return "#DC2626";
+    return "#3730A3";
+  }
+
+  // Standard value cell colour
+  function valColor(val, rowStyle) {
+    if (val === null || val === undefined) return "#E2E8F0";
+    if (val < 0 || rowStyle === "child-negative") return "#DC2626";
+    if (rowStyle === "end-value" && val > 0) return "#059669";
+    return "#334155";
+  }
+
+  // Render an hl (highlight) row
+  function renderHlRow(key, row, format) {
+    return (
+      <tr key={key}>
+        <td style={{
+          position: "sticky", left: 0, zIndex: 1,
+          background: "rgba(79,70,229,0.07)", color: "#3730A3",
+          borderLeft: "3px solid rgba(79,70,229,0.5)",
+          borderTop: "1px solid rgba(79,70,229,0.15)",
+          borderBottom: "2px solid rgba(79,70,229,0.12)",
+          padding: "8px 12px", fontWeight: 700, fontSize: 13,
+          whiteSpace: "nowrap",
+        }}>{row.label}</td>
+        {row.values.map((val, vi) => (
+          <td key={vi} style={{
+            padding: "8px 12px", textAlign: "right",
+            background: "rgba(79,70,229,0.07)",
+            borderTop: "1px solid rgba(79,70,229,0.15)",
+            borderBottom: "2px solid rgba(79,70,229,0.12)",
+            fontWeight: 700, fontSize: 13,
+            color: hlValColor(val),
+          }}>{renderVal(val, format)}</td>
+        ))}
+      </tr>
+    );
+  }
+
+  // Render a grand total row
+  function renderGrandRow(key, row, section) {
+    const gs = grandStyle(section);
+    return (
+      <tr key={key}>
+        <td style={{
+          position: "sticky", left: 0, zIndex: 1,
+          background: "#1E293B", color: "#F1F5F9",
+          borderLeft: `4px solid ${gs.accent}`,
+          borderTop: "2px solid #334155",
+          padding: "12px 12px 12px 16px",
+          fontSize: 13, fontWeight: 800, textAlign: "left",
+          whiteSpace: "nowrap",
+        }}>{row.label}</td>
+        {row.values.map((val, vi) => (
+          <td key={vi} style={{
+            padding: "12px 12px", textAlign: "right",
+            background: "#1E293B",
+            borderTop: "2px solid #334155",
+            fontSize: 13, fontWeight: 800,
+            color: grandValColor(val),
+          }}>{renderVal(val)}</td>
+        ))}
+      </tr>
+    );
+  }
+
+  // Render an H4 row (subtotal with bracket rule)
+  function renderH4Row(key, row, sectionEntity, format) {
+    const bracket = getH4(sectionEntity);
+    if (bracket) {
+      // Entity bracket H4
+      return (
+        <tr key={key}>
+          <td style={{
+            position: "sticky", left: 0, zIndex: 1,
+            background: bracket.bg, color: bracket.color,
+            borderLeft: bracket.bl, borderTop: bracket.bt, borderBottom: bracket.bb,
+            padding: "6px 12px", fontWeight: 700, fontSize: 12,
+            whiteSpace: "nowrap",
+          }}>{row.label}</td>
+          {row.values.map((val, vi) => (
+            <td key={vi} style={{
+              padding: "6px 12px", textAlign: "right",
+              background: bracket.bg, borderTop: bracket.bt, borderBottom: bracket.bb,
+              fontWeight: 700, fontSize: 12,
+              color: val !== null && val !== undefined ? bracket.color : "#E2E8F0",
+            }}>{renderVal(val, format)}</td>
+          ))}
+        </tr>
+      );
+    }
+    // Neutral H4 — no bracket
+    return (
+      <tr key={key}>
+        <td style={{
+          position: "sticky", left: 0, zIndex: 1,
+          background: "#F1F5F9", color: "#334155",
+          borderTop: "1px solid #E2E8F0",
+          padding: "6px 12px", fontWeight: 700, fontSize: 12,
+          whiteSpace: "nowrap",
+        }}>{row.label}</td>
+        {row.values.map((val, vi) => (
+          <td key={vi} style={{
+            padding: "6px 12px", textAlign: "right",
+            background: "#F1F5F9",
+            borderTop: "1px solid #E2E8F0",
+            fontWeight: 700, fontSize: 12,
+            color: val !== null && val !== undefined ? "#334155" : "#E2E8F0",
+          }}>{renderVal(val, format)}</td>
+        ))}
+      </tr>
+    );
+  }
 
   return (
     <div style={{ overflowX: "auto", margin: "0 -4px" }}>
@@ -51,55 +268,58 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
         width: "100%",
         borderCollapse: "separate",
         borderSpacing: 0,
-        fontSize: 13,
+        fontSize: 12,
         fontFamily: "'DM Sans', sans-serif",
         fontVariantNumeric: "tabular-nums",
+        tableLayout: "fixed",
       }}>
+        {/* ── THEAD — dark navy bar (spec §3 thead) ── */}
         <thead>
           <tr>
             <th style={{
               position: "sticky", left: 0, zIndex: 2,
-              background: "var(--ps-surface-alt)", padding: "10px 16px",
-              textAlign: "left", fontWeight: 600, color: "var(--ps-text-secondary)",
-              borderBottom: "2px solid var(--ps-border)", minWidth: 260,
-              fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em",
+              background: "#0F172A", padding: "13px 12px",
+              textAlign: "left", fontSize: 11, fontWeight: 800,
+              color: "rgba(255,255,255,0.9)", textTransform: "uppercase",
+              letterSpacing: "0.08em", width: 220,
             }}>Year</th>
             {data.years.map((y, i) => (
               <th key={i} style={{
-                padding: "10px 12px", textAlign: "right",
-                fontWeight: 600, color: "var(--ps-text-secondary)", fontSize: 12,
-                borderBottom: "2px solid var(--ps-border)", minWidth: 95,
-                background: "var(--ps-surface-alt)", whiteSpace: "nowrap",
+                padding: "13px 12px", textAlign: "right",
+                fontWeight: 700, color: "#FFF", fontSize: 13,
+                background: "#0F172A", width: 80, whiteSpace: "nowrap",
               }}>{y}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {data.sections.map((section) => {
+            // ── Divider ──
             if (section.isDivider) {
               return (
                 <tr key={section.id}>
                   <td colSpan={data.years.length + 1} style={{
                     padding: 0,
                     height: 20,
-                    background: "var(--ps-surface)",
+                    background: "#FFFFFF",
                     borderBottom: "none",
                   }}>
                     <div style={{
                       margin: "8px 0",
-                      borderTop: "3px solid #4f46e5",
+                      borderTop: "3px solid #4F46E5",
                       opacity: 0.15,
                     }} />
                   </td>
                 </tr>
               );
             }
+            // ── Section Header (decorative banner) ──
             if (section.isSectionHeader) {
               return (
                 <tr key={section.id}>
                   <td colSpan={data.years.length + 1} style={{
                     padding: "6px 0",
-                    background: "var(--ps-surface)",
+                    background: "#FFFFFF",
                     borderBottom: "none",
                   }}>
                     <div style={{
@@ -111,108 +331,230 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                     }}>
                       <div style={{
                         width: 34, height: 34, borderRadius: 9,
-                        background: "var(--ps-surface)", display: "flex", alignItems: "center", justifyContent: "center",
+                        background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center",
                         fontSize: 16, border: `1px solid ${section.border || "var(--ps-ring-indigo)"}`,
                         boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                         flexShrink: 0,
                       }}>{section.icon || "📋"}</div>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ps-text-strongest)" }}>{section.title}</div>
-                        {section.subtitle && <div style={{ fontSize: 11, color: "var(--ps-text-muted)", marginTop: 1 }}>{section.subtitle}</div>}
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>{section.title}</div>
+                        {section.subtitle && <div style={{ fontSize: 11, color: "#64748B", marginTop: 1 }}>{section.subtitle}</div>}
                       </div>
                     </div>
                   </td>
                 </tr>
               );
             }
+
             const isCollapsed = collapsed[section.id];
+            const secEntity = entityType(section.entity);
+            const secVariant = inferVariant(section);
+            const isAges = section.id === "ages";
+
             return [
-              // Section title row
-              section.title && (
-                <tr key={`title-${section.id}`}
-                  onClick={() => toggleSection(section.id)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <td colSpan={data.years.length + 1} style={{
-                    padding: "12px 16px 6px",
-                    fontWeight: 700,
-                    fontSize: 13,
-                    color: "var(--ps-text-primary)",
-                    background: "var(--ps-surface)",
-                    borderTop: "2px solid var(--ps-border)",
-                    letterSpacing: "0.01em",
-                  }}>
-                    <span style={{ marginRight: 8, fontSize: 10, color: "var(--ps-text-subtle)" }}>
-                      {isCollapsed ? "▸" : "▾"}
-                    </span>
-                    {section.title}
-                    {section.entity && (
-                      <span style={{ marginLeft: 10, verticalAlign: "middle" }}>
-                        <EntityBadge name={section.entity} size="sm" />
-                      </span>
-                    )}
-                    {section.isNew && (
-                      <span style={{ marginLeft: 8, fontSize: 9, padding: "1px 6px", borderRadius: 4, background: "var(--ps-bg-blue-200)", color: "#2563EB", fontWeight: 700, verticalAlign: "middle" }}>NEW</span>
-                    )}
-                    {section.source && onNavigate && (
-                      <span
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onNavigate(section.source.nav);
-                        }}
-                        style={{
-                          marginLeft: 10, fontSize: 10, fontWeight: 600,
-                          color: "#6366f1", cursor: "pointer",
-                          padding: "2px 8px", borderRadius: 4,
-                          background: "rgba(99,102,241,0.06)",
-                          border: "1px solid rgba(99,102,241,0.15)",
-                          verticalAlign: "middle",
-                          letterSpacing: "0.02em",
-                        }}
-                        title={`Go to ${section.source.label}`}
-                      >
-                        ↗ {section.source.label}
-                      </span>
-                    )}
-                    {section.hasDetailPopup && (
-                      <span
-                        onClick={(e) => { e.stopPropagation(); setPopupOpen(popupOpen === section.id ? null : section.id); }}
-                        style={{
-                          marginLeft: 10, fontSize: 11, fontWeight: 500,
-                          color: "#6366f1", cursor: "pointer",
-                          padding: "2px 8px", borderRadius: 4,
-                          background: "rgba(99,102,241,0.08)",
-                        }}
-                      >
-                        ⓘ View Details
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ),
-              // Detail popup
+              // ── Age rows (spec §3 Age rows) ──
+              isAges && section.rows ? section.rows.map((row, ri) => {
+                const et = entityType(row.entity);
+                const isCath = et === "cath";
+                const isPaul = et === "paul";
+                const bgColor = isCath ? "rgba(79,70,229,0.07)" : isPaul ? "rgba(8,145,178,0.07)" : "#F8FAFC";
+                const textColor = isCath ? "#6366F1" : isPaul ? "#0891B2" : "#475569";
+                const blColor = isCath ? "#4F46E5" : isPaul ? "#0891B2" : "#94A3B8";
+                return (
+                  <tr key={`age-${section.id}-${ri}`}>
+                    <td style={{
+                      position: "sticky", left: 0, zIndex: 1,
+                      background: bgColor, color: textColor,
+                      borderLeft: `3px solid ${blColor}`,
+                      borderBottom: isPaul ? "2px solid #CBD5E1" : undefined,
+                      fontSize: 11, fontWeight: 600, padding: "6px 12px",
+                      whiteSpace: "nowrap",
+                    }}>
+                      {row.entity && <EntityBadge name={row.entity} size="sm" showIcon={false} />}
+                    </td>
+                    {row.values.map((age, vi) => (
+                      <td key={vi} style={{
+                        padding: "6px 12px", textAlign: "right",
+                        background: bgColor, color: textColor,
+                        fontSize: 11, fontWeight: 600,
+                        borderBottom: isPaul ? "2px solid #CBD5E1" : undefined,
+                      }}>
+                        {age != null ? (row.retirementAge && age === row.retirementAge ? `${age} 🌴` : age) : "–"}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              }) : null,
+
+              // ── Section title row — H1 (no entity) or H2 (entity) ──
+              !isAges && section.title && (() => {
+                const hasEntity = !!secEntity;
+                if (!hasEntity) {
+                  // H1 — major section break (spec §3 H1)
+                  const v = H1V[secVariant] || H1V.slate;
+                  return (
+                    <tr key={`title-${section.id}`}
+                      onClick={() => toggleSection(section.id)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <td colSpan={data.years.length + 1} style={{
+                        padding: "10px 16px",
+                        fontSize: 11, fontWeight: 800,
+                        textTransform: "uppercase", letterSpacing: "0.08em",
+                        borderTop: "3px solid #CBD5E1", borderBottom: "1px solid #C8D0DC",
+                        ...v,
+                      }}>
+                        <span style={{ marginRight: 8, fontSize: 10, opacity: 0.6 }}>
+                          {isCollapsed ? "▸" : "▾"}
+                        </span>
+                        {section.title}
+                        {section.isNew && (
+                          <span style={{ marginLeft: 8, fontSize: 9, padding: "1px 6px", borderRadius: 4, background: "#DBEAFE", color: "#2563EB", fontWeight: 700, verticalAlign: "middle" }}>NEW</span>
+                        )}
+                        {section.source && onNavigate && (
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onNavigate(section.source.nav);
+                            }}
+                            style={{
+                              marginLeft: 10, fontSize: 10, fontWeight: 600,
+                              color: "#6366f1", cursor: "pointer",
+                              padding: "2px 8px", borderRadius: 4,
+                              background: "rgba(99,102,241,0.06)",
+                              border: "1px solid rgba(99,102,241,0.15)",
+                              verticalAlign: "middle",
+                              letterSpacing: "0.02em",
+                              textTransform: "none",
+                            }}
+                            title={`Go to ${section.source.label}`}
+                          >
+                            ↗ {section.source.label}
+                          </span>
+                        )}
+                        {section.hasDetailPopup && (
+                          <span
+                            onClick={(e) => { e.stopPropagation(); setPopupOpen(popupOpen === section.id ? null : section.id); }}
+                            style={{
+                              marginLeft: 10, fontSize: 11, fontWeight: 500,
+                              color: "#6366f1", cursor: "pointer",
+                              padding: "2px 8px", borderRadius: 4,
+                              background: "rgba(99,102,241,0.08)",
+                              textTransform: "none",
+                            }}
+                          >
+                            ⓘ View Details
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                } else {
+                  // H2 — entity sub-header (spec §3 H2)
+                  const h2 = H2V[secEntity] || H2V.neu;
+                  const badge = BADGE_STYLES[secEntity];
+                  return (
+                    <tr key={`title-${section.id}`}
+                      onClick={() => toggleSection(section.id)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <td colSpan={data.years.length + 1} style={{
+                        padding: "7px 14px 7px 20px",
+                        fontSize: 11, fontWeight: 600,
+                        background: h2.bg, borderLeft: h2.bl,
+                        color: h2.color, borderBottom: h2.bb,
+                      }}>
+                        {/* Coloured dot (spec §3 H2) */}
+                        <span style={{
+                          display: "inline-block", width: 5, height: 5, borderRadius: "50%",
+                          background: h2.dot, marginRight: 8, verticalAlign: "middle",
+                        }} />
+                        {section.title}
+                        {/* Entity badge (spec §6) */}
+                        {section.entity && badge && (
+                          <span style={{
+                            display: "inline-flex", alignItems: "center",
+                            padding: "1px 7px", borderRadius: 4,
+                            fontSize: 10, fontWeight: 500, marginLeft: 8,
+                            ...badge,
+                          }}>
+                            {section.entity}
+                          </span>
+                        )}
+                        {section.entity && !badge && (
+                          <span style={{ marginLeft: 10, verticalAlign: "middle" }}>
+                            <EntityBadge name={section.entity} size="sm" />
+                          </span>
+                        )}
+                        {section.isNew && (
+                          <span style={{ marginLeft: 8, fontSize: 9, padding: "1px 6px", borderRadius: 4, background: "#DBEAFE", color: "#2563EB", fontWeight: 700, verticalAlign: "middle" }}>NEW</span>
+                        )}
+                        {section.source && onNavigate && (
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onNavigate(section.source.nav);
+                            }}
+                            style={{
+                              marginLeft: 10, fontSize: 10, fontWeight: 600,
+                              color: "#6366f1", cursor: "pointer",
+                              padding: "2px 8px", borderRadius: 4,
+                              background: "rgba(99,102,241,0.06)",
+                              border: "1px solid rgba(99,102,241,0.15)",
+                              verticalAlign: "middle",
+                              letterSpacing: "0.02em",
+                            }}
+                            title={`Go to ${section.source.label}`}
+                          >
+                            ↗ {section.source.label}
+                          </span>
+                        )}
+                        {/* Faint caret (spec §3 H2) */}
+                        <span style={{ marginLeft: 6, fontSize: 10, color: h2.color, opacity: 0.4 }}>
+                          {isCollapsed ? "▸" : "▾"}
+                        </span>
+                        {section.hasDetailPopup && (
+                          <span
+                            onClick={(e) => { e.stopPropagation(); setPopupOpen(popupOpen === section.id ? null : section.id); }}
+                            style={{
+                              marginLeft: 10, fontSize: 11, fontWeight: 500,
+                              color: "#6366f1", cursor: "pointer",
+                              padding: "2px 8px", borderRadius: 4,
+                              background: "rgba(99,102,241,0.08)",
+                            }}
+                          >
+                            ⓘ View Details
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                }
+              })(),
+
+              // ── Detail popup ──
               popupOpen === section.id && section.popupData && (
                 <tr key={`popup-${section.id}`}>
-                  <td colSpan={data.years.length + 1} style={{ padding: 0, background: "var(--ps-surface)" }}>
+                  <td colSpan={data.years.length + 1} style={{ padding: 0, background: "#FFFFFF" }}>
                     <div style={{
                       margin: "0 16px 12px", padding: "16px 20px",
-                      background: "var(--ps-surface-alt)", borderRadius: 10,
-                      border: "1px solid var(--ps-border)",
+                      background: "#FAFBFC", borderRadius: 10,
+                      border: "1px solid #E2E8F0",
                     }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                        <span style={{ fontWeight: 700, fontSize: 13, color: "var(--ps-text-primary)" }}>Assets & Liabilities Breakdown</span>
-                        <span onClick={() => setPopupOpen(null)} style={{ cursor: "pointer", color: "var(--ps-text-subtle)", fontSize: 16 }}>✕</span>
+                        <span style={{ fontWeight: 700, fontSize: 13, color: "#1E293B" }}>Assets & Liabilities Breakdown</span>
+                        <span onClick={() => setPopupOpen(null)} style={{ cursor: "pointer", color: "#94A3B8", fontSize: 16 }}>✕</span>
                       </div>
                       {section.popupData.assets.length > 0 && (
                         <div style={{ marginBottom: section.popupData.debts.length > 0 ? 12 : 0 }}>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--ps-green)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Assets</div>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "#059669", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Assets</div>
                           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                             <tbody>
                               {section.popupData.assets.map((a, i) => (
-                                <tr key={i} style={{ borderBottom: "1px solid var(--ps-border)" }}>
-                                  <td style={{ padding: "6px 0", color: "var(--ps-text-secondary)" }}>{a.name}</td>
+                                <tr key={i} style={{ borderBottom: "1px solid #E2E8F0" }}>
+                                  <td style={{ padding: "6px 0", color: "#475569" }}>{a.name}</td>
                                   {a.values.map((v, vi) => (
-                                    <td key={vi} style={{ padding: "6px 8px", textAlign: "right", color: "var(--ps-text-body)", fontVariantNumeric: "tabular-nums", minWidth: 85 }}>
+                                    <td key={vi} style={{ padding: "6px 8px", textAlign: "right", color: "#334155", fontVariantNumeric: "tabular-nums", minWidth: 85 }}>
                                       {v != null ? v.toLocaleString() : ""}
                                     </td>
                                   ))}
@@ -224,14 +566,14 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                       )}
                       {section.popupData.debts.length > 0 && (
                         <div>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--ps-red)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Liabilities</div>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "#DC2626", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Liabilities</div>
                           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                             <tbody>
                               {section.popupData.debts.map((d, i) => (
-                                <tr key={i} style={{ borderBottom: "1px solid var(--ps-border)" }}>
-                                  <td style={{ padding: "6px 0", color: "var(--ps-text-secondary)" }}>{d.name}</td>
+                                <tr key={i} style={{ borderBottom: "1px solid #E2E8F0" }}>
+                                  <td style={{ padding: "6px 0", color: "#475569" }}>{d.name}</td>
                                   {d.values.map((v, vi) => (
-                                    <td key={vi} style={{ padding: "6px 8px", textAlign: "right", color: "var(--ps-red)", fontVariantNumeric: "tabular-nums", minWidth: 85 }}>
+                                    <td key={vi} style={{ padding: "6px 8px", textAlign: "right", color: "#DC2626", fontVariantNumeric: "tabular-nums", minWidth: 85 }}>
                                       {v != null ? v.toLocaleString() : ""}
                                     </td>
                                   ))}
@@ -242,76 +584,103 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                         </div>
                       )}
                       {section.popupData.assets.length === 0 && section.popupData.debts.length === 0 && (
-                        <div style={{ color: "var(--ps-text-subtle)", fontSize: 13 }}>No assets or liabilities in this account</div>
+                        <div style={{ color: "#94A3B8", fontSize: 13 }}>No assets or liabilities in this account</div>
                       )}
                     </div>
                   </td>
                 </tr>
               ),
-              // SubSections (independently collapsible categories within a section)
-              ...(!isCollapsed && section.subSections ? section.subSections.map((sub) => {
+
+              // ── SubSections (spec §3 H2 headers + H3 data rows) ──
+              ...(!isCollapsed && !isAges && section.subSections ? section.subSections.map((sub) => {
                 const subCollapsed = collapsed[sub.id];
                 const hasChildren = sub.rows && sub.rows.length > 0;
                 const isCollapsible = sub.summaryValues !== null;
+                // Determine H2 variant for sub-section header
+                const subH2 = H2V.neu;
                 return [
-                  // Sub-section header row with summary values (only if collapsible)
+                  // Sub-section header row (H2 style with dot + caret)
                   isCollapsible && (
                   <tr key={`sub-${sub.id}`}
                     onClick={hasChildren ? () => toggleSection(sub.id) : undefined}
-                    style={{ cursor: hasChildren ? "pointer" : "default", background: "var(--ps-surface-alt)" }}
+                    style={{ cursor: hasChildren ? "pointer" : "default" }}
                   >
                     <td style={{
                       position: "sticky", left: 0, zIndex: 1,
-                      padding: "7px 16px 7px 24px",
-                      fontWeight: 600,
-                      color: "var(--ps-text-body)",
-                      background: "var(--ps-surface-alt)",
-                      borderBottom: "1px solid var(--ps-border-light)",
+                      padding: "7px 14px 7px 20px",
+                      fontWeight: 600, fontSize: 11,
+                      color: subH2.color,
+                      background: subH2.bg,
+                      borderLeft: subH2.bl,
+                      borderBottom: subH2.bb,
                       whiteSpace: "nowrap",
-                      fontSize: 13,
                     }}>
+                      {/* Coloured dot */}
+                      <span style={{
+                        display: "inline-block", width: 5, height: 5, borderRadius: "50%",
+                        background: subH2.dot, marginRight: 8, verticalAlign: "middle",
+                      }} />
+                      {sub.label}
+                      {/* Faint caret */}
                       {hasChildren && (
-                        <span style={{ marginRight: 8, fontSize: 9, color: "var(--ps-text-subtle)" }}>
+                        <span style={{ marginLeft: 6, fontSize: 10, color: subH2.color, opacity: 0.4 }}>
                           {subCollapsed ? "▸" : "▾"}
                         </span>
                       )}
-                      {sub.label}
                     </td>
                     {sub.summaryValues.map((val, vi) => (
                       <td key={vi} style={{
                         padding: "7px 12px", textAlign: "right",
-                        fontWeight: 600, color: val !== null ? "var(--ps-text-body)" : "var(--ps-border-input)",
-                        borderBottom: "1px solid var(--ps-border-light)",
-                        background: "var(--ps-surface-alt)",
+                        fontWeight: 600, fontSize: 12,
+                        color: val !== null && val !== undefined ? subH2.color : "#E2E8F0",
+                        borderBottom: subH2.bb,
+                        background: subH2.bg,
                       }}>
-                        {val !== null ? formatNumber(val) : "—"}
+                        {val !== null && val !== undefined ? formatNumber(val) : "–"}
                       </td>
                     ))}
                   </tr>
                   ),
-                  // Sub-section child rows (always show if not collapsible, otherwise respect collapse state)
+                  // Sub-section child rows (H3 style with alternation)
                   ...((!isCollapsible || !subCollapsed) && hasChildren ? sub.rows.flatMap((row, ri) => {
+                    // Zero-row suppression (spec §5)
+                    if ((row.style === "child" || row.style === "child-negative" || !row.style) && isAllNil(row.values)) return [];
+
                     const s = STYLE_MAP[row.style] || STYLE_MAP["child"];
                     const hasBreakdown = row.breakdown && row.breakdown.length > 0;
                     const breakdownOpen = collapsed[`bd-${sub.id}-${ri}`];
                     const rows = [];
+
+                    // hl row
+                    if (s.isHl) {
+                      rows.push(renderHlRow(`${sub.id}-${ri}`, row, row.format));
+                      return rows;
+                    }
+                    // H4 subtotal/total
+                    if (s.isSub) {
+                      rows.push(renderH4Row(`${sub.id}-${ri}`, row, section.entity, row.format));
+                      return rows;
+                    }
+
+                    // H3 data row (spec §3 H3)
+                    const isAlt = ri % 2 === 1;
                     rows.push(
-                      <tr key={`${sub.id}-${ri}`} style={{ background: "var(--ps-surface)" }}>
+                      <tr key={`${sub.id}-${ri}`} style={{ background: isAlt ? "#FAFBFC" : "#FFFFFF" }}>
                         <td style={{
                           position: "sticky", left: 0, zIndex: 1,
-                          padding: "5px 16px 5px 48px",
+                          padding: "5px 12px 5px 36px",
                           fontWeight: 400,
-                          color: "var(--ps-text-muted)",
-                          background: "var(--ps-surface)",
-                          borderBottom: "1px solid var(--ps-border-light)",
+                          color: "#475569",
+                          background: isAlt ? "#FAFBFC" : "#FFFFFF",
+                          borderBottom: "1px solid #F1F5F9",
                           whiteSpace: "nowrap",
-                          fontSize: 13,
+                          fontSize: 12,
                         }}>
                           <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
                             {hasBreakdown && (
                               <span
                                 onClick={(e) => { e.stopPropagation(); toggleSection(`bd-${sub.id}-${ri}`); }}
-                                style={{ cursor: "pointer", fontSize: 9, color: "var(--ps-text-subtle)", width: 12 }}
+                                style={{ cursor: "pointer", fontSize: 9, color: "#94A3B8", width: 12 }}
                               >{breakdownOpen ? "▾" : "▸"}</span>
                             )}
                             {row.label}
@@ -334,36 +703,41 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                         </td>
                         {row.editType === "freq-select" && onCellEdit
                           ? row.values.map((val, vi) => (
-                              <td key={vi} style={{ padding: "4px 8px", textAlign: "right", background: "var(--ps-surface)", borderBottom: "1px solid var(--ps-border-light)" }}>
+                              <td key={vi} style={{ padding: "4px 8px", textAlign: "right", background: isAlt ? "#FAFBFC" : "#FFFFFF", borderBottom: "1px solid #F1F5F9" }}>
                                 {vi === 0 ? (
                                   <select
                                     value={row.currentFreq}
                                     onChange={e => onCellEdit(row.debtRef, e.target.value)}
-                                    style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, border: "1px solid #6366F1", background: "var(--ps-surface-indigo)", color: "#4338CA", cursor: "pointer", fontWeight: 600 }}
+                                    style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, border: "1px solid #6366F1", background: "#EEF2FF", color: "#4338CA", cursor: "pointer", fontWeight: 600 }}
                                   >
                                     {[{v:"52",l:"Weekly"},{v:"26",l:"Fortnightly"},{v:"12",l:"Monthly"},{v:"4",l:"Quarterly"},{v:"1",l:"Annually"}].map(o => (
                                       <option key={o.v} value={o.v}>{o.l}</option>
                                     ))}
                                   </select>
                                 ) : (
-                                  <span style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>{val}</span>
+                                  <span style={{ fontSize: 12, color: "#64748B" }}>{val}</span>
                                 )}
                               </td>
                             ))
-                          : row.values.map((val, vi) => (
-                              <td key={vi} style={{
-                                padding: "5px 12px", textAlign: "right",
-                                fontWeight: 400,
-                                color: val !== null ? (val < 0 ? "var(--ps-red)" : "var(--ps-text-muted)") : "var(--ps-border-input)",
-                                borderBottom: "1px solid var(--ps-border-light)",
-                                background: "var(--ps-surface)",
-                              }}>
-                                {val !== null ? (row.format === "pct" ? `${val}%` : formatNumber(val)) : "—"}
-                              </td>
-                            ))
+                          : row.values.map((val, vi) => {
+                              const isNil = val === null || val === undefined;
+                              return (
+                                <td key={vi} style={{
+                                  padding: "5px 12px", textAlign: "right",
+                                  fontWeight: 400,
+                                  color: isNil ? "#E2E8F0" : valColor(val, row.style),
+                                  fontSize: isNil ? 11 : 12,
+                                  borderBottom: "1px solid #F1F5F9",
+                                  background: isAlt ? "#FAFBFC" : "#FFFFFF",
+                                }}>
+                                  {isNil ? "–" : renderVal(val, row.format)}
+                                </td>
+                              );
+                            })
                         }
                       </tr>
                     );
+                    // Breakdown sub-rows
                     if (hasBreakdown && breakdownOpen) {
                       row.breakdown.forEach((b, bi) => {
                         rows.push(
@@ -383,7 +757,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                                   style={{ cursor: "pointer", textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 3 }}
                                 >{b.name}</span>
                               ) : b.name}
-                              {b.isIO && <span style={{ marginLeft: 6, fontSize: 9, color: "var(--ps-text-subtle)", fontWeight: 500 }}>IO</span>}
+                              {b.isIO && <span style={{ marginLeft: 6, fontSize: 9, color: "#94A3B8", fontWeight: 500 }}>IO</span>}
                             </td>
                             {row.values.map((_, vi) => (
                               <td key={vi} style={{
@@ -404,39 +778,49 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                   }) : []),
                 ];
               }).flat() : []),
-              // Footer rows (totals that always show)
-              ...(!isCollapsed && section.footerRows ? section.footerRows.map((row, ri) => {
+
+              // ── Footer rows — grand total or hl (spec §3 Grand / hl) ──
+              ...(!isCollapsed && !isAges && section.footerRows ? section.footerRows.map((row, ri) => {
+                // Grand total for "total" style in footer
+                if (row.style === "total") {
+                  return renderGrandRow(`footer-${section.id}-${ri}`, row, section);
+                }
+                // hl for "highlight" style in footer
+                if (row.style === "highlight") {
+                  return renderHlRow(`footer-${section.id}-${ri}`, row);
+                }
+                // Other footer styles — use STYLE_MAP
                 const s = STYLE_MAP[row.style] || STYLE_MAP["child"];
                 return (
                   <tr key={`footer-${section.id}-${ri}`} style={{ background: s.bg }}>
                     <td style={{
                       position: "sticky", left: 0, zIndex: 1,
-                      padding: `6px 16px`,
+                      padding: "6px 12px",
                       fontWeight: s.weight,
                       color: s.color,
                       background: s.bg,
-                      borderBottom: "1px solid var(--ps-border-light)",
-                      borderTop: s.borderTop ? "1px solid var(--ps-border)" : undefined,
+                      borderBottom: "1px solid #F1F5F9",
+                      borderTop: s.borderTop ? "1px solid #E2E8F0" : undefined,
                       whiteSpace: "nowrap",
-                      fontSize: 13,
+                      fontSize: 12,
                     }}>
                       {row.label}
                     </td>
                     {row.editType === "freq-select" && onCellEdit
                       ? row.values.map((val, vi) => (
-                          <td key={vi} style={{ padding: "4px 8px", textAlign: "right", background: s.bg, borderBottom: "1px solid var(--ps-border-light)" }}>
+                          <td key={vi} style={{ padding: "4px 8px", textAlign: "right", background: s.bg, borderBottom: "1px solid #F1F5F9" }}>
                             {vi === 0 ? (
                               <select
                                 value={row.currentFreq}
                                 onChange={e => onCellEdit(row.debtRef, e.target.value)}
-                                style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, border: "1px solid #6366F1", background: "var(--ps-surface-indigo)", color: "#4338CA", cursor: "pointer", fontWeight: 600 }}
+                                style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, border: "1px solid #6366F1", background: "#EEF2FF", color: "#4338CA", cursor: "pointer", fontWeight: 600 }}
                               >
                                 {[{v:"52",l:"Weekly"},{v:"26",l:"Fortnightly"},{v:"12",l:"Monthly"},{v:"4",l:"Quarterly"},{v:"1",l:"Annually"}].map(o => (
                                   <option key={o.v} value={o.v}>{o.l}</option>
                                 ))}
                               </select>
                             ) : (
-                              <span style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>{val}</span>
+                              <span style={{ fontSize: 12, color: "#64748B" }}>{val}</span>
                             )}
                           </td>
                         ))
@@ -444,38 +828,68 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                           <td key={vi} style={{
                             padding: "6px 12px", textAlign: "right",
                             fontWeight: s.weight,
-                            color: val !== null ? (val < 0 ? "var(--ps-red)" : s.color) : "var(--ps-border-input)",
-                            borderBottom: "1px solid var(--ps-border-light)",
-                            borderTop: s.borderTop ? "1px solid var(--ps-border)" : undefined,
+                            color: val !== null && val !== undefined ? (val < 0 ? "#DC2626" : s.color) : "#E2E8F0",
+                            borderBottom: "1px solid #F1F5F9",
+                            borderTop: s.borderTop ? "1px solid #E2E8F0" : undefined,
                             background: s.bg,
+                            fontSize: (val === null || val === undefined) ? 11 : 12,
                           }}>
-                            {val !== null ? formatNumber(val) : "—"}
+                            {renderVal(val)}
                           </td>
                         ))
                     }
                   </tr>
                 );
               }) : []),
-              // Standard data rows (for sections without subSections)
-              ...(!isCollapsed && !section.subSections && section.rows ? section.rows.flatMap((row, ri) => {
+
+              // ── Standard data rows (sections without subSections, spec §3 H3/H4/hl) ──
+              ...(!isCollapsed && !isAges && !section.subSections && section.rows ? section.rows.flatMap((row, ri) => {
                 // Section sub-header — collapsible group label
                 if (row.style === "section-header") {
                   const groupKey = `grp-${section.id}-${ri}`;
                   const groupCollapsed = collapsed[groupKey];
-                  // Find all rows until next section-header or end — hide them when collapsed
                   return [
-                    <tr key={groupKey} onClick={() => toggleSection(groupKey)} style={{ cursor: "pointer", background: "var(--ps-surface-alt)", borderTop: "2px solid var(--ps-border)" }}>
+                    <tr key={groupKey} onClick={() => toggleSection(groupKey)} style={{ cursor: "pointer" }}>
                       <td colSpan={data.years.length + 1} style={{
-                        position: "sticky", left: 0, zIndex: 1, background: "var(--ps-surface-alt)",
-                        padding: "8px 16px", fontWeight: 700, fontSize: 12,
-                        color: "var(--ps-text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em",
+                        position: "sticky", left: 0, zIndex: 1,
+                        background: "#F8FAFC",
+                        borderLeft: "3px solid #94A3B8",
+                        borderTop: "2px solid #E2E8F0",
+                        padding: "7px 14px 7px 20px", fontWeight: 600, fontSize: 11,
+                        color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em",
                       }}>
-                        <span style={{ marginRight: 6, fontSize: 10, color: "var(--ps-text-subtle)" }}>{groupCollapsed ? "▸" : "▾"}</span>
+                        <span style={{
+                          display: "inline-block", width: 5, height: 5, borderRadius: "50%",
+                          background: "#94A3B8", marginRight: 8, verticalAlign: "middle",
+                        }} />
+                        {row.label}
+                        <span style={{ marginLeft: 6, fontSize: 10, color: "#475569", opacity: 0.4 }}>
+                          {groupCollapsed ? "▸" : "▾"}
+                        </span>
+                      </td>
+                    </tr>
+                  ];
+                }
+
+                // Subheader row (non-collapsible label row)
+                if (row.style === "subheader") {
+                  return [
+                    <tr key={`${section.id}-${ri}`}>
+                      <td colSpan={data.years.length + 1} style={{
+                        padding: "7px 14px 7px 20px", fontWeight: 600, fontSize: 11,
+                        background: "#F8FAFC", borderLeft: "3px solid #94A3B8",
+                        color: "#475569", borderBottom: "1px solid #F1F5F9",
+                      }}>
+                        <span style={{
+                          display: "inline-block", width: 5, height: 5, borderRadius: "50%",
+                          background: "#94A3B8", marginRight: 8, verticalAlign: "middle",
+                        }} />
                         {row.label}
                       </td>
                     </tr>
                   ];
                 }
+
                 // Check if this row is inside a collapsed section-header group
                 let inCollapsedGroup = false;
                 for (let gi = ri - 1; gi >= 0; gi--) {
@@ -486,28 +900,50 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                   }
                 }
                 if (inCollapsedGroup) return [];
+
+                // Zero-row suppression (spec §5) — only for data rows
+                if ((row.style === "child" || row.style === "child-negative" || !row.style) && isAllNil(row.values)) return [];
+
                 const s = STYLE_MAP[row.style] || STYLE_MAP["child"];
+
+                // hl row
+                if (s.isHl) {
+                  return [renderHlRow(`${section.id}-${ri}`, row, row.format)];
+                }
+
+                // H4 subtotal/total — bracket rule (spec §3 H4)
+                if (s.isSub) {
+                  return [renderH4Row(`${section.id}-${ri}`, row, section.entity, row.format)];
+                }
+
                 const hasBreakdown = row.breakdown && row.breakdown.length > 0;
                 const breakdownOpen = collapsed[`bd-${section.id}-${ri}`];
-                const rows = [];
-                rows.push(
-                  <tr key={`${section.id}-${ri}`} style={{ background: s.bg }}>
+                const rowResults = [];
+
+                // H3 data row (spec §3 H3)
+                const isAlt = ri % 2 === 1;
+                const rowBg = isAlt ? "#FAFBFC" : "#FFFFFF";
+                // For current-value / end-value, use their specific bg
+                const finalBg = (row.style === "current-value" || row.style === "end-value") ? s.bg : rowBg;
+
+                rowResults.push(
+                  <tr key={`${section.id}-${ri}`} style={{ background: finalBg }}>
                     <td style={{
                       position: "sticky", left: 0, zIndex: 1,
-                      padding: `6px 16px 6px ${16 + s.indent}px`,
+                      padding: `5px 12px 5px ${12 + s.indent}px`,
                       fontWeight: s.weight,
                       color: s.color,
-                      background: s.bg,
-                      borderBottom: "1px solid var(--ps-border-light)",
-                      borderTop: s.borderTop ? "1px solid var(--ps-border)" : undefined,
+                      background: finalBg,
+                      borderBottom: "1px solid #F1F5F9",
+                      borderTop: s.borderTop ? "1px solid #E2E8F0" : undefined,
                       whiteSpace: "nowrap",
-                      fontSize: 13,
+                      fontSize: 12,
                     }}>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
                         {hasBreakdown && (
                           <span
                             onClick={(e) => { e.stopPropagation(); toggleSection(`bd-${section.id}-${ri}`); }}
-                            style={{ cursor: "pointer", fontSize: 9, color: "var(--ps-text-subtle)", width: 12 }}
+                            style={{ cursor: "pointer", fontSize: 9, color: "#94A3B8", width: 12 }}
                           >{breakdownOpen ? "▾" : "▸"}</span>
                         )}
                         {row.label}
@@ -521,7 +957,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                                   el = document.createElement("div");
                                   el.id = ttId;
                                   el.textContent = row.tooltip;
-                                  Object.assign(el.style, { position: "fixed", zIndex: 9999, background: "var(--ps-text-primary)", color: "var(--ps-border-light)", fontSize: "11px", fontWeight: 400, borderRadius: "8px", padding: "10px 14px", width: "240px", lineHeight: 1.6, boxShadow: "0 8px 24px var(--ps-shadow-lg)", pointerEvents: "none" });
+                                  Object.assign(el.style, { position: "fixed", zIndex: 9999, background: "#1E293B", color: "#F1F5F9", fontSize: "11px", fontWeight: 400, borderRadius: "8px", padding: "10px 14px", width: "240px", lineHeight: 1.6, boxShadow: "0 8px 24px rgba(0,0,0,0.25)", pointerEvents: "none" });
                                   document.body.appendChild(el);
                                 }
                                 const r = e.currentTarget.getBoundingClientRect();
@@ -531,7 +967,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                               }}
                               onMouseLeave={() => { const el = document.getElementById(ttId); if(el) el.style.display = "none"; }}
                             >
-                              <span style={{ fontSize: 13, cursor: "help", background: "var(--ps-surface-indigo)", border: "1px solid var(--ps-ring-indigo)", borderRadius: 6, padding: "1px 6px", lineHeight: 1 }}>💡</span>
+                              <span style={{ fontSize: 13, cursor: "help", background: "#EEF2FF", border: "1px solid #C7D2FE", borderRadius: 6, padding: "1px 6px", lineHeight: 1 }}>💡</span>
                             </span>
                           );
                         })()}
@@ -545,9 +981,9 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                             style={{
                               fontSize: 11, fontWeight: 600, cursor: "pointer",
                               padding: "3px 10px", borderRadius: 6, marginLeft: 8,
-                              color: row.indexToggle.active ? "var(--ps-surface)" : "var(--ps-text-muted)",
-                              background: row.indexToggle.active ? "#059669" : "var(--ps-border-light)",
-                              border: `1px solid ${row.indexToggle.active ? "#059669" : "var(--ps-border-mid)"}`,
+                              color: row.indexToggle.active ? "#FFFFFF" : "#64748B",
+                              background: row.indexToggle.active ? "#059669" : "#F1F5F9",
+                              border: `1px solid ${row.indexToggle.active ? "#059669" : "#CBD5E1"}`,
                               userSelect: "none",
                               display: "inline-block",
                             }}
@@ -579,12 +1015,12 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                     </td>
                     {(row.editType === "freq-select" || row.editType === "io-select") && onCellEdit
                       ? row.values.map((val, vi) => (
-                          <td key={vi} style={{ padding: "4px 6px", textAlign: "right", background: s.bg, borderBottom: "1px solid var(--ps-border-light)" }}>
+                          <td key={vi} style={{ padding: "4px 6px", textAlign: "right", background: finalBg, borderBottom: "1px solid #F1F5F9" }}>
                             {row.editType === "io-select" ? (
                               <select
                                 value={row.ioForYear[vi] ? "1" : "2"}
                                 onChange={e => onCellEdit(row.debtRef, e.target.value, "io", vi)}
-                                style={{ fontSize: 10, padding: "1px 4px", borderRadius: 4, border: row.ioYearOverrides[vi] !== undefined ? "1px solid #6366F1" : "1px solid var(--ps-border-mid)", background: row.ioYearOverrides[vi] !== undefined ? "var(--ps-surface-indigo)" : "var(--ps-surface)", color: row.ioYearOverrides[vi] !== undefined ? "#4338CA" : "var(--ps-text-secondary)", cursor: "pointer", fontWeight: row.ioYearOverrides[vi] !== undefined ? 700 : 400 }}
+                                style={{ fontSize: 10, padding: "1px 4px", borderRadius: 4, border: row.ioYearOverrides[vi] !== undefined ? "1px solid #6366F1" : "1px solid #CBD5E1", background: row.ioYearOverrides[vi] !== undefined ? "#EEF2FF" : "#FFFFFF", color: row.ioYearOverrides[vi] !== undefined ? "#4338CA" : "#475569", cursor: "pointer", fontWeight: row.ioYearOverrides[vi] !== undefined ? 700 : 400 }}
                               >
                                 {[{v:"2",l:"P & I"},{v:"1",l:"IO"}].map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
                               </select>
@@ -592,7 +1028,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                               <select
                                 value={row.currentFreq}
                                 onChange={e => onCellEdit(row.debtRef, e.target.value, "freq")}
-                                style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, border: "1px solid #6366F1", background: "var(--ps-surface-indigo)", color: "#4338CA", cursor: "pointer", fontWeight: 600 }}
+                                style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, border: "1px solid #6366F1", background: "#EEF2FF", color: "#4338CA", cursor: "pointer", fontWeight: 600 }}
                               >
                                 {[{v:"52",l:"Weekly"},{v:"26",l:"Fortnightly"},{v:"12",l:"Monthly"},{v:"4",l:"Quarterly"},{v:"1",l:"Annually"}].map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
                               </select>
@@ -601,25 +1037,30 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                             )}
                           </td>
                         ))
-                      : row.values.map((val, vi) => (
-                          <td key={vi} style={{
-                            padding: "6px 12px", textAlign: "right",
-                            fontWeight: s.weight,
-                            color: val !== null ? (val < 0 ? "var(--ps-red)" : s.color) : "var(--ps-border-input)",
-                            borderBottom: "1px solid var(--ps-border-light)",
-                            borderTop: s.borderTop ? "1px solid var(--ps-border)" : undefined,
-                            background: s.bg,
-                          }}>
-                            {val !== null ? formatNumber(val) : "—"}
-                          </td>
-                        ))
+                      : row.values.map((val, vi) => {
+                          const isNil = val === null || val === undefined;
+                          return (
+                            <td key={vi} style={{
+                              padding: "5px 12px", textAlign: "right",
+                              fontWeight: s.weight,
+                              color: isNil ? "#E2E8F0" : valColor(val, row.style),
+                              fontSize: isNil ? 11 : 12,
+                              borderBottom: "1px solid #F1F5F9",
+                              borderTop: s.borderTop ? "1px solid #E2E8F0" : undefined,
+                              background: finalBg,
+                            }}>
+                              {isNil ? "–" : renderVal(val, row.format)}
+                            </td>
+                          );
+                        })
                     }
                   </tr>
                 );
+
                 // Breakdown sub-rows
                 if (hasBreakdown && breakdownOpen) {
                   row.breakdown.forEach((b, bi) => {
-                    rows.push(
+                    rowResults.push(
                       <tr key={`${section.id}-${ri}-bd-${bi}`} style={{ background: "rgba(99,102,241,0.03)" }}>
                         <td style={{
                           position: "sticky", left: 0, zIndex: 1,
@@ -636,7 +1077,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                               style={{ cursor: "pointer", textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 3 }}
                             >{b.name}</span>
                           ) : b.name}
-                          {b.isIO && <span style={{ marginLeft: 6, fontSize: 9, color: "var(--ps-text-subtle)", fontWeight: 500 }}>IO</span>}
+                          {b.isIO && <span style={{ marginLeft: 6, fontSize: 9, color: "#94A3B8", fontWeight: 500 }}>IO</span>}
                         </td>
                         {row.values.map((_, vi) => (
                           <td key={vi} style={{
@@ -653,7 +1094,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                     );
                   });
                 }
-                return rows;
+                return rowResults;
               }) : []),
             ];
           })}
