@@ -9,6 +9,7 @@ namespace PrimeSolve.Api.Models
         public string? PlanName { get; set; }
         public bool SubscriptionActive { get; set; }
         public int SoaCredits { get; set; }
+        public string? StripeCustomerId { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     }
 }
