@@ -32,8 +32,8 @@ export default function AdviserClientDetail() {
   const [loading, setLoading] = useState(true);
   const [adviceRecords, setAdviceRecords] = useState([]);
   const [recordsLoading, setRecordsLoading] = useState(false);
-  const [adviceRequests, setAdviceRequests] = useState([]);
-  const [adviceRequestsLoading, setAdviceRequestsLoading] = useState(false);
+  const [adviceRequests, setSOARequests] = useState([]);
+  const [adviceRequestsLoading, setSOARequestsLoading] = useState(false);
   const [creatingSoa, setCreatingSoa] = useState(false);
   const navigate = useNavigate();
 
@@ -65,14 +65,14 @@ export default function AdviserClientDetail() {
         }
 
         // Load advice requests (SOAs) for this client
-        setAdviceRequestsLoading(true);
+        setSOARequestsLoading(true);
         try {
-          const requests = await base44.entities.AdviceRequest.filter({ client_id: id });
-          setAdviceRequests(requests);
+          const requests = await base44.entities.SOARequest.filter({ client_id: id });
+          setSOARequests(requests);
         } catch (err) {
           console.error('Failed to load advice requests:', err);
         } finally {
-          setAdviceRequestsLoading(false);
+          setSOARequestsLoading(false);
         }
       }
     } catch (error) {
@@ -87,8 +87,8 @@ export default function AdviserClientDetail() {
     const id = urlParams.get('id');
     setCreatingSoa(true);
     try {
-      const newAdviceRequest = await base44.entities.AdviceRequest.create({ client_id: id, status: 'draft' });
-      navigate(createPageUrl('SOARequestWelcome') + `?id=${newAdviceRequest.id}`);
+      const newSOARequest = await base44.entities.SOARequest.create({ client_id: id, status: 'draft' });
+      navigate(createPageUrl('SOARequestWelcome') + `?id=${newSOARequest.id}`);
     } catch (err) {
       console.error('Failed to create SOA request:', err);
     } finally {
