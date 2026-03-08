@@ -123,6 +123,7 @@ import FactFindSuperTax from './pages/FactFindSuperTax';
 import FactFindSuperannuation from './pages/FactFindSuperannuation';
 import FactFindTrusts from './pages/FactFindTrusts';
 import FactFindWelcome from './pages/FactFindWelcome';
+import ProductResearch from './pages/ProductResearch';
 import MyProfile from './pages/MyProfile';
 import PublicAbout from './pages/PublicAbout';
 import PublicContact from './pages/PublicContact';
@@ -226,6 +227,7 @@ export const PAGES = {
     "FactFindSuperannuation": FactFindSuperannuation,
     "FactFindTrusts": FactFindTrusts,
     "FactFindWelcome": FactFindWelcome,
+    "ProductResearch": ProductResearch,
     "MyProfile": MyProfile,
     "PublicAbout": PublicAbout,
     "PublicContact": PublicContact,

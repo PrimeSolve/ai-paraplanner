@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useRole } from '../RoleContext';
 import SidebarLayout from '../navigation/SidebarLayout';
-import { LayoutDashboard, Users, FileText, CheckCircle, Settings, TrendingUp, ScrollText } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, CheckCircle, Settings, TrendingUp, ScrollText, Search } from 'lucide-react';
 
 export default function AdviserSidebar({ currentPage }) {
   const [adviser, setAdviser] = useState(null);
@@ -78,6 +78,7 @@ export default function AdviserSidebar({ currentPage }) {
     { label: 'NAVIGATION', items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: 'AdviserDashboard' },
       { label: 'Clients', icon: Users, path: 'AdviserClients' },
+      { label: 'Product Research', icon: Search, path: 'ProductResearch' },
       { label: 'Models', icon: TrendingUp, path: 'AdviserModels' },
       { label: 'SOA Queue', icon: FileText, path: 'AdviserSOARequests' },
       { label: 'Completed SOAs', icon: CheckCircle, path: 'AdviserCompletions' },
