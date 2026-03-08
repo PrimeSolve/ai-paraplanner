@@ -39,6 +39,656 @@ class CashflowErrorBoundary extends React.Component {
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.primesolve.com.au';
 const AI_PARAPLANNER_URL = import.meta.env.VITE_AI_PARAPLANNER_URL || 'https://app.aiparaplanner.com.au';
 
+// ═══════════════════════════════════════════════════════════════
+// CASHFLOW ASSISTANT — Co-pilot Panel Component
+// ═══════════════════════════════════════════════════════════════
+
+const COPILOT_TOOL_DEFINITIONS = [
+  {
+    name: "addSuperFund",
+    description: "Add a new superannuation fund to the client's fact find.",
+    input_schema: {
+      type: "object",
+      properties: {
+        owner: { type: "string", enum: ["client1","client2"], description: "Fund owner" },
+        fund_name: { type: "string", description: "Fund name e.g. AustralianSuper" },
+        product: { type: "string", description: "Investment option name" },
+        balance: { type: "string", description: "Current balance $" },
+        salary_sacrifice: { type: "string", description: "Annual salary sacrifice $ (optional)" },
+        after_tax: { type: "string", description: "Annual after-tax contributions $ (optional)" },
+        percent_fee: { type: "string", description: "Investment fee % (optional)" },
+        admin_fee: { type: "string", description: "Fixed admin fee $ p.a. (optional)" },
+        insurance_fee: { type: "string", description: "Insurance premium $ p.a. (optional)" },
+        taxable_portion: { type: "string", description: "Taxable component $ (optional)" },
+        tax_free_portion: { type: "string", description: "Tax-free component $ (optional)" },
+      },
+      required: ["owner", "fund_name", "balance"],
+    },
+  },
+  {
+    name: "addAsset",
+    description: "Add a new asset (property, shares, savings, etc.) to the fact find.",
+    input_schema: {
+      type: "object",
+      properties: {
+        a_name: { type: "string", description: "Asset name/description" },
+        a_type: { type: "string", description: "Asset type code: 1=Principal Residence, 2=Car, 7=Lifestyle Other, 8=Savings Account, 9=Term Deposit, 10=AU Bonds, 11=Intl Bonds, 12=AU Shares/ETF, 13=Intl Shares/ETF, 18=Investment Property, 19=Principal Residence (absent), 21=Commercial Property, 26=Managed Funds, 42=Investment Other" },
+        a_owner: { type: "string", description: "client1 | client2 | joint | trust_0 | company_0 | smsf_0" },
+        a_ownType: { type: "string", description: "1=Sole, 2=Joint, 3=Trust, 4=Company, 5=SMSF" },
+        a_value: { type: "string", description: "Current market value $" },
+        a_purchase_price: { type: "string", description: "Purchase price $ (optional)" },
+        a_purchase_date: { type: "string", description: "YYYY-MM-DD (optional)" },
+        a_rental_income: { type: "string", description: "Rental income $ (optional)" },
+        a_rental_freq: { type: "string", description: "52=weekly, 12=monthly (optional)" },
+      },
+      required: ["a_name", "a_type", "a_owner", "a_ownType", "a_value"],
+    },
+  },
+  {
+    name: "addLiability",
+    description: "Add a new liability (loan, mortgage, credit card) to the fact find.",
+    input_schema: {
+      type: "object",
+      properties: {
+        d_name: { type: "string", description: "Liability name" },
+        d_type: { type: "string", description: "1=Home loan, 2=Investment loan, 3=Margin, 5=Credit card, 7=Car loan, 8=Personal/Other" },
+        d_owner: { type: "string", description: "client1 | client2 | joint | trust_0 | company_0" },
+        d_ownType: { type: "string", description: "1=Sole, 2=Joint, 3=Trust, 4=Company" },
+        d_balance: { type: "string", description: "Outstanding balance $" },
+        d_rate: { type: "string", description: "Interest rate %" },
+        d_repayments: { type: "string", description: "Repayment amount $ (optional)" },
+        d_freq: { type: "string", description: "12=monthly, 26=fortnightly, 52=weekly (optional)" },
+        d_term: { type: "string", description: "Remaining term e.g. '25 years' (optional)" },
+        d_io: { type: "string", description: "1=Interest only, 2=Principal & Interest (optional)" },
+        d_fixed: { type: "string", description: "1=Fixed, 2=Variable (optional)" },
+      },
+      required: ["d_name", "d_type", "d_owner", "d_ownType", "d_balance", "d_rate"],
+    },
+  },
+  {
+    name: "updateIncome",
+    description: "Update employment income for a client.",
+    input_schema: {
+      type: "object",
+      properties: {
+        client: { type: "string", enum: ["client1","client2"], description: "Which client" },
+        i_gross: { type: "string", description: "Gross annual salary $" },
+        i_increase: { type: "string", description: "Annual growth rate %" },
+        i_bonus: { type: "string", description: "Annual bonus $" },
+      },
+      required: ["client"],
+    },
+  },
+  {
+    name: "updateClient",
+    description: "Update personal details for a client.",
+    input_schema: {
+      type: "object",
+      properties: {
+        client: { type: "string", enum: ["client1","client2"], description: "Which client" },
+        first_name: { type: "string" },
+        last_name: { type: "string" },
+        date_of_birth: { type: "string", description: "YYYY-MM-DD" },
+        occupation: { type: "string" },
+        employer_name: { type: "string" },
+        employment_status: { type: "string", description: "1=Full-time, 2=Part-time, 3=Self-employed, 4=Retired" },
+        gender: { type: "string", description: "1=Female, 2=Male" },
+        email: { type: "string" },
+        mobile: { type: "string" },
+      },
+      required: ["client"],
+    },
+  },
+  {
+    name: "addGoal",
+    description: "Add a financial goal/objective.",
+    input_schema: {
+      type: "object",
+      properties: {
+        o_who: { type: "array", items: { type: "string" }, description: "['client1'], ['client2'], or ['client1','client2']" },
+        o_type: { type: "string", description: "Goal type: 6=Education, 9=Holiday, 10=Car, 15=Gift, 32=Renovation, 33=Wedding, 34=Medical, 35=Business, 36=Other lump sum" },
+        o_amount: { type: "string", description: "Goal amount $" },
+        o_start: { type: "string", description: "Start year YYYY" },
+        o_end: { type: "string", description: "End year YYYY (optional, same as start for one-off)" },
+        o_importance: { type: "string", description: "1=Essential, 2=Important, 3=Desirable (optional)" },
+        o_why: { type: "string", description: "Description / reason (optional)" },
+      },
+      required: ["o_who", "o_type", "o_amount", "o_start"],
+    },
+  },
+  {
+    name: "updateLivingExpenses",
+    description: "Set annual living expenses and growth rate.",
+    input_schema: {
+      type: "object",
+      properties: {
+        amount: { type: "number", description: "Annual living expenses $" },
+        growth: { type: "number", description: "Growth rate as decimal e.g. 0.025" },
+      },
+      required: ["amount"],
+    },
+  },
+  {
+    name: "createAdviceModel",
+    description: "Create a new advice model (scenario).",
+    input_schema: {
+      type: "object",
+      properties: {
+        name: { type: "string", description: "e.g. 'Advice Model 2'" },
+        description: { type: "string" },
+      },
+      required: ["name"],
+    },
+  },
+  {
+    name: "addStrategy",
+    description: "Add a strategy to an advice model. Key strategy IDs: 107=Lump sum withdrawal+recontribution to partner, 108=Withdrawal+recontribution own super, 110=Lump sum withdrawal from accum, 130=Regular withdrawal accum, 131=Regular withdrawal pension, 180=One-off withdrawal pension, 200=Purchase investment property, 201=Purchase property via SMSF, 158=FBT salary packaging, 57=Aged care entry/RAD, 137=Granny flat interest.",
+    input_schema: {
+      type: "object",
+      properties: {
+        model_id: { type: "string", description: "Target model ID. 'model_default' for first model." },
+        strategy_id: { type: "string", description: "Strategy number as string e.g. '107', '200'" },
+        owner_id: { type: "string", description: "client1 | client2 | joint | trust_0 | smsf_0" },
+        start_year: { type: "string", description: "FY start year e.g. '2028'" },
+        end_year: { type: "string", description: "End year or 'Ongoing' or blank (optional)" },
+        amount: { type: "string", description: "Dollar amount (optional)" },
+        timing: { type: "string", enum: ["SOY","EOY"], description: "Start or end of year (optional)" },
+        product_id: { type: "string", description: "super_0, pension_0, smsf_0 etc. (optional)" },
+        asset_id: { type: "string", description: "Asset array index as string (optional)" },
+        debt_id: { type: "string", description: "Liability array index as string (optional)" },
+        notes: { type: "string", description: "Notes (optional)" },
+      },
+      required: ["strategy_id", "owner_id", "start_year"],
+    },
+  },
+  {
+    name: "cloneAdviceModel",
+    description: "Clone an existing advice model with a new name.",
+    input_schema: {
+      type: "object",
+      properties: {
+        source_model_id: { type: "string", description: "ID of model to clone" },
+        new_name: { type: "string", description: "Name for the cloned model" },
+      },
+      required: ["source_model_id", "new_name"],
+    },
+  },
+  {
+    name: "clarify",
+    description: "Ask the user a clarifying question when confidence is below 90%.",
+    input_schema: {
+      type: "object",
+      properties: {
+        question: { type: "string", description: "The clarifying question" },
+      },
+      required: ["question"],
+    },
+  },
+  {
+    name: "summariseChanges",
+    description: "Summarise all changes made in this batch.",
+    input_schema: {
+      type: "object",
+      properties: {
+        summary: { type: "string" },
+        count: { type: "number" },
+      },
+      required: ["summary", "count"],
+    },
+  },
+];
+
+const COPILOT_QUICK_PROMPTS = [
+  "Add 3 super funds: AustralianSuper ($352k, Catherine), Cbus ($150k, Paul), Hostplus ($95k, Paul)",
+  "Add an investment property worth $800k, purchased $600k in 2020, $550/week rent, joint",
+  "Create 3 advice models \u2014 buy investment property in 2028 at $500k, $700k, and $900k",
+  "Set living expenses to $85,000 p.a. with 2.5% annual growth",
+  "Add a home loan: ANZ Variable, $320k, 5.99%, $2,150/month P&I, joint",
+];
+
+function CashflowAssistant({ factFind, updateFF }) {
+  const [messages, setMessages] = useState([{
+    role: "assistant",
+    content: "I'm the PrimeSolve Co-pilot. I write directly into your fact find and advice models. Tell me what to add \u2014 super funds, assets, debts, income, goals, strategies, or entire advice scenarios.",
+  }]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [activityFeed, setActivityFeed] = useState([]);
+  const chatEndRef = useRef(null);
+
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  const c1 = factFind.client1 || {};
+  const c2 = factFind.client2 || {};
+  const c1Name = ((c1.first_name || "") + " " + (c1.last_name || "")).trim() || "Client 1";
+  const c2Name = factFind.client2 ? ((c2.first_name || "") + " " + (c2.last_name || "")).trim() : null;
+
+  const buildSystemPrompt = () => {
+    const c1DOB = c1.date_of_birth || "unknown";
+    const c2DOB = c2.date_of_birth || "unknown";
+    const calcAge = (dob) => {
+      if (!dob || dob === "unknown") return "unknown";
+      const d = new Date(dob);
+      const now = new Date();
+      let age = now.getFullYear() - d.getFullYear();
+      if (now.getMonth() < d.getMonth() || (now.getMonth() === d.getMonth() && now.getDate() < d.getDate())) age--;
+      return age;
+    };
+    const c1Age = calcAge(c1DOB);
+    const c2Age = calcAge(c2DOB);
+
+    const superSummary = (factFind.superProducts || []).map(s =>
+      `${s.fund_name} (${s.owner === "client1" ? c1Name : (c2Name || "Client 2")}): $${(parseFloat(s.balance)||0).toLocaleString()}`
+    ).join(", ") || "None";
+
+    const models = factFind.advice_request?.strategy?.models || [];
+    const modelSummary = models.length ? models.map(m => `${m.id}: "${m.name}"`).join(", ") : "None";
+    const strategyCount = (factFind.advice_request?.strategy?.strategies || []).length;
+
+    return `You are the PrimeSolve Co-pilot \u2014 an AI assistant embedded in a financial planning cashflow model for Australian financial advisers. You write directly into the client fact find and advice models using the provided tools. You are fast, direct, and professional.
+
+## Your two jobs:
+1. FACT FIND WRITES \u2014 Add/update client data: super funds, assets, liabilities, income, goals
+2. ADVICE MODEL WRITES \u2014 Create advice models and add strategies to them
+
+## Confidence rule (mandatory):
+Before each tool call, rate confidence that you've correctly mapped the instruction to the right tool and parameters (0\u2013100%).
+- \u2265 90% \u2192 call the tool immediately. Do not ask for confirmation.
+- < 90% \u2192 call \`clarify\` with exactly ONE question. Then stop and wait.
+
+Never ask for confirmation on high-confidence operations. Write and move on.
+
+## Batch handling:
+When asked to do multiple things in one message ("add 3 super funds", "create 3 models"), execute all tool calls in sequence without stopping. Call \`summariseChanges\` at the end.
+
+## Model tracking:
+When you call \`createAdviceModel\`, the tool returns a \`modelId\`. Use that \`modelId\` in the subsequent \`addStrategy\` calls for that model. Do not reuse or guess model IDs.
+
+## Current client context:
+- Client 1: ${c1Name}, DOB ${c1DOB}, age ${c1Age}
+${c2Name ? `- Client 2: ${c2Name}, DOB ${c2DOB}, age ${c2Age}` : "- No client 2"}
+- Super funds: ${superSummary}
+- Assets: ${(factFind.assets || []).length} assets recorded
+- Liabilities: ${(factFind.liabilities || []).length} debts recorded
+- Advice models: ${modelSummary}
+- Strategies: ${strategyCount} strategies recorded
+
+## Ownership defaults:
+- Assets: default to joint (a_ownType "2") unless stated otherwise
+- Super funds: ALWAYS ask which client if not specified
+- Debts: default to joint unless stated otherwise
+
+## Asset type selection:
+Use the type codes from the tool descriptions. For a "family home" or "principal residence" use "1". For a rental/investment property use "18". For a home being rented while the owners live elsewhere use "19".
+
+## Advice model scenarios (e.g. "3 models with property at $500k, $700k, $900k"):
+1. Call createAdviceModel for each model
+2. Call addStrategy (strategy_id "200") for each, using the returned model_id, with the relevant amount and start_year
+
+## Tone:
+Confirm what you've done, not what you're about to do. Keep it to one line per action. No preamble. No filler. Just action and confirmation.`;
+  };
+
+  const executeTool = (toolName, toolInput) => {
+    switch (toolName) {
+      case "addSuperFund": {
+        const ownerName = toolInput.owner === "client1" ? c1Name : (c2Name || "Client 2");
+        const newFund = {
+          owner: toolInput.owner,
+          fund_name: toolInput.fund_name,
+          product: toolInput.product || "",
+          member_number: "",
+          balance: toolInput.balance,
+          contributions: {
+            super_guarantee: "", salary_sacrifice: toolInput.salary_sacrifice || "",
+            salary_sacrifice_indexed: false, after_tax: toolInput.after_tax || "",
+            after_tax_indexed: false, spouse_received: "", spouse_received_indexed: false,
+            split_received: "", split_out_pct: "", concessional: "",
+          },
+          tax_components: {
+            unp_amount: "",
+            taxable_portion: toolInput.taxable_portion || "",
+            tax_free_portion: toolInput.tax_free_portion || "",
+          },
+          fees: {
+            admin_fee: toolInput.admin_fee || "", percent_fee: toolInput.percent_fee || "",
+            insurance_fee: toolInput.insurance_fee || "", ins_inflation_on: false, ins_inflation_rate: "",
+          },
+          beneficiaries: [],
+          portfolio: toolInput.product ? [{ asset_name: toolInput.product, allocation_pct: "100", amount: toolInput.balance }] : [],
+        };
+        updateFF("superProducts", [...(factFind.superProducts || []), newFund]);
+        return { success: true, summary: `Added super: ${toolInput.fund_name} \u2014 ${ownerName} \u2014 $${Number(toolInput.balance).toLocaleString()}` };
+      }
+      case "addAsset": {
+        updateFF("assets", [...(factFind.assets || []), {
+          a_name: toolInput.a_name, a_type: toolInput.a_type, a_owner: toolInput.a_owner,
+          a_ownType: toolInput.a_ownType, a_value: toolInput.a_value,
+          a_purchase_price: toolInput.a_purchase_price || "",
+          a_purchase_date: toolInput.a_purchase_date || "",
+          a_rental_income: toolInput.a_rental_income || "",
+          a_rental_freq: toolInput.a_rental_freq || "",
+        }]);
+        return { success: true, summary: `Added asset: ${toolInput.a_name} \u2014 $${Number(toolInput.a_value).toLocaleString()}` };
+      }
+      case "addLiability": {
+        updateFF("liabilities", [...(factFind.liabilities || []), {
+          d_name: toolInput.d_name, d_type: toolInput.d_type, d_owner: toolInput.d_owner,
+          d_ownType: toolInput.d_ownType, d_balance: toolInput.d_balance, d_rate: toolInput.d_rate,
+          d_repayments: toolInput.d_repayments || "", d_freq: toolInput.d_freq || "12",
+          d_term: toolInput.d_term || "", d_io: toolInput.d_io || "2", d_fixed: toolInput.d_fixed || "2",
+          d_has_redraw: "2", d_redraw: "", d_redraw_limit: "",
+          d_security: [], d_offset: [],
+        }]);
+        return { success: true, summary: `Added liability: ${toolInput.d_name} \u2014 $${Number(toolInput.d_balance).toLocaleString()} @ ${toolInput.d_rate}%` };
+      }
+      case "updateIncome": {
+        const { client, ...fields } = toolInput;
+        const name = client === "client1" ? c1Name : (c2Name || "Client 2");
+        updateFF(`income.${client}`, { ...(factFind.income?.[client] || {}), ...fields });
+        return { success: true, summary: `Updated income: ${name}${fields.i_gross ? ` \u2014 $${Number(fields.i_gross).toLocaleString()} gross` : ""}` };
+      }
+      case "updateClient": {
+        const { client, ...fields } = toolInput;
+        updateFF(client, { ...factFind[client], ...fields });
+        return { success: true, summary: `Updated client details: ${client}` };
+      }
+      case "addGoal": {
+        const objectives = factFind.advice_reason?.objectives || [];
+        updateFF("advice_reason.objectives", [...objectives, {
+          o_who: toolInput.o_who, o_type: toolInput.o_type, o_amount: toolInput.o_amount,
+          o_start: toolInput.o_start, o_end: toolInput.o_end || toolInput.o_start,
+          o_freq: "5", o_property: "", o_debt: "", o_asset: "",
+          o_importance: toolInput.o_importance || "2",
+          o_why: toolInput.o_why || "",
+        }]);
+        return { success: true, summary: `Added goal: ${toolInput.o_why || "Goal"} \u2014 $${Number(toolInput.o_amount).toLocaleString()} in ${toolInput.o_start}` };
+      }
+      case "updateLivingExpenses": {
+        updateFF("cashflowConfig", {
+          ...factFind.cashflowConfig,
+          livingExpenses: toolInput.amount,
+          livingExpensesGrowth: toolInput.growth ?? 0.025,
+        });
+        return { success: true, summary: `Living expenses: $${Number(toolInput.amount).toLocaleString()} p.a.` };
+      }
+      case "createAdviceModel": {
+        const models = factFind.advice_request?.strategy?.models || [];
+        const newId = `model_${Date.now()}`;
+        updateFF("advice_request.strategy.models", [...models, {
+          id: newId, name: toolInput.name, description: toolInput.description || "",
+          drawdown_priority_1: "", drawdown_priority_2: "", drawdown_priority_3: "",
+          portfolio_priority: "", surplus_priority_1: "", surplus_priority_2: "", surplus_priority_3: "",
+        }]);
+        return { success: true, modelId: newId, summary: `Created advice model: "${toolInput.name}"` };
+      }
+      case "addStrategy": {
+        const strategies = factFind.advice_request?.strategy?.strategies || [];
+        const newStrat = {
+          ...EMPTY_STRATEGY,
+          id: `strat_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+          model_id: toolInput.model_id || "model_default",
+          strategy_id: toolInput.strategy_id,
+          owner_id: toolInput.owner_id,
+          start_year: toolInput.start_year,
+          end_year: toolInput.end_year || "",
+          amount: toolInput.amount || "",
+          timing: toolInput.timing || "SOY",
+          product_id: toolInput.product_id || "",
+          asset_id: toolInput.asset_id || "",
+          debt_id: toolInput.debt_id || "",
+          notes: toolInput.notes || "",
+        };
+        updateFF("advice_request.strategy.strategies", [...strategies, newStrat]);
+        const stratLabel = toolInput.amount ? ` \u2014 $${Number(toolInput.amount).toLocaleString()}` : "";
+        return { success: true, summary: `Strategy ${toolInput.strategy_id} \u2192 ${toolInput.model_id || "default"} | ${toolInput.owner_id} | ${toolInput.start_year}${stratLabel}` };
+      }
+      case "cloneAdviceModel": {
+        const models = factFind.advice_request?.strategy?.models || [];
+        const strategies = factFind.advice_request?.strategy?.strategies || [];
+        const source = models.find(m => m.id === toolInput.source_model_id);
+        if (!source) return { success: false, summary: `Clone failed: model "${toolInput.source_model_id}" not found` };
+        const newId = `model_${Date.now()}`;
+        const cloned = strategies
+          .filter(s => s.model_id === toolInput.source_model_id)
+          .map(s => ({ ...s, id: `strat_${Date.now()}_${Math.random().toString(36).slice(2)}`, model_id: newId }));
+        updateFF("advice_request.strategy.models", [...models, { ...source, id: newId, name: toolInput.new_name }]);
+        updateFF("advice_request.strategy.strategies", [...strategies, ...cloned]);
+        return { success: true, modelId: newId, summary: `Cloned model "${source.name}" \u2192 "${toolInput.new_name}"` };
+      }
+      case "clarify":
+        return { success: true, summary: null, clarificationQuestion: toolInput.question };
+      case "summariseChanges":
+        return { success: true, summary: `\u2713 ${toolInput.count} change${toolInput.count !== 1 ? "s" : ""} made \u2014 ${toolInput.summary}`, isFinal: true };
+      default:
+        return { success: false, summary: `Unknown tool: ${toolName}` };
+    }
+  };
+
+  const processResponse = async (apiMessages) => {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 2000,
+        system: buildSystemPrompt(),
+        tools: COPILOT_TOOL_DEFINITIONS,
+        messages: apiMessages,
+      }),
+    });
+    return await response.json();
+  };
+
+  const sendMessage = async (userInput) => {
+    const text = userInput || input.trim();
+    if (!text || loading) return;
+    const userMsg = { role: "user", content: text };
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
+    setInput("");
+    setLoading(true);
+
+    try {
+      let apiMessages = updatedMessages.filter(m => m.role === "user" || m.role === "assistant")
+        .map(m => ({ role: m.role, content: m.content }));
+      let continueLoop = true;
+
+      while (continueLoop) {
+        const data = await processResponse(apiMessages);
+        const newActivity = [];
+        const toolResults = [];
+
+        for (const block of (data.content || [])) {
+          if (block.type === "tool_use") {
+            const result = executeTool(block.name, block.input);
+            toolResults.push({
+              type: "tool_result",
+              tool_use_id: block.id,
+              content: JSON.stringify(result),
+            });
+            if (result.summary) {
+              newActivity.push({ id: block.id, toolName: block.name, summary: result.summary, success: result.success });
+            }
+            if (result.clarificationQuestion) {
+              setMessages(prev => [...prev, { role: "assistant", content: result.clarificationQuestion }]);
+            }
+          }
+          if (block.type === "text" && block.text?.trim()) {
+            setMessages(prev => [...prev, { role: "assistant", content: block.text }]);
+          }
+        }
+
+        if (newActivity.length > 0) {
+          setActivityFeed(prev => [...prev, ...newActivity]);
+        }
+
+        if (toolResults.length > 0 && data.stop_reason === "tool_use") {
+          apiMessages = [
+            ...apiMessages,
+            { role: "assistant", content: data.content },
+            { role: "user", content: toolResults },
+          ];
+        } else {
+          continueLoop = false;
+        }
+      }
+    } catch (err) {
+      setMessages(prev => [...prev, { role: "assistant", content: "Connection error. Please try again." }]);
+    }
+    setLoading(false);
+  };
+
+  const superCount = (factFind.superProducts || []).length;
+  const assetCount = (factFind.assets || []).length;
+  const debtCount = (factFind.liabilities || []).length;
+  const modelCount = (factFind.advice_request?.strategy?.models || []).length;
+  const stratCount = (factFind.advice_request?.strategy?.strategies || []).length;
+
+  const Chip = ({ color, children }) => (
+    <span style={{
+      background: color === "indigo" ? "rgba(79,70,229,0.1)" : color === "cyan" ? "rgba(6,182,212,0.1)" : color === "violet" ? "rgba(139,92,246,0.1)" : "rgba(100,116,139,0.08)",
+      color: color === "indigo" ? "#4F46E5" : color === "cyan" ? "#0891B2" : color === "violet" ? "#7C3AED" : "#64748B",
+      border: `1px solid ${color === "indigo" ? "rgba(79,70,229,0.2)" : color === "cyan" ? "rgba(6,182,212,0.2)" : color === "violet" ? "rgba(139,92,246,0.2)" : "rgba(100,116,139,0.15)"}`,
+      borderRadius: 12, padding: "2px 8px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
+    }}>{children}</span>
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#fff" }}>
+      {/* Panel header */}
+      <div style={{
+        padding: "10px 14px",
+        background: "#4F46E5",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 15, color: "#fff" }}>{"\u2726"}</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Co-pilot</span>
+        </div>
+      </div>
+
+      {/* Context strip */}
+      <div style={{
+        padding: "6px 14px", background: "#F8FAFC", borderBottom: "1px solid #E2E8F0",
+        display: "flex", gap: 6, flexWrap: "wrap",
+      }}>
+        <Chip color="indigo">{c1Name}</Chip>
+        {c2Name && <Chip color="cyan">{c2Name}</Chip>}
+        <Chip color="slate">{superCount} super</Chip>
+        <Chip color="slate">{assetCount} assets</Chip>
+        <Chip color="slate">{debtCount} debts</Chip>
+        <Chip color="violet">{modelCount} model{modelCount !== 1 ? "s" : ""}</Chip>
+        <Chip color="violet">{stratCount} strategies</Chip>
+      </div>
+
+      {/* Activity feed */}
+      <div style={{
+        padding: "8px 14px", borderBottom: "1px solid #E2E8F0",
+        maxHeight: 160, overflowY: "auto", background: "#FAFBFC",
+      }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", letterSpacing: "0.07em", marginBottom: 6 }}>
+          ACTIVITY {"\u2014"} {activityFeed.length} change{activityFeed.length !== 1 ? "s" : ""} this session
+        </div>
+        {activityFeed.length === 0 && (
+          <div style={{ fontSize: 11, color: "#CBD5E1", fontStyle: "italic" }}>No changes yet</div>
+        )}
+        {activityFeed.map((item, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 3 }}>
+            <span style={{ fontSize: 11, color: item.success ? "#059669" : "#EF4444", marginTop: 1, flexShrink: 0 }}>
+              {item.success ? "\u2713" : "\u2717"}
+            </span>
+            <span style={{ fontSize: 11, color: "#475569", lineHeight: 1.5 }}>{item.summary}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Chat messages */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+        {messages.map((m, i) => (
+          <div key={i} style={{
+            display: "flex", flexDirection: "column",
+            alignItems: m.role === "user" ? "flex-end" : "flex-start",
+          }}>
+            <div style={{
+              maxWidth: "88%", padding: "10px 14px",
+              borderRadius: m.role === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+              background: m.role === "user" ? "#4F46E5" : "#F1F5F9",
+              color: m.role === "user" ? "#fff" : "#1E293B",
+              fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap",
+            }}>{m.content}</div>
+          </div>
+        ))}
+        {loading && (
+          <div style={{
+            alignSelf: "flex-start", padding: "10px 14px",
+            background: "#F1F5F9", borderRadius: "14px 14px 14px 4px",
+            fontSize: 13, color: "#94A3B8",
+          }}>
+            {"\u2726"} Thinking...
+          </div>
+        )}
+        <div ref={chatEndRef} />
+      </div>
+
+      {/* Quick prompts */}
+      {messages.length <= 1 && (
+        <div style={{ padding: "0 14px 8px", display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ fontSize: 10, color: "#94A3B8", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 2 }}>QUICK START</div>
+          {COPILOT_QUICK_PROMPTS.map((q, i) => (
+            <button key={i} onClick={() => sendMessage(q)} style={{
+              textAlign: "left", padding: "7px 10px", background: "#F8FAFC",
+              border: "1px solid #E2E8F0", borderRadius: 8, fontSize: 11,
+              color: "#475569", cursor: "pointer", lineHeight: 1.4,
+            }}>{q}</button>
+          ))}
+        </div>
+      )}
+
+      {/* Input bar */}
+      <div style={{
+        padding: "10px 12px", borderTop: "1px solid #E2E8F0",
+        display: "flex", gap: 8, background: "#F8FAFC",
+      }}>
+        <textarea
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+          placeholder="Tell the co-pilot what to add..."
+          rows={2}
+          style={{
+            flex: 1, padding: "8px 12px", border: "1.5px solid #CBD5E1",
+            borderRadius: 10, fontSize: 13, resize: "none", fontFamily: "inherit",
+            outline: "none", background: "#fff",
+          }}
+        />
+        <button
+          onClick={() => sendMessage()}
+          disabled={loading || !input.trim()}
+          style={{
+            padding: "10px 16px",
+            background: loading || !input.trim() ? "#E2E8F0" : "#4F46E5",
+            color: loading || !input.trim() ? "#94A3B8" : "#fff",
+            border: "none", borderRadius: 10, fontWeight: 700, fontSize: 13,
+            cursor: loading || !input.trim() ? "default" : "pointer",
+            alignSelf: "flex-end", flexShrink: 0,
+          }}
+        >{loading ? "..." : "Send"}</button>
+        <button
+          style={{
+            padding: "10px 12px",
+            background: "#F1F5F9",
+            border: "none", borderRadius: 10,
+            color: "#64748B", cursor: "pointer", fontSize: 16,
+            flexShrink: 0, alignSelf: "flex-end",
+          }}
+          title="Voice input (LiveKit)"
+        >{"\uD83C\uDFA4"}</button>
+      </div>
+    </div>
+  );
+}
+
 function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvice }) {
   const isFactfindMode = mode === "factfind";
   const [activeTop, setActiveTop] = useState("Summary of Results");
@@ -74,6 +724,14 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
   const [adviceSection, setAdviceSection] = useState(null);
   const [adviceMode, setAdviceMode] = useState("manual"); // "manual" | "ai"
   const [showSOABuilder, setShowSOABuilder] = useState(false);
+
+  // Co-pilot panel state — persisted via localStorage
+  const [assistantOpen, setAssistantOpen] = useState(() => {
+    try { return localStorage.getItem("primesolve_copilot_open") === "true"; } catch { return false; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("primesolve_copilot_open", String(assistantOpen)); } catch {}
+  }, [assistantOpen]);
 
   // factFind, adviceModel1, and helpers are provided by useFactFind()
   const topConfig = NAV_STRUCTURE[activeTop];
@@ -1360,6 +2018,21 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
             {darkMode ? "☀️" : "🌙"}
           </button>
           <div style={{ width: 1, height: 24, background: "var(--ps-border)", margin: "0 2px" }} />
+          {/* ── Co-pilot toggle ── */}
+          <button onClick={() => setAssistantOpen(prev => !prev)} style={{
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "7px 14px",
+            background: assistantOpen ? "#4F46E5" : "rgba(79,70,229,0.08)",
+            border: "1.5px solid rgba(79,70,229,0.25)",
+            borderRadius: 10,
+            color: assistantOpen ? "#fff" : "#4F46E5",
+            fontWeight: 700, fontSize: 13,
+            cursor: "pointer",
+            transition: "all 0.15s",
+          }}>
+            <span style={{ fontSize: 15 }}>{"\u2726"}</span>
+            {assistantOpen ? "Close Co-pilot" : "Co-pilot"}
+          </button>
           {/* ── Input tools ── */}
           <button
             onClick={() => { setFactFindOpen(!factFindOpen); if (!factFindOpen) { setAdviceOpen(false); setAdviceSection(null); } }}
@@ -1548,7 +2221,9 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
         </div>
       )}
 
-      {/* Content area */}
+      {/* Content area — flex row with optional co-pilot */}
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div style={{ flex: assistantOpen ? "0 0 70%" : "0 0 100%", overflow: "auto", transition: "flex 0.2s ease" }}>
       <div style={{ padding: "16px 32px" }}>
         {/* Breadcrumb + Edit on same row */}
         <div style={{
@@ -2015,6 +2690,21 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
         ) : (
           <PlaceholderContent topTab={activeTop} subTab={activeSub} subSubTab={activeSubSub} />
         )}
+      </div>
+
+      </div>
+      {/* Co-pilot panel — 30% when open */}
+      {assistantOpen && (
+        <div style={{
+          flex: "0 0 30%",
+          borderLeft: "1px solid #E2E8F0",
+          display: "flex", flexDirection: "column",
+          background: "#fff", overflow: "hidden",
+          minWidth: 320,
+        }}>
+          <CashflowAssistant factFind={factFind} updateFF={updateFF} />
+        </div>
+      )}
       </div>
 
       {/* Fact Find overlay */}
