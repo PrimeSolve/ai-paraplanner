@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Mail, Phone, FileText, ClipboardCheck, ScrollText, TrendingUp, ShieldCheck, Eye, Clock, CheckCircle2, AlertCircle, Archive } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatDate } from '../utils/dateUtils';
 
@@ -32,6 +32,10 @@ export default function AdviserClientDetail() {
   const [loading, setLoading] = useState(true);
   const [adviceRecords, setAdviceRecords] = useState([]);
   const [recordsLoading, setRecordsLoading] = useState(false);
+  const [adviceRequests, setAdviceRequests] = useState([]);
+  const [adviceRequestsLoading, setAdviceRequestsLoading] = useState(false);
+  const [creatingSoa, setCreatingSoa] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadClient();
@@ -59,11 +63,36 @@ export default function AdviserClientDetail() {
         } finally {
           setRecordsLoading(false);
         }
+
+        // Load advice requests (SOAs) for this client
+        setAdviceRequestsLoading(true);
+        try {
+          const requests = await base44.entities.AdviceRequest.filter({ client_id: id });
+          setAdviceRequests(requests);
+        } catch (err) {
+          console.error('Failed to load advice requests:', err);
+        } finally {
+          setAdviceRequestsLoading(false);
+        }
       }
     } catch (error) {
       console.error('Failed to load client:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleNewSoaRequest = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    setCreatingSoa(true);
+    try {
+      const newAdviceRequest = await base44.entities.AdviceRequest.create({ client_id: id, status: 'draft' });
+      navigate(createPageUrl('SOARequestWelcome') + `?id=${newAdviceRequest.id}`);
+    } catch (err) {
+      console.error('Failed to create SOA request:', err);
+    } finally {
+      setCreatingSoa(false);
     }
   };
 
@@ -109,6 +138,9 @@ export default function AdviserClientDetail() {
             </div>
           </div>
           <Button className="bg-teal-600 hover:bg-teal-700">Edit Details</Button>
+          <Button className="bg-teal-600 hover:bg-teal-700" onClick={handleNewSoaRequest} disabled={creatingSoa}>
+            {creatingSoa ? 'Creating...' : 'New SOA Request'}
+          </Button>
         </div>
       </div>
 
@@ -254,8 +286,48 @@ export default function AdviserClientDetail() {
 
           <TabsContent value="soas">
             <Card>
-              <CardContent className="p-6">
-                <div className="text-sm text-slate-600">SOAs will appear here</div>
+              <CardContent className="p-0">
+                {adviceRequestsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-800"></div>
+                  </div>
+                ) : adviceRequests.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                          <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-3">Status</th>
+                          <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-3">Created Date</th>
+                          <th className="text-left text-xs font-semibold uppercase tracking-wider text-slate-600 px-6 py-3">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {adviceRequests.map((request) => (
+                          <tr key={request.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                            <td className="px-6 py-4">
+                              <Badge variant="secondary" className="text-xs">{request.status}</Badge>
+                            </td>
+                            <td className="px-6 py-4 text-sm text-slate-600">{formatDate(request.created_date || request.created_at)}</td>
+                            <td className="px-6 py-4">
+                              <Link to={createPageUrl('SOARequestWelcome') + `?id=${request.id}`}>
+                                <Button size="sm" variant="outline" className="gap-1.5">
+                                  <ArrowLeft className="w-3.5 h-3.5 rotate-180" />
+                                  Continue
+                                </Button>
+                              </Link>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <FileText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                    <h3 className="text-sm font-semibold text-slate-700 mb-1">No SOA Requests yet</h3>
+                    <p className="text-xs text-slate-500">SOA Requests will appear here once created.</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
