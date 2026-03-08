@@ -49,6 +49,40 @@ export default function EditClientModal({ isOpen, onClose, onSuccess, client }) 
         notes: formData.notes,
       });
 
+      // Keep FactFind.personal in sync with the same shared fields
+      if (client.fact_find_id) {
+        try {
+          const factFinds = await base44.entities.FactFind.filter({ id: client.fact_find_id });
+          if (factFinds[0]) {
+            const existing = factFinds[0];
+            const updatedPersonal = {
+              ...(existing.personal || {}),
+              first_name: formData.first_name,
+              last_name: formData.last_name,
+              email: formData.email,
+              phone: formData.phone,
+              notes: formData.notes,
+            };
+            // Strip metadata before update
+            const updatePayload = { ...existing, personal: updatedPersonal };
+            delete updatePayload.id;
+            delete updatePayload.created_date;
+            delete updatePayload.updated_date;
+            delete updatePayload.created_by;
+            delete updatePayload.created_by_id;
+            delete updatePayload.entity_name;
+            delete updatePayload.app_id;
+            delete updatePayload.is_sample;
+            delete updatePayload.is_deleted;
+            delete updatePayload.deleted_date;
+            delete updatePayload.environment;
+            await base44.entities.FactFind.update(client.fact_find_id, updatePayload);
+          }
+        } catch (ffErr) {
+          console.error('Failed to sync FactFind:', ffErr);
+        }
+      }
+
       toast.success('Client updated successfully');
       onSuccess?.();
       onClose();
