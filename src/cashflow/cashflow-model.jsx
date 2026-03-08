@@ -2222,8 +2222,8 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
       )}
 
       {/* Content area — flex row with optional co-pilot */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-      <div style={{ flex: assistantOpen ? "0 0 70%" : "0 0 100%", overflow: "auto", transition: "flex 0.2s ease" }}>
+      <div style={{ display: "flex", minHeight: 0 }}>
+      <div style={{ flex: assistantOpen ? "0 0 70%" : "0 0 100%", overflowX: "auto", transition: "flex 0.2s ease" }}>
       <div style={{ padding: "16px 32px" }}>
         {/* Breadcrumb + Edit on same row */}
         <div style={{
@@ -2697,10 +2697,13 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
       {assistantOpen && (
         <div style={{
           flex: "0 0 30%",
-          borderLeft: "1px solid #E2E8F0",
+          borderLeft: "1px solid var(--ps-border)",
           display: "flex", flexDirection: "column",
-          background: "#fff", overflow: "hidden",
+          background: "var(--ps-surface)", overflow: "hidden",
           minWidth: 320,
+          position: "sticky", top: 0,
+          height: "100vh",
+          alignSelf: "flex-start",
         }}>
           <CashflowAssistant factFind={factFind} updateFF={updateFF} />
         </div>
