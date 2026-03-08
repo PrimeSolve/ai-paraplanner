@@ -26,7 +26,11 @@ export default function BillingBanner({ onBillingStatus }) {
   const handleCheckout = async (priceType) => {
     setCheckoutLoading(true);
     try {
-      const response = await axiosInstance.post('/billing/checkout', { priceType });
+      const response = await axiosInstance.post('/billing/checkout', {
+        priceType,
+        successUrl: window.location.origin + '/AdviserDashboard?billing=success',
+        cancelUrl: window.location.origin + '/AdviserDashboard?billing=cancelled',
+      });
       if (response.data?.url) {
         window.location.href = response.data.url;
       } else {
@@ -88,7 +92,7 @@ export default function BillingBanner({ onBillingStatus }) {
           </span>
         </div>
         <button
-          onClick={() => handleCheckout('credits_1')}
+          onClick={() => handleCheckout('CreditX1')}
           disabled={checkoutLoading}
           style={{
             background: '#2563eb',
@@ -127,7 +131,7 @@ export default function BillingBanner({ onBillingStatus }) {
         </span>
       </div>
       <button
-        onClick={() => handleCheckout('credits_1')}
+        onClick={() => handleCheckout('CreditX1')}
         disabled={checkoutLoading}
         style={{
           background: '#dc2626',
