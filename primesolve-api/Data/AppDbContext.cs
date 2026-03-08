@@ -10,6 +10,7 @@ namespace PrimeSolve.Api.Data
 
         public DbSet<Document> Documents { get; set; }
         public DbSet<Client> Clients { get; set; }
+        public DbSet<Tenant> Tenants { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -29,6 +30,11 @@ namespace PrimeSolve.Api.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => new { e.TenantId, e.AdviserId });
                 entity.HasIndex(e => e.Email);
+            });
+
+            modelBuilder.Entity<Tenant>(entity =>
+            {
+                entity.HasKey(e => e.Id);
             });
         }
     }

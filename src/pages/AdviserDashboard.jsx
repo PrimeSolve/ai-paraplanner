@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Users, FileText, CheckCircle, Clock, Eye, Plus, ArrowRight, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatRelativeDate } from '../utils/dateUtils';
+import BillingBanner from '@/components/billing/BillingBanner';
 
 // Safely extract a displayable string from any value (guards against React Error #31)
 const safeStr = (val) => {
@@ -31,6 +32,12 @@ export default function AdviserDashboard() {
     readyForDownload: 0
   });
   const [recentActivity, setRecentActivity] = useState([]);
+  const [canBuildSOA, setCanBuildSOA] = useState(true);
+
+  const handleBillingStatus = useCallback((status) => {
+    // Block SOA building if no credits and no subscription
+    setCanBuildSOA(status.subscriptionActive || status.soaCredits > 0);
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -125,6 +132,7 @@ export default function AdviserDashboard() {
 
   return (
     <div style={{ padding: '24px 32px' }}>
+      <BillingBanner onBillingStatus={handleBillingStatus} />
       {/* Stats Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
             {[
@@ -231,18 +239,30 @@ export default function AdviserDashboard() {
                       <ArrowRight style={{ width: '16px', height: '16px', color: '#64748b' }} />
                     </div>
                   </Link>
-                  <Link to={createPageUrl('AdviserSOARequests')} style={{ textDecoration: 'none' }}>
-                    <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  {canBuildSOA ? (
+                    <Link to={createPageUrl('AdviserSOARequests')} style={{ textDecoration: 'none' }}>
+                      <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ fontSize: '20px' }}>📝</div>
+                          <div>
+                            <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>New SOA Request</div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Start a new advice document</div>
+                          </div>
+                        </div>
+                        <ArrowRight style={{ width: '16px', height: '16px', color: '#64748b' }} />
+                      </div>
+                    </Link>
+                  ) : (
+                    <div style={{ padding: '16px', background: '#f1f5f9', borderRadius: '12px', cursor: 'not-allowed', opacity: 0.6, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{ fontSize: '20px' }}>📝</div>
                         <div>
-                          <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>New SOA Request</div>
-                          <div style={{ fontSize: '12px', color: '#64748b' }}>Start a new advice document</div>
+                          <div style={{ fontWeight: '600', color: '#94a3b8', fontSize: '14px' }}>Build SOA</div>
+                          <div style={{ fontSize: '12px', color: '#94a3b8' }}>Purchase credits to build SOAs</div>
                         </div>
                       </div>
-                      <ArrowRight style={{ width: '16px', height: '16px', color: '#64748b' }} />
                     </div>
-                  </Link>
+                  )}
                   <Link to={createPageUrl('AdviserModels')} style={{ textDecoration: 'none' }}>
                     <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
