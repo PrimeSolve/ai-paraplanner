@@ -158,7 +158,7 @@ export const T = {
   scrollTable: { borderCollapse: "collapse", fontFamily: "'DM Sans', sans-serif" },
   // Outer wrapper
   wrap: { background: "var(--ps-surface)", borderRadius: 12, border: "1px solid var(--ps-border)", overflow: "hidden" },
-  scrollWrap: { background: "var(--ps-surface)", borderRadius: 12, border: "1px solid var(--ps-border)", overflow: "auto", maxHeight: "75vh" },
+  scrollWrap: { background: "var(--ps-surface)", borderRadius: 12, border: "1px solid var(--ps-border)", overflowX: "auto", overflowY: "visible" },
   // Header row
   headRow: { background: "var(--ps-surface-alt)" },
   // Header cell base
