@@ -44,7 +44,7 @@ const H1V = {
 const H2V = {
   cath: { bg: "rgba(79,70,229,0.06)", bl: "3px solid #4F46E5", color: "#4338CA", bb: "1px solid rgba(79,70,229,0.08)", dot: "#4F46E5" },
   paul: { bg: "rgba(8,145,178,0.06)", bl: "3px solid #0891B2", color: "#0369A1", bb: "1px solid rgba(8,145,178,0.08)", dot: "#0891B2" },
-  neu:  { bg: "#F8FAFC",              bl: "3px solid #94A3B8", color: "#475569", bb: "1px solid #F1F5F9",              dot: "#94A3B8" },
+  neu:  { bg: "var(--ps-surface-alt)", bl: "3px solid var(--ps-text-subtle)", color: "var(--ps-text-secondary)", bb: "1px solid var(--ps-border-light)", dot: "var(--ps-text-subtle)" },
   grn:  { bg: "rgba(5,150,105,0.05)", bl: "3px solid #059669", color: "#065F46", bb: "1px solid rgba(5,150,105,0.06)", dot: "#059669" },
 };
 
@@ -113,15 +113,15 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
 
   // Backward-compatible STYLE_MAP for standard data rows
   const STYLE_MAP = {
-    "header":         { bg: "#F1F5F9", color: "#1E293B",   weight: 600, indent: 0 },
-    "child":          { bg: "#FFFFFF", color: "#475569",   weight: 400, indent: 20 },
-    "child-negative": { bg: "#FFFFFF", color: "#DC2626",   weight: 400, indent: 20 },
-    "subtotal":       { bg: "#F1F5F9", color: "#334155",   weight: 600, indent: 0, isSub: true },
-    "total":          { bg: "#F1F5F9", color: "#1E293B",   weight: 700, indent: 0, borderTop: true, isSub: true },
+    "header":         { bg: "var(--ps-border-light)", color: "var(--ps-text-primary)",   weight: 600, indent: 0 },
+    "child":          { bg: "var(--ps-surface)", color: "var(--ps-text-secondary)",   weight: 400, indent: 20 },
+    "child-negative": { bg: "var(--ps-surface)", color: "var(--ps-red)",   weight: 400, indent: 20 },
+    "subtotal":       { bg: "var(--ps-border-light)", color: "var(--ps-text-body)",   weight: 600, indent: 0, isSub: true },
+    "total":          { bg: "var(--ps-border-light)", color: "var(--ps-text-primary)",   weight: 700, indent: 0, borderTop: true, isSub: true },
     "highlight":      { bg: "rgba(79,70,229,0.07)", color: "#3730A3", weight: 700, indent: 0, isHl: true },
     "current-value":  { bg: "rgba(37,99,235,0.08)", color: "#2563EB", weight: 700, indent: 0 },
-    "end-value":      { bg: "rgba(5,150,105,0.08)", color: "#059669", weight: 700, indent: 0 },
-    "subheader":      { bg: "#F8FAFC", color: "#475569",   weight: 600, indent: 0 },
+    "end-value":      { bg: "rgba(5,150,105,0.06)", color: "var(--ps-text-primary)", weight: 700, indent: 0 },
+    "subheader":      { bg: "var(--ps-surface-alt)", color: "var(--ps-text-secondary)",   weight: 600, indent: 0 },
   };
 
   // H4 bracket rule — entity bracket or neutral
@@ -141,23 +141,21 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
   function grandValColor(val) {
     if (val === null || val === undefined) return "#475569";
     if (val < 0) return "#FCA5A5";
-    if (val > 0) return "#6EE7B7";
-    return "#475569";
+    return "#F1F5F9";
   }
 
   // Value cell colour for hl rows
   function hlValColor(val) {
-    if (val === null || val === undefined) return "#E2E8F0";
-    if (val < 0) return "#DC2626";
+    if (val === null || val === undefined) return "var(--ps-border)";
+    if (val < 0) return "var(--ps-red)";
     return "#3730A3";
   }
 
   // Standard value cell colour
   function valColor(val, rowStyle) {
-    if (val === null || val === undefined) return "#E2E8F0";
-    if (val < 0 || rowStyle === "child-negative") return "#DC2626";
-    if (rowStyle === "end-value" && val > 0) return "#059669";
-    return "#334155";
+    if (val === null || val === undefined) return "var(--ps-border-input)";
+    if (val < 0 || rowStyle === "child-negative") return "var(--ps-red)";
+    return "var(--ps-text-body)";
   }
 
   // Render an hl (highlight) row
@@ -233,7 +231,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
               padding: "6px 12px", textAlign: "right",
               background: bracket.bg, borderTop: bracket.bt, borderBottom: bracket.bb,
               fontWeight: 700, fontSize: 12,
-              color: val !== null && val !== undefined ? bracket.color : "#E2E8F0",
+              color: val !== null && val !== undefined ? bracket.color : "var(--ps-border)",
             }}>{renderVal(val, format)}</td>
           ))}
         </tr>
@@ -244,18 +242,18 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
       <tr key={key}>
         <td style={{
           position: "sticky", left: 0, zIndex: 1,
-          background: "#F1F5F9", color: "#334155",
-          borderTop: "1px solid #E2E8F0",
+          background: "var(--ps-border-light)", color: "var(--ps-text-body)",
+          borderTop: "1px solid var(--ps-border)",
           padding: "6px 12px", fontWeight: 700, fontSize: 12,
           whiteSpace: "nowrap",
         }}>{row.label}</td>
         {row.values.map((val, vi) => (
           <td key={vi} style={{
             padding: "6px 12px", textAlign: "right",
-            background: "#F1F5F9",
-            borderTop: "1px solid #E2E8F0",
+            background: "var(--ps-border-light)",
+            borderTop: "1px solid var(--ps-border)",
             fontWeight: 700, fontSize: 12,
-            color: val !== null && val !== undefined ? "#334155" : "#E2E8F0",
+            color: val !== null && val !== undefined ? "var(--ps-text-body)" : "var(--ps-border)",
           }}>{renderVal(val, format)}</td>
         ))}
       </tr>
@@ -278,7 +276,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
           <tr>
             <th style={{
               position: "sticky", left: 0, zIndex: 2,
-              background: "#0F172A", padding: "13px 12px",
+              background: "var(--ps-text-strongest)", padding: "13px 12px",
               textAlign: "left", fontSize: 11, fontWeight: 800,
               color: "rgba(255,255,255,0.9)", textTransform: "uppercase",
               letterSpacing: "0.08em", width: 220,
@@ -287,7 +285,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
               <th key={i} style={{
                 padding: "13px 12px", textAlign: "right",
                 fontWeight: 700, color: "#FFF", fontSize: 13,
-                background: "#0F172A", width: 80, whiteSpace: "nowrap",
+                background: "var(--ps-text-strongest)", width: 80, whiteSpace: "nowrap",
               }}>{y}</th>
             ))}
           </tr>
@@ -301,7 +299,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                   <td colSpan={data.years.length + 1} style={{
                     padding: 0,
                     height: 20,
-                    background: "#FFFFFF",
+                    background: "var(--ps-surface)",
                     borderBottom: "none",
                   }}>
                     <div style={{
@@ -319,7 +317,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                 <tr key={section.id}>
                   <td colSpan={data.years.length + 1} style={{
                     padding: "6px 0",
-                    background: "#FFFFFF",
+                    background: "var(--ps-surface)",
                     borderBottom: "none",
                   }}>
                     <div style={{
@@ -331,14 +329,14 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                     }}>
                       <div style={{
                         width: 34, height: 34, borderRadius: 9,
-                        background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center",
+                        background: "var(--ps-surface)", display: "flex", alignItems: "center", justifyContent: "center",
                         fontSize: 16, border: `1px solid ${section.border || "var(--ps-ring-indigo)"}`,
                         boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                         flexShrink: 0,
                       }}>{section.icon || "📋"}</div>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>{section.title}</div>
-                        {section.subtitle && <div style={{ fontSize: 11, color: "#64748B", marginTop: 1 }}>{section.subtitle}</div>}
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ps-text-strongest)" }}>{section.title}</div>
+                        {section.subtitle && <div style={{ fontSize: 11, color: "var(--ps-text-muted)", marginTop: 1 }}>{section.subtitle}</div>}
                       </div>
                     </div>
                   </td>
@@ -357,9 +355,9 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                 const et = entityType(row.entity);
                 const isCath = et === "cath";
                 const isPaul = et === "paul";
-                const bgColor = isCath ? "rgba(79,70,229,0.07)" : isPaul ? "rgba(8,145,178,0.07)" : "#F8FAFC";
-                const textColor = isCath ? "#6366F1" : isPaul ? "#0891B2" : "#475569";
-                const blColor = isCath ? "#4F46E5" : isPaul ? "#0891B2" : "#94A3B8";
+                const bgColor = isCath ? "rgba(79,70,229,0.07)" : isPaul ? "rgba(8,145,178,0.07)" : "var(--ps-surface-alt)";
+                const textColor = isCath ? "#6366F1" : isPaul ? "#0891B2" : "var(--ps-text-secondary)";
+                const blColor = isCath ? "#4F46E5" : isPaul ? "#0891B2" : "var(--ps-text-subtle)";
                 return (
                   <tr key={`age-${section.id}-${ri}`}>
                     <td style={{
@@ -535,15 +533,15 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
               // ── Detail popup ──
               popupOpen === section.id && section.popupData && (
                 <tr key={`popup-${section.id}`}>
-                  <td colSpan={data.years.length + 1} style={{ padding: 0, background: "#FFFFFF" }}>
+                  <td colSpan={data.years.length + 1} style={{ padding: 0, background: "var(--ps-surface)" }}>
                     <div style={{
                       margin: "0 16px 12px", padding: "16px 20px",
-                      background: "#FAFBFC", borderRadius: 10,
-                      border: "1px solid #E2E8F0",
+                      background: "var(--ps-surface-alt)", borderRadius: 10,
+                      border: "1px solid var(--ps-border)",
                     }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                        <span style={{ fontWeight: 700, fontSize: 13, color: "#1E293B" }}>Assets & Liabilities Breakdown</span>
-                        <span onClick={() => setPopupOpen(null)} style={{ cursor: "pointer", color: "#94A3B8", fontSize: 16 }}>✕</span>
+                        <span style={{ fontWeight: 700, fontSize: 13, color: "var(--ps-text-primary)" }}>Assets & Liabilities Breakdown</span>
+                        <span onClick={() => setPopupOpen(null)} style={{ cursor: "pointer", color: "var(--ps-text-subtle)", fontSize: 16 }}>✕</span>
                       </div>
                       {section.popupData.assets.length > 0 && (
                         <div style={{ marginBottom: section.popupData.debts.length > 0 ? 12 : 0 }}>
@@ -551,10 +549,10 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                             <tbody>
                               {section.popupData.assets.map((a, i) => (
-                                <tr key={i} style={{ borderBottom: "1px solid #E2E8F0" }}>
-                                  <td style={{ padding: "6px 0", color: "#475569" }}>{a.name}</td>
+                                <tr key={i} style={{ borderBottom: "1px solid var(--ps-border)" }}>
+                                  <td style={{ padding: "6px 0", color: "var(--ps-text-secondary)" }}>{a.name}</td>
                                   {a.values.map((v, vi) => (
-                                    <td key={vi} style={{ padding: "6px 8px", textAlign: "right", color: "#334155", fontVariantNumeric: "tabular-nums", minWidth: 85 }}>
+                                    <td key={vi} style={{ padding: "6px 8px", textAlign: "right", color: "var(--ps-text-body)", fontVariantNumeric: "tabular-nums", minWidth: 85 }}>
                                       {v != null ? v.toLocaleString() : ""}
                                     </td>
                                   ))}
@@ -566,14 +564,14 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                       )}
                       {section.popupData.debts.length > 0 && (
                         <div>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "#DC2626", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Liabilities</div>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--ps-red)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Liabilities</div>
                           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                             <tbody>
                               {section.popupData.debts.map((d, i) => (
-                                <tr key={i} style={{ borderBottom: "1px solid #E2E8F0" }}>
-                                  <td style={{ padding: "6px 0", color: "#475569" }}>{d.name}</td>
+                                <tr key={i} style={{ borderBottom: "1px solid var(--ps-border)" }}>
+                                  <td style={{ padding: "6px 0", color: "var(--ps-text-secondary)" }}>{d.name}</td>
                                   {d.values.map((v, vi) => (
-                                    <td key={vi} style={{ padding: "6px 8px", textAlign: "right", color: "#DC2626", fontVariantNumeric: "tabular-nums", minWidth: 85 }}>
+                                    <td key={vi} style={{ padding: "6px 8px", textAlign: "right", color: "var(--ps-red)", fontVariantNumeric: "tabular-nums", minWidth: 85 }}>
                                       {v != null ? v.toLocaleString() : ""}
                                     </td>
                                   ))}
@@ -584,7 +582,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                         </div>
                       )}
                       {section.popupData.assets.length === 0 && section.popupData.debts.length === 0 && (
-                        <div style={{ color: "#94A3B8", fontSize: 13 }}>No assets or liabilities in this account</div>
+                        <div style={{ color: "var(--ps-text-subtle)", fontSize: 13 }}>No assets or liabilities in this account</div>
                       )}
                     </div>
                   </td>
@@ -632,7 +630,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                       <td key={vi} style={{
                         padding: "7px 12px", textAlign: "right",
                         fontWeight: 600, fontSize: 12,
-                        color: val !== null && val !== undefined ? subH2.color : "#E2E8F0",
+                        color: val !== null && val !== undefined ? subH2.color : "var(--ps-border)",
                         borderBottom: subH2.bb,
                         background: subH2.bg,
                       }}>
@@ -665,14 +663,14 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                     // H3 data row (spec §3 H3)
                     const isAlt = ri % 2 === 1;
                     rows.push(
-                      <tr key={`${sub.id}-${ri}`} style={{ background: isAlt ? "#FAFBFC" : "#FFFFFF" }}>
+                      <tr key={`${sub.id}-${ri}`} style={{ background: isAlt ? "var(--ps-surface-alt)" : "var(--ps-surface)" }}>
                         <td style={{
                           position: "sticky", left: 0, zIndex: 1,
                           padding: "5px 12px 5px 36px",
                           fontWeight: 400,
-                          color: "#475569",
-                          background: isAlt ? "#FAFBFC" : "#FFFFFF",
-                          borderBottom: "1px solid #F1F5F9",
+                          color: "var(--ps-text-secondary)",
+                          background: isAlt ? "var(--ps-surface-alt)" : "var(--ps-surface)",
+                          borderBottom: "1px solid var(--ps-border-light)",
                           whiteSpace: "nowrap",
                           fontSize: 12,
                         }}>
@@ -680,7 +678,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                             {hasBreakdown && (
                               <span
                                 onClick={(e) => { e.stopPropagation(); toggleSection(`bd-${sub.id}-${ri}`); }}
-                                style={{ cursor: "pointer", fontSize: 9, color: "#94A3B8", width: 12 }}
+                                style={{ cursor: "pointer", fontSize: 9, color: "var(--ps-text-subtle)", width: 12 }}
                               >{breakdownOpen ? "▾" : "▸"}</span>
                             )}
                             {row.label}
@@ -703,7 +701,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                         </td>
                         {row.editType === "freq-select" && onCellEdit
                           ? row.values.map((val, vi) => (
-                              <td key={vi} style={{ padding: "4px 8px", textAlign: "right", background: isAlt ? "#FAFBFC" : "#FFFFFF", borderBottom: "1px solid #F1F5F9" }}>
+                              <td key={vi} style={{ padding: "4px 8px", textAlign: "right", background: isAlt ? "var(--ps-surface-alt)" : "var(--ps-surface)", borderBottom: "1px solid var(--ps-border-light)" }}>
                                 {vi === 0 ? (
                                   <select
                                     value={row.currentFreq}
@@ -715,7 +713,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                                     ))}
                                   </select>
                                 ) : (
-                                  <span style={{ fontSize: 12, color: "#64748B" }}>{val}</span>
+                                  <span style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>{val}</span>
                                 )}
                               </td>
                             ))
@@ -725,10 +723,10 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                                 <td key={vi} style={{
                                   padding: "5px 12px", textAlign: "right",
                                   fontWeight: 400,
-                                  color: isNil ? "#E2E8F0" : valColor(val, row.style),
+                                  color: isNil ? "var(--ps-border-input)" : valColor(val, row.style),
                                   fontSize: isNil ? 11 : 12,
-                                  borderBottom: "1px solid #F1F5F9",
-                                  background: isAlt ? "#FAFBFC" : "#FFFFFF",
+                                  borderBottom: "1px solid var(--ps-border-light)",
+                                  background: isAlt ? "var(--ps-surface-alt)" : "var(--ps-surface)",
                                 }}>
                                   {isNil ? "–" : renderVal(val, row.format)}
                                 </td>
@@ -757,7 +755,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                                   style={{ cursor: "pointer", textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 3 }}
                                 >{b.name}</span>
                               ) : b.name}
-                              {b.isIO && <span style={{ marginLeft: 6, fontSize: 9, color: "#94A3B8", fontWeight: 500 }}>IO</span>}
+                              {b.isIO && <span style={{ marginLeft: 6, fontSize: 9, color: "var(--ps-text-subtle)", fontWeight: 500 }}>IO</span>}
                             </td>
                             {row.values.map((_, vi) => (
                               <td key={vi} style={{
@@ -799,8 +797,8 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                       fontWeight: s.weight,
                       color: s.color,
                       background: s.bg,
-                      borderBottom: "1px solid #F1F5F9",
-                      borderTop: s.borderTop ? "1px solid #E2E8F0" : undefined,
+                      borderBottom: "1px solid var(--ps-border-light)",
+                      borderTop: s.borderTop ? "1px solid var(--ps-border)" : undefined,
                       whiteSpace: "nowrap",
                       fontSize: 12,
                     }}>
@@ -808,7 +806,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                     </td>
                     {row.editType === "freq-select" && onCellEdit
                       ? row.values.map((val, vi) => (
-                          <td key={vi} style={{ padding: "4px 8px", textAlign: "right", background: s.bg, borderBottom: "1px solid #F1F5F9" }}>
+                          <td key={vi} style={{ padding: "4px 8px", textAlign: "right", background: s.bg, borderBottom: "1px solid var(--ps-border-light)" }}>
                             {vi === 0 ? (
                               <select
                                 value={row.currentFreq}
@@ -820,7 +818,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                                 ))}
                               </select>
                             ) : (
-                              <span style={{ fontSize: 12, color: "#64748B" }}>{val}</span>
+                              <span style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>{val}</span>
                             )}
                           </td>
                         ))
@@ -828,9 +826,9 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                           <td key={vi} style={{
                             padding: "6px 12px", textAlign: "right",
                             fontWeight: s.weight,
-                            color: val !== null && val !== undefined ? (val < 0 ? "#DC2626" : s.color) : "#E2E8F0",
-                            borderBottom: "1px solid #F1F5F9",
-                            borderTop: s.borderTop ? "1px solid #E2E8F0" : undefined,
+                            color: val !== null && val !== undefined ? (val < 0 ? "var(--ps-red)" : s.color) : "var(--ps-border)",
+                            borderBottom: "1px solid var(--ps-border-light)",
+                            borderTop: s.borderTop ? "1px solid var(--ps-border)" : undefined,
                             background: s.bg,
                             fontSize: (val === null || val === undefined) ? 11 : 12,
                           }}>
@@ -852,18 +850,18 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                     <tr key={groupKey} onClick={() => toggleSection(groupKey)} style={{ cursor: "pointer" }}>
                       <td colSpan={data.years.length + 1} style={{
                         position: "sticky", left: 0, zIndex: 1,
-                        background: "#F8FAFC",
-                        borderLeft: "3px solid #94A3B8",
-                        borderTop: "2px solid #E2E8F0",
+                        background: "var(--ps-surface-alt)",
+                        borderLeft: "3px solid var(--ps-text-subtle)",
+                        borderTop: "2px solid var(--ps-border)",
                         padding: "7px 14px 7px 20px", fontWeight: 600, fontSize: 11,
-                        color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em",
+                        color: "var(--ps-text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em",
                       }}>
                         <span style={{
                           display: "inline-block", width: 5, height: 5, borderRadius: "50%",
-                          background: "#94A3B8", marginRight: 8, verticalAlign: "middle",
+                          background: "var(--ps-text-subtle)", marginRight: 8, verticalAlign: "middle",
                         }} />
                         {row.label}
-                        <span style={{ marginLeft: 6, fontSize: 10, color: "#475569", opacity: 0.4 }}>
+                        <span style={{ marginLeft: 6, fontSize: 10, color: "var(--ps-text-secondary)", opacity: 0.4 }}>
                           {groupCollapsed ? "▸" : "▾"}
                         </span>
                       </td>
@@ -877,12 +875,12 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                     <tr key={`${section.id}-${ri}`}>
                       <td colSpan={data.years.length + 1} style={{
                         padding: "7px 14px 7px 20px", fontWeight: 600, fontSize: 11,
-                        background: "#F8FAFC", borderLeft: "3px solid #94A3B8",
-                        color: "#475569", borderBottom: "1px solid #F1F5F9",
+                        background: "var(--ps-surface-alt)", borderLeft: "3px solid var(--ps-text-subtle)",
+                        color: "var(--ps-text-secondary)", borderBottom: "1px solid var(--ps-border-light)",
                       }}>
                         <span style={{
                           display: "inline-block", width: 5, height: 5, borderRadius: "50%",
-                          background: "#94A3B8", marginRight: 8, verticalAlign: "middle",
+                          background: "var(--ps-text-subtle)", marginRight: 8, verticalAlign: "middle",
                         }} />
                         {row.label}
                       </td>
@@ -922,7 +920,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
 
                 // H3 data row (spec §3 H3)
                 const isAlt = ri % 2 === 1;
-                const rowBg = isAlt ? "#FAFBFC" : "#FFFFFF";
+                const rowBg = isAlt ? "var(--ps-surface-alt)" : "var(--ps-surface)";
                 // For current-value / end-value, use their specific bg
                 const finalBg = (row.style === "current-value" || row.style === "end-value") ? s.bg : rowBg;
 
@@ -934,8 +932,8 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                       fontWeight: s.weight,
                       color: s.color,
                       background: finalBg,
-                      borderBottom: "1px solid #F1F5F9",
-                      borderTop: s.borderTop ? "1px solid #E2E8F0" : undefined,
+                      borderBottom: "1px solid var(--ps-border-light)",
+                      borderTop: s.borderTop ? "1px solid var(--ps-border)" : undefined,
                       whiteSpace: "nowrap",
                       fontSize: 12,
                     }}>
@@ -943,7 +941,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                         {hasBreakdown && (
                           <span
                             onClick={(e) => { e.stopPropagation(); toggleSection(`bd-${section.id}-${ri}`); }}
-                            style={{ cursor: "pointer", fontSize: 9, color: "#94A3B8", width: 12 }}
+                            style={{ cursor: "pointer", fontSize: 9, color: "var(--ps-text-subtle)", width: 12 }}
                           >{breakdownOpen ? "▾" : "▸"}</span>
                         )}
                         {row.label}
@@ -981,8 +979,8 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                             style={{
                               fontSize: 11, fontWeight: 600, cursor: "pointer",
                               padding: "3px 10px", borderRadius: 6, marginLeft: 8,
-                              color: row.indexToggle.active ? "#FFFFFF" : "#64748B",
-                              background: row.indexToggle.active ? "#059669" : "#F1F5F9",
+                              color: row.indexToggle.active ? "var(--ps-surface)" : "var(--ps-text-muted)",
+                              background: row.indexToggle.active ? "#059669" : "var(--ps-border-light)",
                               border: `1px solid ${row.indexToggle.active ? "#059669" : "#CBD5E1"}`,
                               userSelect: "none",
                               display: "inline-block",
@@ -1015,12 +1013,12 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                     </td>
                     {(row.editType === "freq-select" || row.editType === "io-select") && onCellEdit
                       ? row.values.map((val, vi) => (
-                          <td key={vi} style={{ padding: "4px 6px", textAlign: "right", background: finalBg, borderBottom: "1px solid #F1F5F9" }}>
+                          <td key={vi} style={{ padding: "4px 6px", textAlign: "right", background: finalBg, borderBottom: "1px solid var(--ps-border-light)" }}>
                             {row.editType === "io-select" ? (
                               <select
                                 value={row.ioForYear[vi] ? "1" : "2"}
                                 onChange={e => onCellEdit(row.debtRef, e.target.value, "io", vi)}
-                                style={{ fontSize: 10, padding: "1px 4px", borderRadius: 4, border: row.ioYearOverrides[vi] !== undefined ? "1px solid #6366F1" : "1px solid #CBD5E1", background: row.ioYearOverrides[vi] !== undefined ? "#EEF2FF" : "#FFFFFF", color: row.ioYearOverrides[vi] !== undefined ? "#4338CA" : "#475569", cursor: "pointer", fontWeight: row.ioYearOverrides[vi] !== undefined ? 700 : 400 }}
+                                style={{ fontSize: 10, padding: "1px 4px", borderRadius: 4, border: row.ioYearOverrides[vi] !== undefined ? "1px solid #6366F1" : "1px solid var(--ps-border-mid)", background: row.ioYearOverrides[vi] !== undefined ? "#EEF2FF" : "var(--ps-surface)", color: row.ioYearOverrides[vi] !== undefined ? "#4338CA" : "var(--ps-text-secondary)", cursor: "pointer", fontWeight: row.ioYearOverrides[vi] !== undefined ? 700 : 400 }}
                               >
                                 {[{v:"2",l:"P & I"},{v:"1",l:"IO"}].map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
                               </select>
@@ -1043,10 +1041,10 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                             <td key={vi} style={{
                               padding: "5px 12px", textAlign: "right",
                               fontWeight: s.weight,
-                              color: isNil ? "#E2E8F0" : valColor(val, row.style),
+                              color: isNil ? "var(--ps-border-input)" : valColor(val, row.style),
                               fontSize: isNil ? 11 : 12,
-                              borderBottom: "1px solid #F1F5F9",
-                              borderTop: s.borderTop ? "1px solid #E2E8F0" : undefined,
+                              borderBottom: "1px solid var(--ps-border-light)",
+                              borderTop: s.borderTop ? "1px solid var(--ps-border)" : undefined,
                               background: finalBg,
                             }}>
                               {isNil ? "–" : renderVal(val, row.format)}
@@ -1077,7 +1075,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                               style={{ cursor: "pointer", textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 3 }}
                             >{b.name}</span>
                           ) : b.name}
-                          {b.isIO && <span style={{ marginLeft: 6, fontSize: 9, color: "#94A3B8", fontWeight: 500 }}>IO</span>}
+                          {b.isIO && <span style={{ marginLeft: 6, fontSize: 9, color: "var(--ps-text-subtle)", fontWeight: 500 }}>IO</span>}
                         </td>
                         {row.values.map((_, vi) => (
                           <td key={vi} style={{

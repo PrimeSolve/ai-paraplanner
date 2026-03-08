@@ -3074,7 +3074,7 @@ export function PotentialDeathTaxPage() {
       </div>
 
       {/* Data table */}
-      <div style={{ background: "var(--ps-surface)", borderRadius: 12, border: "1px solid var(--ps-border)", overflow: "auto", maxHeight: "75vh" }}>
+      <div style={{ background: "var(--ps-surface)", borderRadius: 12, border: "1px solid var(--ps-border)", overflowX: "auto", overflowY: "visible" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'DM Sans', sans-serif", minWidth: 900 }}>
           <thead>
             <tr style={{ background: "var(--ps-surface-alt)" }}>

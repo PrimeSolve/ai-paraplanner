@@ -4246,12 +4246,12 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
   const peakIdx = chartData.findIndex(d => d.netWorth === peakNW);
 
   const kpis = [
-    { label: "Net Worth Today",         value: fC(yr0.netWorth || 0),   sub: projYears?.[0] || "",              trend: ((chartData[Math.min(4,N-1)]?.netWorth||0)-(yr0.netWorth||0))>0?"up":"flat", trendVal: fC((chartData[Math.min(4,N-1)]?.netWorth||0)-(yr0.netWorth||0))+" over 5y", accent:"#6366F1", sparkKey:"netWorth" },
-    { label: "Net Worth at Retirement", value: fC(retYr.netWorth || 0), sub: projYears?.[bothRetIdx] || "",     trend: (retYr.netWorth||0)>(yr0.netWorth||0)?"up":"down",                           trendVal: `vs ${fC(yr0.netWorth||0)} today`,                                         accent:"#0891B2", sparkKey:"netWorth" },
-    { label: "Peak Net Worth",          value: fC(peakNW),              sub: `Yr ${peakIdx+1} · ${projYears?.[peakIdx]||""}`, trend:"up",                                                          trendVal: `+${fC(peakNW-(yr0.netWorth||0))} growth`,                                  accent:"#D97706", sparkKey:"netWorth" },
-    { label: "Super at Retirement",     value: fC(retYr.super || 0),    sub: `Today: ${fC(yr0.super||0)}`,     trend: (retYr.super||0)>(yr0.super||0)?"up":"down",                                 trendVal: `+${fC((retYr.super||0)-(yr0.super||0))}`,                                  accent:"#059669", sparkKey:"super"    },
-    { label: "Years to Retirement",     value: `${Math.max(c1RetYr||0,c2RetYr||0)} yrs`, sub: `${c1Name}: ${c1RetYr||0}y · ${c2Name}: ${c2RetYr||0}y`, trend:"neutral",                          trendVal: `Retire at ${c1RetAge} / ${c2RetAge}`,                                       accent:"#EC4899", sparkKey:null       },
-    { label: "Life Expectancy",         value: `${c1LE||85} / ${c2LE||85}`,              sub: `${c1Name} / ${c2Name}`, trend:"neutral",                                                           trendVal: `Horizon: ${Math.max(c1LEIdx,c2LEIdx)} years`,                               accent:"#7C3AED", sparkKey:null       },
+    { label: "Net Worth Today",         value: fC(yr0.netWorth || 0),   sub: projYears?.[0] || "",              trend: ((chartData[Math.min(4,N-1)]?.netWorth||0)-(yr0.netWorth||0))>0?"up":"flat", trendVal: fC((chartData[Math.min(4,N-1)]?.netWorth||0)-(yr0.netWorth||0))+" over 5y", accent:"#4F46E5", sparkKey:"netWorth" },
+    { label: "Net Worth at Retirement", value: fC(retYr.netWorth || 0), sub: projYears?.[bothRetIdx] || "",     trend: (retYr.netWorth||0)>(yr0.netWorth||0)?"up":"down",                           trendVal: `vs ${fC(yr0.netWorth||0)} today`,                                         accent:"#7C3AED", sparkKey:"netWorth" },
+    { label: "Peak Net Worth",          value: fC(peakNW),              sub: `Yr ${peakIdx+1} · ${projYears?.[peakIdx]||""}`, trend:"up",                                                          trendVal: `+${fC(peakNW-(yr0.netWorth||0))} growth`,                                  accent:"#059669", sparkKey:"netWorth" },
+    { label: "Super at Retirement",     value: fC(retYr.super || 0),    sub: `Today: ${fC(yr0.super||0)}`,     trend: (retYr.super||0)>(yr0.super||0)?"up":"down",                                 trendVal: `+${fC((retYr.super||0)-(yr0.super||0))}`,                                  accent:"#0891B2", sparkKey:"super"    },
+    { label: "Years to Retirement",     value: `${Math.max(c1RetYr||0,c2RetYr||0)} yrs`, sub: `${c1Name}: ${c1RetYr||0}y · ${c2Name}: ${c2RetYr||0}y`, trend:"neutral",                          trendVal: `Retire at ${c1RetAge} / ${c2RetAge}`,                                       accent:"#D97706", sparkKey:null       },
+    { label: "Life Expectancy",         value: `${c1LE||85} / ${c2LE||85}`,              sub: `${c1Name} / ${c2Name}`, trend:"neutral",                                                           trendVal: `Horizon: ${Math.max(c1LEIdx,c2LEIdx)} years`,                               accent:"#64748B", sparkKey:null       },
   ];
 
   const capitalSeries = [
@@ -4361,7 +4361,8 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
 
   const TrendArrow = ({ trend, val }) => {
     if (trend === "neutral") return <span style={{ color:"var(--ps-text-subtle)", fontSize:10 }}>{val}</span>;
-    return <span style={{ display:"flex", alignItems:"center", gap:3, fontSize:10 }}><span style={{ color:trend==="up"?"var(--ps-green)":"var(--ps-red)", fontWeight:700 }}>{trend==="up"?"▲":"▼"}</span><span style={{ color:"var(--ps-text-muted)" }}>{val}</span></span>;
+    const isUp = trend === "up";
+    return <span style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:10, fontWeight:600, color:isUp?"#059669":"#DC2626", background:isUp?"rgba(5,150,105,0.08)":"rgba(220,38,38,0.08)", border:isUp?"1px solid rgba(5,150,105,0.15)":"1px solid rgba(220,38,38,0.15)", borderRadius:4, padding:"1px 6px", marginTop:4 }}><span>{isUp?"▲":"▼"}</span><span>{val}</span></span>;
   };
 
   const LegendPill = ({ sk, isHidden, onClick }) => {
@@ -4439,19 +4440,13 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
         {!collapsed && (
           <>
             {/* KPI Cards */}
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(6, 1fr)", borderBottom:"1px solid var(--ps-border-light)" }}>
+            <div style={{ display:"flex", gap:12, marginBottom:24, flexWrap:"wrap", padding:"16px 20px" }}>
               {kpis.map((k, i) => (
-                <div key={i} style={{ padding:"16px 18px", borderRight:i<5?"1px solid var(--ps-border-light)":"none", position:"relative" }}>
-                  <div style={{ position:"absolute", left:0, top:16, bottom:16, width:3, borderRadius:"0 2px 2px 0", background:k.accent, opacity:0.7 }} />
-                  <div style={{ paddingLeft:8 }}>
-                    <div style={{ color:"var(--ps-text-muted)", fontSize:10, fontWeight:600, marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>{k.label}</div>
-                    <div style={{ fontWeight:800, fontSize:18, color:"var(--ps-text-strongest)", letterSpacing:"-0.02em", marginBottom:4 }}>{k.value}</div>
-                    <div style={{ color:"var(--ps-text-subtle)", fontSize:10, marginBottom:6 }}>{k.sub}</div>
-                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                      <TrendArrow trend={k.trend} val={k.trendVal} />
-                      <Sparkline dataKey={k.sparkKey} />
-                    </div>
-                  </div>
+                <div key={i} style={{ background:"var(--ps-surface)", border:"1px solid var(--ps-border)", borderRadius:10, padding:"16px 20px", borderLeft:`3px solid ${k.accent}`, display:"flex", flexDirection:"column", gap:4, flex:1, minWidth:160 }}>
+                  <div style={{ fontSize:11, fontWeight:600, color:"var(--ps-text-muted)", textTransform:"uppercase", letterSpacing:"0.06em" }}>{k.label}</div>
+                  <div style={{ fontSize:22, fontWeight:800, color:"var(--ps-text-strongest)", letterSpacing:"-0.02em" }}>{k.value}</div>
+                  <div style={{ fontSize:10, color:"var(--ps-text-subtle)", marginTop:2 }}>{k.sub}</div>
+                  <TrendArrow trend={k.trend} val={k.trendVal} />
                 </div>
               ))}
             </div>
