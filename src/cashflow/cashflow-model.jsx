@@ -2222,7 +2222,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
       )}
 
       {/* Content area — flex row with optional co-pilot */}
-      <div style={{ display: "flex", minHeight: 0 }}>
+      <div style={{ display: "flex" }}>
       <div style={{ flex: assistantOpen ? "0 0 70%" : "0 0 100%", overflowX: "auto", transition: "flex 0.2s ease" }}>
       <div style={{ padding: "16px 32px" }}>
         {/* Breadcrumb + Edit on same row */}
