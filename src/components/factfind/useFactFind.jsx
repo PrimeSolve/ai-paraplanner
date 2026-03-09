@@ -127,7 +127,7 @@ export function useFactFind() {
         is_deleted: _idl,
         deleted_date: _dd,
         environment: _env,
-        client_id: _staleClientId,
+        client1_id: _staleClientId,
         ...cleanData
       } = currentData;
 
@@ -145,7 +145,7 @@ export function useFactFind() {
       const payload = {
         ...cleanData,
         ...mapped,
-        client_id: clientIdRef.current || _staleClientId,
+        client1_id: clientIdRef.current || _staleClientId,
       };
 
       await base44.entities.FactFind.update(current.id, payload);
