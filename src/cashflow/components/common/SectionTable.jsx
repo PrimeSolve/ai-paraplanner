@@ -276,16 +276,16 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
           <tr>
             <th style={{
               position: "sticky", left: 0, zIndex: 2,
-              background: "var(--ps-text-strongest)", padding: "13px 12px",
+              background: "var(--ps-thead-bg)", padding: "13px 12px",
               textAlign: "left", fontSize: 11, fontWeight: 800,
-              color: "rgba(255,255,255,0.9)", textTransform: "uppercase",
+              color: "var(--ps-thead-text)", textTransform: "uppercase",
               letterSpacing: "0.08em", width: 220,
             }}>Year</th>
             {data.years.map((y, i) => (
               <th key={i} style={{
                 padding: "13px 12px", textAlign: "right",
-                fontWeight: 700, color: "#FFF", fontSize: 13,
-                background: "var(--ps-text-strongest)", width: 80, whiteSpace: "nowrap",
+                fontWeight: 700, color: "var(--ps-thead-text)", fontSize: 13,
+                background: "var(--ps-thead-bg)", width: 80, whiteSpace: "nowrap",
               }}>{y}</th>
             ))}
           </tr>

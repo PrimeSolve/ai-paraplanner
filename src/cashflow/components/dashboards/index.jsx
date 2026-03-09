@@ -2014,7 +2014,7 @@ export function BenefitOfAdviceDashboard() {
   // Chart helpers
   const formatYAxis = (val) => val === 0 ? "0" : val >= 1000000 ? `$${(val/1e6).toFixed(1)}m` : val >= 1000 ? `$${Math.round(val/1000)}k` : `$${val}`;
   const formatTooltip = (val) => `$${Math.abs(val).toLocaleString("en-AU")}`;
-  const ttStyle = { background: "var(--ps-text-strongest)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "var(--ps-tile-dark-text)" };
+  const ttStyle = { background: "var(--ps-thead-bg)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#F1F5F9" };
 
   const rankLabel = (rank) => rank === 1 ? "1st 🥇" : rank === 2 ? "2nd" : `${rank}th`;
 
@@ -4275,7 +4275,7 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
   ];
 
   const capitalSeries = [
-    { key:"netWorth",    label:"Net Worth",   color:"#000000", type:"line" },
+    { key:"netWorth",    label:"Net Worth",   color:"var(--ps-text-strongest)", type:"line" },
     { key:"super",       label:"Super",       color:"#6366F1", type:"bar"  },
     { key:"property",    label:"Property",    color:"#0891B2", type:"bar"  },
     { key:"investments", label:"Investments", color:"#059669", type:"bar"  },
@@ -4345,7 +4345,7 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
             <span style={{ display:"flex", alignItems:"center", gap:6, color:"var(--ps-text-secondary)" }}>
               <span style={{ width:8, height:8, borderRadius:2, background:color, display:"inline-block", flexShrink:0 }} />{lbl}
             </span>
-            <span style={{ fontWeight:600, color: d[key]<0?"#EF4444":"var(--ps-text-primary)" }}>{fC(Math.abs(d[key]))}</span>
+            <span style={{ fontWeight:600, color: d[key]<0?"var(--ps-red)":"var(--ps-text-primary)" }}>{fC(Math.abs(d[key]))}</span>
           </div>
         ))}
         {ms.length > 0 && <div style={{ marginTop:8, paddingTop:8, borderTop:"1px solid var(--ps-border-light)" }}>{ms.map(m => <div key={m.label} style={{ fontSize:11, color:m.color, fontWeight:600 }}>◆ {m.label}</div>)}</div>}
@@ -4402,7 +4402,7 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
   const TrendArrow = ({ trend, val }) => {
     if (trend === "neutral") return <span style={{ color:"var(--ps-text-subtle)", fontSize:10 }}>{val}</span>;
     const isUp = trend === "up";
-    return <span style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:10, fontWeight:600, color:isUp?"#059669":"#DC2626", background:isUp?"rgba(5,150,105,0.08)":"rgba(220,38,38,0.08)", border:isUp?"1px solid rgba(5,150,105,0.15)":"1px solid rgba(220,38,38,0.15)", borderRadius:4, padding:"1px 6px", marginTop:4 }}><span>{isUp?"▲":"▼"}</span><span>{val}</span></span>;
+    return <span style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:10, fontWeight:600, color:isUp?"var(--ps-green)":"var(--ps-red)", background:isUp?"rgba(5,150,105,0.08)":"rgba(220,38,38,0.08)", border:isUp?"1px solid rgba(5,150,105,0.15)":"1px solid rgba(220,38,38,0.15)", borderRadius:4, padding:"1px 6px", marginTop:4 }}><span>{isUp?"▲":"▼"}</span><span>{val}</span></span>;
   };
 
   const LegendPill = ({ sk, isHidden, onClick }) => {
@@ -4544,7 +4544,7 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
                               if (d.surplus == null) return null;
                               const x = xAxis.x + i * bandWidth;
                               const y = yAxis.scale(d.surplus);
-                              return <line key={i} x1={x} y1={y} x2={x + bandWidth} y2={y} stroke="#000" strokeWidth={2.5} />;
+                              return <line key={i} x1={x} y1={y} x2={x + bandWidth} y2={y} stroke="var(--ps-text-strongest)" strokeWidth={2.5} />;
                             })}
                           </g>
                         );
@@ -4687,7 +4687,7 @@ export function MilestonesDashboard({ dynamicMilestones }) {
                     <div style={{
                       position: "absolute",
                       [isAbove ? "bottom" : "top"]: "110%",
-                      background: "var(--ps-text-primary)", color: "var(--ps-surface)", padding: "8px 12px",
+                      background: "var(--ps-thead-bg)", color: "#F1F5F9", padding: "8px 12px",
                       borderRadius: 8, fontSize: 11, whiteSpace: "nowrap",
                       boxShadow: "0 4px 12px rgba(0,0,0,0.2)", zIndex: 20,
                     }}>
