@@ -4224,6 +4224,7 @@ const LIFE_GOALS = [
 
 
 export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projYears }) {
+  const [view, setView]           = React.useState("cashflow");
   const [hidden, setHidden]       = React.useState({});
   const [hiddenMS, setHiddenMS]   = React.useState({});
 
@@ -4291,7 +4292,27 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
     { key:"surplus",       label:"Net Cashflow",      color:"#10B981", type:"line"    },
   ];
 
-  const activeSeries = cashflowSeries;
+  const activeSeries = view === "capital" ? capitalSeries : cashflowSeries;
+
+  const ViewToggle = () => (
+    <div onClick={e => e.stopPropagation()} style={{
+      display: "flex", background: "var(--ps-border-light)",
+      borderRadius: 8, padding: 3, gap: 2,
+    }}>
+      {[{ id: "cashflow", label: "Cashflow" }, { id: "capital", label: "Capital" }].map(v => (
+        <button key={v.id} onClick={() => { setView(v.id); setHidden({}); }}
+          style={{
+            padding: "5px 14px", borderRadius: 6, border: "none", cursor: "pointer",
+            fontSize: 12, fontWeight: 600, transition: "all 0.15s ease",
+            background: view === v.id ? "var(--ps-surface)" : "transparent",
+            color: view === v.id ? "var(--ps-text-primary)" : "var(--ps-text-subtle)",
+            boxShadow: view === v.id ? "0 1px 4px var(--ps-shadow-md)" : "none",
+          }}>
+          {v.label}
+        </button>
+      ))}
+    </div>
+  );
 
   // Sparkline
   const Sparkline = ({ dataKey }) => {
@@ -4427,6 +4448,9 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
             <span style={{ fontWeight:700, fontSize:15, color:"var(--ps-text-primary)", letterSpacing:"-0.01em" }}>Financial Overview</span>
             <span style={{ background:"var(--ps-surface-alt)", border:"1px solid var(--ps-border)", color:"var(--ps-text-muted)", fontSize:10, padding:"2px 9px", borderRadius:20, fontWeight:500 }}>{fyRange}</span>
           </div>
+          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+            <ViewToggle />
+          </div>
         </div>
 
             {/* KPI Cards */}
@@ -4446,7 +4470,7 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
               <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:16 }}>
                 <div>
                   <div style={{ fontWeight:600, fontSize:13, color:"var(--ps-text-primary)", marginBottom:8 }}>
-                    Household Income, Expenses & Net Cashflow
+                    {view === "capital" ? "Net Worth, Super & Asset Classes" : "Household Income, Expenses & Net Cashflow"}
                   </div>
                   <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                     {activeSeries.map(sk => (
@@ -4461,6 +4485,25 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
                 </div>
               </div>
 
+              {view === "capital" ? (
+              <ResponsiveContainer width="100%" height={320}>
+                <ComposedChart data={chartData} margin={{ top:24, right:24, bottom:8, left:8 }} barCategoryGap={0}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--ps-border-light)" vertical={false} />
+                  <XAxis dataKey="year" tick={{ fontSize:10, fill:"var(--ps-text-subtle)" }} tickFormatter={v => v?String(v).slice(0,7):v} interval={1} angle={-35} textAnchor="end" height={44} axisLine={{ stroke:"var(--ps-border)" }} tickLine={false} />
+                  <YAxis tickFormatter={v => v===0?"0":fC(v)} tick={{ fontSize:10, fill:"var(--ps-text-subtle)" }} width={72} axisLine={false} tickLine={false} />
+                  <Tooltip content={<CapitalTooltip />} cursor={{ stroke:"var(--ps-border)", strokeWidth:1 }} />
+                  <ReferenceLine y={0} stroke="var(--ps-text-subtle)" strokeWidth={1} />
+                  <Bar dataKey="super"       stackId="cap" fill="#6366F1" fillOpacity={0.6} hide={!!hidden.super}       radius={[0,0,0,0]} />
+                  <Bar dataKey="property"    stackId="cap" fill="#0891B2" fillOpacity={0.6} hide={!!hidden.property}    radius={[0,0,0,0]} />
+                  <Bar dataKey="investments" stackId="cap" fill="#059669" fillOpacity={0.6} hide={!!hidden.investments} radius={[0,0,0,0]} />
+                  <Bar dataKey="lifestyle"   stackId="cap" fill="#7C3AED" fillOpacity={0.6} hide={!!hidden.lifestyle}   radius={[0,0,0,0]} />
+                  <Bar dataKey="debt"        stackId="cap" fill="var(--ps-red)" fillOpacity={0.6} hide={!!hidden.debt}  radius={[0,0,0,0]} />
+                  {!hidden.netWorth && <Line dataKey="netWorth" type="monotone" stroke="#000000" strokeWidth={2.5} dot={false} />}
+                  {visibleMilestones.map(m => <ReferenceLine key={m.label} x={chartData[m.idx]?.year} stroke={m.color} strokeDasharray={m.dash} strokeWidth={1.5} label={<MilestoneLabel label={m.shortLabel} color={m.color} />} />)}
+                  <ReferenceLine x={chartData[0]?.year} stroke="var(--ps-border-mid)" strokeWidth={1} strokeDasharray="2 3" label={<MilestoneLabel label="Now" color="var(--ps-text-subtle)" />} />
+                </ComposedChart>
+              </ResponsiveContainer>
+              ) : (
               <ResponsiveContainer width="100%" height={320}>
                   <ComposedChart data={cfData} margin={{ top:24, right:24, bottom:8, left:8 }} barCategoryGap={0}>
                     <defs>
@@ -4513,6 +4556,7 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
                     <ReferenceLine x={(cashflowData||[])[0]?.year} stroke="var(--ps-border-mid)" strokeWidth={1} strokeDasharray="2 3" label={<MilestoneLabel label="Now" color="var(--ps-text-subtle)" />} />
                   </ComposedChart>
               </ResponsiveContainer>
+              )}
             </div>
       </div>
     </div>
