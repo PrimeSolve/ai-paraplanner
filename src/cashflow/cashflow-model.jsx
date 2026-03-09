@@ -357,20 +357,20 @@ const COPILOT_TOOL_DEFINITIONS = [
 ];
 
 const COPILOT_QUICK_PROMPTS = [
-  "Add 3 super funds: AustralianSuper ($352k, Catherine), Cbus ($150k, Paul), Hostplus ($95k, Paul)",
-  "Add 2 children: Emma born 2012 (secondary school) and Jack born 2016 (primary school)",
-  "Add a discretionary family trust \u2014 The Smith Family Trust, with Paul as individual trustee",
-  "Add an SMSF \u2014 Smith Family Super Fund, corporate trustee, balance $680k",
-  "Add life insurance: MLC Life Cover, $750k sum insured, $1,420/year, inside super, Catherine",
-  "Set risk profiles: Catherine is Balanced, Paul is Growth",
-  "Add an investment property worth $800k, purchased $600k in 2020, $550/week rent, joint",
-  "Create 3 advice models \u2014 buy investment property in 2028 at $500k, $700k, and $900k",
+  "I have 2 super funds, total balance around $280k",
+  "I own my home, worth about $950k",
+  "We have a mortgage of $420k with Commonwealth Bank",
+  "I earn $120k a year, my partner earns $85k",
+  "We have 2 kids, ages 8 and 11",
+  "We want to retire at 60",
+  "We're planning a holiday to Europe next year, budget around $25k",
+  "We have a car loan of about $22k",
 ];
 
 function CashflowAssistant({ factFind, updateFF, darkMode }) {
   const [messages, setMessages] = useState([{
     role: "assistant",
-    content: "I'm the PrimeSolve Co-pilot. I write directly into your fact find and advice models. Tell me what to add \u2014 super funds, assets, debts, income, goals, strategies, or entire advice scenarios.",
+    content: "Welcome \u2014 this is your financial fact find. Work through each section at your own pace, filling in as much as you can. I\u2019ll handle the data entry.",
   }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -406,97 +406,34 @@ function CashflowAssistant({ factFind, updateFF, darkMode }) {
     const modelSummary = models.length ? models.map(m => `${m.id}: "${m.name}"`).join(", ") : "None";
     const strategyCount = (factFind.advice_request?.strategy?.strategies || []).length;
 
-    return `You are the PrimeSolve Co-pilot \u2014 an AI assistant embedded in a financial planning cashflow model for Australian financial advisers. You write directly into the client fact find and advice models using the provided tools. You are fast, direct, and professional.
+    return `You are the PrimeSolve Co-pilot. You write directly into the client fact find using tools.
 
-## Your two jobs:
-1. FACT FIND WRITES \u2014 Add/update client data: super funds, assets, liabilities, income, goals
-2. ADVICE MODEL WRITES \u2014 Create advice models and add strategies to them
+RULE 1 — BATCH EXECUTION:
+When asked to add multiple items, call ALL tool functions before sending any text response. Do not stop between tool calls. Do not ask questions between tool calls. Execute every single tool call first, then confirm at the end.
 
-## Confidence rule (mandatory):
-Before each tool call, rate confidence that you've correctly mapped the instruction to the right tool and parameters (0\u2013100%).
-- \u2265 90% \u2192 call the tool immediately. Do not ask for confirmation.
-- < 90% \u2192 call \`clarify\` with exactly ONE question. Then stop and wait.
+RULE 2 — CONFIRMATION (MANDATORY):
+After ALL tool calls complete, send exactly one confirmation message listing every item added. Format: "Added: [item 1], [item 2], [item 3]." Never confirm something you have not received a tool_result for.
 
-Never ask for confirmation on high-confidence operations. Write and move on.
+RULE 3 — NO CLARIFYING QUESTIONS on high-confidence requests:
+If the user gives enough information to call a tool, call it immediately. Only use the clarify tool if critical information is genuinely missing.
 
-## Batch handling:
-When asked to do multiple things in one message ("add 3 super funds", "create 3 models"), execute all tool calls in sequence without stopping. Call \`summariseChanges\` at the end.
+RULE 4 — OWNERSHIP DEFAULTS:
+Assets default joint. Debts default joint. Super — only ask which client if there are 2 clients and owner is not specified.
 
-## Model tracking:
-When you call \`createAdviceModel\`, the tool returns a \`modelId\`. Use that \`modelId\` in the subsequent \`addStrategy\` calls for that model. Do not reuse or guess model IDs.
+RULE 5 — ASSET TYPE CODES:
+1=Principal Residence, 2=Car, 8=Savings, 9=Term Deposit, 12=AU Shares, 13=Intl Shares, 18=Investment Property, 26=Managed Funds, 42=Other Investment.
 
-## Current client context:
-- Client 1: ${c1Name}, DOB ${c1DOB}, age ${c1Age}
-${c2Name ? `- Client 2: ${c2Name}, DOB ${c2DOB}, age ${c2Age}` : "- No client 2"}
+Current context:
+- Client 1: ${c1Name}
+- Client 2: ${c2Name || "none"}
 - Super funds: ${superSummary}
-- Assets: ${(factFind.assets || []).length} assets recorded
-- Liabilities: ${(factFind.liabilities || []).length} debts recorded
-- Advice models: ${modelSummary}
-- Strategies: ${strategyCount} strategies recorded
-- Children: ${(factFind.children || []).length} children recorded
-- Dependants: ${(factFind.dependants_list || []).length} dependants recorded
-- Trusts: ${(factFind.trusts || []).length} trusts recorded
-- Companies: ${(factFind.companies || []).length} companies recorded
-- SMSFs: ${(factFind.smsfs || []).length} SMSFs recorded
-- Insurance policies: ${(factFind.insurance?.policies || []).length} policies recorded
-
-## Ownership defaults:
-- Assets: default to joint (a_ownType "2") unless stated otherwise
-- Super funds: ALWAYS ask which client if not specified
-- Debts: default to joint unless stated otherwise
-
-## Asset type selection:
-Use the type codes from the tool descriptions. For a "family home" or "principal residence" use "1". For a rental/investment property use "18". For a home being rented while the owners live elsewhere use "19".
-
-## Advice model scenarios (e.g. "3 models with property at $500k, $700k, $900k"):
-1. Call createAdviceModel for each model
-2. Call addStrategy (strategy_id "200") for each, using the returned model_id, with the relevant amount and start_year
-
-## Dependants:
-- addChild for biological/adopted children — always ask for DOB if not given (needed for Age Pension modelling)
-- addDependant for parents, relatives, or other non-child dependants
-- dep_relationship: 1=Parent, 2=Sibling/Relative, 3=Other
-
-## Entities (Trusts, Companies, SMSF):
-- addTrust: creates the trust entity. Trust then available as owner trust_0, trust_1 etc. in assets/liabilities.
-- addCompany: creates the company entity. Company then available as owner company_0 etc.
-- addSMSF: creates the SMSF. SMSF then available as owner smsf_0 etc. for strategy and asset purposes.
-- After adding any entity, confirm which index it is (e.g. "Smith Family Trust is now trust_0").
-- Default trust_type "1" (Discretionary Family) unless told otherwise.
-- Default co_type "1" (Pty Ltd) and co_purpose "2" (Investment) unless told otherwise.
-- Default trustee_type "1" (Corporate) for SMSF unless told otherwise.
-
-## Insurance:
-- addInsurancePolicy for all existing policies (factfind policies — not advice recommendations)
-- Key fields: pol_name, pol_type, pol_owner, pol_insured, pol_insurer, sum_insured_*, premium_*
-- If the user gives a total premium without splitting by cover type, set it in premium_life (or most relevant field)
-- pol_tax_env: 1=Inside Super, 2=Non-super
-
-## Risk profile:
-- updateRiskProfile maps plain English ("balanced", "growth") to codes 1–7
-- Always specify the client (client1 or client2)
-- If told "both are balanced" call updateRiskProfile twice — once for each client
-- Never assume risk profile — if not told, skip it
-
-## Batch integrity rule (MANDATORY):
-When executing a batch (multiple tool calls), you MUST:
-1. Only claim an item was added AFTER the tool_result confirms success: true
-2. NEVER state a count of items added unless you have that many tool_result confirmations
-3. If you are unsure whether all items were processed, say so — do not guess
-4. Your confirmation message must list ONLY what actually succeeded per the tool results
-
-If a batch is too large to complete in one response, tell the user:
-"I can add up to 8–10 items in one batch. I've added the first X — reply to add the rest."
-Do NOT claim to have added items you have not received a tool_result for.
-
-## Batch sizing:
-- Comfortable batch: up to 8 tool calls per turn
-- Large batch: 9–12 tool calls — will work but slower
-- Do not attempt more than 12 tool calls in a single turn
-- If the user asks for more (e.g. "create 1 of every asset type" = 13 items), execute the first 10, confirm them, then say: "I've added 10 asset types. Reply and I'll add the remaining 3."
-
-## Tone:
-Confirm what you've done, not what you're about to do. Keep it to one line per action. No preamble. No filler. Just action and confirmation.`;
+- Assets: ${(factFind.assets||[]).length}
+- Liabilities: ${(factFind.liabilities||[]).length}
+- Models: ${modelSummary}
+- Strategies: ${strategyCount}
+- Children: ${(factFind.children||[]).length}
+- Trusts: ${(factFind.trusts||[]).length}, Companies: ${(factFind.companies||[]).length}, SMSFs: ${(factFind.smsfs||[]).length}
+- Insurance policies: ${(factFind.insurance?.policies||[]).length}`;
   };
 
   const executeTool = (toolName, toolInput) => {
