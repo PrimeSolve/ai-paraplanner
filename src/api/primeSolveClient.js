@@ -182,10 +182,16 @@ function createEntityProxy(endpoint, options = {}) {
 
     /**
      * Update an entity by ID.
+     * Fetches the current record first and merges, because the API's PUT
+     * does a full replace — sending partial data would wipe missing fields.
      */
     async update(id, data) {
       const apiData = snakeToCamelKeys(data);
-      const response = await axiosInstance.put(`/${endpoint}/${id}`, apiData);
+      // Fetch current record so we can merge (PUT = full replace)
+      const current = await axiosInstance.get(`/${endpoint}/${id}`);
+      const { id: _id, ...currentFields } = current.data;
+      const merged = { ...currentFields, ...apiData };
+      const response = await axiosInstance.put(`/${endpoint}/${id}`, merged);
       return camelToSnakeKeys(response.data);
     },
 
