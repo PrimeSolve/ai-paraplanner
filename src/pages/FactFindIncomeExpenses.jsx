@@ -20,6 +20,8 @@ export default function FactFindIncomeExpenses() {
   const [activePerson, setActivePerson] = useState('c1');
 
 
+  const hasUserEdited = useRef(false);
+
   const [clientFields, setClientFields] = useState({});
   const [partnerFields, setPartnerFields] = useState({});
   const [expenseFields, setExpenseFields] = useState({});
@@ -107,7 +109,7 @@ export default function FactFindIncomeExpenses() {
   }, [factFind?.id]);
 
   useEffect(() => {
-    if (!factFind?.id || !dataLoaded) return;
+    if (!factFind?.id || !dataLoaded || !hasUserEdited.current) return;
     const timeoutId = setTimeout(async () => {
       try {
         await updateSection('income_expenses', buildIncomeExpensesPayloadRef.current());
@@ -119,14 +121,17 @@ export default function FactFindIncomeExpenses() {
   }, [factFind?.id, dataLoaded, clientFields, partnerFields, expenseFields, clientAdjustments, partnerAdjustments, expenseAdjustments, updateSection]);
 
   const updateClientField = useCallback((field, value) => {
+    hasUserEdited.current = true;
     setClientFields(prev => ({ ...prev, [field]: value }));
   }, []);
 
   const updatePartnerField = useCallback((field, value) => {
+    hasUserEdited.current = true;
     setPartnerFields(prev => ({ ...prev, [field]: value }));
   }, []);
 
   const updateExpenseField = useCallback((field, value) => {
+    hasUserEdited.current = true;
     setExpenseFields(prev => ({ ...prev, [field]: value }));
   }, []);
 
@@ -137,6 +142,7 @@ export default function FactFindIncomeExpenses() {
 
   const saveIncomeAdjustment = () => {
     if (!editingIncomeAdj) return;
+    hasUserEdited.current = true;
 
     if (activePerson === 'c1') {
       if (editingIncomeAdj.index !== undefined) {
@@ -160,6 +166,7 @@ export default function FactFindIncomeExpenses() {
   };
 
   const deleteIncomeAdjustmentAt = (index) => {
+    hasUserEdited.current = true;
     if (activePerson === 'c1') {
       setClientAdjustments(prev => prev.filter((_, i) => i !== index));
     } else {
@@ -174,6 +181,7 @@ export default function FactFindIncomeExpenses() {
 
   const saveExpenseAdjustment = () => {
     if (!editingExpenseAdj) return;
+    hasUserEdited.current = true;
 
     if (editingExpenseAdj.index !== undefined) {
       setExpenseAdjustments(prev => prev.map((adj, i) => i === editingExpenseAdj.index ? { ...editingExpenseAdj } : adj));
@@ -188,6 +196,7 @@ export default function FactFindIncomeExpenses() {
   };
 
   const deleteExpenseAdjustmentAt = (index) => {
+    hasUserEdited.current = true;
     setExpenseAdjustments(prev => prev.filter((_, i) => i !== index));
   };
 
