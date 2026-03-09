@@ -244,7 +244,7 @@ export default function FactFindAdviceReason() {
   });
 
   // Determine if partner exists from Personal section (read-only)
-  const hasPartner = factFind?.personal?.partner?.first_name ? true : false;
+  const hasPartner = factFind?.client1_profile?.partner?.first_name ? true : false;
 
   const [reasons, setReasons] = useState([]);
   const [quick, setQuick] = useState({
@@ -256,11 +256,11 @@ export default function FactFindAdviceReason() {
 
   // Get principal names
   const principalNames = useMemo(() => {
-    const clientName = factFind?.personal?.first_name
-      ? `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim()
+    const clientName = factFind?.client1_profile?.first_name
+      ? `${factFind.client1_profile.first_name} ${factFind.client1_profile.last_name || ''}`.trim()
       : 'Client';
-    const partnerName = factFind?.personal?.partner?.first_name
-      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim()
+    const partnerName = factFind?.client1_profile?.partner?.first_name
+      ? `${factFind.client1_profile.partner.first_name} ${factFind.client1_profile.partner.last_name || ''}`.trim()
       : 'Partner';
 
     return { client: clientName, partner: partnerName };
@@ -281,8 +281,8 @@ export default function FactFindAdviceReason() {
   }, []);
 
   useEffect(() => {
-    if (factFind?.advice_reason) {
-      const r = factFind.advice_reason;
+    if (factFind?.client1_profile?.advice_reasons) {
+      const r = factFind.client1_profile.advice_reasons;
       if (r.reasons) setReasons(r.reasons);
       if (r.quick) setQuick(r.quick);
       if (r.objectives) setObjectives(r.objectives);
@@ -304,7 +304,7 @@ export default function FactFindAdviceReason() {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('advice_reason', buildAdviceReasonPayloadRef.current());
+        await updateSection('Client1FactFind', { AdviceReasons: buildAdviceReasonPayloadRef.current() });
       } catch (error) {
         console.error('Auto-save advice_reason failed:', error);
       }
@@ -373,11 +373,11 @@ export default function FactFindAdviceReason() {
         sectionsCompleted.push('advice_reason');
       }
 
-      await updateSection('advice_reason', {
+      await updateSection('Client1FactFind', { AdviceReasons: {
         reasons,
         quick,
         objectives
-      });
+      } });
 
       await base44.entities.FactFind.update(factFind.id, {
         sections_completed: sectionsCompleted,

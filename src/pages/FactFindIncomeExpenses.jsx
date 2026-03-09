@@ -34,14 +34,14 @@ export default function FactFindIncomeExpenses() {
   const [editingExpenseAdj, setEditingExpenseAdj] = useState(null);
 
   // Determine if partner exists from Personal section (read-only)
-  const hasPartner = factFind?.personal?.partner?.first_name ? true : false;
-  
+  const hasPartner = factFind?.client1_profile?.partner?.first_name ? true : false;
+
   const principalNames = useMemo(() => {
-    const clientName = factFind?.personal?.first_name
-      ? `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim()
+    const clientName = factFind?.client1_profile?.first_name
+      ? `${factFind.client1_profile.first_name} ${factFind.client1_profile.last_name || ''}`.trim()
       : 'Client';
-    const partnerName = factFind?.personal?.partner?.first_name
-      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim()
+    const partnerName = factFind?.client1_profile?.partner?.first_name
+      ? `${factFind.client1_profile.partner.first_name} ${factFind.client1_profile.partner.last_name || ''}`.trim()
       : 'Partner';
     return { client: clientName, partner: partnerName };
   }, [factFind?.id]);

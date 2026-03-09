@@ -46,8 +46,8 @@ export default function FactFindInsurance() {
     const funds = [];
 
     // Get super funds for this owner
-    if (factFind?.superannuation?.funds) {
-      factFind.superannuation.funds
+    if (factFind?.client1_profile?.super_funds?.funds) {
+      factFind.client1_profile.super_funds.funds
         .filter(f => f.owner === ownerId)
         .forEach((f, i) => {
           funds.push({
@@ -59,8 +59,8 @@ export default function FactFindInsurance() {
     }
 
     // Get pensions for this owner
-    if (factFind?.superannuation?.pensions) {
-      factFind.superannuation.pensions
+    if (factFind?.client1_profile?.super_funds?.pensions) {
+      factFind.client1_profile.super_funds.pensions
         .filter(p => p.owner === ownerId)
         .forEach((p, i) => {
           funds.push({
@@ -72,8 +72,8 @@ export default function FactFindInsurance() {
     }
 
     // Get SMSF accounts for this owner
-    if (factFind?.smsf?.smsf_details) {
-      factFind.smsf.smsf_details.forEach((smsf, smsfIdx) => {
+    if (factFind?.client1_profile?.smsf?.smsf_details) {
+      factFind.client1_profile.smsf.smsf_details.forEach((smsf, smsfIdx) => {
         if (Array.isArray(smsf.accounts)) {
           smsf.accounts
             .filter(a => a.owner === ownerId)
@@ -105,8 +105,8 @@ export default function FactFindInsurance() {
   }, []);
 
   useEffect(() => {
-    if (factFind?.insurance) {
-      const insuranceData = factFind.insurance;
+    if (factFind?.client1_profile?.insurance_policies) {
+      const insuranceData = factFind.client1_profile.insurance_policies;
       // Migrate old pol_insurer field to pol_provider
       const migratedPolicies = (insuranceData.policies || []).map(p => {
         if (p.pol_insurer && !p.pol_provider) {
@@ -135,7 +135,7 @@ export default function FactFindInsurance() {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('insurance', buildInsurancePayloadRef.current());
+        await updateSection('Client1FactFind', { InsurancePolicies: buildInsurancePayloadRef.current() });
       } catch (error) {
         console.error('Auto-save insurance failed:', error);
       }
@@ -227,7 +227,7 @@ export default function FactFindInsurance() {
         sectionsCompleted.push('insurance');
       }
 
-      await updateSection('insurance', { activeIdx, policies });
+      await updateSection('Client1FactFind', { InsurancePolicies: { activeIdx, policies } });
 
       await base44.entities.FactFind.update(factFind.id, {
         sections_completed: sectionsCompleted,

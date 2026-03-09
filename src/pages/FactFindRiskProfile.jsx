@@ -354,8 +354,8 @@ export default function FactFindRiskProfile() {
   }, []);
 
   useEffect(() => {
-    if (factFind?.risk_profile) {
-      const data = factFind.risk_profile;
+    if (factFind?.client1_profile?.risk_profile) {
+      const data = factFind.client1_profile.risk_profile;
       if (data.mode) setMode(data.mode);
       if (data.adjustRisk) setAdjustRisk(data.adjustRisk);
       if (data.client) setClientData(data.client);
@@ -383,7 +383,7 @@ export default function FactFindRiskProfile() {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('risk_profile', buildRiskProfilePayloadRef.current());
+        await updateSection('Client1FactFind', { RiskProfile: buildRiskProfilePayloadRef.current() });
       } catch (error) {
         console.error('Auto-save risk profile failed:', error);
       }
@@ -437,7 +437,7 @@ export default function FactFindRiskProfile() {
         sectionsCompleted.push('risk_profile');
       }
 
-      await updateSection('risk_profile', {
+      await updateSection('Client1FactFind', { RiskProfile: {
         currentPerson: activeOwner,
         currentTab: activeTab,
         mode,
@@ -446,7 +446,7 @@ export default function FactFindRiskProfile() {
         partner: partnerData,
         otherInfo,
         completionPct: 0
-      });
+      } });
 
       await base44.entities.FactFind.update(factFind.id, {
         current_section: 'review',
@@ -575,8 +575,8 @@ export default function FactFindRiskProfile() {
                       <span className="font-bold text-slate-800 text-sm">Applies to:</span>
                       <div className="flex gap-2">
                         {[
-                          { key: 'client', label: factFind?.personal?.first_name ? `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim() : 'Client' },
-                          factFind?.personal?.partner?.first_name ? { key: 'partner', label: `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim() } : null
+                          { key: 'client', label: factFind?.client1_profile?.first_name ? `${factFind.client1_profile.first_name} ${factFind.client1_profile.last_name || ''}`.trim() : 'Client' },
+                          factFind?.client1_profile?.partner?.first_name ? { key: 'partner', label: `${factFind.client1_profile.partner.first_name} ${factFind.client1_profile.partner.last_name || ''}`.trim() } : null
                         ].filter(Boolean).map(owner => (
                           <button
                             key={owner.key}

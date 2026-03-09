@@ -776,9 +776,10 @@ export default function FactFindSMSF() {
   }, []);
 
   useEffect(() => {
-    if (factFind?.id && factFind.smsf) {
-      globalStateRef.current.smsf_details = factFind.smsf.smsf_details || [];
-      globalStateRef.current.activeIndex = factFind.smsf.activeIndex || 0;
+    const smsfData = factFind?.client1_profile?.smsf;
+    if (factFind?.id && smsfData) {
+      globalStateRef.current.smsf_details = smsfData.smsf_details || [];
+      globalStateRef.current.activeIndex = smsfData.activeIndex || 0;
     }
   }, [factFind?.id]);
 
@@ -793,16 +794,14 @@ export default function FactFindSMSF() {
       globalStateRef.current.smsf_details = readTabToArray();
       globalStateRef.current.activeIndex = activeIndex;
 
-      await base44.entities.FactFind.update(factFind.id, {
-        smsf: {
+      await updateSection('Client1FactFind', { Smsf: {
           smsf_details: globalStateRef.current.smsf_details,
           activeIndex: globalStateRef.current.activeIndex
-        }
-      });
+        } });
     } catch (error) {
       console.error('Save failed:', error);
     }
-  }, [factFind?.id, readTabToArray, activeIndex]);
+  }, [factFind?.id, readTabToArray, activeIndex, updateSection]);
 
   // ============================================
   // INITIALIZE DOM
@@ -960,11 +959,12 @@ export default function FactFindSMSF() {
         sectionsCompleted.push('smsf');
       }
 
-      await base44.entities.FactFind.update(factFind.id, {
-        smsf: {
+      await updateSection('Client1FactFind', { Smsf: {
           smsf_details: globalStateRef.current.smsf_details,
           activeIndex: globalStateRef.current.activeIndex
-        },
+        } });
+
+      await base44.entities.FactFind.update(factFind.id, {
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });

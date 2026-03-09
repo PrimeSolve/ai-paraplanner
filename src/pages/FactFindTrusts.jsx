@@ -25,9 +25,9 @@ export default function FactFindTrusts() {
   
   // Calculate current entity ID for exclusion
   const currentEntityId = useMemo(() => {
-    if (!factFind?.trusts_companies?.entities) return null;
+    if (!factFind?.client1_profile?.trusts_companies?.entities) return null;
     
-    const entities = factFind.trusts_companies.entities.filter(e => e.type === currentTab);
+    const entities = factFind.client1_profile.trusts_companies.entities.filter(e => e.type === currentTab);
     if (activeIndex >= entities.length) return null;
     
     // Find the actual index in the full entities array
@@ -446,11 +446,11 @@ export default function FactFindTrusts() {
         company: currentTab === 'company' ? activeIndex : globalStateRef.current.activeIndex?.company || 0
       };
       
-      await updateSection('trusts_companies', {
+      await updateSection('Client1FactFind', { TrustsCompanies: {
         entities: globalStateRef.current.entities,
         currentTab: globalStateRef.current.currentTab,
         activeIndex: globalStateRef.current.activeIndex
-      });
+      } });
     }
   }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills, factFind?.id, readTabToArray, currentTab, activeIndex, updateSection]);
 
@@ -471,10 +471,11 @@ export default function FactFindTrusts() {
   }, []);
 
   useEffect(() => {
-    if (factFind?.id && factFind.trusts_companies) {
-      globalStateRef.current.entities = factFind.trusts_companies.entities || [];
-      globalStateRef.current.currentTab = factFind.trusts_companies.currentTab || 'trust';
-      globalStateRef.current.activeIndex = factFind.trusts_companies.activeIndex || { trust: 0, company: 0 };
+    const tcData = factFind?.client1_profile?.trusts_companies;
+    if (factFind?.id && tcData) {
+      globalStateRef.current.entities = tcData.entities || [];
+      globalStateRef.current.currentTab = tcData.currentTab || 'trust';
+      globalStateRef.current.activeIndex = tcData.activeIndex || { trust: 0, company: 0 };
     }
   }, [factFind?.id]);
 
@@ -496,11 +497,11 @@ export default function FactFindTrusts() {
         company: currentTab === 'company' ? activeIndex : globalStateRef.current.activeIndex?.company || 0
       };
 
-      await updateSection('trusts_companies', {
+      await updateSection('Client1FactFind', { TrustsCompanies: {
         entities: globalStateRef.current.entities,
         currentTab: globalStateRef.current.currentTab,
         activeIndex: globalStateRef.current.activeIndex
-      });
+      } });
     } catch (error) {
       console.error('Save failed:', error);
     }
@@ -643,11 +644,11 @@ export default function FactFindTrusts() {
       const companyEntities = readTabToArray('company');
       globalStateRef.current.entities = [...trustEntities, ...companyEntities];
 
-      await updateSection('trusts_companies', {
+      await updateSection('Client1FactFind', { TrustsCompanies: {
         entities: globalStateRef.current.entities,
         currentTab: globalStateRef.current.currentTab,
         activeIndex: globalStateRef.current.activeIndex
-      });
+      } });
       
       // Update sections completed separately
       await base44.entities.FactFind.update(factFind.id, {
