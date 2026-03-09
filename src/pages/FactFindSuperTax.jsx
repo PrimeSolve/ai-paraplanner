@@ -121,23 +121,6 @@ export default function FactFindSuperTax() {
     return () => clearTimeout(timeoutId);
   }, [factFind?.id, dataLoaded, currentTab, activePerson, data, updateSection]);
 
-  // Save-before-nav listener
-  useEffect(() => {
-    const handleSaveBeforeNav = async () => {
-      if (factFind?.id) {
-        try {
-          await updateSection('super_tax', buildSuperTaxPayloadRef.current());
-        } catch (error) {
-          console.error('Failed to save super/tax before nav:', error);
-        }
-      }
-      window.dispatchEvent(new Event('factfind-save-complete'));
-    };
-
-    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, updateSection]);
-
   // Get current person key
   const personKey = activePerson === 'c1' ? 'client' : 'partner';
   const currentSuper = data[personKey].super;
@@ -209,7 +192,7 @@ export default function FactFindSuperTax() {
 
   if (ffLoading) {
     return (
-      <FactFindLayout currentSection="super_tax" factFind={factFind}>
+      <FactFindLayout currentSection="super_tax" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -218,7 +201,7 @@ export default function FactFindSuperTax() {
   }
 
   return (
-    <FactFindLayout currentSection="super_tax" factFind={factFind}>
+    <FactFindLayout currentSection="super_tax" factFindId={factFind?.id}>
       <FactFindHeader
         title="Super & Tax"
         description="Enter superannuation and tax details. Switch between Client and Partner as needed."

@@ -471,7 +471,7 @@ export default function FactFindDashboard() {
   const hasAnyData = netWorth !== 0 || monthlySurplus !== 0 || totalCover !== 0;
 
   return (
-    <FactFindLayout currentSection="dashboard" factFind={factFind}>
+    <FactFindLayout currentSection="dashboard" factFindId={factFind?.id}>
       <div className="flex-1 overflow-y-auto p-8">
         <div className="max-w-[1600px] mx-auto">
 

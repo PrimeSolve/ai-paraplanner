@@ -190,20 +190,6 @@ export default function FactFindSuperannuation() {
     return { funds: fundsToSave, pensions: pensionsToSave, annuities: annuitiesToSave };
   };
 
-  useEffect(() => {
-    const handleSaveBeforeNav = async () => {
-      try {
-        await updateSection('superannuation', buildSuperSaveBeforeNavRef.current());
-      } catch (err) {
-        console.error('Super save-before-nav failed:', err);
-      }
-      window.dispatchEvent(new Event('factfind-save-complete'));
-    };
-
-    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [updateSection]);
-
   const getCurrentList = () => {
     if (mainTab === 'super') return superFunds;
     if (mainTab === 'pension') return pensions;
@@ -331,7 +317,7 @@ export default function FactFindSuperannuation() {
 
   if (ffLoading) {
     return (
-      <FactFindLayout currentSection="superannuation" factFind={factFind}>
+      <FactFindLayout currentSection="superannuation" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -366,7 +352,7 @@ export default function FactFindSuperannuation() {
   const fundTypeLabel = mainTab === 'super' ? 'Superannuation' : mainTab === 'pension' ? 'Pension' : 'Annuity';
 
   return (
-    <FactFindLayout currentSection="superannuation" factFind={factFind}>
+    <FactFindLayout currentSection="superannuation" factFindId={factFind?.id}>
       <FactFindHeader
         title="Superannuation"
         description="Record super funds, pensions, annuities, and beneficiaries."

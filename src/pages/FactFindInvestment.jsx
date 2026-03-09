@@ -122,20 +122,6 @@ export default function FactFindInvestment() {
     return { wraps: wrapsToSave, bonds: bondsToSave };
   };
 
-  useEffect(() => {
-    const handleSaveBeforeNav = async () => {
-      try {
-        await updateSection('investment', buildInvestmentSaveBeforeNavRef.current());
-      } catch (err) {
-        console.error('Save failed:', err);
-      }
-      window.dispatchEvent(new Event('factfind-save-complete'));
-    };
-
-    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [updateSection]);
-
   const getCurrentList = () => {
     if (mainTab === 'wrap') return wraps;
     return bonds;
@@ -252,7 +238,7 @@ export default function FactFindInvestment() {
 
   if (ffLoading) {
     return (
-      <FactFindLayout currentSection="investment" factFind={factFind}>
+      <FactFindLayout currentSection="investment" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -270,7 +256,7 @@ export default function FactFindInvestment() {
   const itemTypeLabel = mainTab === 'wrap' ? 'Wrap' : 'Bond';
 
   return (
-    <FactFindLayout currentSection="investment" factFind={factFind}>
+    <FactFindLayout currentSection="investment" factFindId={factFind?.id}>
       <FactFindHeader
         title="Investments"
         description="Record wrap accounts and investment bonds."

@@ -470,33 +470,6 @@ export default function FactFindTrusts() {
     loadUser();
   }, []);
 
-  // Listen for save-before-nav event from sidebar
-  useEffect(() => {
-    const handleSaveBeforeNav = async () => {
-      if (factFind?.id) {
-        const trustEntities = readTabToArray('trust');
-        const companyEntities = readTabToArray('company');
-        
-        globalStateRef.current.entities = [...trustEntities, ...companyEntities];
-        globalStateRef.current.currentTab = currentTab;
-        globalStateRef.current.activeIndex = {
-          trust: currentTab === 'trust' ? activeIndex : globalStateRef.current.activeIndex?.trust || 0,
-          company: currentTab === 'company' ? activeIndex : globalStateRef.current.activeIndex?.company || 0
-        };
-        
-        await updateSection('trusts_companies', {
-          entities: globalStateRef.current.entities,
-          currentTab: globalStateRef.current.currentTab,
-          activeIndex: globalStateRef.current.activeIndex
-        });
-      }
-      window.dispatchEvent(new Event('factfind-save-complete'));
-    };
-
-    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, currentTab, activeIndex, updateSection, readTabToArray]);
-
   useEffect(() => {
     if (factFind?.id && factFind.trusts_companies) {
       globalStateRef.current.entities = factFind.trusts_companies.entities || [];
@@ -696,7 +669,7 @@ export default function FactFindTrusts() {
 
   if (ffLoading) {
     return (
-      <FactFindLayout currentSection="trusts" factFind={factFind}>
+      <FactFindLayout currentSection="trusts" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -705,7 +678,7 @@ export default function FactFindTrusts() {
   }
 
   return (
-    <FactFindLayout currentSection="trusts" factFind={factFind}>
+    <FactFindLayout currentSection="trusts" factFindId={factFind?.id}>
       <FactFindHeader
         title="Trusts & Companies"
         description="Add any trusts and companies you own or control."

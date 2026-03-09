@@ -107,7 +107,7 @@ Provide a helpful, friendly, and concise response. Be specific and actionable.`,
 
   if (loading) {
     return (
-      <FactFindLayout currentSection="assistant" factFind={factFind}>
+      <FactFindLayout currentSection="assistant" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -116,7 +116,7 @@ Provide a helpful, friendly, and concise response. Be specific and actionable.`,
   }
 
   return (
-    <FactFindLayout currentSection="assistant" factFind={factFind}>
+    <FactFindLayout currentSection="assistant" factFindId={factFind?.id}>
       {/* Header */}
       <div className="bg-white border-b border-slate-200 px-8 py-5 flex-shrink-0">
         <div className="flex items-center justify-between">

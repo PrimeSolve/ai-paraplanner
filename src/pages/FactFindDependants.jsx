@@ -321,24 +321,6 @@ export default function FactFindDependants() {
     loadUser();
   }, []);
 
-  // Listen for save-before-nav event from sidebar
-  useEffect(() => {
-    const handleSaveBeforeNav = async () => {
-      if (factFind?.id) {
-        globalStateRef.current.dependants.children = readTabToArray('children');
-        globalStateRef.current.dependants.dependants_list = readTabToArray('dependants');
-        globalStateRef.current.dependants.currentTab = currentTab;
-        globalStateRef.current.dependants.activeIndex = activeIndex;
-
-        await updateSection('dependants', globalStateRef.current.dependants);
-      }
-      window.dispatchEvent(new Event('factfind-save-complete'));
-    };
-
-    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, currentTab, activeIndex, updateSection, readTabToArray]);
-
   // When FactFind loads, sync its dependants data
   useEffect(() => {
     if (factFind?.id && factFind.dependants) {
@@ -467,7 +449,7 @@ export default function FactFindDependants() {
 
   if (ffLoading) {
     return (
-      <FactFindLayout currentSection="dependants" factFind={factFind}>
+      <FactFindLayout currentSection="dependants" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -476,7 +458,7 @@ export default function FactFindDependants() {
   }
 
   return (
-    <FactFindLayout currentSection="dependants" factFind={factFind}>
+    <FactFindLayout currentSection="dependants" factFindId={factFind?.id}>
       <FactFindHeader
         title="Dependants"
         description="Add children and other dependants."

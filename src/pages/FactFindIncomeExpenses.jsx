@@ -118,25 +118,6 @@ export default function FactFindIncomeExpenses() {
     return () => clearTimeout(timeoutId);
   }, [factFind?.id, dataLoaded, clientFields, partnerFields, expenseFields, clientAdjustments, partnerAdjustments, expenseAdjustments, updateSection]);
 
-  // Save-before-nav listener
-  useEffect(() => {
-    const handleSaveBeforeNav = async () => {
-      if (factFind?.id) {
-        try {
-          await updateSection('income_expenses', buildIncomeExpensesPayloadRef.current());
-        } catch (error) {
-          console.error('Failed to save income/expenses before nav:', error);
-        }
-      }
-      window.dispatchEvent(new Event('factfind-save-complete'));
-    };
-
-    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, updateSection]);
-
-
-
   const updateClientField = useCallback((field, value) => {
     setClientFields(prev => ({ ...prev, [field]: value }));
   }, []);
@@ -269,7 +250,7 @@ export default function FactFindIncomeExpenses() {
 
   if (ffLoading) {
     return (
-      <FactFindLayout currentSection="income_expenses" factFind={factFind}>
+      <FactFindLayout currentSection="income_expenses" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -282,7 +263,7 @@ export default function FactFindIncomeExpenses() {
   const updatePersonField = activePerson === 'c1' ? updateClientField : updatePartnerField;
 
   return (
-    <FactFindLayout currentSection="income_expenses" factFind={factFind}>
+    <FactFindLayout currentSection="income_expenses" factFindId={factFind?.id}>
       <FactFindHeader
         title="Income & Expenses"
         description="Record current details and add any future adjustments."

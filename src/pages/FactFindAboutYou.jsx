@@ -168,40 +168,6 @@ export default function FactFindPersonal() {
     loadUser();
   }, []);
 
-  // Listen for save-before-nav event from sidebar
-  const buildAboutYouPayloadRef = useRef(null);
-  buildAboutYouPayloadRef.current = () => {
-    const completionPct = calculateCompletion(clientData, partnerData, hasPartner);
-    return {
-      ...clientData,
-      partner: hasPartner ? partnerData : null,
-      completionPct
-    };
-  };
-
-  useEffect(() => {
-    const handleSaveBeforeNav = async () => {
-      if (factFind?.id) {
-        await updateSection('personal', buildAboutYouPayloadRef.current());
-
-        // Sync shared fields to Client entity
-        if (clientId && clientData.first_name && clientData.last_name) {
-          await base44.entities.Client.update(clientId, {
-            first_name: clientData.first_name,
-            last_name: clientData.last_name,
-            email: clientData.email,
-            phone: clientData.phone,
-            notes: clientData.notes,
-          });
-        }
-      }
-      window.dispatchEvent(new Event('factfind-save-complete'));
-    };
-
-    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, updateSection, clientId]);
-
   // Load existing data from FactFind when it's loaded
   const [dataLoaded, setDataLoaded] = useState(false);
   
@@ -372,7 +338,7 @@ export default function FactFindPersonal() {
 
   if (ffLoading) {
     return (
-      <FactFindLayout currentSection="personal" factFind={factFind}>
+      <FactFindLayout currentSection="personal" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -392,7 +358,7 @@ export default function FactFindPersonal() {
   const partnerName = partnerData.first_name || 'Partner';
 
   return (
-    <FactFindLayout currentSection="personal" factFind={factFind}>
+    <FactFindLayout currentSection="personal" factFindId={factFind?.id}>
       <FactFindHeader
         title="Personal Details"
         description="Please provide basic information about you and your partner."

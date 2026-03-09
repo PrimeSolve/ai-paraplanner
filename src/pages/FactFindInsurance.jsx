@@ -143,25 +143,6 @@ export default function FactFindInsurance() {
     return () => clearTimeout(timeoutId);
   }, [factFind?.id, dataLoaded, activeIdx, policies, updateSection]);
 
-  // Save-before-nav listener
-  useEffect(() => {
-    const handleSaveBeforeNav = async () => {
-      if (factFind?.id) {
-        try {
-          await updateSection('insurance', buildInsurancePayloadRef.current());
-        } catch (error) {
-          console.error('Failed to save insurance before nav:', error);
-        }
-      }
-      window.dispatchEvent(new Event('factfind-save-complete'));
-    };
-
-    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, updateSection]);
-
-
-
   const addPolicy = () => {
     const newPolicy = {
       pol_name: '',
@@ -267,7 +248,7 @@ export default function FactFindInsurance() {
 
   if (ffLoading) {
     return (
-      <FactFindLayout currentSection="insurance" factFind={factFind}>
+      <FactFindLayout currentSection="insurance" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -276,7 +257,7 @@ export default function FactFindInsurance() {
   }
 
   return (
-    <FactFindLayout currentSection="insurance" factFind={factFind}>
+    <FactFindLayout currentSection="insurance" factFindId={factFind?.id}>
       <FactFindHeader
         title="Insurance policies"
         description="Add details about your life, TPD, trauma, income protection, and other insurance coverage."

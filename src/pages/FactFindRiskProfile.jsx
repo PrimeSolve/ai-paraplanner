@@ -391,22 +391,6 @@ export default function FactFindRiskProfile() {
     return () => clearTimeout(timeoutId);
   }, [factFind?.id, dataLoaded, activeOwner, activeTab, mode, adjustRisk, clientData, partnerData, otherInfo, updateSection]);
 
-  useEffect(() => {
-    const handleSaveBeforeNav = async () => {
-      if (factFind?.id) {
-        try {
-          await updateSection('risk_profile', buildRiskProfilePayloadRef.current());
-        } catch (error) {
-          console.error('Failed to save risk profile before nav:', error);
-        }
-      }
-      window.dispatchEvent(new Event('factfind-save-complete'));
-    };
-
-    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, updateSection]);
-
   const currentData = activeOwner === 'client' ? clientData : partnerData;
   const setCurrentData = activeOwner === 'client' ? setClientData : setPartnerData;
 
@@ -484,7 +468,7 @@ export default function FactFindRiskProfile() {
 
   if (ffLoading) {
     return (
-      <FactFindLayout currentSection="risk_profile" factFind={factFind}>
+      <FactFindLayout currentSection="risk_profile" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -503,7 +487,7 @@ export default function FactFindRiskProfile() {
   const selectedHistoricalReturns = selectedProfileName ? HISTORICAL_RETURNS[selectedProfileName] : null;
 
   return (
-    <FactFindLayout currentSection="risk_profile" factFind={factFind}>
+    <FactFindLayout currentSection="risk_profile" factFindId={factFind?.id}>
       <FactFindHeader
         title="Risk Profile"
         description="Your attitude to investing and additional information."

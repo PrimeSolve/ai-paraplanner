@@ -36,7 +36,7 @@ export default function FactFindWelcome({ skipLayout = false }) {
 
   const Wrapper = skipLayout
     ? ({ children }) => <>{children}</>
-    : ({ children }) => <FactFindLayout currentSection="welcome" factFind={factFind}>{children}</FactFindLayout>;
+    : ({ children }) => <FactFindLayout currentSection="welcome" factFindId={factFind?.id}>{children}</FactFindLayout>;
 
   if (ffLoading) {
     return (
