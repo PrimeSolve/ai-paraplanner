@@ -239,17 +239,15 @@ export default function FactFindSuperannuation() {
   const saveFunds = useCallback(async (sf, p, a) => {
     if (!factFind?.id) return;
     try {
-      await base44.entities.FactFind.update(factFind.id, {
-        superannuation: {
-          funds: sf,
-          pensions: p,
-          annuities: a
-        }
+      await updateSection('superannuation', {
+        funds: sf,
+        pensions: p,
+        annuities: a
       });
     } catch (error) {
       console.error('Save failed:', error);
     }
-  }, [factFind?.id]);
+  }, [factFind?.id, updateSection]);
 
   const handleAddNew = () => {
     if (mainTab === 'super') setCurrentItem(getEmptySuper());
@@ -332,8 +330,9 @@ export default function FactFindSuperannuation() {
         sectionsCompleted.push('superannuation');
       }
 
+      await updateSection('superannuation', { funds: superFunds, pensions, annuities });
+
       await base44.entities.FactFind.update(factFind.id, {
-        superannuation: { funds: superFunds, pensions, annuities },
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });

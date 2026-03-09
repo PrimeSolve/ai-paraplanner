@@ -32,7 +32,7 @@ import { useFactFindEntities } from '@/components/factfind/useFactFindEntities';
 
 export default function FactFindInsurance() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection } = useFactFind();
   const principalEntities = useFactFindEntities(factFind, { types: ['principal'] });
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
@@ -132,24 +132,20 @@ export default function FactFindInsurance() {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await base44.entities.FactFind.update(factFind.id, {
-          insurance: { activeIdx, policies }
-        });
+        await updateSection('insurance', { activeIdx, policies });
       } catch (error) {
         console.error('Auto-save insurance failed:', error);
       }
     }, 1500);
     return () => clearTimeout(timeoutId);
-  }, [factFind?.id, dataLoaded, activeIdx, policies]);
+  }, [factFind?.id, dataLoaded, activeIdx, policies, updateSection]);
 
   // Save-before-nav listener
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
       if (factFind?.id) {
         try {
-          await base44.entities.FactFind.update(factFind.id, {
-            insurance: { activeIdx, policies }
-          });
+          await updateSection('insurance', { activeIdx, policies });
         } catch (error) {
           console.error('Failed to save insurance before nav:', error);
         }
@@ -159,7 +155,7 @@ export default function FactFindInsurance() {
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, activeIdx, policies]);
+  }, [factFind?.id, activeIdx, policies, updateSection]);
 
 
 
@@ -247,8 +243,9 @@ export default function FactFindInsurance() {
         sectionsCompleted.push('insurance');
       }
 
+      await updateSection('insurance', { activeIdx, policies });
+
       await base44.entities.FactFind.update(factFind.id, {
-        insurance: { activeIdx, policies },
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });

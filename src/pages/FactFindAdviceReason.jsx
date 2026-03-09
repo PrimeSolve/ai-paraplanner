@@ -230,7 +230,7 @@ const EMPTY_QUICK_PERSON = {
 
 export default function FactFindAdviceReason() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   
@@ -301,24 +301,20 @@ export default function FactFindAdviceReason() {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await base44.entities.FactFind.update(factFind.id, {
-          advice_reason: { reasons, quick, objectives }
-        });
+        await updateSection('advice_reason', { reasons, quick, objectives });
       } catch (error) {
         console.error('Auto-save advice_reason failed:', error);
       }
     }, 1500);
     return () => clearTimeout(timeoutId);
-  }, [factFind?.id, dataLoaded, reasons, quick, objectives]);
+  }, [factFind?.id, dataLoaded, reasons, quick, objectives, updateSection]);
 
   // Save-before-nav listener
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
       if (factFind?.id) {
         try {
-          await base44.entities.FactFind.update(factFind.id, {
-            advice_reason: { reasons, quick, objectives }
-          });
+          await updateSection('advice_reason', { reasons, quick, objectives });
         } catch (error) {
           console.error('Failed to save advice_reason before nav:', error);
         }
@@ -328,7 +324,7 @@ export default function FactFindAdviceReason() {
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, reasons, quick, objectives]);
+  }, [factFind?.id, reasons, quick, objectives, updateSection]);
 
   const toggleReason = useCallback((value) => {
     setReasons(prev =>
@@ -391,12 +387,13 @@ export default function FactFindAdviceReason() {
         sectionsCompleted.push('advice_reason');
       }
 
+      await updateSection('advice_reason', {
+        reasons,
+        quick,
+        objectives
+      });
+
       await base44.entities.FactFind.update(factFind.id, {
-        advice_reason: {
-          reasons,
-          quick,
-          objectives
-        },
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });

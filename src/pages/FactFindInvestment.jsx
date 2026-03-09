@@ -145,16 +145,14 @@ export default function FactFindInvestment() {
   const saveInvestments = useCallback(async (w, b) => {
     if (!factFind?.id) return;
     try {
-      await base44.entities.FactFind.update(factFind.id, {
-        investment: {
-          wraps: w,
-          bonds: b
-        }
+      await updateSection('investment', {
+        wraps: w,
+        bonds: b
       });
     } catch (error) {
       console.error('Save failed:', error);
     }
-  }, [factFind?.id]);
+  }, [factFind?.id, updateSection]);
 
   const handleAddNew = () => {
     if (mainTab === 'wrap') setCurrentItem(getEmptyWrap());
@@ -229,8 +227,9 @@ export default function FactFindInvestment() {
         sectionsCompleted.push('investment');
       }
 
+      await updateSection('investment', { wraps, bonds });
+
       await base44.entities.FactFind.update(factFind.id, {
-        investment: { wraps, bonds },
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });

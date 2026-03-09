@@ -13,7 +13,7 @@ import EntityDot from '../components/factfind/EntityDot';
 
 export default function FactFindIncomeExpenses() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('inc');
@@ -107,24 +107,20 @@ export default function FactFindIncomeExpenses() {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await base44.entities.FactFind.update(factFind.id, {
-          income_expenses: buildIncomeExpensesPayload()
-        });
+        await updateSection('income_expenses', buildIncomeExpensesPayload());
       } catch (error) {
         console.error('Auto-save income/expenses failed:', error);
       }
     }, 1500);
     return () => clearTimeout(timeoutId);
-  }, [factFind?.id, dataLoaded, buildIncomeExpensesPayload]);
+  }, [factFind?.id, dataLoaded, buildIncomeExpensesPayload, updateSection]);
 
   // Save-before-nav listener
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
       if (factFind?.id) {
         try {
-          await base44.entities.FactFind.update(factFind.id, {
-            income_expenses: buildIncomeExpensesPayload()
-          });
+          await updateSection('income_expenses', buildIncomeExpensesPayload());
         } catch (error) {
           console.error('Failed to save income/expenses before nav:', error);
         }
@@ -134,7 +130,7 @@ export default function FactFindIncomeExpenses() {
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, buildIncomeExpensesPayload]);
+  }, [factFind?.id, buildIncomeExpensesPayload, updateSection]);
 
 
 
@@ -246,11 +242,12 @@ export default function FactFindIncomeExpenses() {
         { fields: expenseFields, adjustments: expenseAdjustments }
       ];
 
+      await updateSection('income_expenses', {
+        income_sources: incomeSources,
+        expenses: expenses
+      });
+
       await base44.entities.FactFind.update(factFind.id, {
-        income_expenses: {
-          income_sources: incomeSources,
-          expenses: expenses
-        },
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
