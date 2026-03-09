@@ -42,7 +42,7 @@ export default function FactFindIncomeExpenses() {
       ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim()
       : 'Partner';
     return { client: clientName, partner: partnerName };
-  }, [factFind?.id]);
+  }, [factFind]);
 
   useEffect(() => {
     const loadUser = async () => {

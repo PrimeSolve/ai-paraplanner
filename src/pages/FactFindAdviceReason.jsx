@@ -264,7 +264,7 @@ export default function FactFindAdviceReason() {
       : 'Partner';
 
     return { client: clientName, partner: partnerName };
-  }, [factFind?.id]);
+  }, [factFind]);
 
 
 

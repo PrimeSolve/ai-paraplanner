@@ -181,8 +181,8 @@ export default function ClientFactFindAI() {
   const navigate = useNavigate();
   const { factFind, loading, error, updateSection } = useFactFind();
 
-  // Transform DB data → CashflowModel format (only recompute when factFind changes)
-  const initialData = useMemo(() => dbToModelFormat(factFind), [factFind]);
+  // Transform DB data → CashflowModel format (only recompute when client changes)
+  const initialData = useMemo(() => dbToModelFormat(factFind), [factFind?.id]);
 
   // Debounced save: on every CashflowModel data change, save back to DB
   const saveTimerRef = useRef(null);

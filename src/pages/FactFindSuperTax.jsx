@@ -63,7 +63,7 @@ export default function FactFindSuperTax() {
       : 'Partner';
 
     return { client: clientName, partner: partnerName };
-  }, [factFind?.id]);
+  }, [factFind]);
 
   useEffect(() => {
     const loadUser = async () => {
