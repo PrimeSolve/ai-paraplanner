@@ -134,53 +134,10 @@ export function useFactFind() {
         ...cleanData
       } = currentData;
 
-      // Build the existing client1FactFind from clean data
-      const existingClient1 = cleanData.client1FactFind || {};
-
-      // Top-level passthrough keys
-      const TOP_LEVEL_KEYS = [
-        'super_tax', 'dependants', 'trusts_companies',
-        'advice_reason', 'risk_profile',
-        'sections_completed', 'completion_percentage'
-      ];
-
-      // Map frontend section keys into the API structure
-      const mapSectionToPayload = (section, value, client1) => {
-        switch (section) {
-          case 'personal':
-            return { client1FactFind: { ...client1, personal: value } };
-          case 'income_expenses':
-            return {
-              client1FactFind: {
-                ...client1,
-                ...(value.incomes !== undefined ? { incomes: value.incomes } : {}),
-                ...(value.expenses !== undefined ? { expenses: value.expenses } : {})
-              }
-            };
-          case 'superannuation':
-            return { client1FactFind: { ...client1, superFunds: value } };
-          case 'investment':
-            return { client1FactFind: { ...client1, investments: value } };
-          case 'assets_liabilities':
-            return {
-              client1FactFind: {
-                ...client1,
-                ...(value.properties !== undefined ? { properties: value.properties } : {}),
-                ...(value.debts !== undefined ? { debts: value.debts } : {})
-              }
-            };
-          case 'insurance':
-            return { client1FactFind: { ...client1, insurance: value } };
-          default:
-            if (TOP_LEVEL_KEYS.includes(section)) {
-              return { [section]: value };
-            }
-            // Unknown section — pass through at top level
-            return { [section]: value };
-        }
-      };
-
-      const mapped = mapSectionToPayload(sectionName, data, existingClient1);
+      // All sections are stored as top-level keys on the FactFind record,
+      // matching how every page reads them (e.g. factFind.personal,
+      // factFind.income_expenses, factFind.superannuation, etc.).
+      const mapped = { [sectionName]: data };
 
       // Merge mapped data into the clean payload, preserving existing top-level fields
       const payload = { ...cleanData, ...mapped };
