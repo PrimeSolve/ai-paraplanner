@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
@@ -95,6 +95,9 @@ export default function FactFindIncomeExpenses() {
     return { income_sources: incomeSources, expenses };
   }, [clientFields, partnerFields, expenseFields, clientAdjustments, partnerAdjustments, expenseAdjustments, hasPartner]);
 
+  const buildIncomeExpensesPayloadRef = useRef(null);
+  buildIncomeExpensesPayloadRef.current = buildIncomeExpensesPayload;
+
   // Auto-save on field changes (debounced 1.5s)
   const [dataLoaded, setDataLoaded] = useState(false);
   useEffect(() => {
@@ -107,20 +110,20 @@ export default function FactFindIncomeExpenses() {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('income_expenses', buildIncomeExpensesPayload());
+        await updateSection('income_expenses', buildIncomeExpensesPayloadRef.current());
       } catch (error) {
         console.error('Auto-save income/expenses failed:', error);
       }
     }, 1500);
     return () => clearTimeout(timeoutId);
-  }, [factFind?.id, dataLoaded, buildIncomeExpensesPayload, updateSection]);
+  }, [factFind?.id, dataLoaded, clientFields, partnerFields, expenseFields, clientAdjustments, partnerAdjustments, expenseAdjustments, updateSection]);
 
   // Save-before-nav listener
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
       if (factFind?.id) {
         try {
-          await updateSection('income_expenses', buildIncomeExpensesPayload());
+          await updateSection('income_expenses', buildIncomeExpensesPayloadRef.current());
         } catch (error) {
           console.error('Failed to save income/expenses before nav:', error);
         }
@@ -130,7 +133,7 @@ export default function FactFindIncomeExpenses() {
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, buildIncomeExpensesPayload, updateSection]);
+  }, [factFind?.id, updateSection]);
 
 
 

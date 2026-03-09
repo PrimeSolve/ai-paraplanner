@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
@@ -128,11 +128,14 @@ export default function FactFindInsurance() {
     return () => clearTimeout(t);
   }, [factFind?.id]);
 
+  const buildInsurancePayloadRef = useRef(null);
+  buildInsurancePayloadRef.current = () => ({ activeIdx, policies });
+
   useEffect(() => {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('insurance', { activeIdx, policies });
+        await updateSection('insurance', buildInsurancePayloadRef.current());
       } catch (error) {
         console.error('Auto-save insurance failed:', error);
       }
@@ -145,7 +148,7 @@ export default function FactFindInsurance() {
     const handleSaveBeforeNav = async () => {
       if (factFind?.id) {
         try {
-          await updateSection('insurance', { activeIdx, policies });
+          await updateSection('insurance', buildInsurancePayloadRef.current());
         } catch (error) {
           console.error('Failed to save insurance before nav:', error);
         }
@@ -155,7 +158,7 @@ export default function FactFindInsurance() {
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, activeIdx, policies, updateSection]);
+  }, [factFind?.id, updateSection]);
 
 
 

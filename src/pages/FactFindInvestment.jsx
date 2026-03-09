@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
@@ -83,11 +83,14 @@ export default function FactFindInvestment() {
     return () => clearTimeout(t);
   }, [factFind?.id]);
 
+  const buildInvestmentPayloadRef = useRef(null);
+  buildInvestmentPayloadRef.current = () => ({ wraps, bonds });
+
   useEffect(() => {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('investment', { wraps, bonds });
+        await updateSection('investment', buildInvestmentPayloadRef.current());
       } catch (err) {
         console.error('Auto-save investment failed:', err);
       }
@@ -95,42 +98,43 @@ export default function FactFindInvestment() {
     return () => clearTimeout(timeoutId);
   }, [factFind?.id, dataLoaded, wraps, bonds, updateSection]);
 
-  useEffect(() => {
-    const handleSaveBeforeNav = async () => {
-      let wrapsToSave = [...wraps];
-      let bondsToSave = [...bonds];
+  const buildInvestmentSaveBeforeNavRef = useRef(null);
+  buildInvestmentSaveBeforeNavRef.current = () => {
+    let wrapsToSave = [...wraps];
+    let bondsToSave = [...bonds];
 
-      if (view === 'detail' && currentItem) {
-        if (mainTab === 'wrap') {
-          if (editingIndex !== null) {
-            wrapsToSave[editingIndex] = currentItem;
-          } else {
-            wrapsToSave.push(currentItem);
-          }
-        } else if (mainTab === 'bond') {
-          if (editingIndex !== null) {
-            bondsToSave[editingIndex] = currentItem;
-          } else {
-            bondsToSave.push(currentItem);
-          }
+    if (view === 'detail' && currentItem) {
+      if (mainTab === 'wrap') {
+        if (editingIndex !== null) {
+          wrapsToSave[editingIndex] = currentItem;
+        } else {
+          wrapsToSave.push(currentItem);
+        }
+      } else if (mainTab === 'bond') {
+        if (editingIndex !== null) {
+          bondsToSave[editingIndex] = currentItem;
+        } else {
+          bondsToSave.push(currentItem);
         }
       }
+    }
 
+    return { wraps: wrapsToSave, bonds: bondsToSave };
+  };
+
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
       try {
-        await updateSection('investment', {
-          wraps: wrapsToSave,
-          bonds: bondsToSave
-        });
+        await updateSection('investment', buildInvestmentSaveBeforeNavRef.current());
       } catch (err) {
         console.error('Save failed:', err);
       }
-
       window.dispatchEvent(new Event('factfind-save-complete'));
     };
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [wraps, bonds, view, mainTab, editingIndex, currentItem, updateSection]);
+  }, [updateSection]);
 
   const getCurrentList = () => {
     if (mainTab === 'wrap') return wraps;

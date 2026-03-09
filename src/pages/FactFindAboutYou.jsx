@@ -169,16 +169,20 @@ export default function FactFindPersonal() {
   }, []);
 
   // Listen for save-before-nav event from sidebar
+  const buildAboutYouPayloadRef = useRef(null);
+  buildAboutYouPayloadRef.current = () => {
+    const completionPct = calculateCompletion(clientData, partnerData, hasPartner);
+    return {
+      ...clientData,
+      partner: hasPartner ? partnerData : null,
+      completionPct
+    };
+  };
+
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
       if (factFind?.id) {
-        const completionPct = calculateCompletion(clientData, partnerData, hasPartner);
-        const personalData = {
-          ...clientData,
-          partner: hasPartner ? partnerData : null,
-          completionPct
-        };
-        await updateSection('personal', personalData);
+        await updateSection('personal', buildAboutYouPayloadRef.current());
 
         // Sync shared fields to Client entity
         if (clientId && clientData.first_name && clientData.last_name) {
@@ -196,7 +200,7 @@ export default function FactFindPersonal() {
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, clientData, partnerData, hasPartner, updateSection, clientId]);
+  }, [factFind?.id, updateSection, clientId]);
 
   // Load existing data from FactFind when it's loaded
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -266,27 +270,24 @@ export default function FactFindPersonal() {
       return;
     }
 
-    const autoSave = async () => {
-      const completionPct = calculateCompletion(clientData, partnerData, hasPartner);
+    const timeoutId = setTimeout(async () => {
+      try {
+        const payload = buildAboutYouPayloadRef.current();
+        const result = await updateSection('personal', payload);
 
-      const result = await updateSection('personal', {
-        ...clientData,
-        partner: hasPartner ? partnerData : null,
-        completionPct
-      });
-
-      if (result) {
-        setFactFind(prev => ({
-          ...prev,
-          personal: {
-            ...prev.personal,
-            completionPct
-          }
-        }));
+        if (result) {
+          setFactFind(prev => ({
+            ...prev,
+            personal: {
+              ...prev.personal,
+              completionPct: payload.completionPct
+            }
+          }));
+        }
+      } catch (error) {
+        console.error('Auto-save personal failed:', error);
       }
-    };
-
-    const timeoutId = setTimeout(autoSave, 1500);
+    }, 1500);
     return () => clearTimeout(timeoutId);
   }, [clientData, partnerData, hasPartner, dataLoaded, factFind?.id, updateSection]);
 
