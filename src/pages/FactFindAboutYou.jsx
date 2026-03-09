@@ -148,11 +148,6 @@ export default function FactFindPersonal() {
       allMissing = [...allMissing, ...partnerCount.missing];
     }
     
-    console.log('=== PERSONAL COMPLETION DEBUG ===');
-    console.log(`Filled: ${filledFields} / Total: ${totalFields}`);
-    console.log('Missing fields:', allMissing);
-    console.log('Percentage:', totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0);
-    
     return totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
   };
 
@@ -191,27 +186,14 @@ export default function FactFindPersonal() {
       
       setDataLoaded(true);
     }
-  }, [factFind, dataLoaded]);
+  }, [factFind?.id]);
 
   // Sync Client entity and RoleContext when FactFind data loads
   useEffect(() => {
-    console.log('=== SYNC EFFECT CHECK ===', {
-      hasPersonal: !!factFind?.personal,
-      firstName: factFind?.personal?.first_name,
-      lastName: factFind?.personal?.last_name,
-      clientId: clientId,
-      clientEmail: clientEmail,
-      dataLoaded: dataLoaded,
-      hasUpdateNav: typeof updateNavigationName === 'function'
-    });
-    
     if (factFind?.personal?.first_name && clientId) {
-      console.log('=== SYNC EXECUTING ===');
       const fullName = `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim();
-      console.log('Updating to:', fullName);
-      
       updateNavigationName('client', fullName);
-      
+
       base44.entities.Client.update(clientId, {
         first_name: factFind.personal.first_name,
         last_name: factFind.personal.last_name || '',
@@ -219,16 +201,22 @@ export default function FactFindPersonal() {
         phone: factFind.personal.phone || '',
         notes: factFind.personal.notes || '',
       })
-        .then(() => console.log('=== CLIENT ENTITY UPDATED ==='))
-        .catch(err => console.error('=== CLIENT UPDATE FAILED ===', err));
-    } else {
-      console.log('=== SYNC SKIPPED ===', {
-        reason: !factFind?.personal?.first_name ? 'no firstName' : !clientId ? 'no clientId' : 'unknown'
-      });
+        .catch(err => console.error('Client sync failed:', err));
     }
   }, [factFind?.personal?.first_name, factFind?.personal?.last_name, clientId, updateNavigationName]);
 
 
+
+  // Build save payload via ref to avoid dependency on the callback itself
+  const buildAboutYouPayloadRef = useRef(null);
+  buildAboutYouPayloadRef.current = () => {
+    const completionPct = calculateCompletion(clientData, partnerData, hasPartner);
+    return {
+      ...clientData,
+      partner: hasPartner ? partnerData : null,
+      completionPct
+    };
+  };
 
   // Auto-save all form data whenever it changes (debounced 1.5s)
   useEffect(() => {
@@ -238,18 +226,7 @@ export default function FactFindPersonal() {
 
     const timeoutId = setTimeout(async () => {
       try {
-        const payload = buildAboutYouPayloadRef.current();
-        const result = await updateSection('personal', payload);
-
-        if (result) {
-          setFactFind(prev => ({
-            ...prev,
-            personal: {
-              ...prev.personal,
-              completionPct: payload.completionPct
-            }
-          }));
-        }
+        await updateSection('personal', buildAboutYouPayloadRef.current());
       } catch (error) {
         console.error('Auto-save personal failed:', error);
       }
