@@ -34,6 +34,33 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+// ── Auto-create AdviceRequests table if missing ─────────────
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
+    {
+        db.Database.ExecuteSqlRaw(@"
+            IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AdviceRequests')
+            BEGIN
+                CREATE TABLE AdviceRequests (
+                    Id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+                    TenantId UNIQUEIDENTIFIER NOT NULL,
+                    ClientId UNIQUEIDENTIFIER NULL,
+                    Data NVARCHAR(MAX) NULL,
+                    CreatedDate DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+                    UpdatedDate DATETIME2 NOT NULL DEFAULT GETUTCDATE()
+                );
+                CREATE INDEX IX_AdviceRequests_TenantId_ClientId
+                    ON AdviceRequests (TenantId, ClientId);
+            END");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Warning: Could not auto-create AdviceRequests table: {ex.Message}");
+    }
+}
+
 // ── Middleware ───────────────────────────────────────────────
 app.UseAuthentication();
 app.UseAuthorization();
