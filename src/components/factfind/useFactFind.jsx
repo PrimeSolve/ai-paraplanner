@@ -113,7 +113,8 @@ export function useFactFind() {
       const records = await base44.entities.FactFind.filter({ id: current.id });
       const currentData = records[0];
 
-      // Strip metadata fields from current data
+      // Strip metadata fields and client_id from current data
+      // (client_id from the DB may be a blank GUID; we always set it explicitly below)
       const {
         id: _id,
         created_date: _cd,
@@ -126,6 +127,7 @@ export function useFactFind() {
         is_deleted: _idl,
         deleted_date: _dd,
         environment: _env,
+        client_id: _staleClientId,
         ...cleanData
       } = currentData;
 
@@ -140,12 +142,11 @@ export function useFactFind() {
       }
 
       const mapped = { [sectionName]: sectionData };
-      const payload = { ...cleanData, ...mapped };
-
-      // Ensure the correct client_id is always sent (not the blank GUID)
-      if (clientIdRef.current) {
-        payload.client_id = clientIdRef.current;
-      }
+      const payload = {
+        ...cleanData,
+        ...mapped,
+        client_id: clientIdRef.current || _staleClientId,
+      };
 
       await base44.entities.FactFind.update(current.id, payload);
 
