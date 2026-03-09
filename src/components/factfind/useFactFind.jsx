@@ -111,38 +111,86 @@ export function useFactFind() {
 
     try {
       console.log(`Saving section "${sectionName}":`, data);
-      
+
       // FETCH CURRENT DATA FROM DATABASE (not local state)
       const current = await base44.entities.FactFind.filter({ id: factFind.id });
       const currentData = current[0];
-      
-      // Merge new data with current database data
-      const updatedData = {
-        ...currentData,
-        [sectionName]: data
+
+      // Strip metadata fields from current data
+      const {
+        id: _id,
+        created_date: _cd,
+        updated_date: _ud,
+        created_by: _cb,
+        created_by_id: _cbi,
+        entity_name: _en,
+        app_id: _ai,
+        is_sample: _is,
+        is_deleted: _idl,
+        deleted_date: _dd,
+        environment: _env,
+        ...cleanData
+      } = currentData;
+
+      // Build the existing client1FactFind from clean data
+      const existingClient1 = cleanData.client1FactFind || {};
+
+      // Top-level passthrough keys
+      const TOP_LEVEL_KEYS = [
+        'super_tax', 'dependants', 'trusts_companies',
+        'advice_reason', 'risk_profile',
+        'sections_completed', 'completion_percentage'
+      ];
+
+      // Map frontend section keys into the API structure
+      const mapSectionToPayload = (section, value, client1) => {
+        switch (section) {
+          case 'personal':
+            return { client1FactFind: { ...client1, personal: value } };
+          case 'income_expenses':
+            return {
+              client1FactFind: {
+                ...client1,
+                ...(value.incomes !== undefined ? { incomes: value.incomes } : {}),
+                ...(value.expenses !== undefined ? { expenses: value.expenses } : {})
+              }
+            };
+          case 'superannuation':
+            return { client1FactFind: { ...client1, superFunds: value } };
+          case 'investment':
+            return { client1FactFind: { ...client1, investments: value } };
+          case 'assets_liabilities':
+            return {
+              client1FactFind: {
+                ...client1,
+                ...(value.properties !== undefined ? { properties: value.properties } : {}),
+                ...(value.debts !== undefined ? { debts: value.debts } : {})
+              }
+            };
+          case 'insurance':
+            return { client1FactFind: { ...client1, insurance: value } };
+          default:
+            if (TOP_LEVEL_KEYS.includes(section)) {
+              return { [section]: value };
+            }
+            // Unknown section — pass through at top level
+            return { [section]: value };
+        }
       };
-      
-      // Remove any metadata fields that shouldn't be in the update
-      delete updatedData.id;
-      delete updatedData.created_date;
-      delete updatedData.updated_date;
-      delete updatedData.created_by;
-      delete updatedData.created_by_id;
-      delete updatedData.entity_name;
-      delete updatedData.app_id;
-      delete updatedData.is_sample;
-      delete updatedData.is_deleted;
-      delete updatedData.deleted_date;
-      delete updatedData.environment;
-      
-      await base44.entities.FactFind.update(factFind.id, updatedData);
-      
+
+      const mapped = mapSectionToPayload(sectionName, data, existingClient1);
+
+      // Merge mapped data into the clean payload, preserving existing top-level fields
+      const payload = { ...cleanData, ...mapped };
+
+      await base44.entities.FactFind.update(factFind.id, payload);
+
       // Update local state
       setFactFind(prev => ({
         ...prev,
-        [sectionName]: data
+        ...mapped
       }));
-      
+
       console.log(`Section "${sectionName}" saved successfully`);
       return true;
     } catch (err) {
