@@ -90,7 +90,7 @@ export default function FactFindInsurance() {
     }
 
     return funds;
-  }, [factFind]);
+  }, [factFind?.id]);
 
   useEffect(() => {
     const loadUser = async () => {

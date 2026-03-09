@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useRole } from '@/components/RoleContext';
 
@@ -15,10 +15,12 @@ export function useFactFind() {
   const [clientEmail, setClientEmail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const factFindRef = useRef(null);
+  factFindRef.current = factFind;
 
-  const navClientId = useMemo(() => {
-    return navigationChain?.find(n => n.type === 'client')?.id;
-  }, [navigationChain]);
+  // Extract client record ID at render time
+  const clientNav = navigationChain?.find(n => n.type === 'client');
+  const navClientId = clientNav?.id;
 
   useEffect(() => {
     // Don't run until we have a client ID from the navigation chain
@@ -82,18 +84,30 @@ export function useFactFind() {
     }
 
     initFactFind();
-  }, [navClientId]); // Depend on navClientId, not navigationChain
+  }, [navClientId]);
 
   const updateSection = useCallback(async (sectionName, data) => {
-    if (!factFind?.id) {
+    const current = factFindRef.current;
+    if (!current?.id) {
       return false;
     }
 
-    try {
+    // Skip save if the section data is identical to what we already have
+    const existing = current[sectionName];
+    if (existing !== undefined) {
+      try {
+        if (JSON.stringify(existing) === JSON.stringify(data)) {
+          return true;
+        }
+      } catch (_) {
+        // If stringify fails, proceed with save
+      }
+    }
 
+    try {
       // FETCH CURRENT DATA FROM DATABASE (not local state)
-      const current = await base44.entities.FactFind.filter({ id: factFind.id });
-      const currentData = current[0];
+      const records = await base44.entities.FactFind.filter({ id: current.id });
+      const currentData = records[0];
 
       // Strip metadata fields from current data
       const {
@@ -111,15 +125,10 @@ export function useFactFind() {
         ...cleanData
       } = currentData;
 
-      // All sections are stored as top-level keys on the FactFind record,
-      // matching how every page reads them (e.g. factFind.personal,
-      // factFind.income_expenses, factFind.superannuation, etc.).
       const mapped = { [sectionName]: data };
-
-      // Merge mapped data into the clean payload, preserving existing top-level fields
       const payload = { ...cleanData, ...mapped };
 
-      await base44.entities.FactFind.update(factFind.id, payload);
+      await base44.entities.FactFind.update(current.id, payload);
 
       // Update local state
       setFactFind(prev => ({
@@ -131,7 +140,7 @@ export function useFactFind() {
     } catch (err) {
       return false;
     }
-  }, [factFind?.id]);
+  }, []);
 
   return {
     factFind,
@@ -140,6 +149,6 @@ export function useFactFind() {
     updateSection,
     setFactFind,
     clientEmail,
-    clientId // Return the stored Client.id
+    clientId
   };
 }
