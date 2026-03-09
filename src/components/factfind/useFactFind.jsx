@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useRole } from '@/components/RoleContext';
 
@@ -15,61 +15,47 @@ export function useFactFind() {
   const [clientEmail, setClientEmail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  console.log('=== useFactFind HOOK ===');
-  console.log('navigationChain:', navigationChain);
+  const factFindRef = useRef(null);
+  factFindRef.current = factFind;
 
   // Extract client record ID at render time
   const clientNav = navigationChain?.find(n => n.type === 'client');
-  console.log('clientNav:', clientNav);
-
   const navClientId = clientNav?.id;
-  console.log('navClientId:', navClientId);
 
   useEffect(() => {
     // Don't run until we have a client ID from the navigation chain
     if (!navClientId) {
-      console.log('useFactFind: No navClientId yet, waiting...');
       setLoading(false);
       return;
     }
 
-    console.log('useFactFind: navClientId available, initializing...', navClientId);
-
     async function initFactFind() {
       try {
         setLoading(true);
-        console.log('=== initFactFind START ===');
 
         // 1. Get Client record by its database ID
         const clients = await base44.entities.Client.filter({ id: navClientId });
-        console.log('Client query result:', clients);
 
         if (!clients || clients.length === 0) {
           throw new Error(`No client found with id: ${navClientId}`);
         }
-        
+
         const client = clients[0];
-        console.log('Client found:', client);
-        
+
         // Store the Client ID and email for syncing
         setClientId(client.id);
         setClientEmail(client.email || null);
-        console.log('Stored clientId:', client.id, 'clientEmail:', client.email);
 
         // 2. Check if Client has existing FactFind
         if (client.fact_find_id) {
-          console.log('Loading existing FactFind:', client.fact_find_id);
           const existing = await base44.entities.FactFind.filter({ id: client.fact_find_id });
           if (existing[0]) {
-            console.log('Loaded FactFind:', existing[0]);
             setFactFind(existing[0]);
           } else {
             throw new Error('FactFind ID exists on Client but record not found');
           }
         } else {
           // 3. Create new FactFind
-          console.log('Creating new FactFind for client:', client.id);
           const newFactFind = await base44.entities.FactFind.create({
             personal: {
               first_name: client.first_name || '',
@@ -81,19 +67,15 @@ export function useFactFind() {
             status: 'in_progress',
             sections_completed: []
           });
-          console.log('Created FactFind:', newFactFind);
 
           // 4. Link to Client (preserve all existing fields)
            await base44.entities.Client.update(client.id, {
              ...client,
              fact_find_id: newFactFind.id
            });
-           console.log('Linked FactFind to Client');
 
           setFactFind(newFactFind);
         }
-
-        console.log('=== initFactFind SUCCESS ===');
       } catch (err) {
         console.error('useFactFind error:', err);
         setError(err.message);
@@ -103,20 +85,30 @@ export function useFactFind() {
     }
 
     initFactFind();
-  }, [navClientId]); // Depend on navClientId, not navigationChain
+  }, [navClientId]);
 
   const updateSection = useCallback(async (sectionName, data) => {
-    if (!factFind?.id) {
-      console.error('updateSection: No FactFind ID');
+    const current = factFindRef.current;
+    if (!current?.id) {
       return false;
     }
 
-    try {
-      console.log(`Saving section "${sectionName}":`, data);
+    // Skip save if the section data is identical to what we already have
+    const existing = current[sectionName];
+    if (existing !== undefined) {
+      try {
+        if (JSON.stringify(existing) === JSON.stringify(data)) {
+          return true;
+        }
+      } catch (_) {
+        // If stringify fails, proceed with save
+      }
+    }
 
+    try {
       // FETCH CURRENT DATA FROM DATABASE (not local state)
-      const current = await base44.entities.FactFind.filter({ id: factFind.id });
-      const currentData = current[0];
+      const records = await base44.entities.FactFind.filter({ id: current.id });
+      const currentData = records[0];
 
       // Strip metadata fields from current data
       const {
@@ -134,15 +126,10 @@ export function useFactFind() {
         ...cleanData
       } = currentData;
 
-      // All sections are stored as top-level keys on the FactFind record,
-      // matching how every page reads them (e.g. factFind.personal,
-      // factFind.income_expenses, factFind.superannuation, etc.).
       const mapped = { [sectionName]: data };
-
-      // Merge mapped data into the clean payload, preserving existing top-level fields
       const payload = { ...cleanData, ...mapped };
 
-      await base44.entities.FactFind.update(factFind.id, payload);
+      await base44.entities.FactFind.update(current.id, payload);
 
       // Update local state
       setFactFind(prev => ({
@@ -150,13 +137,12 @@ export function useFactFind() {
         ...mapped
       }));
 
-      console.log(`Section "${sectionName}" saved successfully`);
       return true;
     } catch (err) {
       console.error(`Failed to save section "${sectionName}":`, err);
       return false;
     }
-  }, [factFind?.id]);
+  }, []);
 
   return {
     factFind,
@@ -165,6 +151,6 @@ export function useFactFind() {
     updateSection,
     setFactFind,
     clientEmail,
-    clientId // Return the stored Client.id
+    clientId
   };
 }

@@ -35,7 +35,7 @@ export default function FactFindTrusts() {
     const fullIndex = factFind.trusts_companies.entities.findIndex(e => e === currentEntity);
     
     return fullIndex >= 0 ? `${currentTab}_${fullIndex}` : null;
-  }, [factFind, currentTab, activeIndex]);
+  }, [factFind?.id, currentTab, activeIndex]);
   
   const entityList = useFactFindEntities(factFind, { excludeId: currentEntityId });
 
