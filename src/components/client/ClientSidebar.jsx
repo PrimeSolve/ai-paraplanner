@@ -16,6 +16,7 @@ import {
   ClipboardList,
   BarChart2,
   Clock,
+  FileEdit,
 } from 'lucide-react';
 
 export default function ClientSidebar({ currentPage }) {
@@ -24,7 +25,7 @@ export default function ClientSidebar({ currentPage }) {
   const [logo, setLogo] = useState(null);
   const { originalUser } = useRole();
   const [factFindOpen, setFactFindOpen] = useState(true);
-  const [adviceOpen, setAdviceOpen] = useState(true);
+  const [soaRequestOpen, setSoaRequestOpen] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
@@ -150,14 +151,16 @@ export default function ClientSidebar({ currentPage }) {
           </ExpandableSection>
 
           <ExpandableSection
-            label="Advice"
-            icon={TrendingUp}
-            isOpen={adviceOpen}
-            onToggle={() => setAdviceOpen(!adviceOpen)}
+            label="SOA Request"
+            icon={FileEdit}
+            isOpen={soaRequestOpen}
+            onToggle={() => setSoaRequestOpen(!soaRequestOpen)}
           >
-            <NavLink path="ClientCashflow" label="Cashflow Model" icon={BarChart2} indent />
-            <NavLink path="ClientAdviceHistory" label="Advice History" icon={Clock} indent />
+            <NavLink path="ClientCashflow" label="Build via AI Cashflow" icon={BarChart2} indent />
+            <NavLink path="SOARequestWelcome" label="Form View" icon={ClipboardList} indent />
           </ExpandableSection>
+
+          <NavLink path="ClientAdviceHistory" label="Advice History" icon={Clock} />
 
           <NavLink path="ClientDocuments" label="Documents" icon={FileCheck} />
           <NavLink path="ClientMessages" label="Messages" icon={MessageSquare} />
