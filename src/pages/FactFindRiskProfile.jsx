@@ -364,28 +364,50 @@ export default function FactFindRiskProfile() {
     }
   }, [factFind]);
 
+  // Auto-save on field changes (debounced 1.5s)
+  const [dataLoaded, setDataLoaded] = useState(false);
+  useEffect(() => {
+    if (!factFind?.id) return;
+    const t = setTimeout(() => setDataLoaded(true), 200);
+    return () => clearTimeout(t);
+  }, [factFind?.id]);
+
+  useEffect(() => {
+    if (!factFind?.id || !dataLoaded) return;
+    const timeoutId = setTimeout(async () => {
+      try {
+        await base44.entities.FactFind.update(factFind.id, {
+          risk_profile: {
+            currentPerson: activeOwner, currentTab: activeTab,
+            mode, adjustRisk, client: clientData, partner: partnerData,
+            otherInfo, completionPct: 0
+          }
+        });
+      } catch (error) {
+        console.error('Auto-save risk profile failed:', error);
+      }
+    }, 1500);
+    return () => clearTimeout(timeoutId);
+  }, [factFind?.id, dataLoaded, activeOwner, activeTab, mode, adjustRisk, clientData, partnerData, otherInfo]);
+
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
       if (factFind?.id) {
         try {
           await base44.entities.FactFind.update(factFind.id, {
             risk_profile: {
-              currentPerson: activeOwner,
-              currentTab: activeTab,
-              mode,
-              adjustRisk,
-              client: clientData,
-              partner: partnerData,
-              otherInfo,
-              completionPct: 0
+              currentPerson: activeOwner, currentTab: activeTab,
+              mode, adjustRisk, client: clientData, partner: partnerData,
+              otherInfo, completionPct: 0
             }
           });
         } catch (error) {
           console.error('Failed to save risk profile before nav:', error);
         }
       }
+      window.dispatchEvent(new Event('factfind-save-complete'));
     };
-    
+
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
   }, [factFind?.id, activeOwner, activeTab, mode, adjustRisk, clientData, partnerData, otherInfo]);

@@ -95,17 +95,35 @@ export default function FactFindSuperTax() {
     }
   }, [factFind]);
 
+  // Auto-save on field changes (debounced 1.5s)
+  const [dataLoaded, setDataLoaded] = useState(false);
+  useEffect(() => {
+    if (!factFind?.id) return;
+    const t = setTimeout(() => setDataLoaded(true), 200);
+    return () => clearTimeout(t);
+  }, [factFind?.id]);
+
+  useEffect(() => {
+    if (!factFind?.id || !dataLoaded) return;
+    const timeoutId = setTimeout(async () => {
+      await updateSection('super_tax', {
+        currentTab, activePerson,
+        client: data.client, partner: data.partner
+      });
+    }, 1500);
+    return () => clearTimeout(timeoutId);
+  }, [factFind?.id, dataLoaded, currentTab, activePerson, data, updateSection]);
+
   // Save-before-nav listener
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
       if (factFind?.id) {
         await updateSection('super_tax', {
-          currentTab,
-          activePerson,
-          client: data.client,
-          partner: data.partner
+          currentTab, activePerson,
+          client: data.client, partner: data.partner
         });
       }
+      window.dispatchEvent(new Event('factfind-save-complete'));
     };
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);

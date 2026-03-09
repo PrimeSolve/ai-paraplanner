@@ -75,6 +75,26 @@ export default function FactFindInvestment() {
     }
   }, [factFind?.investment]);
 
+  // Auto-save committed list data (debounced 1.5s)
+  const [dataLoaded, setDataLoaded] = useState(false);
+  useEffect(() => {
+    if (!factFind?.id) return;
+    const t = setTimeout(() => setDataLoaded(true), 200);
+    return () => clearTimeout(t);
+  }, [factFind?.id]);
+
+  useEffect(() => {
+    if (!factFind?.id || !dataLoaded) return;
+    const timeoutId = setTimeout(async () => {
+      try {
+        await updateSection('investment', { wraps, bonds });
+      } catch (err) {
+        console.error('Auto-save investment failed:', err);
+      }
+    }, 1500);
+    return () => clearTimeout(timeoutId);
+  }, [factFind?.id, dataLoaded, wraps, bonds, updateSection]);
+
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
       let wrapsToSave = [...wraps];

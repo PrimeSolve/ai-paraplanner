@@ -490,8 +490,9 @@ export default function FactFindTrusts() {
           activeIndex: globalStateRef.current.activeIndex
         });
       }
+      window.dispatchEvent(new Event('factfind-save-complete'));
     };
-    
+
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
   }, [factFind?.id, currentTab, activeIndex, updateSection, readTabToArray]);

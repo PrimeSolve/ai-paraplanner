@@ -172,12 +172,14 @@ export default function FactFindPersonal() {
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
       if (factFind?.id) {
+        const completionPct = calculateCompletion(clientData, partnerData, hasPartner);
         const personalData = {
           ...clientData,
-          partner: hasPartner ? partnerData : null
+          partner: hasPartner ? partnerData : null,
+          completionPct
         };
         await updateSection('personal', personalData);
-        
+
         // Sync shared fields to Client entity
         if (clientId && clientData.first_name && clientData.last_name) {
           await base44.entities.Client.update(clientId, {
@@ -189,8 +191,9 @@ export default function FactFindPersonal() {
           });
         }
       }
+      window.dispatchEvent(new Event('factfind-save-complete'));
     };
-    
+
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
   }, [factFind?.id, clientData, partnerData, hasPartner, updateSection, clientId]);
@@ -257,48 +260,34 @@ export default function FactFindPersonal() {
 
 
 
-  // Auto-save completion percentage whenever data changes
+  // Auto-save all form data whenever it changes (debounced 1.5s)
   useEffect(() => {
     if (!factFind?.id || !dataLoaded) {
-      console.log('Skipping completion calc:', { hasFactFind: !!factFind?.id, dataLoaded });
       return;
     }
-    
-    const saveCompletion = async () => {
+
+    const autoSave = async () => {
       const completionPct = calculateCompletion(clientData, partnerData, hasPartner);
-      
-      console.log('Current completionPct in factFind:', factFind.personal?.completionPct);
-      console.log('New calculated completionPct:', completionPct);
-      
-      // Always update (first load or when percentage changed)
-      if (completionPct !== factFind.personal?.completionPct) {
-        console.log('Updating completionPct from', factFind.personal?.completionPct, 'to', completionPct);
-        const result = await updateSection('personal', {
-          ...clientData,
-          partner: hasPartner ? partnerData : null,
-          completionPct
-        });
-        
-        // Update local factFind state so sidebar sees the new completion percentage
-        if (result) {
-          setFactFind(prev => ({
-            ...prev,
-            personal: {
-              ...prev.personal,
-              completionPct
-            }
-          }));
-        }
+
+      const result = await updateSection('personal', {
+        ...clientData,
+        partner: hasPartner ? partnerData : null,
+        completionPct
+      });
+
+      if (result) {
+        setFactFind(prev => ({
+          ...prev,
+          personal: {
+            ...prev.personal,
+            completionPct
+          }
+        }));
       }
     };
-    
-    // Save immediately on first load, debounce on changes
-    if (!factFind.personal?.completionPct) {
-      saveCompletion();
-    } else {
-      const timeoutId = setTimeout(saveCompletion, 1000);
-      return () => clearTimeout(timeoutId);
-    }
+
+    const timeoutId = setTimeout(autoSave, 1500);
+    return () => clearTimeout(timeoutId);
   }, [clientData, partnerData, hasPartner, dataLoaded, factFind?.id, updateSection]);
 
   const handleSaveAndContinue = async () => {
