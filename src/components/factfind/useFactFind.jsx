@@ -17,6 +17,8 @@ export function useFactFind() {
   const [error, setError] = useState(null);
   const factFindRef = useRef(null);
   factFindRef.current = factFind;
+  const clientIdRef = useRef(null);
+  clientIdRef.current = clientId;
 
   // Extract client record ID at render time
   const clientNav = navigationChain?.find(n => n.type === 'client');
@@ -57,6 +59,7 @@ export function useFactFind() {
         } else {
           // 3. Create new FactFind
           const newFactFind = await base44.entities.FactFind.create({
+            client_id: client.id,
             personal: {
               first_name: client.first_name || '',
               last_name: client.last_name || '',
@@ -138,6 +141,11 @@ export function useFactFind() {
 
       const mapped = { [sectionName]: sectionData };
       const payload = { ...cleanData, ...mapped };
+
+      // Ensure the correct client_id is always sent (not the blank GUID)
+      if (clientIdRef.current) {
+        payload.client_id = clientIdRef.current;
+      }
 
       await base44.entities.FactFind.update(current.id, payload);
 
