@@ -362,7 +362,7 @@ export default function FactFindRiskProfile() {
       if (data.partner) setPartnerData(data.partner);
       if (data.otherInfo) setOtherInfo(data.otherInfo);
     }
-  }, [factFind]);
+  }, [factFind?.id]);
 
   // Auto-save on field changes (debounced 1.5s)
   const [dataLoaded, setDataLoaded] = useState(false);

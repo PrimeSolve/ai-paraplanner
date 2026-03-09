@@ -63,7 +63,7 @@ export default function FactFindSuperTax() {
       : 'Partner';
 
     return { client: clientName, partner: partnerName };
-  }, [factFind]);
+  }, [factFind?.id]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -93,7 +93,7 @@ export default function FactFindSuperTax() {
       if (st.currentTab) setCurrentTab(st.currentTab);
       if (st.activePerson) setActivePerson(st.activePerson);
     }
-  }, [factFind]);
+  }, [factFind?.id]);
 
   // Auto-save on field changes (debounced 1.5s)
   const [dataLoaded, setDataLoaded] = useState(false);
