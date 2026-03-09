@@ -237,14 +237,134 @@ const COPILOT_TOOL_DEFINITIONS = [
       required: ["summary", "count"],
     },
   },
+  {
+    name: "addChild",
+    description: "Add a child to the client's fact find.",
+    input_schema: {
+      type: "object",
+      properties: {
+        child_name:    { type: "string", description: "Child's full name" },
+        child_dob:     { type: "string", description: "Date of birth YYYY-MM-DD" },
+        child_fin_dep: { type: "string", description: "Financially dependent: 1=Yes, 2=No" },
+        child_edu:     { type: "string", description: "1=Primary, 2=Secondary, 3=Tertiary, 4=TAFE/Trade, 5=Not in education" },
+        child_fin_age: { type: "string", description: "Age at which financial dependency ends e.g. '25'" },
+        child_health:  { type: "string", description: "Any health conditions (free text, optional)" },
+      },
+      required: ["child_name"],
+    },
+  },
+  {
+    name: "addDependant",
+    description: "Add a non-child dependant (parent, relative, other) to the fact find.",
+    input_schema: {
+      type: "object",
+      properties: {
+        dep_name:         { type: "string", description: "Dependant's full name" },
+        dep_dob:          { type: "string", description: "Date of birth YYYY-MM-DD" },
+        dep_relationship: { type: "string", description: "1=Parent, 2=Sibling/Relative, 3=Other" },
+        dep_interdep:     { type: "string", description: "Financially interdependent: 1=Yes, 2=No" },
+        dep_until_age:    { type: "string", description: "Age dependency ends (optional)" },
+      },
+      required: ["dep_name"],
+    },
+  },
+  {
+    name: "addTrust",
+    description: "Add a discretionary/unit/other trust to the fact find.",
+    input_schema: {
+      type: "object",
+      properties: {
+        trust_name: { type: "string", description: "e.g. The Smith Family Trust" },
+        trust_type: { type: "string", description: "1=Discretionary Family, 2=Unit, 3=Hybrid, 4=Testamentary, 5=Other" },
+      },
+      required: ["trust_name"],
+    },
+  },
+  {
+    name: "addCompany",
+    description: "Add a company entity to the fact find.",
+    input_schema: {
+      type: "object",
+      properties: {
+        company_name: { type: "string", description: "e.g. Smith Investments Pty Ltd" },
+        co_type:      { type: "string", description: "1=Pty Ltd, 2=Partnership, 3=Sole trader, 4=Charity" },
+        co_purpose:   { type: "string", description: "1=Operating business, 2=Investment, 3=Beneficiary of trust" },
+        co_tax_rate:  { type: "string", description: "Tax rate % — default 25 (base rate entity), or 30" },
+      },
+      required: ["company_name"],
+    },
+  },
+  {
+    name: "addSMSF",
+    description: "Add an SMSF (Self-Managed Super Fund) to the fact find.",
+    input_schema: {
+      type: "object",
+      properties: {
+        smsf_name:      { type: "string", description: "e.g. Smith Family Super Fund" },
+        trustee_type:   { type: "string", description: "1=Corporate trustee, 2=Individual trustee" },
+        smsf_balance:   { type: "string", description: "Total fund balance $" },
+        fund_type:      { type: "string", description: "1=SMSF, 2=SAF (Small APRA Fund)" },
+        acct_type:      { type: "string", description: "1=Pooled, 2=Segregated" },
+      },
+      required: ["smsf_name"],
+    },
+  },
+  {
+    name: "addInsurancePolicy",
+    description: "Add an insurance policy to the fact find. Policy type codes: 'Life'=Life cover, 'Life with Linked TPD'=Life+TPD, 'Life with Linked TPD/Trauma'=Life+TPD+Trauma, 'TPD (Stand-alone)'=TPD only, 'Trauma (Stand alone)'=Trauma only, 'Income Protection'=IP only, 'Business Expenses'=Business overheads.",
+    input_schema: {
+      type: "object",
+      properties: {
+        pol_name:           { type: "string", description: "Policy name e.g. 'AustralianSuper Group Cover'" },
+        pol_type:           { type: "string", description: "Policy type — see description for codes" },
+        pol_owner:          { type: "string", description: "client1 | client2 | joint" },
+        pol_insured:        { type: "string", description: "client1 | client2 (who is insured)" },
+        pol_insurer:        { type: "string", description: "Insurer name e.g. 'TAL', 'MLC', 'AIA'" },
+        pol_tax_env:        { type: "string", description: "1=Inside Super, 2=Non-super (ordinary)" },
+        pol_structure:      { type: "string", description: "1=Stepped, 2=Level" },
+        pol_freq:           { type: "string", description: "1=Monthly, 2=Annual" },
+        sum_insured_life:   { type: "string", description: "Life cover sum insured $" },
+        sum_insured_tpd:    { type: "string", description: "TPD sum insured $" },
+        sum_insured_trauma: { type: "string", description: "Trauma sum insured $" },
+        sum_insured_ip:     { type: "string", description: "Income protection monthly benefit $" },
+        premium_life:       { type: "string", description: "Life premium $" },
+        premium_tpd:        { type: "string", description: "TPD premium $" },
+        premium_trauma:     { type: "string", description: "Trauma premium $" },
+        premium_ip:         { type: "string", description: "IP premium $" },
+        pol_waiting:        { type: "string", description: "IP waiting period e.g. '90 days'" },
+        pol_benefit_period: { type: "string", description: "IP benefit period e.g. 'To age 65'" },
+        pol_number:         { type: "string", description: "Policy number (optional)" },
+      },
+      required: ["pol_name", "pol_type", "pol_owner"],
+    },
+  },
+  {
+    name: "updateRiskProfile",
+    description: "Set the risk profile for a client. Risk profile codes: 1=Defensive (100% defensive), 2=Conservative (25/75), 3=Moderate (50/50), 4=Balanced (60/40), 5=Growth (75/25), 6=High Growth (90/10), 7=Aggressive (100% growth). Also accepts plain English e.g. 'balanced', 'growth'.",
+    input_schema: {
+      type: "object",
+      properties: {
+        client:            { type: "string", enum: ["client1", "client2"], description: "Which client" },
+        specified_profile: { type: "string", description: "Risk profile code (1-7) or plain English e.g. 'balanced'" },
+        score:             { type: "number", description: "Questionnaire score 0-100 (optional)" },
+        adviser_comments:  { type: "string", description: "Adviser notes / justification" },
+        adjusted_profile:  { type: "string", description: "Adjusted profile if different to scored profile" },
+        adjustment_reason: { type: "string", description: "Reason for adjustment" },
+      },
+      required: ["client", "specified_profile"],
+    },
+  },
 ];
 
 const COPILOT_QUICK_PROMPTS = [
   "Add 3 super funds: AustralianSuper ($352k, Catherine), Cbus ($150k, Paul), Hostplus ($95k, Paul)",
+  "Add 2 children: Emma born 2012 (secondary school) and Jack born 2016 (primary school)",
+  "Add a discretionary family trust \u2014 The Smith Family Trust, with Paul as individual trustee",
+  "Add an SMSF \u2014 Smith Family Super Fund, corporate trustee, balance $680k",
+  "Add life insurance: MLC Life Cover, $750k sum insured, $1,420/year, inside super, Catherine",
+  "Set risk profiles: Catherine is Balanced, Paul is Growth",
   "Add an investment property worth $800k, purchased $600k in 2020, $550/week rent, joint",
   "Create 3 advice models \u2014 buy investment property in 2028 at $500k, $700k, and $900k",
-  "Set living expenses to $85,000 p.a. with 2.5% annual growth",
-  "Add a home loan: ANZ Variable, $320k, 5.99%, $2,150/month P&I, joint",
 ];
 
 function CashflowAssistant({ factFind, updateFF, darkMode }) {
@@ -313,6 +433,12 @@ ${c2Name ? `- Client 2: ${c2Name}, DOB ${c2DOB}, age ${c2Age}` : "- No client 2"
 - Liabilities: ${(factFind.liabilities || []).length} debts recorded
 - Advice models: ${modelSummary}
 - Strategies: ${strategyCount} strategies recorded
+- Children: ${(factFind.children || []).length} children recorded
+- Dependants: ${(factFind.dependants_list || []).length} dependants recorded
+- Trusts: ${(factFind.trusts || []).length} trusts recorded
+- Companies: ${(factFind.companies || []).length} companies recorded
+- SMSFs: ${(factFind.smsfs || []).length} SMSFs recorded
+- Insurance policies: ${(factFind.insurance?.policies || []).length} policies recorded
 
 ## Ownership defaults:
 - Assets: default to joint (a_ownType "2") unless stated otherwise
@@ -325,6 +451,32 @@ Use the type codes from the tool descriptions. For a "family home" or "principal
 ## Advice model scenarios (e.g. "3 models with property at $500k, $700k, $900k"):
 1. Call createAdviceModel for each model
 2. Call addStrategy (strategy_id "200") for each, using the returned model_id, with the relevant amount and start_year
+
+## Dependants:
+- addChild for biological/adopted children — always ask for DOB if not given (needed for Age Pension modelling)
+- addDependant for parents, relatives, or other non-child dependants
+- dep_relationship: 1=Parent, 2=Sibling/Relative, 3=Other
+
+## Entities (Trusts, Companies, SMSF):
+- addTrust: creates the trust entity. Trust then available as owner trust_0, trust_1 etc. in assets/liabilities.
+- addCompany: creates the company entity. Company then available as owner company_0 etc.
+- addSMSF: creates the SMSF. SMSF then available as owner smsf_0 etc. for strategy and asset purposes.
+- After adding any entity, confirm which index it is (e.g. "Smith Family Trust is now trust_0").
+- Default trust_type "1" (Discretionary Family) unless told otherwise.
+- Default co_type "1" (Pty Ltd) and co_purpose "2" (Investment) unless told otherwise.
+- Default trustee_type "1" (Corporate) for SMSF unless told otherwise.
+
+## Insurance:
+- addInsurancePolicy for all existing policies (factfind policies — not advice recommendations)
+- Key fields: pol_name, pol_type, pol_owner, pol_insured, pol_insurer, sum_insured_*, premium_*
+- If the user gives a total premium without splitting by cover type, set it in premium_life (or most relevant field)
+- pol_tax_env: 1=Inside Super, 2=Non-super
+
+## Risk profile:
+- updateRiskProfile maps plain English ("balanced", "growth") to codes 1–7
+- Always specify the client (client1 or client2)
+- If told "both are balanced" call updateRiskProfile twice — once for each client
+- Never assume risk profile — if not told, skip it
 
 ## Tone:
 Confirm what you've done, not what you're about to do. Keep it to one line per action. No preamble. No filler. Just action and confirmation.`;
@@ -457,6 +609,149 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
         updateFF("advice_request.strategy.strategies", [...strategies, ...cloned]);
         return { success: true, modelId: newId, summary: `Cloned model "${source.name}" \u2192 "${toolInput.new_name}"` };
       }
+      case "addChild": {
+        const children = factFind.children || [];
+        updateFF("children", [...children, {
+          child_name:    toolInput.child_name,
+          child_dob:     toolInput.child_dob     || "",
+          child_fin_dep: toolInput.child_fin_dep || "1",
+          child_edu:     toolInput.child_edu     || "",
+          child_fin_age: toolInput.child_fin_age || "",
+          child_health:  toolInput.child_health  || "",
+        }]);
+        return { success: true, summary: `Added child: ${toolInput.child_name}${toolInput.child_dob ? ` (DOB ${toolInput.child_dob})` : ""}` };
+      }
+      case "addDependant": {
+        const depList = factFind.dependants_list || [];
+        updateFF("dependants_list", [...depList, {
+          dep_name:         toolInput.dep_name,
+          dep_dob:          toolInput.dep_dob          || "",
+          dep_relationship: toolInput.dep_relationship || "",
+          dep_interdep:     toolInput.dep_interdep     || "2",
+          dep_until_age:    toolInput.dep_until_age    || "",
+        }]);
+        const relLabel = { "1":"Parent", "2":"Relative", "3":"Other" }[toolInput.dep_relationship] || "Dependant";
+        return { success: true, summary: `Added dependant: ${toolInput.dep_name} (${relLabel})` };
+      }
+      case "addTrust": {
+        const trusts = factFind.trusts || [];
+        updateFF("trusts", [...trusts, {
+          trust_name:    toolInput.trust_name,
+          trust_type:    toolInput.trust_type || "1",
+          beneficiaries: [],
+        }]);
+        const typeLabel = { "1":"Discretionary Family", "2":"Unit", "3":"Hybrid", "4":"Testamentary", "5":"Other" }[toolInput.trust_type] || "Trust";
+        return { success: true, summary: `Added trust: ${toolInput.trust_name} (${typeLabel})` };
+      }
+      case "addCompany": {
+        const companies = factFind.companies || [];
+        updateFF("companies", [...companies, {
+          company_name: toolInput.company_name,
+          co_type:      toolInput.co_type    || "1",
+          co_purpose:   toolInput.co_purpose || "2",
+          co_tax_rate:  toolInput.co_tax_rate || "25",
+          co_losses:    "",
+          shareholders: [],
+          pnl: {
+            total_revenue: "", total_expenses: "",
+            revenue_growth_rate: "3", expense_growth_rate: "3",
+            income_lines: [
+              { id: "inc_1", label: "Trading Revenue",    amount: "", growth_rate: "3", start_year: "", end_year: "" },
+              { id: "inc_2", label: "Service Revenue",    amount: "", growth_rate: "3", start_year: "", end_year: "" },
+              { id: "inc_3", label: "Investment Income",  amount: "", growth_rate: "2", start_year: "", end_year: "" },
+              { id: "inc_4", label: "Rental Income",      amount: "", growth_rate: "3", start_year: "", end_year: "" },
+            ],
+            expense_lines: [
+              { id: "exp_1",  label: "Salaries & Wages",    amount: "", growth_rate: "3", start_year: "", end_year: "" },
+              { id: "exp_2",  label: "Director Fees",        amount: "", growth_rate: "3", start_year: "", end_year: "" },
+              { id: "exp_3",  label: "Superannuation",       amount: "", growth_rate: "3", start_year: "", end_year: "" },
+              { id: "exp_4",  label: "Rent / Occupancy",     amount: "", growth_rate: "3", start_year: "", end_year: "" },
+              { id: "exp_5",  label: "Insurance",            amount: "", growth_rate: "3", start_year: "", end_year: "" },
+              { id: "exp_6",  label: "Accounting & Legal",   amount: "", growth_rate: "3", start_year: "", end_year: "" },
+              { id: "exp_7",  label: "Depreciation",         amount: "", growth_rate: "0", start_year: "", end_year: "" },
+              { id: "exp_8",  label: "Interest Expense",     amount: "", growth_rate: "0", start_year: "", end_year: "" },
+              { id: "exp_9",  label: "Motor Vehicle",        amount: "", growth_rate: "3", start_year: "", end_year: "" },
+              { id: "exp_10", label: "Marketing",            amount: "", growth_rate: "3", start_year: "", end_year: "" },
+              { id: "exp_11", label: "Other Operating",      amount: "", growth_rate: "3", start_year: "", end_year: "" },
+            ],
+          },
+          share_capital: "", retained_earnings: "", franking_account_balance: "",
+          uploaded_pnl: null, uploaded_bs: null,
+        }]);
+        const coTypeLabel = { "1":"Pty Ltd", "2":"Partnership", "3":"Sole trader", "4":"Charity" }[toolInput.co_type] || "Company";
+        return { success: true, summary: `Added company: ${toolInput.company_name} (${coTypeLabel})` };
+      }
+      case "addSMSF": {
+        const smsfs = factFind.smsfs || [];
+        updateFF("smsfs", [...smsfs, {
+          smsf_name:         toolInput.smsf_name,
+          fund_type:         toolInput.fund_type    || "1",
+          trustee_type:      toolInput.trustee_type || "1",
+          acct_type:         toolInput.acct_type    || "1",
+          smsf_balance:      toolInput.smsf_balance || "",
+          individual_trustee: "",
+          accounts: [],
+        }]);
+        return { success: true, summary: `Added SMSF: ${toolInput.smsf_name}${toolInput.smsf_balance ? ` — $${Number(toolInput.smsf_balance).toLocaleString()}` : ""}` };
+      }
+      case "addInsurancePolicy": {
+        const policies = factFind.insurance?.policies || [];
+        const newPol = {
+          pol_name:           toolInput.pol_name,
+          pol_type:           toolInput.pol_type           || "",
+          pol_tax_env:        toolInput.pol_tax_env        || "",
+          pol_owner:          toolInput.pol_owner          || "",
+          pol_insured:        toolInput.pol_insured        || toolInput.pol_owner || "",
+          pol_insurer:        toolInput.pol_insurer        || "",
+          pol_number:         toolInput.pol_number         || "",
+          pol_structure:      toolInput.pol_structure      || "1",
+          pol_freq:           toolInput.pol_freq           || "1",
+          pol_waiting:        toolInput.pol_waiting        || "",
+          pol_benefit_period: toolInput.pol_benefit_period || "",
+          linked_fund_id:     "",
+          sum_insured_life:   toolInput.sum_insured_life   || "",
+          sum_insured_tpd:    toolInput.sum_insured_tpd    || "",
+          sum_insured_trauma: toolInput.sum_insured_trauma || "",
+          sum_insured_ip:     toolInput.sum_insured_ip     || "",
+          sum_insured_ip2:    "",
+          premium_life:       toolInput.premium_life       || "",
+          premium_tpd:        toolInput.premium_tpd        || "",
+          premium_trauma:     toolInput.premium_trauma     || "",
+          premium_ip:         toolInput.premium_ip         || "",
+          premium_ip2:        "",
+        };
+        updateFF("insurance", { ...(factFind.insurance || {}), policies: [...policies, newPol] });
+        const ownerName = toolInput.pol_owner === "client1" ? c1Name : toolInput.pol_owner === "client2" ? c2Name : "Joint";
+        return { success: true, summary: `Added insurance: ${toolInput.pol_name} — ${toolInput.pol_type} — ${ownerName}` };
+      }
+      case "updateRiskProfile": {
+        const plainToCode = {
+          defensive: "1", conservative: "2", moderate: "3",
+          balanced: "4", growth: "5", "high growth": "6", aggressive: "7"
+        };
+        const riskData = factFind.risk_profile || {
+          client1: { answers: {}, score: 0, profile: "", specifiedProfile: "", adviserComments: "", clientComments: "", adjustedProfile: "", adjustmentReason: "" },
+          client2: { answers: {}, score: 0, profile: "", specifiedProfile: "", adviserComments: "", clientComments: "", adjustedProfile: "", adjustmentReason: "" },
+          mode: "", adjustRisk: "no"
+        };
+        const code = plainToCode[toolInput.specified_profile.toLowerCase()] || toolInput.specified_profile;
+        const profileLabels = { "1":"Defensive","2":"Conservative","3":"Moderate","4":"Balanced","5":"Growth","6":"High Growth","7":"Aggressive" };
+        updateFF("risk_profile", {
+          ...riskData,
+          [toolInput.client]: {
+            ...riskData[toolInput.client],
+            specifiedProfile:  code,
+            profile:           code,
+            score:             toolInput.score           ?? riskData[toolInput.client]?.score ?? 0,
+            adviserComments:   toolInput.adviser_comments  || riskData[toolInput.client]?.adviserComments || "",
+            adjustedProfile:   toolInput.adjusted_profile  || "",
+            adjustmentReason:  toolInput.adjustment_reason || "",
+          }
+        });
+        const clientName = toolInput.client === "client1" ? c1Name : c2Name;
+        const label = profileLabels[code] || code;
+        return { success: true, summary: `Risk profile set: ${clientName} — ${label}` };
+      }
       case "clarify":
         return { success: true, summary: null, clarificationQuestion: toolInput.question };
       case "summariseChanges":
@@ -549,14 +844,23 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
   const debtCount = (factFind.liabilities || []).length;
   const modelCount = (factFind.advice_request?.strategy?.models || []).length;
   const stratCount = (factFind.advice_request?.strategy?.strategies || []).length;
+  const childCount  = (factFind.children || []).length;
+  const entityCount = (factFind.trusts || []).length + (factFind.companies || []).length + (factFind.smsfs || []).length;
+  const insCount    = (factFind.insurance?.policies || []).length;
 
   const Chip = ({ color, children }) => {
-    const isSlate = color === "slate";
+    const colorMap = {
+      indigo:  { bg: "rgba(79,70,229,0.1)",   fg: "#4F46E5", border: "rgba(79,70,229,0.2)" },
+      cyan:    { bg: "rgba(6,182,212,0.1)",    fg: "#0891B2", border: "rgba(6,182,212,0.2)" },
+      violet:  { bg: "rgba(139,92,246,0.1)",   fg: "#7C3AED", border: "rgba(139,92,246,0.2)" },
+      pink:    { bg: "rgba(236,72,153,0.1)",   fg: "#DB2777", border: "rgba(236,72,153,0.2)" },
+      amber:   { bg: "rgba(245,158,11,0.1)",   fg: "#D97706", border: "rgba(245,158,11,0.2)" },
+      slate:   { bg: "var(--ps-surface)",       fg: "var(--ps-text-muted)", border: "var(--ps-border)" },
+    };
+    const c = colorMap[color] || { bg: "rgba(100,116,139,0.08)", fg: "#64748B", border: "rgba(100,116,139,0.15)" };
     return (
       <span style={{
-        background: color === "indigo" ? "rgba(79,70,229,0.1)" : color === "cyan" ? "rgba(6,182,212,0.1)" : color === "violet" ? "rgba(139,92,246,0.1)" : isSlate ? "var(--ps-surface)" : "rgba(100,116,139,0.08)",
-        color: color === "indigo" ? "#4F46E5" : color === "cyan" ? "#0891B2" : color === "violet" ? "#7C3AED" : isSlate ? "var(--ps-text-muted)" : "#64748B",
-        border: `1px solid ${color === "indigo" ? "rgba(79,70,229,0.2)" : color === "cyan" ? "rgba(6,182,212,0.2)" : color === "violet" ? "rgba(139,92,246,0.2)" : isSlate ? "var(--ps-border)" : "rgba(100,116,139,0.15)"}`,
+        background: c.bg, color: c.fg, border: `1px solid ${c.border}`,
         borderRadius: 12, padding: "2px 8px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
       }}>{children}</span>
     );
@@ -588,6 +892,9 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
         <Chip color="slate">{debtCount} debts</Chip>
         <Chip color="violet">{modelCount} model{modelCount !== 1 ? "s" : ""}</Chip>
         <Chip color="violet">{stratCount} strategies</Chip>
+        <Chip color="pink">{childCount} children</Chip>
+        <Chip color="amber">{entityCount} entities</Chip>
+        <Chip color="violet">{insCount} policies</Chip>
       </div>
 
       {/* Activity feed */}
