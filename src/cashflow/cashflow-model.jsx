@@ -478,6 +478,23 @@ Use the type codes from the tool descriptions. For a "family home" or "principal
 - If told "both are balanced" call updateRiskProfile twice — once for each client
 - Never assume risk profile — if not told, skip it
 
+## Batch integrity rule (MANDATORY):
+When executing a batch (multiple tool calls), you MUST:
+1. Only claim an item was added AFTER the tool_result confirms success: true
+2. NEVER state a count of items added unless you have that many tool_result confirmations
+3. If you are unsure whether all items were processed, say so — do not guess
+4. Your confirmation message must list ONLY what actually succeeded per the tool results
+
+If a batch is too large to complete in one response, tell the user:
+"I can add up to 8–10 items in one batch. I've added the first X — reply to add the rest."
+Do NOT claim to have added items you have not received a tool_result for.
+
+## Batch sizing:
+- Comfortable batch: up to 8 tool calls per turn
+- Large batch: 9–12 tool calls — will work but slower
+- Do not attempt more than 12 tool calls in a single turn
+- If the user asks for more (e.g. "create 1 of every asset type" = 13 items), execute the first 10, confirm them, then say: "I've added 10 asset types. Reply and I'll add the remaining 3."
+
 ## Tone:
 Confirm what you've done, not what you're about to do. Keep it to one line per action. No preamble. No filler. Just action and confirmation.`;
   };
@@ -771,7 +788,7 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 2000,
+        max_tokens: 8192,
         system: buildSystemPrompt(),
         tools: COPILOT_TOOL_DEFINITIONS,
         messages: apiMessages,
@@ -779,6 +796,8 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
     });
     return await response.json();
   };
+
+  const MAX_TOOL_ROUNDS = 10;
 
   const sendMessage = async (userInput) => {
     const text = userInput || input.trim();
@@ -789,18 +808,31 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
     setInput("");
     setLoading(true);
 
-    try {
-      let apiMessages = updatedMessages.filter(m => m.role === "user" || m.role === "assistant")
-        .map(m => ({ role: m.role, content: m.content }));
-      let continueLoop = true;
+    let apiMessages = updatedMessages.filter(m => m.role === "user" || m.role === "assistant")
+      .map(m => ({ role: m.role, content: m.content }));
+    let round = 0;
 
-      while (continueLoop) {
+    try {
+      while (round < MAX_TOOL_ROUNDS) {
+        round++;
         const data = await processResponse(apiMessages);
-        const newActivity = [];
+
+        // Detect truncation — don't let Claude silently fabricate success
+        if (data.stop_reason === "max_tokens") {
+          console.warn("Co-pilot: response truncated — max_tokens hit");
+          setMessages(prev => [...prev, {
+            role: "assistant",
+            content: "My response was cut short. Please try a smaller batch — e.g. add 3–4 items at a time rather than all at once.",
+          }]);
+          break;
+        }
+
         const toolResults = [];
+        let hasToolUse = false;
 
         for (const block of (data.content || [])) {
           if (block.type === "tool_use") {
+            hasToolUse = true;
             const result = executeTool(block.name, block.input);
             toolResults.push({
               type: "tool_result",
@@ -808,7 +840,13 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
               content: JSON.stringify(result),
             });
             if (result.summary) {
-              newActivity.push({ id: block.id, toolName: block.name, summary: result.summary, success: result.success });
+              // Update activity feed live as each tool fires
+              setActivityFeed(prev => [...prev, {
+                id: block.id,
+                toolName: block.name,
+                summary: result.summary,
+                success: result.success,
+              }]);
             }
             if (result.clarificationQuestion) {
               setMessages(prev => [...prev, { role: "assistant", content: result.clarificationQuestion }]);
@@ -819,21 +857,25 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
           }
         }
 
-        if (newActivity.length > 0) {
-          setActivityFeed(prev => [...prev, ...newActivity]);
-        }
+        // If no tool calls this round, we're done
+        if (!hasToolUse) break;
 
-        if (toolResults.length > 0 && data.stop_reason === "tool_use") {
-          apiMessages = [
-            ...apiMessages,
-            { role: "assistant", content: data.content },
-            { role: "user", content: toolResults },
-          ];
-        } else {
-          continueLoop = false;
-        }
+        // Append assistant turn + tool results and continue the loop
+        apiMessages = [
+          ...apiMessages,
+          { role: "assistant", content: data.content },
+          { role: "user", content: toolResults },
+        ];
+
+        // If stop_reason is end_turn despite having tool_use blocks, we're done
+        if (data.stop_reason === "end_turn") break;
+      }
+
+      if (round >= MAX_TOOL_ROUNDS) {
+        console.warn("Co-pilot: hit MAX_TOOL_ROUNDS safety ceiling");
       }
     } catch (err) {
+      console.error("sendMessage error:", err);
       setMessages(prev => [...prev, { role: "assistant", content: "Connection error. Please try again." }]);
     }
     setLoading(false);
