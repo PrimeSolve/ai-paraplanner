@@ -1794,7 +1794,7 @@ export function CompanyPage({ data, chartData, companyName, companyIdx, factFind
   const npbt = totalInc - totalExp;
   const npat = npbt - Math.max(0, Math.round(npbt * taxRate));
 
-  const pnlInputStyle = { padding: "5px 8px", border: "1px solid var(--ps-border-light)", borderRadius: 5, fontSize: 11, width: "100%", background: "var(--ps-surface)", color: "var(--ps-text-primary)", outline: "none" };
+  const pnlInputStyle = { padding: "5px 8px", border: "1px solid var(--ps-border-light)", borderRadius: 5, fontSize: 11, width: "100%", background: "var(--ps-surface-input)", color: "var(--ps-text-primary)", outline: "none" };
   const pnlThStyle = { padding: "5px 8px", textAlign: "left", fontWeight: 600, fontSize: 10, color: "var(--ps-text-subtle)", textTransform: "uppercase" };
   const pnlTdStyle = { padding: "3px 6px" };
 

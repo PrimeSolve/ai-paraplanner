@@ -3831,14 +3831,14 @@ export function GoalsForm({ factFind, updateFF }) {
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 8 }}>
                           <div>
                             <div style={{ fontSize: 11, fontWeight: 600, color: "var(--ps-text-secondary)", marginBottom: 4 }}>Start year</div>
-                            <select value={obj.o_start} onChange={e => updateObjective(activeObjIdx, "o_start", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid var(--ps-border-mid)", borderRadius: 6, fontSize: 12, background: "var(--ps-surface)" }}>
+                            <select value={obj.o_start} onChange={e => updateObjective(activeObjIdx, "o_start", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid var(--ps-border-mid)", borderRadius: 6, fontSize: 12, background: "var(--ps-surface-input)" }}>
                               <option value="">Select year...</option>
                               {Array.from({ length: 51 }, (_, i) => { const y = new Date().getFullYear() + i; return <option key={y} value={String(y)}>{y}</option>; })}
                             </select>
                           </div>
                           <div>
                             <div style={{ fontSize: 11, fontWeight: 600, color: "var(--ps-text-secondary)", marginBottom: 4 }}>End year</div>
-                            <select value={obj.o_end} onChange={e => updateObjective(activeObjIdx, "o_end", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid var(--ps-border-mid)", borderRadius: 6, fontSize: 12, background: "var(--ps-surface)" }}>
+                            <select value={obj.o_end} onChange={e => updateObjective(activeObjIdx, "o_end", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid var(--ps-border-mid)", borderRadius: 6, fontSize: 12, background: "var(--ps-surface-input)" }}>
                               <option value="">Select year...</option>
                               {Array.from({ length: 51 }, (_, i) => { const y = new Date().getFullYear() + i; return <option key={y} value={String(y)}>{y}</option>; })}
                             </select>
