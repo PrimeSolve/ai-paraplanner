@@ -81,38 +81,60 @@ export default function FactFindIncomeExpenses() {
     }
   }, [factFind]);
 
+  // Build the save payload (shared by auto-save and save-before-nav)
+  const buildIncomeExpensesPayload = useCallback(() => {
+    const incomeSources = [
+      { person: 'client', fields: clientFields, adjustments: clientAdjustments }
+    ];
+    if (hasPartner) {
+      incomeSources.push({ person: 'partner', fields: partnerFields, adjustments: partnerAdjustments });
+    }
+    const expenses = [
+      { fields: expenseFields, adjustments: expenseAdjustments }
+    ];
+    return { income_sources: incomeSources, expenses };
+  }, [clientFields, partnerFields, expenseFields, clientAdjustments, partnerAdjustments, expenseAdjustments, hasPartner]);
+
+  // Auto-save on field changes (debounced 1.5s)
+  const [dataLoaded, setDataLoaded] = useState(false);
+  useEffect(() => {
+    if (!factFind?.id) return;
+    const t = setTimeout(() => setDataLoaded(true), 200);
+    return () => clearTimeout(t);
+  }, [factFind?.id]);
+
+  useEffect(() => {
+    if (!factFind?.id || !dataLoaded) return;
+    const timeoutId = setTimeout(async () => {
+      try {
+        await base44.entities.FactFind.update(factFind.id, {
+          income_expenses: buildIncomeExpensesPayload()
+        });
+      } catch (error) {
+        console.error('Auto-save income/expenses failed:', error);
+      }
+    }, 1500);
+    return () => clearTimeout(timeoutId);
+  }, [factFind?.id, dataLoaded, buildIncomeExpensesPayload]);
+
   // Save-before-nav listener
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
-      if (!factFind?.id) return;
-
-      try {
-        const incomeSources = [
-          { person: 'client', fields: clientFields, adjustments: clientAdjustments }
-        ];
-        
-        if (hasPartner) {
-          incomeSources.push({ person: 'partner', fields: partnerFields, adjustments: partnerAdjustments });
+      if (factFind?.id) {
+        try {
+          await base44.entities.FactFind.update(factFind.id, {
+            income_expenses: buildIncomeExpensesPayload()
+          });
+        } catch (error) {
+          console.error('Failed to save income/expenses before nav:', error);
         }
-        
-        const expenses = [
-          { fields: expenseFields, adjustments: expenseAdjustments }
-        ];
-
-        await base44.entities.FactFind.update(factFind.id, {
-          income_expenses: {
-            income_sources: incomeSources,
-            expenses: expenses
-          }
-        });
-      } catch (error) {
-        console.error('Failed to save income/expenses before nav:', error);
       }
+      window.dispatchEvent(new Event('factfind-save-complete'));
     };
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, clientFields, partnerFields, expenseFields, clientAdjustments, partnerAdjustments, expenseAdjustments, hasPartner]);
+  }, [factFind?.id, buildIncomeExpensesPayload]);
 
 
 

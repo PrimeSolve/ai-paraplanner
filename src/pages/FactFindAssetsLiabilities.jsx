@@ -58,6 +58,28 @@ export default function FactFindAssetsLiabilities() {
     }
   }, [factFind]);
 
+  // Auto-save on data changes (debounced 1.5s)
+  const [dataLoaded, setDataLoaded] = useState(false);
+  useEffect(() => {
+    if (!factFind?.id) return;
+    const t = setTimeout(() => setDataLoaded(true), 200);
+    return () => clearTimeout(t);
+  }, [factFind?.id]);
+
+  useEffect(() => {
+    if (!factFind?.id || !dataLoaded) return;
+    const timeoutId = setTimeout(async () => {
+      try {
+        await updateSection('assets_liabilities', {
+          assets: assetsList, liabilities: debtsList
+        });
+      } catch (err) {
+        console.error('Auto-save assets/liabilities failed:', err);
+      }
+    }, 1500);
+    return () => clearTimeout(timeoutId);
+  }, [factFind?.id, dataLoaded, assetsList, debtsList, updateSection]);
+
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
       try {

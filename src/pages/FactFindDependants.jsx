@@ -329,11 +329,12 @@ export default function FactFindDependants() {
         globalStateRef.current.dependants.dependants_list = readTabToArray('dependants');
         globalStateRef.current.dependants.currentTab = currentTab;
         globalStateRef.current.dependants.activeIndex = activeIndex;
-        
+
         await updateSection('dependants', globalStateRef.current.dependants);
       }
+      window.dispatchEvent(new Event('factfind-save-complete'));
     };
-    
+
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
   }, [factFind?.id, currentTab, activeIndex, updateSection, readTabToArray]);

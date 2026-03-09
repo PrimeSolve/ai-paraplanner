@@ -135,10 +135,30 @@ export default function FactFindSuperannuation() {
     }
   }, [factFind?.superannuation]);
 
+  // Auto-save committed list data (debounced 1.5s)
+  const [dataLoaded, setDataLoaded] = useState(false);
+  useEffect(() => {
+    if (!factFind?.id) return;
+    const t = setTimeout(() => setDataLoaded(true), 200);
+    return () => clearTimeout(t);
+  }, [factFind?.id]);
+
+  useEffect(() => {
+    if (!factFind?.id || !dataLoaded) return;
+    const timeoutId = setTimeout(async () => {
+      try {
+        await updateSection('superannuation', {
+          funds: superFunds, pensions, annuities
+        });
+      } catch (err) {
+        console.error('Auto-save superannuation failed:', err);
+      }
+    }, 1500);
+    return () => clearTimeout(timeoutId);
+  }, [factFind?.id, dataLoaded, superFunds, pensions, annuities, updateSection]);
+
   // CRITICAL: Save before navigating away
   useEffect(() => {
-    console.log('=== SUPER LISTENER REGISTERED ===');
-
     const handleSaveBeforeNav = async () => {
       console.log('=== SUPER SAVE-BEFORE-NAV FIRED ===');
       console.log('View:', view, 'MainTab:', mainTab, 'EditingIndex:', editingIndex);
