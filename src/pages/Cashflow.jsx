@@ -9,7 +9,7 @@ import CashflowModel from '@/cashflow/cashflow-model.jsx';
 export default function Cashflow() {
   return (
     <div className="w-full h-full">
-      <CashflowModel />
+      <CashflowModel mode="cashflow" />
     </div>
   );
 }

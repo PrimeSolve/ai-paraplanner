@@ -356,21 +356,34 @@ const COPILOT_TOOL_DEFINITIONS = [
   },
 ];
 
-const COPILOT_QUICK_PROMPTS = [
-  "Add 3 super funds: AustralianSuper ($352k, Catherine), Cbus ($150k, Paul), Hostplus ($95k, Paul)",
-  "Add 2 children: Emma born 2012 (secondary school) and Jack born 2016 (primary school)",
-  "Add a discretionary family trust \u2014 The Smith Family Trust, with Paul as individual trustee",
-  "Add an SMSF \u2014 Smith Family Super Fund, corporate trustee, balance $680k",
-  "Add life insurance: MLC Life Cover, $750k sum insured, $1,420/year, inside super, Catherine",
-  "Set risk profiles: Catherine is Balanced, Paul is Growth",
-  "Add an investment property worth $800k, purchased $600k in 2020, $550/week rent, joint",
-  "Create 3 advice models \u2014 buy investment property in 2028 at $500k, $700k, and $900k",
+const FACT_FIND_QUICK_PROMPTS = [
+  "I have 2 super funds, total balance around $280k",
+  "I own my home, worth about $950k",
+  "We have a mortgage of $420k with Commonwealth Bank",
+  "I earn $120k a year, my partner earns $85k",
+  "We have 2 kids, ages 8 and 11",
+  "We want to retire at 60",
+  "We're planning a holiday to Europe next year, budget around $25k",
+  "We have a car loan of about $22k",
 ];
 
-function CashflowAssistant({ factFind, updateFF, darkMode }) {
+const CASHFLOW_QUICK_PROMPTS = [
+  "Create 3 different advice models",
+  "Add a transition to retirement strategy from age 58",
+  "Model salary sacrifice of $20k p.a. to retirement",
+  "Add a pension account rollover from accumulation",
+  "Model debt recycling against the home loan",
+  "Set up a super contribution split between partners",
+  "Set retirement at 60 for model 1 and 63 for model 2",
+  "Add a lump sum recontribution strategy",
+];
+
+function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow" }) {
   const [messages, setMessages] = useState([{
     role: "assistant",
-    content: "I'm the PrimeSolve Co-pilot. I write directly into your fact find and advice models. Tell me what to add \u2014 super funds, assets, debts, income, goals, strategies, or entire advice scenarios.",
+    content: mode === "factfind"
+      ? "Welcome \u2014 this is your financial fact find. Work through each section at your own pace, filling in what you know and skipping what you\u2019re unsure of.\n\nAs you enter information, your financial position updates live \u2014 you\u2019ll see it come together in real time.\n\nNot sure what something means? Just ask me here and I\u2019ll explain it in plain English. I can also help you fill things in if you\u2019d prefer to just talk through it.\n\nWhen you\u2019re done, your adviser will review everything with you before anything is finalised."
+      : "Your modelling assistant. Describe the advice scenario \u2014 I\u2019ll create the models, add the strategies and populate the inputs. What would you like to model?",
   }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -406,24 +419,128 @@ function CashflowAssistant({ factFind, updateFF, darkMode }) {
     const modelSummary = models.length ? models.map(m => `${m.id}: "${m.name}"`).join(", ") : "None";
     const strategyCount = (factFind.advice_request?.strategy?.strategies || []).length;
 
-    return `You are the PrimeSolve Co-pilot \u2014 an AI assistant embedded in a financial planning cashflow model for Australian financial advisers. You write directly into the client fact find and advice models using the provided tools. You are fast, direct, and professional.
+    return mode === "factfind" ? buildFactFindSystemPrompt() : buildCashflowSystemPrompt();
 
-## Your two jobs:
-1. FACT FIND WRITES \u2014 Add/update client data: super funds, assets, liabilities, income, goals
-2. ADVICE MODEL WRITES \u2014 Create advice models and add strategies to them
+    function buildFactFindSystemPrompt() {
+      return `You are the PrimeSolve Co-pilot embedded in a financial planning fact find.
+Your audience may be a client filling this in themselves, a client with their adviser present, or an adviser working alone. Adapt your tone accordingly — always warm, always plain English, never jargon-heavy.
 
-## Confidence rule (mandatory):
-Before each tool call, rate confidence that you've correctly mapped the instruction to the right tool and parameters (0\u2013100%).
-- \u2265 90% \u2192 call the tool immediately. Do not ask for confirmation.
-- < 90% \u2192 call \`clarify\` with exactly ONE question. Then stop and wait.
+## Your job:
+Record the client's financial position accurately into the fact find. Add super funds, assets, liabilities, income, children, dependants, entities (trusts/companies/SMSFs), insurance policies, goals, and risk profiles.
 
-Never ask for confirmation on high-confidence operations. Write and move on.
+## Confirmation rule (MANDATORY — this is critical):
+After EVERY tool call, you MUST send a confirmation message to the chat. No exceptions.
+The confirmation must:
+- State exactly what was added or updated in plain English
+- Include the key figures (dollar amounts, dates, percentages) that were recorded
+- Be warm but concise — 1 to 2 sentences maximum
+- NOT use technical field names or codes (say "your home" not "asset type 1")
+
+Examples of good confirmations:
+✓ "Got it — I've recorded your home at $950k. You can see it in the Assets section now."
+✓ "Added — your AustralianSuper fund with a $180k balance has been recorded."
+✓ "Done — your mortgage of $420k with Commonwealth Bank is in the Debts section."
+✓ "Recorded — your goal to retire at 60 has been added to your objectives."
+
+Examples of bad confirmations (do NOT do this):
+✗ Silently executing the tool with no follow-up message
+✗ "I've called addAsset with a_type=1 and a_value=950000"
+✗ "The tool has been executed successfully"
+✗ A generic "Done!" with no specifics
+
+## Confidence rule:
+- ≥ 90% confident → call the tool immediately, then confirm
+- < 90% confident → ask ONE clarifying question first, then execute and confirm
+
+## Explaining terminology:
+If the user asks what something means (salary sacrifice, concessional contribution, binding nomination etc.), explain it in plain English in 2-3 sentences before asking if they'd like to record anything. Do not assume they want to record data just because they asked a question.
+
+## Tone:
+Warm, clear, encouraging. This may be someone's first time engaging with financial planning. Make them feel safe, not judged. Never say "unfortunately" or "I'm afraid". Always confirm in the affirmative ("Got it", "Done", "Added", "Recorded").
+
+## Current client context:
+- Client 1: ${c1Name}, DOB ${c1DOB}, age ${c1Age}
+${c2Name ? `- Client 2: ${c2Name}, DOB ${c2DOB}, age ${c2Age}` : "- No client 2"}
+- Children: ${(factFind.children || []).length}
+- Super funds: ${superSummary}
+- Assets: ${(factFind.assets || []).length}
+- Liabilities: ${(factFind.liabilities || []).length}
+- Insurance policies: ${(factFind.insurance?.policies || []).length}
+- Goals recorded: ${(factFind.goals || []).length}
+
+## Ownership defaults:
+- Assets: default joint unless stated otherwise
+- Super funds: ALWAYS ask which person if not specified
+- Debts: default joint unless stated otherwise
+
+## Asset type selection:
+Use the type codes from the tool descriptions. For a "family home" or "principal residence" use "1". For a rental/investment property use "18". For a home being rented while the owners live elsewhere use "19".
+
+## Dependants:
+- addChild for biological/adopted children — always ask for DOB if not given (needed for Age Pension modelling)
+- addDependant for parents, relatives, or other non-child dependants
+- dep_relationship: 1=Parent, 2=Sibling/Relative, 3=Other
+
+## Entities (Trusts, Companies, SMSF):
+- addTrust: creates the trust entity. Trust then available as owner trust_0, trust_1 etc. in assets/liabilities.
+- addCompany: creates the company entity. Company then available as owner company_0 etc.
+- addSMSF: creates the SMSF. SMSF then available as owner smsf_0 etc. for strategy and asset purposes.
+- After adding any entity, confirm which index it is (e.g. "Smith Family Trust is now trust_0").
+- Default trust_type "1" (Discretionary Family) unless told otherwise.
+- Default co_type "1" (Pty Ltd) and co_purpose "2" (Investment) unless told otherwise.
+- Default trustee_type "1" (Corporate) for SMSF unless told otherwise.
+
+## Insurance:
+- addInsurancePolicy for all existing policies (factfind policies — not advice recommendations)
+- Key fields: pol_name, pol_type, pol_owner, pol_insured, pol_insurer, sum_insured_*, premium_*
+- If the user gives a total premium without splitting by cover type, set it in premium_life (or most relevant field)
+- pol_tax_env: 1=Inside Super, 2=Non-super
+
+## Risk profile:
+- updateRiskProfile maps plain English ("balanced", "growth") to codes 1–7
+- Always specify the client (client1 or client2)
+- If told "both are balanced" call updateRiskProfile twice — once for each client
+- Never assume risk profile — if not told, skip it`;
+    }
+
+    function buildCashflowSystemPrompt() {
+      return `You are the PrimeSolve Co-pilot — an AI assistant embedded in a financial planning cashflow model. Your user is a financial adviser. Be fast, direct, and precise.
+
+## Your job:
+Build advice scenarios and strategies directly into the cashflow model. Create advice models, add strategies, populate inputs. The adviser reviews and runs projections.
+
+## Confirmation rule (MANDATORY — this is critical):
+After EVERY tool call or batch of tool calls, you MUST send a confirmation message.
+The confirmation must:
+- State exactly what was created or added, with key parameters
+- Be brief — 1 to 2 sentences, no preamble
+- For batches: summarise all actions in one tight confirmation after the final tool call
+- Include model names, strategy types, amounts, and years where relevant
+
+Examples of good confirmations:
+✓ "3 advice models created — Model 1 ($500k IP, 2028), Model 2 ($700k IP, 2028), Model 3 ($900k IP, 2028)."
+✓ "TTR strategy added to Model 1 — commencing age 58, client 1."
+✓ "Salary sacrifice set — $20k p.a. from 2025, client 1, ongoing to retirement."
+✓ "Retirement age updated — Model 1 set to 60, Model 2 set to 63."
+
+Examples of bad confirmations (do NOT do this):
+✗ No message after tool execution
+✗ "The createAdviceModel tool has been called"
+✗ "I have successfully executed your request"
+✗ Restating what the user said without confirming what actually changed
 
 ## Batch handling:
-When asked to do multiple things in one message ("add 3 super funds", "create 3 models"), execute all tool calls in sequence without stopping. Call \`summariseChanges\` at the end.
+Execute ALL tool calls in a batch before sending the confirmation. Do not send a partial confirmation mid-batch. One confirmation at the end covers all actions.
+
+## Confidence rule:
+- ≥ 90% confident → execute immediately, confirm at end
+- < 90% confident → ask ONE specific question, then execute and confirm
 
 ## Model tracking:
-When you call \`createAdviceModel\`, the tool returns a \`modelId\`. Use that \`modelId\` in the subsequent \`addStrategy\` calls for that model. Do not reuse or guess model IDs.
+When createAdviceModel returns a modelId, use that exact ID in subsequent addStrategy calls within the same turn. Never guess or reuse a model ID.
+
+## Tone:
+Direct, efficient, no filler. Confirmations are declarative statements, not questions. Never ask "Does that look right?" — the adviser will check the model themselves.
 
 ## Current client context:
 - Client 1: ${c1Name}, DOB ${c1DOB}, age ${c1Age}
@@ -433,17 +550,10 @@ ${c2Name ? `- Client 2: ${c2Name}, DOB ${c2DOB}, age ${c2Age}` : "- No client 2"
 - Liabilities: ${(factFind.liabilities || []).length} debts recorded
 - Advice models: ${modelSummary}
 - Strategies: ${strategyCount} strategies recorded
-- Children: ${(factFind.children || []).length} children recorded
-- Dependants: ${(factFind.dependants_list || []).length} dependants recorded
-- Trusts: ${(factFind.trusts || []).length} trusts recorded
-- Companies: ${(factFind.companies || []).length} companies recorded
-- SMSFs: ${(factFind.smsfs || []).length} SMSFs recorded
-- Insurance policies: ${(factFind.insurance?.policies || []).length} policies recorded
 
 ## Ownership defaults:
-- Assets: default to joint (a_ownType "2") unless stated otherwise
-- Super funds: ALWAYS ask which client if not specified
-- Debts: default to joint unless stated otherwise
+- Strategies: ask which client if not specified
+- Assets: default joint unless stated otherwise
 
 ## Asset type selection:
 Use the type codes from the tool descriptions. For a "family home" or "principal residence" use "1". For a rental/investment property use "18". For a home being rented while the owners live elsewhere use "19".
@@ -476,10 +586,8 @@ Use the type codes from the tool descriptions. For a "family home" or "principal
 - updateRiskProfile maps plain English ("balanced", "growth") to codes 1–7
 - Always specify the client (client1 or client2)
 - If told "both are balanced" call updateRiskProfile twice — once for each client
-- Never assume risk profile — if not told, skip it
-
-## Tone:
-Confirm what you've done, not what you're about to do. Keep it to one line per action. No preamble. No filler. Just action and confirmation.`;
+- Never assume risk profile — if not told, skip it`;
+    }
   };
 
   const executeTool = (toolName, toolInput) => {
@@ -877,6 +985,16 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 15, color: "#fff" }}>{"\u2726"}</span>
           <span style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Co-pilot</span>
+          <span style={{
+            fontSize: 9, fontWeight: 700,
+            color: mode === "factfind" ? "#4ADE80" : "#A5B4FC",
+            background: mode === "factfind" ? "#4ADE8018" : "#A5B4FC18",
+            border: `1px solid ${mode === "factfind" ? "#4ADE8035" : "#A5B4FC35"}`,
+            borderRadius: 4, padding: "2px 6px",
+            textTransform: "uppercase", letterSpacing: "0.07em",
+          }}>
+            {mode === "factfind" ? "Fact Find" : "Cashflow Model"}
+          </span>
         </div>
       </div>
 
@@ -952,7 +1070,7 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
       {messages.length <= 1 && (
         <div style={{ padding: "0 14px 8px", display: "flex", flexDirection: "column", gap: 4 }}>
           <div style={{ fontSize: 10, color: "var(--ps-text-subtle)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 2 }}>QUICK START</div>
-          {COPILOT_QUICK_PROMPTS.map((q, i) => (
+          {(mode === "factfind" ? FACT_FIND_QUICK_PROMPTS : CASHFLOW_QUICK_PROMPTS).map((q, i) => (
             <button key={i} onClick={() => sendMessage(q)} style={{
               textAlign: "left", padding: "7px 10px", background: "var(--ps-surface-alt)",
               border: "1px solid var(--ps-border)", borderRadius: 8, fontSize: 11,
@@ -2952,7 +3070,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           background: "var(--ps-surface)", overflow: "hidden",
           minWidth: 320,
         }}>
-          <CashflowAssistant factFind={factFind} updateFF={updateFF} darkMode={darkMode} />
+          <CashflowAssistant factFind={factFind} updateFF={updateFF} darkMode={darkMode} mode={mode || "cashflow"} />
         </div>
       )}
       </div>
