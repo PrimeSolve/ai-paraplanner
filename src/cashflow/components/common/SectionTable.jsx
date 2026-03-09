@@ -29,15 +29,15 @@ export function PlaceholderContent({ topTab, subTab, subSubTab }) {
    STYLE TOKENS — SectionTable Style Rules
    ═══════════════════════════════════════════════════════════════ */
 
-// H1 section-break variants (border-left + tinted background)
+// H1 section-break variants (border-left + tinted background) — uses CSS variables for dark mode support
 const H1V = {
-  income:  { borderLeft: "4px solid #4F46E5", background: "#E2E5F5", color: "#312E81" },
-  expense: { borderLeft: "4px solid #EA580C", background: "#F5E8E0", color: "#7C2D12" },
-  super:   { borderLeft: "4px solid #7C3AED", background: "#EDE5F5", color: "#4C1D95" },
-  nw:      { borderLeft: "4px solid #059669", background: "#E0F0EA", color: "#064E3B" },
-  debt:    { borderLeft: "4px solid #DC2626", background: "#F5E0E0", color: "#7F1D1D" },
-  amb:     { borderLeft: "4px solid #D97706", background: "#F5EFE0", color: "#78350F" },
-  slate:   { borderLeft: "4px solid #64748B", background: "#E8ECF2", color: "#1E293B" },
+  income:  { borderLeft: "4px solid var(--ps-h1-income-border)", background: "var(--ps-h1-income-bg)", color: "var(--ps-h1-income-text)" },
+  expense: { borderLeft: "4px solid var(--ps-h1-expense-border)", background: "var(--ps-h1-expense-bg)", color: "var(--ps-h1-expense-text)" },
+  super:   { borderLeft: "4px solid var(--ps-h1-super-border)", background: "var(--ps-h1-super-bg)", color: "var(--ps-h1-super-text)" },
+  nw:      { borderLeft: "4px solid var(--ps-h1-nw-border)", background: "var(--ps-h1-nw-bg)", color: "var(--ps-h1-nw-text)" },
+  debt:    { borderLeft: "4px solid var(--ps-h1-debt-border)", background: "var(--ps-h1-debt-bg)", color: "var(--ps-h1-debt-text)" },
+  amb:     { borderLeft: "4px solid var(--ps-h1-amb-border)", background: "var(--ps-h1-amb-bg)", color: "var(--ps-h1-amb-text)" },
+  slate:   { borderLeft: "4px solid var(--ps-h1-slate-border)", background: "var(--ps-h1-slate-bg)", color: "var(--ps-h1-slate-text)" },
 };
 
 // H2 sub-header variants
@@ -192,9 +192,9 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
       <tr key={key}>
         <td style={{
           position: "sticky", left: 0, zIndex: 1,
-          background: "#1E293B", color: "#F1F5F9",
+          background: "var(--ps-grand-total-bg)", color: "#F1F5F9",
           borderLeft: `4px solid ${gs.accent}`,
-          borderTop: "2px solid #334155",
+          borderTop: "2px solid var(--ps-border-mid)",
           padding: "12px 12px 12px 16px",
           fontSize: 13, fontWeight: 800, textAlign: "left",
           whiteSpace: "nowrap",
@@ -202,8 +202,8 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
         {row.values.map((val, vi) => (
           <td key={vi} style={{
             padding: "12px 12px", textAlign: "right",
-            background: "#1E293B",
-            borderTop: "2px solid #334155",
+            background: "var(--ps-grand-total-bg)",
+            borderTop: "2px solid var(--ps-border-mid)",
             fontSize: 13, fontWeight: 800,
             color: grandValColor(val),
           }}>{renderVal(val)}</td>
@@ -399,7 +399,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                         padding: "10px 16px",
                         fontSize: 11, fontWeight: 800,
                         textTransform: "uppercase", letterSpacing: "0.08em",
-                        borderTop: "3px solid #CBD5E1", borderBottom: "1px solid #C8D0DC",
+                        borderTop: "3px solid var(--ps-border)", borderBottom: "1px solid var(--ps-border-mid)",
                         ...v,
                       }}>
                         <span style={{ marginRight: 8, fontSize: 10, opacity: 0.6 }}>

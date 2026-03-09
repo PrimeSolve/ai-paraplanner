@@ -246,7 +246,7 @@ const COPILOT_QUICK_PROMPTS = [
   "Add a home loan: ANZ Variable, $320k, 5.99%, $2,150/month P&I, joint",
 ];
 
-function CashflowAssistant({ factFind, updateFF }) {
+function CashflowAssistant({ factFind, updateFF, darkMode }) {
   const [messages, setMessages] = useState([{
     role: "assistant",
     content: "I'm the PrimeSolve Co-pilot. I write directly into your fact find and advice models. Tell me what to add \u2014 super funds, assets, debts, income, goals, strategies, or entire advice scenarios.",
@@ -545,17 +545,20 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
   const modelCount = (factFind.advice_request?.strategy?.models || []).length;
   const stratCount = (factFind.advice_request?.strategy?.strategies || []).length;
 
-  const Chip = ({ color, children }) => (
-    <span style={{
-      background: color === "indigo" ? "rgba(79,70,229,0.1)" : color === "cyan" ? "rgba(6,182,212,0.1)" : color === "violet" ? "rgba(139,92,246,0.1)" : "rgba(100,116,139,0.08)",
-      color: color === "indigo" ? "#4F46E5" : color === "cyan" ? "#0891B2" : color === "violet" ? "#7C3AED" : "#64748B",
-      border: `1px solid ${color === "indigo" ? "rgba(79,70,229,0.2)" : color === "cyan" ? "rgba(6,182,212,0.2)" : color === "violet" ? "rgba(139,92,246,0.2)" : "rgba(100,116,139,0.15)"}`,
-      borderRadius: 12, padding: "2px 8px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
-    }}>{children}</span>
-  );
+  const Chip = ({ color, children }) => {
+    const isSlate = color === "slate";
+    return (
+      <span style={{
+        background: color === "indigo" ? "rgba(79,70,229,0.1)" : color === "cyan" ? "rgba(6,182,212,0.1)" : color === "violet" ? "rgba(139,92,246,0.1)" : isSlate ? "var(--ps-surface)" : "rgba(100,116,139,0.08)",
+        color: color === "indigo" ? "#4F46E5" : color === "cyan" ? "#0891B2" : color === "violet" ? "#7C3AED" : isSlate ? "var(--ps-text-muted)" : "#64748B",
+        border: `1px solid ${color === "indigo" ? "rgba(79,70,229,0.2)" : color === "cyan" ? "rgba(6,182,212,0.2)" : color === "violet" ? "rgba(139,92,246,0.2)" : isSlate ? "var(--ps-border)" : "rgba(100,116,139,0.15)"}`,
+        borderRadius: 12, padding: "2px 8px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
+      }}>{children}</span>
+    );
+  };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#fff" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--ps-surface)" }}>
       {/* Panel header */}
       <div style={{
         padding: "10px 14px",
@@ -570,7 +573,7 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
 
       {/* Context strip */}
       <div style={{
-        padding: "6px 14px", background: "#F8FAFC", borderBottom: "1px solid #E2E8F0",
+        padding: "6px 14px", background: "var(--ps-surface-alt)", borderBottom: "1px solid var(--ps-border)",
         display: "flex", gap: 6, flexWrap: "wrap",
       }}>
         <Chip color="indigo">{c1Name}</Chip>
@@ -584,21 +587,21 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
 
       {/* Activity feed */}
       <div style={{
-        padding: "8px 14px", borderBottom: "1px solid #E2E8F0",
-        maxHeight: 160, overflowY: "auto", background: "#FAFBFC",
+        padding: "8px 14px", borderBottom: "1px solid var(--ps-border)",
+        maxHeight: 160, overflowY: "auto", background: "var(--ps-surface-alt)",
       }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", letterSpacing: "0.07em", marginBottom: 6 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: "var(--ps-text-subtle)", letterSpacing: "0.07em", marginBottom: 6 }}>
           ACTIVITY {"\u2014"} {activityFeed.length} change{activityFeed.length !== 1 ? "s" : ""} this session
         </div>
         {activityFeed.length === 0 && (
-          <div style={{ fontSize: 11, color: "#CBD5E1", fontStyle: "italic" }}>No changes yet</div>
+          <div style={{ fontSize: 11, color: "var(--ps-text-subtle)", fontStyle: "italic" }}>No changes yet</div>
         )}
         {activityFeed.map((item, i) => (
           <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 3 }}>
             <span style={{ fontSize: 11, color: item.success ? "#059669" : "#EF4444", marginTop: 1, flexShrink: 0 }}>
               {item.success ? "\u2713" : "\u2717"}
             </span>
-            <span style={{ fontSize: 11, color: "#475569", lineHeight: 1.5 }}>{item.summary}</span>
+            <span style={{ fontSize: 11, color: "var(--ps-text-secondary)", lineHeight: 1.5 }}>{item.summary}</span>
           </div>
         ))}
       </div>
@@ -613,8 +616,9 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
             <div style={{
               maxWidth: "88%", padding: "10px 14px",
               borderRadius: m.role === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-              background: m.role === "user" ? "#4F46E5" : "#F1F5F9",
-              color: m.role === "user" ? "#fff" : "#1E293B",
+              background: m.role === "user" ? "#4F46E5" : "var(--ps-surface-alt)",
+              color: m.role === "user" ? "#fff" : "var(--ps-text-primary)",
+              border: m.role === "user" ? "none" : "1px solid var(--ps-border)",
               fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap",
             }}>{m.content}</div>
           </div>
@@ -622,8 +626,9 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
         {loading && (
           <div style={{
             alignSelf: "flex-start", padding: "10px 14px",
-            background: "#F1F5F9", borderRadius: "14px 14px 14px 4px",
-            fontSize: 13, color: "#94A3B8",
+            background: "var(--ps-surface-alt)", borderRadius: "14px 14px 14px 4px",
+            border: "1px solid var(--ps-border)",
+            fontSize: 13, color: "var(--ps-text-muted)",
           }}>
             {"\u2726"} Thinking...
           </div>
@@ -634,12 +639,12 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
       {/* Quick prompts */}
       {messages.length <= 1 && (
         <div style={{ padding: "0 14px 8px", display: "flex", flexDirection: "column", gap: 4 }}>
-          <div style={{ fontSize: 10, color: "#94A3B8", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 2 }}>QUICK START</div>
+          <div style={{ fontSize: 10, color: "var(--ps-text-subtle)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 2 }}>QUICK START</div>
           {COPILOT_QUICK_PROMPTS.map((q, i) => (
             <button key={i} onClick={() => sendMessage(q)} style={{
-              textAlign: "left", padding: "7px 10px", background: "#F8FAFC",
-              border: "1px solid #E2E8F0", borderRadius: 8, fontSize: 11,
-              color: "#475569", cursor: "pointer", lineHeight: 1.4,
+              textAlign: "left", padding: "7px 10px", background: "var(--ps-surface-alt)",
+              border: "1px solid var(--ps-border)", borderRadius: 8, fontSize: 11,
+              color: "var(--ps-text-secondary)", cursor: "pointer", lineHeight: 1.4,
             }}>{q}</button>
           ))}
         </div>
@@ -647,8 +652,8 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
 
       {/* Input bar */}
       <div style={{
-        padding: "10px 12px", borderTop: "1px solid #E2E8F0",
-        display: "flex", gap: 8, background: "#F8FAFC",
+        padding: "10px 12px", borderTop: "1px solid var(--ps-border)",
+        display: "flex", gap: 8, background: "var(--ps-surface-alt)",
       }}>
         <textarea
           value={input}
@@ -657,9 +662,10 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
           placeholder="Tell the co-pilot what to add..."
           rows={2}
           style={{
-            flex: 1, padding: "8px 12px", border: "1.5px solid #CBD5E1",
+            flex: 1, padding: "8px 12px", border: "1.5px solid var(--ps-border-mid)",
             borderRadius: 10, fontSize: 13, resize: "none", fontFamily: "inherit",
-            outline: "none", background: "#fff",
+            outline: "none", background: "var(--ps-surface)",
+            color: "var(--ps-text-primary)",
           }}
         />
         <button
@@ -677,9 +683,9 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
         <button
           style={{
             padding: "10px 12px",
-            background: "#F1F5F9",
+            background: "var(--ps-surface-alt)",
             border: "none", borderRadius: 10,
-            color: "#64748B", cursor: "pointer", fontSize: 16,
+            color: "var(--ps-text-muted)", cursor: "pointer", fontSize: 16,
             flexShrink: 0, alignSelf: "flex-end",
           }}
           title="Voice input (LiveKit)"
@@ -1913,7 +1919,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "12px 24px",
+        padding: "10px 24px",
         borderBottom: "1px solid var(--ps-border)",
         background: "var(--ps-surface-alt)",
         flexShrink: 0,
@@ -1948,18 +1954,24 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
             </a>
           )}
           <div style={{ width: 1, height: 24, background: "var(--ps-border)" }} />
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: "var(--ps-text-primary)", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <span style={{
+              fontSize: 11, fontWeight: 700,
+              color: "var(--ps-text-muted)",
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+            }}>
               Cashflow Model
             </span>
             {clientInfo && (
-              <span style={{ fontSize: 12, color: "var(--ps-text-muted)", fontWeight: 500 }}>
+              <span style={{ fontSize: 16, fontWeight: 700, color: "var(--ps-text-primary)", letterSpacing: "-0.01em", lineHeight: 1.2 }}>
                 {clientInfo.name || `${clientInfo.first_name || ''} ${clientInfo.last_name || ''}`.trim()}
               </span>
             )}
-            {!clientInfo && c1Display && c1Display !== "Client 1" && (
-              <span style={{ fontSize: 12, color: "var(--ps-text-muted)", fontWeight: 500 }}>
-                {c1Display}{c2Display && c2Display !== "Client 2" ? ` & ${c2Display}` : ""}
+            {!clientInfo && (
+              <span style={{ fontSize: 16, fontWeight: 700, color: "var(--ps-text-primary)", letterSpacing: "-0.01em", lineHeight: 1.2 }}>
+                {[factFind?.client1?.first_name, factFind?.client2?.first_name]
+                  .filter(Boolean).join(" & ")}
               </span>
             )}
           </div>
@@ -2097,11 +2109,12 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
       <div style={{
         display: "flex",
         gap: 0,
-        padding: "0 16px",
+        padding: "0 20px",
         borderBottom: "1px solid var(--ps-border)",
         background: "var(--ps-surface-alt)",
         overflowX: "auto",
         flexShrink: 0,
+        alignItems: "stretch",
       }}>
         {TOP_TABS.filter(tab => {
           const config = NAV_STRUCTURE[tab];
@@ -2117,22 +2130,28 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               onClick={() => handleTopChange(tab)}
               style={{
                 display: "flex",
-                flexDirection: "column",
+                flexDirection: "row",
                 alignItems: "center",
-                gap: 3,
-                padding: "10px 14px 8px",
+                gap: 6,
+                padding: "0 18px",
+                height: 44,
                 border: "none",
                 background: "transparent",
                 cursor: "pointer",
-                borderBottom: isActive ? "3px solid #4f46e5" : "3px solid transparent",
-                color: isActive ? "#4f46e5" : "var(--ps-text-muted)",
-                fontWeight: isActive ? 600 : 500,
-                fontSize: 11,
+                borderBottom: isActive ? "2px solid #4F46E5" : "2px solid transparent",
+                color: isActive ? "#4F46E5" : "var(--ps-text-muted)",
+                fontWeight: isActive ? 600 : 400,
+                fontSize: 13,
                 whiteSpace: "nowrap",
                 transition: "all 0.15s ease",
+                flexShrink: 0,
               }}
             >
-              <span style={{ fontSize: 17 }}>{config.icon}</span>
+              <span style={{
+                fontSize: 13,
+                opacity: isActive ? 1 : 0.55,
+                lineHeight: 1,
+              }}>{config.icon}</span>
               <span>{tab}</span>
             </button>
           );
@@ -2709,7 +2728,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           background: "var(--ps-surface)", overflow: "hidden",
           minWidth: 320,
         }}>
-          <CashflowAssistant factFind={factFind} updateFF={updateFF} />
+          <CashflowAssistant factFind={factFind} updateFF={updateFF} darkMode={darkMode} />
         </div>
       )}
       </div>
