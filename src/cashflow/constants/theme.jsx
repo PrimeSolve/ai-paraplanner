@@ -99,6 +99,7 @@ export function injectThemeCSS(dark) {
       --ps-h1-slate-border: #64748B;
       --ps-grand-total-bg: #0F172A;
       --ps-thead-bg: #1E293B;
+      --ps-thead-text: #CBD5E1;
       color-scheme: dark;
     }
   ` : `
@@ -188,6 +189,7 @@ export function injectThemeCSS(dark) {
       --ps-h1-slate-border: #64748B;
       --ps-grand-total-bg: #1E293B;
       --ps-thead-bg: #0F172A;
+      --ps-thead-text: rgba(255,255,255,0.9);
       color-scheme: light;
     }
   `;
