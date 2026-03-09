@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
@@ -103,13 +103,20 @@ export default function FactFindSuperTax() {
     return () => clearTimeout(t);
   }, [factFind?.id]);
 
+  const buildSuperTaxPayloadRef = useRef(null);
+  buildSuperTaxPayloadRef.current = () => ({
+    currentTab, activePerson,
+    client: data.client, partner: data.partner
+  });
+
   useEffect(() => {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
-      await updateSection('super_tax', {
-        currentTab, activePerson,
-        client: data.client, partner: data.partner
-      });
+      try {
+        await updateSection('super_tax', buildSuperTaxPayloadRef.current());
+      } catch (error) {
+        console.error('Auto-save super/tax failed:', error);
+      }
     }, 1500);
     return () => clearTimeout(timeoutId);
   }, [factFind?.id, dataLoaded, currentTab, activePerson, data, updateSection]);
@@ -118,17 +125,18 @@ export default function FactFindSuperTax() {
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
       if (factFind?.id) {
-        await updateSection('super_tax', {
-          currentTab, activePerson,
-          client: data.client, partner: data.partner
-        });
+        try {
+          await updateSection('super_tax', buildSuperTaxPayloadRef.current());
+        } catch (error) {
+          console.error('Failed to save super/tax before nav:', error);
+        }
       }
       window.dispatchEvent(new Event('factfind-save-complete'));
     };
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, currentTab, activePerson, data, updateSection]);
+  }, [factFind?.id, updateSection]);
 
   // Get current person key
   const personKey = activePerson === 'c1' ? 'client' : 'partner';

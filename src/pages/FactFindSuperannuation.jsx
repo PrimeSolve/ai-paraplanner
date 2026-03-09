@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
@@ -143,13 +143,14 @@ export default function FactFindSuperannuation() {
     return () => clearTimeout(t);
   }, [factFind?.id]);
 
+  const buildSuperannuationPayloadRef = useRef(null);
+  buildSuperannuationPayloadRef.current = () => ({ funds: superFunds, pensions, annuities });
+
   useEffect(() => {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('superannuation', {
-          funds: superFunds, pensions, annuities
-        });
+        await updateSection('superannuation', buildSuperannuationPayloadRef.current());
       } catch (err) {
         console.error('Auto-save superannuation failed:', err);
       }
@@ -158,71 +159,50 @@ export default function FactFindSuperannuation() {
   }, [factFind?.id, dataLoaded, superFunds, pensions, annuities, updateSection]);
 
   // CRITICAL: Save before navigating away
-  useEffect(() => {
-    const handleSaveBeforeNav = async () => {
-      console.log('=== SUPER SAVE-BEFORE-NAV FIRED ===');
-      console.log('View:', view, 'MainTab:', mainTab, 'EditingIndex:', editingIndex);
-      
-      // Start with current arrays
-      let fundsToSave = [...superFunds];
-      let pensionsToSave = [...pensions];
-      let annuitiesToSave = [...annuities];
-      
-      // If user is in detail view with unsaved data, capture it
-      if (view === 'detail' && currentItem) {
-        console.log('Detail view detected - capturing in-progress data:', currentItem);
-        
-        if (mainTab === 'super') {
-          if (editingIndex !== null) {
-            fundsToSave[editingIndex] = currentItem;
-            console.log('Updated existing super fund at index', editingIndex);
-          } else {
-            fundsToSave.push(currentItem);
-            console.log('Added new super fund');
-          }
-        } else if (mainTab === 'pension') {
-          if (editingIndex !== null) {
-            pensionsToSave[editingIndex] = currentItem;
-            console.log('Updated existing pension at index', editingIndex);
-          } else {
-            pensionsToSave.push(currentItem);
-            console.log('Added new pension');
-          }
-        } else if (mainTab === 'annuity') {
-          if (editingIndex !== null) {
-            annuitiesToSave[editingIndex] = currentItem;
-            console.log('Updated existing annuity at index', editingIndex);
-          } else {
-            annuitiesToSave.push(currentItem);
-            console.log('Added new annuity');
-          }
+  const buildSuperSaveBeforeNavRef = useRef(null);
+  buildSuperSaveBeforeNavRef.current = () => {
+    let fundsToSave = [...superFunds];
+    let pensionsToSave = [...pensions];
+    let annuitiesToSave = [...annuities];
+
+    if (view === 'detail' && currentItem) {
+      if (mainTab === 'super') {
+        if (editingIndex !== null) {
+          fundsToSave[editingIndex] = currentItem;
+        } else {
+          fundsToSave.push(currentItem);
+        }
+      } else if (mainTab === 'pension') {
+        if (editingIndex !== null) {
+          pensionsToSave[editingIndex] = currentItem;
+        } else {
+          pensionsToSave.push(currentItem);
+        }
+      } else if (mainTab === 'annuity') {
+        if (editingIndex !== null) {
+          annuitiesToSave[editingIndex] = currentItem;
+        } else {
+          annuitiesToSave.push(currentItem);
         }
       }
-      
-      console.log('Saving:', {
-        funds: fundsToSave.length,
-        pensions: pensionsToSave.length,
-        annuities: annuitiesToSave.length
-      });
-      
+    }
+
+    return { funds: fundsToSave, pensions: pensionsToSave, annuities: annuitiesToSave };
+  };
+
+  useEffect(() => {
+    const handleSaveBeforeNav = async () => {
       try {
-        await updateSection('superannuation', {
-          funds: fundsToSave,
-          pensions: pensionsToSave,
-          annuities: annuitiesToSave
-        });
-        console.log('=== SUPER SAVE DONE ===');
+        await updateSection('superannuation', buildSuperSaveBeforeNavRef.current());
       } catch (err) {
-        console.error('=== SUPER SAVE FAILED ===', err);
+        console.error('Super save-before-nav failed:', err);
       }
-      
-      // Signal that save is complete
       window.dispatchEvent(new Event('factfind-save-complete'));
     };
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [superFunds, pensions, annuities, view, mainTab, editingIndex, currentItem, updateSection]);
+  }, [updateSection]);
 
   const getCurrentList = () => {
     if (mainTab === 'super') return superFunds;

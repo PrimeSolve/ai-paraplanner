@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
@@ -297,11 +297,14 @@ export default function FactFindAdviceReason() {
     return () => clearTimeout(t);
   }, [factFind?.id]);
 
+  const buildAdviceReasonPayloadRef = useRef(null);
+  buildAdviceReasonPayloadRef.current = () => ({ reasons, quick, objectives });
+
   useEffect(() => {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('advice_reason', { reasons, quick, objectives });
+        await updateSection('advice_reason', buildAdviceReasonPayloadRef.current());
       } catch (error) {
         console.error('Auto-save advice_reason failed:', error);
       }
@@ -314,7 +317,7 @@ export default function FactFindAdviceReason() {
     const handleSaveBeforeNav = async () => {
       if (factFind?.id) {
         try {
-          await updateSection('advice_reason', { reasons, quick, objectives });
+          await updateSection('advice_reason', buildAdviceReasonPayloadRef.current());
         } catch (error) {
           console.error('Failed to save advice_reason before nav:', error);
         }
@@ -324,7 +327,7 @@ export default function FactFindAdviceReason() {
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, reasons, quick, objectives, updateSection]);
+  }, [factFind?.id, updateSection]);
 
   const toggleReason = useCallback((value) => {
     setReasons(prev =>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
@@ -66,13 +66,14 @@ export default function FactFindAssetsLiabilities() {
     return () => clearTimeout(t);
   }, [factFind?.id]);
 
+  const buildAssetsLiabilitiesPayloadRef = useRef(null);
+  buildAssetsLiabilitiesPayloadRef.current = () => ({ assets: assetsList, liabilities: debtsList });
+
   useEffect(() => {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('assets_liabilities', {
-          assets: assetsList, liabilities: debtsList
-        });
+        await updateSection('assets_liabilities', buildAssetsLiabilitiesPayloadRef.current());
       } catch (err) {
         console.error('Auto-save assets/liabilities failed:', err);
       }
@@ -83,10 +84,7 @@ export default function FactFindAssetsLiabilities() {
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
       try {
-        await updateSection('assets_liabilities', {
-          assets: assetsList,
-          liabilities: debtsList
-        });
+        await updateSection('assets_liabilities', buildAssetsLiabilitiesPayloadRef.current());
       } catch (err) {
         console.error('Save failed:', err);
       }
@@ -95,7 +93,7 @@ export default function FactFindAssetsLiabilities() {
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [assetsList, debtsList, updateSection]);
+  }, [updateSection]);
 
 
 

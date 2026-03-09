@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
@@ -372,15 +372,18 @@ export default function FactFindRiskProfile() {
     return () => clearTimeout(t);
   }, [factFind?.id]);
 
+  const buildRiskProfilePayloadRef = useRef(null);
+  buildRiskProfilePayloadRef.current = () => ({
+    currentPerson: activeOwner, currentTab: activeTab,
+    mode, adjustRisk, client: clientData, partner: partnerData,
+    otherInfo, completionPct: 0
+  });
+
   useEffect(() => {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('risk_profile', {
-            currentPerson: activeOwner, currentTab: activeTab,
-            mode, adjustRisk, client: clientData, partner: partnerData,
-            otherInfo, completionPct: 0
-          });
+        await updateSection('risk_profile', buildRiskProfilePayloadRef.current());
       } catch (error) {
         console.error('Auto-save risk profile failed:', error);
       }
@@ -392,11 +395,7 @@ export default function FactFindRiskProfile() {
     const handleSaveBeforeNav = async () => {
       if (factFind?.id) {
         try {
-          await updateSection('risk_profile', {
-              currentPerson: activeOwner, currentTab: activeTab,
-              mode, adjustRisk, client: clientData, partner: partnerData,
-              otherInfo, completionPct: 0
-            });
+          await updateSection('risk_profile', buildRiskProfilePayloadRef.current());
         } catch (error) {
           console.error('Failed to save risk profile before nav:', error);
         }
@@ -406,7 +405,7 @@ export default function FactFindRiskProfile() {
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, activeOwner, activeTab, mode, adjustRisk, clientData, partnerData, otherInfo, updateSection]);
+  }, [factFind?.id, updateSection]);
 
   const currentData = activeOwner === 'client' ? clientData : partnerData;
   const setCurrentData = activeOwner === 'client' ? setClientData : setPartnerData;
