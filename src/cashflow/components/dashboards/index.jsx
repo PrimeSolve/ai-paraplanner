@@ -3602,6 +3602,7 @@ export function ExpensesChart() {
 }
 
 export function CapitalDashboard({ dynamicChartData }) {
+  const [showDashboard, setShowDashboard] = useState(true);
   const [h1, setH1] = useState({});
   const [h2, setH2] = useState({});
   const [h3, setH3] = useState({});
@@ -3635,6 +3636,25 @@ export function CapitalDashboard({ dynamicChartData }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+      {/* Hide toggle — top right */}
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <button
+          onClick={() => setShowDashboard(v => !v)}
+          style={{
+            padding: "5px 14px", borderRadius: 6,
+            border: "1px solid var(--ps-border)",
+            background: showDashboard ? "var(--ps-surface-alt)" : "var(--ps-surface-indigo)",
+            color: showDashboard ? "var(--ps-text-muted)" : "#4F46E5",
+            fontSize: 11, fontWeight: 600, cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 5,
+          }}
+        >
+          {showDashboard ? "▼ Hide" : "▶ Show"} Dashboard & Charts
+        </button>
+      </div>
+
+      {showDashboard && (<>
       {/* Row 1: Assets & Liabilities - full width */}
       {chartCard("Net equity projection",
         <ResponsiveContainer width="100%" height={320}>
@@ -3746,6 +3766,7 @@ export function CapitalDashboard({ dynamicChartData }) {
           </ResponsiveContainer>
         )}
       </div>
+      </>)}
     </div>
   );
 }
@@ -4203,8 +4224,6 @@ const LIFE_GOALS = [
 
 
 export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projYears }) {
-  const [collapsed, setCollapsed] = React.useState(false);
-  const [view, setView]           = React.useState("cashflow");
   const [hidden, setHidden]       = React.useState({});
   const [hiddenMS, setHiddenMS]   = React.useState({});
 
@@ -4272,7 +4291,7 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
     { key:"surplus",       label:"Net Cashflow",      color:"#10B981", type:"line"    },
   ];
 
-  const activeSeries = view === "capital" ? capitalSeries : cashflowSeries;
+  const activeSeries = cashflowSeries;
 
   // Sparkline
   const Sparkline = ({ dataKey }) => {
@@ -4388,19 +4407,6 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
 
   const fyRange = `${currentFY}/${String(currentFY+1).slice(-2)} – ${currentFY+N-1}/${String(currentFY+N).slice(-2)}`;
 
-  const ViewToggle = () => (
-    <div onClick={e => e.stopPropagation()} style={{ display:"flex", background:"var(--ps-border-light)", borderRadius:8, padding:3, gap:2 }}>
-      {[{id:"cashflow",label:"Cashflow"},{id:"capital",label:"Capital"}].map(v => (
-        <button key={v.id} onClick={() => { setView(v.id); setHidden({}); }}
-          style={{ padding:"5px 14px", borderRadius:6, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, transition:"all 0.15s ease",
-            background:view===v.id?"var(--ps-surface)":"transparent", color:view===v.id?"var(--ps-text-primary)":"var(--ps-text-subtle)",
-            boxShadow:view===v.id?"0 1px 4px var(--ps-shadow-md)":"none" }}>
-          {v.label}
-        </button>
-      ))}
-    </div>
-  );
-
   // Cashflow: split net cashflow into positive/negative for dual-colour area
   const cfData = (cashflowData || []).map(d => ({
     ...d,
@@ -4416,29 +4422,13 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
         <div style={{ background:"linear-gradient(90deg, #4F46E5 0%, #6366F1 40%, #818CF8 100%)", height:4 }} />
 
         {/* Title bar */}
-        <div onClick={() => setCollapsed(c => !c)} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 20px", cursor:"pointer", borderBottom:collapsed?"none":"1px solid var(--ps-border-light)", userSelect:"none" }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 20px", borderBottom:"1px solid var(--ps-border-light)" }}>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
             <span style={{ fontWeight:700, fontSize:15, color:"var(--ps-text-primary)", letterSpacing:"-0.01em" }}>Financial Overview</span>
             <span style={{ background:"var(--ps-surface-alt)", border:"1px solid var(--ps-border)", color:"var(--ps-text-muted)", fontSize:10, padding:"2px 9px", borderRadius:20, fontWeight:500 }}>{fyRange}</span>
           </div>
-          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-            {!collapsed && <ViewToggle />}
-            {collapsed && (
-              <div style={{ display:"flex", gap:20 }}>
-                {kpis.slice(0,3).map(k => (
-                  <div key={k.label} style={{ textAlign:"right" }}>
-                    <div style={{ fontWeight:700, fontSize:13, color:"var(--ps-text-primary)" }}>{k.value}</div>
-                    <div style={{ fontSize:10, color:"var(--ps-text-subtle)" }}>{k.label}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-            <div style={{ width:28, height:28, borderRadius:8, border:"1px solid var(--ps-border)", background:"var(--ps-surface-alt)", display:"flex", alignItems:"center", justifyContent:"center", color:"var(--ps-text-subtle)", fontSize:12, transition:"transform 0.25s ease", transform:collapsed?"rotate(-90deg)":"rotate(0deg)" }}>▾</div>
-          </div>
         </div>
 
-        {!collapsed && (
-          <>
             {/* KPI Cards */}
             <div style={{ display:"flex", gap:12, marginBottom:24, flexWrap:"wrap", padding:"16px 20px" }}>
               {kpis.map((k, i) => (
@@ -4456,7 +4446,7 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
               <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:16 }}>
                 <div>
                   <div style={{ fontWeight:600, fontSize:13, color:"var(--ps-text-primary)", marginBottom:8 }}>
-                    {view==="capital" ? "Net Worth Projection" : "Household Income, Expenses & Net Cashflow"}
+                    Household Income, Expenses & Net Cashflow
                   </div>
                   <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                     {activeSeries.map(sk => (
@@ -4472,47 +4462,6 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
               </div>
 
               <ResponsiveContainer width="100%" height={320}>
-                {view === "capital" ? (
-                  <ComposedChart data={chartData} margin={{ top:24, right:24, bottom:8, left:8 }} barCategoryGap={0}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ps-border-light)" vertical={false} />
-                    <XAxis dataKey="year" tick={{ fontSize:10, fill:"var(--ps-text-subtle)" }} tickFormatter={v => v?String(v).slice(0,7):v} interval={1} angle={-35} textAnchor="end" height={44} axisLine={{ stroke:"var(--ps-border)" }} tickLine={false} />
-                    <YAxis tickFormatter={v => v===0?"0":fC(v)} tick={{ fontSize:10, fill:"var(--ps-text-subtle)" }} width={72} axisLine={false} tickLine={false} />
-                    <Tooltip content={<CapitalTooltip />} cursor={{ stroke:"var(--ps-border)", strokeWidth:1 }} />
-
-                    {/* All items — single stack, debt as negative */}
-                    <Bar dataKey="super"       stackId="cap" fill="#6366F1" fillOpacity={0.75} hide={!!hidden.super}       radius={[0,0,0,0]} />
-                    <Bar dataKey="property"    stackId="cap" fill="#0891B2" fillOpacity={0.75} hide={!!hidden.property}    radius={[0,0,0,0]} />
-                    <Bar dataKey="investments" stackId="cap" fill="#059669" fillOpacity={0.75} hide={!!hidden.investments} radius={[0,0,0,0]} />
-                    <Bar dataKey="lifestyle"   stackId="cap" fill="#7C3AED" fillOpacity={0.75} hide={!!hidden.lifestyle}   radius={[0,0,0,0]} />
-                    <Bar dataKey="debt"        stackId="cap" fill="#EF4444" fillOpacity={0.75} hide={!!hidden.debt}        radius={[0,0,0,0]} />
-
-                    {/* Net worth — black full-width line via Customized */}
-                    {!hidden.netWorth && (() => {
-                      const CustomNWLine = (props) => {
-                        const { xAxisMap, yAxisMap } = props;
-                        if (!xAxisMap || !yAxisMap) return null;
-                        const xAxis = Object.values(xAxisMap)[0];
-                        const yAxis = Object.values(yAxisMap)[0];
-                        if (!xAxis || !yAxis || !xAxis.bandSize) return null;
-                        const bandWidth = xAxis.bandSize;
-                        return (
-                          <g>
-                            {chartData.map((d, i) => {
-                              if (d.netWorth == null) return null;
-                              const x = xAxis.x + i * bandWidth;
-                              const y = yAxis.scale(d.netWorth);
-                              return <line key={i} x1={x} y1={y} x2={x + bandWidth} y2={y} stroke="#000" strokeWidth={2.5} />;
-                            })}
-                          </g>
-                        );
-                      };
-                      return <Customized component={CustomNWLine} />;
-                    })()}
-
-                    {visibleMilestones.map(m => <ReferenceLine key={m.label} x={chartData[m.idx]?.year} stroke={m.color} strokeDasharray={m.dash} strokeWidth={1.5} label={<MilestoneLabel label={m.shortLabel} color={m.color} />} />)}
-                    <ReferenceLine x={chartData[0]?.year} stroke="var(--ps-border-mid)" strokeWidth={1} strokeDasharray="2 3" label={<MilestoneLabel label="Now" color="var(--ps-text-subtle)" />} />
-                  </ComposedChart>
-                ) : (
                   <ComposedChart data={cfData} margin={{ top:24, right:24, bottom:8, left:8 }} barCategoryGap={0}>
                     <defs>
                       <linearGradient id="cfGradSurplus" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10B981" stopOpacity={0.25}/><stop offset="100%" stopColor="#10B981" stopOpacity={0.05}/></linearGradient>
@@ -4563,11 +4512,8 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
                     {visibleMilestones.map(m => <ReferenceLine key={m.label} x={(cashflowData||[])[m.idx]?.year} stroke={m.color} strokeDasharray={m.dash} strokeWidth={1.5} label={<MilestoneLabel label={m.shortLabel} color={m.color} />} />)}
                     <ReferenceLine x={(cashflowData||[])[0]?.year} stroke="var(--ps-border-mid)" strokeWidth={1} strokeDasharray="2 3" label={<MilestoneLabel label="Now" color="var(--ps-text-subtle)" />} />
                   </ComposedChart>
-                )}
               </ResponsiveContainer>
             </div>
-          </>
-        )}
       </div>
     </div>
   );
