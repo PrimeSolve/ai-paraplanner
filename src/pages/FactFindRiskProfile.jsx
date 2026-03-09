@@ -304,7 +304,7 @@ const questions = [
 
 export default function FactFindRiskProfile() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('questionnaire');
@@ -376,31 +376,27 @@ export default function FactFindRiskProfile() {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await base44.entities.FactFind.update(factFind.id, {
-          risk_profile: {
+        await updateSection('risk_profile', {
             currentPerson: activeOwner, currentTab: activeTab,
             mode, adjustRisk, client: clientData, partner: partnerData,
             otherInfo, completionPct: 0
-          }
-        });
+          });
       } catch (error) {
         console.error('Auto-save risk profile failed:', error);
       }
     }, 1500);
     return () => clearTimeout(timeoutId);
-  }, [factFind?.id, dataLoaded, activeOwner, activeTab, mode, adjustRisk, clientData, partnerData, otherInfo]);
+  }, [factFind?.id, dataLoaded, activeOwner, activeTab, mode, adjustRisk, clientData, partnerData, otherInfo, updateSection]);
 
   useEffect(() => {
     const handleSaveBeforeNav = async () => {
       if (factFind?.id) {
         try {
-          await base44.entities.FactFind.update(factFind.id, {
-            risk_profile: {
+          await updateSection('risk_profile', {
               currentPerson: activeOwner, currentTab: activeTab,
               mode, adjustRisk, client: clientData, partner: partnerData,
               otherInfo, completionPct: 0
-            }
-          });
+            });
         } catch (error) {
           console.error('Failed to save risk profile before nav:', error);
         }
@@ -410,7 +406,7 @@ export default function FactFindRiskProfile() {
 
     window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
     return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [factFind?.id, activeOwner, activeTab, mode, adjustRisk, clientData, partnerData, otherInfo]);
+  }, [factFind?.id, activeOwner, activeTab, mode, adjustRisk, clientData, partnerData, otherInfo, updateSection]);
 
   const currentData = activeOwner === 'client' ? clientData : partnerData;
   const setCurrentData = activeOwner === 'client' ? setClientData : setPartnerData;
@@ -458,17 +454,18 @@ export default function FactFindRiskProfile() {
         sectionsCompleted.push('risk_profile');
       }
 
+      await updateSection('risk_profile', {
+        currentPerson: activeOwner,
+        currentTab: activeTab,
+        mode,
+        adjustRisk,
+        client: clientData,
+        partner: partnerData,
+        otherInfo,
+        completionPct: 0
+      });
+
       await base44.entities.FactFind.update(factFind.id, {
-        risk_profile: {
-          currentPerson: activeOwner,
-          currentTab: activeTab,
-          mode,
-          adjustRisk,
-          client: clientData,
-          partner: partnerData,
-          otherInfo,
-          completionPct: 0
-        },
         current_section: 'review',
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)

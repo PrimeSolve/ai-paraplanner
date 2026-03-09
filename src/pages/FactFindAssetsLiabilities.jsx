@@ -123,14 +123,12 @@ export default function FactFindAssetsLiabilities() {
 
     // Save to database immediately
     if (factFind?.id) {
-      await base44.entities.FactFind.update(factFind.id, {
-        assets_liabilities: {
-          ...factFind.assets_liabilities,
-          assets: updatedAssets
-        }
+      await updateSection('assets_liabilities', {
+        assets: updatedAssets,
+        liabilities: debtsList
       });
     }
-  }, [activeAssetIndex, assetsList, factFind]);
+  }, [activeAssetIndex, assetsList, factFind, debtsList, updateSection]);
 
   // DEBTS
   const addDebt = useCallback(() => {
@@ -156,14 +154,12 @@ export default function FactFindAssetsLiabilities() {
 
     // Save to database immediately
     if (factFind?.id) {
-      await base44.entities.FactFind.update(factFind.id, {
-        assets_liabilities: {
-          ...factFind.assets_liabilities,
-          liabilities: updatedDebts
-        }
+      await updateSection('assets_liabilities', {
+        assets: assetsList,
+        liabilities: updatedDebts
       });
     }
-  }, [activeDebtIndex, debtsList, factFind]);
+  }, [activeDebtIndex, debtsList, factFind, assetsList, updateSection]);
 
   const handleNext = async () => {
     if (!factFind?.id) {
@@ -178,8 +174,9 @@ export default function FactFindAssetsLiabilities() {
         sectionsCompleted.push('assets_liabilities');
       }
 
+      await updateSection('assets_liabilities', { assets: assetsList, liabilities: debtsList });
+
       await base44.entities.FactFind.update(factFind.id, {
-        assets_liabilities: { assets: assetsList, liabilities: debtsList },
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
       });
