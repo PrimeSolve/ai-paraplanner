@@ -719,10 +719,8 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
   const isAdviceModel = selectedModel === "advice1";
   const [factFindOpen, setFactFindOpen] = useState(false);
   const [factFindSection, setFactFindSection] = useState(null);
-  const [factFindMode, setFactFindMode] = useState("manual"); // "manual" | "ai"
   const [adviceOpen, setAdviceOpen] = useState(false);
   const [adviceSection, setAdviceSection] = useState(null);
-  const [adviceMode, setAdviceMode] = useState("manual"); // "manual" | "ai"
   const [showSOABuilder, setShowSOABuilder] = useState(false);
 
   // Co-pilot panel state — persisted via localStorage
@@ -1261,7 +1259,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
   const factFindPanelJSX = (
     <div style={{
       position: "fixed", top: 0, right: 0, bottom: 0,
-      width: factFindMode === "ai" ? "100vw" : (factFindSection ? "65vw" : 400),
+      width: factFindSection ? "65vw" : 400,
       background: "var(--ps-surface)",
       boxShadow: "-4px 0 24px var(--ps-shadow-sm)",
       zIndex: 1000,
@@ -1271,8 +1269,8 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
     }}>
       {/* Left: Section icons */}
       <div style={{
-        width: (factFindSection || factFindMode === "ai") ? 280 : "100%",
-        borderRight: (factFindSection || factFindMode === "ai") ? "1px solid var(--ps-border)" : "none",
+        width: factFindSection ? 280 : "100%",
+        borderRight: factFindSection ? "1px solid var(--ps-border)" : "none",
         overflowY: "auto",
         background: "var(--ps-surface-alt)",
       }}>
@@ -1282,29 +1280,11 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 18 }}>{factFindMode === "ai" ? "🎙️" : "📋"}</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ps-text-primary)" }}>{factFindMode === "ai" ? "AI Fact Find" : "Fact Find"}</span>
+            <span style={{ fontSize: 18 }}>📋</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ps-text-primary)" }}>Fact Find</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <div style={{
-              display: "flex", background: "var(--ps-surface)", border: "1px solid var(--ps-border)",
-              borderRadius: 8, overflow: "hidden",
-            }}>
-              <button onClick={() => setFactFindMode("manual")} style={{
-                padding: "5px 12px", border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer",
-                background: factFindMode === "manual" ? "var(--ps-surface-teal)" : "transparent",
-                color: factFindMode === "manual" ? "#0D9488" : "var(--ps-text-muted)",
-                transition: "all 0.15s",
-              }}>Manual</button>
-              <button onClick={() => { setFactFindMode("ai"); if (!factFindSection) setFactFindSection("principals"); }} style={{
-                padding: "5px 12px", border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer",
-                background: factFindMode === "ai" ? "#0D948820" : "transparent",
-                color: factFindMode === "ai" ? "#0D9488" : "var(--ps-text-muted)",
-                transition: "all 0.15s",
-                display: "flex", alignItems: "center", gap: 4,
-              }}>🎙️ AI</button>
-            </div>
-            <button onClick={() => { setFactFindOpen(false); setFactFindSection(null); setFactFindMode("manual"); }} style={{
+            <button onClick={() => { setFactFindOpen(false); setFactFindSection(null); }} style={{
               width: 28, height: 28, borderRadius: 6, border: "1px solid var(--ps-border)",
               background: "var(--ps-surface)", cursor: "pointer", fontSize: 14, color: "var(--ps-text-muted)",
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -1312,17 +1292,17 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           </div>
         </div>
 
-        <div style={{ padding: (factFindSection || factFindMode === "ai") ? "12px 10px" : "16px 20px" }}>
+        <div style={{ padding: factFindSection ? "12px 10px" : "16px 20px" }}>
           {FACT_FIND_GROUPS.map((group, gi) => (
-            <div key={gi} style={{ marginBottom: (factFindSection || factFindMode === "ai") ? 10 : 16 }}>
+            <div key={gi} style={{ marginBottom: factFindSection ? 10 : 16 }}>
               <div style={{
                 fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)",
                 textTransform: "uppercase", letterSpacing: "0.06em",
-                marginBottom: (factFindSection || factFindMode === "ai") ? 4 : 8,
-                padding: (factFindSection || factFindMode === "ai") ? "0 6px" : 0,
+                marginBottom: factFindSection ? 4 : 8,
+                padding: factFindSection ? "0 6px" : 0,
               }}>{group.label}</div>
 
-              {(factFindSection || factFindMode === "ai") ? (
+              {factFindSection ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
                   {group.ids.map(id => {
                     const s = FACT_FIND_SECTIONS.find(x => x.id === id);
@@ -1505,30 +1485,6 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           </div>
         </div>
 
-          {/* AI Fact Find Chat — embedded right column */}
-          {factFindMode === "ai" && (
-            <div style={{
-              width: 440, minWidth: 440, borderLeft: "1px solid var(--ps-border)",
-              display: "flex", flexDirection: "column", background: "var(--ps-surface)",
-            }}>
-              <AiFactFind
-                factFind={factFind}
-                updateFF={updateFF}
-                embedded={true}
-              />
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* AI mode — no section selected: show full AI Fact Find */}
-      {!factFindSection && factFindMode === "ai" && (
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--ps-surface)" }}>
-          <AiFactFind
-            factFind={factFind}
-            updateFF={updateFF}
-            embedded={true}
-          />
         </div>
       )}
     </div>
@@ -1671,8 +1627,8 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
   const advicePanelJSX = (
     <div style={{
       position: "fixed", top: 0, right: 0, bottom: 0,
-      width: adviceMode === "ai" ? "100vw" : (adviceSection ? "72vw" : 400),
-      maxWidth: adviceMode === "ai" ? "100vw" : (adviceSection ? 1300 : 400),
+      width: adviceSection ? "72vw" : 400,
+      maxWidth: adviceSection ? 1300 : 400,
       background: "var(--ps-surface)",
       boxShadow: "-4px 0 24px var(--ps-shadow-sm)",
       zIndex: 1000,
@@ -1682,9 +1638,9 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
     }}>
       {/* Left: Section nav */}
       <div style={{
-        width: (adviceSection || adviceMode === "ai") ? 200 : "100%",
-        minWidth: (adviceSection || adviceMode === "ai") ? 200 : undefined,
-        borderRight: (adviceSection || adviceMode === "ai") ? "1px solid var(--ps-border)" : "none",
+        width: adviceSection ? 200 : "100%",
+        minWidth: adviceSection ? 200 : undefined,
+        borderRight: adviceSection ? "1px solid var(--ps-border)" : "none",
         overflowY: "auto",
         background: "var(--ps-surface-alt)",
       }}>
@@ -1694,29 +1650,11 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 18 }}>{adviceMode === "ai" ? "🧠" : "💡"}</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ps-text-primary)" }}>{adviceMode === "ai" ? "AI Paraplanner" : "Advice"}</span>
+            <span style={{ fontSize: 18 }}>💡</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ps-text-primary)" }}>Advice</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <div style={{
-              display: "flex", background: "var(--ps-surface)", border: "1px solid var(--ps-border)",
-              borderRadius: 8, overflow: "hidden",
-            }}>
-              <button onClick={() => setAdviceMode("manual")} style={{
-                padding: "5px 12px", border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer",
-                background: adviceMode === "manual" ? "var(--ps-surface-teal)" : "transparent",
-                color: adviceMode === "manual" ? "#0D9488" : "var(--ps-text-muted)",
-                transition: "all 0.15s",
-              }}>Manual</button>
-              <button onClick={() => { setAdviceMode("ai"); if (!adviceSection) setAdviceSection("strategies"); }} style={{
-                padding: "5px 12px", border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer",
-                background: adviceMode === "ai" ? "#4F46E520" : "transparent",
-                color: adviceMode === "ai" ? "#4F46E5" : "var(--ps-text-muted)",
-                transition: "all 0.15s",
-                display: "flex", alignItems: "center", gap: 4,
-              }}>🧠 AI</button>
-            </div>
-            <button onClick={() => { setAdviceOpen(false); setAdviceSection(null); setAdviceMode("manual"); }} style={{
+            <button onClick={() => { setAdviceOpen(false); setAdviceSection(null); }} style={{
               width: 28, height: 28, borderRadius: 6, border: "1px solid var(--ps-border)",
               background: "var(--ps-surface)", cursor: "pointer", fontSize: 14, color: "var(--ps-text-muted)",
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -1724,17 +1662,17 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           </div>
         </div>
 
-        <div style={{ padding: (adviceSection || adviceMode === "ai") ? "12px 10px" : "16px 20px" }}>
+        <div style={{ padding: adviceSection ? "12px 10px" : "16px 20px" }}>
           {ADVICE_GROUPS.map((group, gi) => (
-            <div key={gi} style={{ marginBottom: (adviceSection || adviceMode === "ai") ? 10 : 16 }}>
+            <div key={gi} style={{ marginBottom: adviceSection ? 10 : 16 }}>
               <div style={{
                 fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)",
                 textTransform: "uppercase", letterSpacing: "0.06em",
-                marginBottom: (adviceSection || adviceMode === "ai") ? 4 : 8,
-                padding: (adviceSection || adviceMode === "ai") ? "0 6px" : 0,
+                marginBottom: adviceSection ? 4 : 8,
+                padding: adviceSection ? "0 6px" : 0,
               }}>{group.label}</div>
 
-              {(adviceSection || adviceMode === "ai") ? (
+              {adviceSection ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
                   {group.ids.map(id => {
                     const s = ADVICE_SECTIONS.find(x => x.id === id);
@@ -1860,38 +1798,6 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
             </div>
           </div>
 
-          {/* AI Paraplanner Chat — embedded right column */}
-          {adviceMode === "ai" && (
-            <div style={{
-              width: 440, minWidth: 440, borderLeft: "1px solid var(--ps-border)",
-              display: "flex", flexDirection: "column", background: "var(--ps-surface)",
-            }}>
-              <AiParaplanner
-                factFind={adviceModel1 || factFind}
-                engineData={engineData}
-                updateAdvice={updateAdvice}
-                summaryMeta={summaryMeta}
-                isOpen={true}
-                onClose={() => setAdviceMode("manual")}
-                embedded={true}
-              />
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* AI mode — no section selected: show full AI Paraplanner */}
-      {!adviceSection && adviceMode === "ai" && (
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--ps-surface)" }}>
-          <AiParaplanner
-            factFind={adviceModel1 || factFind}
-            engineData={engineData}
-            updateAdvice={updateAdvice}
-            summaryMeta={summaryMeta}
-            isOpen={true}
-            onClose={() => setAdviceMode("manual")}
-            embedded={true}
-          />
         </div>
       )}
     </div>
@@ -2050,7 +1956,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               transition: "all 0.15s ease",
             }}
           >
-            <span style={{ fontSize: 14 }}>{factFindOpen && factFindMode === "ai" ? "🎙️" : "📋"}</span> Fact Find
+            <span style={{ fontSize: 14 }}>📋</span> Fact Find
           </button>
           {!isFactfindMode && (
             <button
@@ -2065,7 +1971,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
                 transition: "all 0.15s ease",
               }}
             >
-              <span style={{ fontSize: 14 }}>{adviceOpen && adviceMode === "ai" ? "🧠" : "💡"}</span> Advice
+              <span style={{ fontSize: 14 }}>💡</span> Advice
             </button>
           )}
           {!isFactfindMode && (
