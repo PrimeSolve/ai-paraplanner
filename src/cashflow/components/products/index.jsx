@@ -1355,7 +1355,7 @@ export function SuperProductPage({ data, onToggleIndex, fundIdx, factFind, updat
             <YAxis yAxisId="flows" orientation="left" tickFormatter={fK} tick={{ fontSize: 11, fill: "var(--ps-text-subtle)" }} tickLine={false} axisLine={false} width={60} />
             <Tooltip
               formatter={(v, n) => [fC(v), n]}
-              contentStyle={{ background: "var(--ps-text-strongest)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "var(--ps-tile-dark-text)" }}
+              contentStyle={{ background: "var(--ps-thead-bg)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#F1F5F9" }}
               labelStyle={{ color: "var(--ps-text-subtle)", marginBottom: 6, fontSize: 12 }}
             />
             <Legend content={() => (
@@ -1523,7 +1523,7 @@ export function PensionProductPage({ data }) {
             <YAxis yAxisId="flows" orientation="left" tickFormatter={fK} tick={{ fontSize: 11, fill: "var(--ps-text-subtle)" }} tickLine={false} axisLine={false} width={60} />
             <Tooltip
               formatter={(v, n) => [fC(v), n]}
-              contentStyle={{ background: "var(--ps-text-strongest)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "var(--ps-tile-dark-text)" }}
+              contentStyle={{ background: "var(--ps-thead-bg)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#F1F5F9" }}
               labelStyle={{ color: "var(--ps-text-subtle)", marginBottom: 6, fontSize: 12 }}
             />
             <Legend content={() => (
@@ -1662,7 +1662,7 @@ export function BondProductPage({ data }) {
             <YAxis yAxisId="flows" orientation="left" tickFormatter={fK} tick={{ fontSize: 11, fill: "var(--ps-text-subtle)" }} tickLine={false} axisLine={false} width={60} />
             <Tooltip
               formatter={(v, n) => [fC(v), n]}
-              contentStyle={{ background: "var(--ps-text-strongest)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "var(--ps-tile-dark-text)" }}
+              contentStyle={{ background: "var(--ps-thead-bg)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#F1F5F9" }}
               labelStyle={{ color: "var(--ps-text-subtle)", marginBottom: 6, fontSize: 12 }}
             />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
@@ -1791,7 +1791,7 @@ export function AnnuityProductPage({ data }) {
             <YAxis yAxisId="annual" orientation="left" tickFormatter={fK} tick={{ fontSize: 11, fill: "var(--ps-text-subtle)" }} tickLine={false} axisLine={false} width={60} />
             <Tooltip
               formatter={(v, n) => [fC(v), n]}
-              contentStyle={{ background: "var(--ps-text-strongest)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "var(--ps-tile-dark-text)" }}
+              contentStyle={{ background: "var(--ps-thead-bg)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#F1F5F9" }}
               labelStyle={{ color: "var(--ps-text-subtle)", marginBottom: 6, fontSize: 12 }}
             />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
@@ -2250,7 +2250,7 @@ export function InsurancePremiumProjection({ personKey, factFind, updateFF }) {
             <CartesianGrid strokeDasharray="3 3" stroke="var(--ps-border-light)" vertical={false} />
             <XAxis dataKey="yearShort" tick={{ fontSize: 11, fill: "var(--ps-text-subtle)" }} tickLine={false} axisLine={{ stroke: "var(--ps-border)" }} />
             <YAxis tickFormatter={fK} tick={{ fontSize: 11, fill: "var(--ps-text-subtle)" }} tickLine={false} axisLine={false} width={60} />
-            <Tooltip formatter={(v, n) => [fC(v), n]} contentStyle={{ background: "var(--ps-text-strongest)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "var(--ps-tile-dark-text)" }} labelStyle={{ color: "var(--ps-text-subtle)", marginBottom: 6, fontSize: 12 }} />
+            <Tooltip formatter={(v, n) => [fC(v), n]} contentStyle={{ background: "var(--ps-thead-bg)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#F1F5F9" }} labelStyle={{ color: "var(--ps-text-subtle)", marginBottom: 6, fontSize: 12 }} />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 13, paddingTop: 12 }} />
             <Area type="monotone" dataKey="superTotal" name="Inside Super" stackId="1" stroke="#3B82F6" strokeWidth={2} fill="url(#gPremSuper)" />
             <Area type="monotone" dataKey="nonSuperTotal" name="Outside Super" stackId="1" stroke="#10B981" strokeWidth={2} fill="url(#gPremNonSuper)" />
@@ -2268,7 +2268,7 @@ export function InsurancePremiumProjection({ personKey, factFind, updateFF }) {
             <CartesianGrid strokeDasharray="3 3" stroke="var(--ps-border-light)" vertical={false} />
             <XAxis dataKey="yearShort" tick={{ fontSize: 11, fill: "var(--ps-text-subtle)" }} tickLine={false} axisLine={{ stroke: "var(--ps-border)" }} />
             <YAxis tickFormatter={fK} tick={{ fontSize: 11, fill: "var(--ps-text-subtle)" }} tickLine={false} axisLine={false} width={60} />
-            <Tooltip formatter={(v, n) => [fC(v), n]} contentStyle={{ background: "var(--ps-text-strongest)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "var(--ps-tile-dark-text)" }} labelStyle={{ color: "var(--ps-text-subtle)" }} />
+            <Tooltip formatter={(v, n) => [fC(v), n]} contentStyle={{ background: "var(--ps-thead-bg)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#F1F5F9" }} labelStyle={{ color: "var(--ps-text-subtle)" }} />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 13, paddingTop: 12 }} />
             <Bar dataKey={(d) => d.superLife + d.nonSuperLife} name="Life" stackId="b" fill={INS_COLORS.life.fill} radius={[0, 0, 0, 0]} />
             <Bar dataKey={(d) => d.superTPD + d.nonSuperTPD} name="TPD" stackId="b" fill={INS_COLORS.tpd.fill} radius={[0, 0, 0, 0]} />
@@ -2555,7 +2555,7 @@ export function InsuranceProjectionPage({ clientKey }) {
             <CartesianGrid strokeDasharray="3 3" stroke="var(--ps-border-light)" vertical={false} />
             <XAxis dataKey="yearShort" tick={{ fontSize: 11, fill: "var(--ps-text-subtle)" }} tickLine={false} axisLine={{ stroke: "var(--ps-border)" }} />
             <YAxis tickFormatter={fK} tick={{ fontSize: 11, fill: "var(--ps-text-subtle)" }} tickLine={false} axisLine={false} width={60} />
-            <Tooltip formatter={(v, n) => [fC(v), n]} contentStyle={{ background: "var(--ps-text-strongest)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "var(--ps-tile-dark-text)" }} labelStyle={{ color: "var(--ps-text-subtle)", marginBottom: 6, fontSize: 12 }} />
+            <Tooltip formatter={(v, n) => [fC(v), n]} contentStyle={{ background: "var(--ps-thead-bg)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#F1F5F9" }} labelStyle={{ color: "var(--ps-text-subtle)", marginBottom: 6, fontSize: 12 }} />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 13, paddingTop: 12 }} />
             <Area type="monotone" dataKey="life" name="Life" stroke={INS_COLORS.life.stroke} strokeWidth={2.5} fill={`url(#gInslife)`} dot={false} />
             <Area type="monotone" dataKey="tpd" name="TPD" stroke={INS_COLORS.tpd.stroke} strokeWidth={2.5} fill={`url(#gInstpd)`} dot={false} />
@@ -2574,7 +2574,7 @@ export function InsuranceProjectionPage({ clientKey }) {
             <CartesianGrid strokeDasharray="3 3" stroke="var(--ps-border-light)" vertical={false} />
             <XAxis dataKey="yearShort" tick={{ fontSize: 11, fill: "var(--ps-text-subtle)" }} tickLine={false} axisLine={{ stroke: "var(--ps-border)" }} />
             <YAxis tickFormatter={fK} tick={{ fontSize: 11, fill: "var(--ps-text-subtle)" }} tickLine={false} axisLine={false} width={60} />
-            <Tooltip formatter={(v) => [`${fC(v)}/month`, "IP Benefit"]} contentStyle={{ background: "var(--ps-text-strongest)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "var(--ps-tile-dark-text)" }} labelStyle={{ color: "var(--ps-text-subtle)" }} />
+            <Tooltip formatter={(v) => [`${fC(v)}/month`, "IP Benefit"]} contentStyle={{ background: "var(--ps-thead-bg)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#F1F5F9" }} labelStyle={{ color: "var(--ps-text-subtle)" }} />
             <Bar dataKey="ip" fill={INS_COLORS.ip.fill} radius={[0,0,0,0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -3063,7 +3063,7 @@ export function PotentialDeathTaxPage() {
             <CartesianGrid strokeDasharray="3 3" stroke="var(--ps-border-light)" vertical={false} />
             <XAxis dataKey="yearShort" tick={{ fontSize: 11, fill: "var(--ps-text-subtle)" }} tickLine={false} axisLine={{ stroke: "var(--ps-border)" }} />
             <YAxis tickFormatter={fK} tick={{ fontSize: 11, fill: "var(--ps-text-subtle)" }} tickLine={false} axisLine={false} width={60} />
-            <Tooltip formatter={(v, n) => [fC(Math.abs(v)), n]} contentStyle={{ background: "var(--ps-text-strongest)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "var(--ps-tile-dark-text)" }} labelStyle={{ color: "var(--ps-text-subtle)", marginBottom: 6, fontSize: 12 }} />
+            <Tooltip formatter={(v, n) => [fC(Math.abs(v)), n]} contentStyle={{ background: "var(--ps-thead-bg)", border: "none", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#F1F5F9" }} labelStyle={{ color: "var(--ps-text-subtle)", marginBottom: 6, fontSize: 12 }} />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
             <Bar dataKey="superNet" name="Super/Pension (net)" stackId="estate" fill="#6366F1" />
             <Bar dataKey="assetsNet" name="Assets (net)" stackId="estate" fill="#10B981" />
