@@ -77,7 +77,6 @@ export function useFactFind() {
           setFactFind(newFactFind);
         }
       } catch (err) {
-        console.error('useFactFind error:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -139,7 +138,6 @@ export function useFactFind() {
 
       return true;
     } catch (err) {
-      console.error(`Failed to save section "${sectionName}":`, err);
       return false;
     }
   }, []);
