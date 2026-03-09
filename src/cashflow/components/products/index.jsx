@@ -3689,35 +3689,35 @@ Write professional SOA content for this section. Be specific with the client dat
     { id: "welcome", icon: "👋", title: "Welcome & Introduction", color: "#F59E0B", sections: [
       { id: "cover-letter", title: "Cover Letter", subtitle: "Personalised introduction", render: () => (
         <div>
-          <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.7 }}>
+          <p style={{ fontSize: 13, color: "var(--ps-text-secondary)", lineHeight: 1.7 }}>
             Dear {clientNames},
           </p>
-          <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.7, marginTop: 8 }}>
+          <p style={{ fontSize: 13, color: "var(--ps-text-secondary)", lineHeight: 1.7, marginTop: 8 }}>
             Thank you for the opportunity to prepare this Statement of Advice. This document outlines our recommendations based on the information you provided during our meeting and through the fact find process.
           </p>
-          <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.7, marginTop: 8 }}>
+          <p style={{ fontSize: 13, color: "var(--ps-text-secondary)", lineHeight: 1.7, marginTop: 8 }}>
             Please take the time to read this document carefully. If you have any questions, please don't hesitate to contact us.
           </p>
         </div>
       )},
       { id: "cover-page", title: "Cover Page", subtitle: "Title page with client and adviser details", render: () => (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div style={{ padding: 16, background: "#F8FAFC", borderRadius: 10, border: "1px solid #E2E8F0" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>Prepared for</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A" }}>{clientNames}</div>
-            {c1.residential_address && <div style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>{c1.residential_address}</div>}
+          <div style={{ padding: 16, background: "var(--ps-surface-alt)", borderRadius: 10, border: "1px solid var(--ps-border)" }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--ps-text-subtle)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>Prepared for</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ps-text-primary)" }}>{clientNames}</div>
+            {c1.residential_address && <div style={{ fontSize: 12, color: "var(--ps-text-muted)", marginTop: 4 }}>{c1.residential_address}</div>}
           </div>
-          <div style={{ padding: 16, background: "#F8FAFC", borderRadius: 10, border: "1px solid #E2E8F0" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>Prepared by</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A" }}>{factFind.adviser?.name || "Financial Adviser"}</div>
-            <div style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>AR No: {factFind.adviser?.ar_number || "—"}</div>
-            <div style={{ fontSize: 12, color: "#64748B" }}>AFSL: {factFind.adviser?.afsl || "—"}</div>
+          <div style={{ padding: 16, background: "var(--ps-surface-alt)", borderRadius: 10, border: "1px solid var(--ps-border)" }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--ps-text-subtle)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>Prepared by</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ps-text-primary)" }}>{factFind.adviser?.name || "Financial Adviser"}</div>
+            <div style={{ fontSize: 12, color: "var(--ps-text-muted)", marginTop: 4 }}>AR No: {factFind.adviser?.ar_number || "—"}</div>
+            <div style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>AFSL: {factFind.adviser?.afsl || "—"}</div>
           </div>
-          <div style={{ padding: 16, background: "#F8FAFC", borderRadius: 10, border: "1px solid #E2E8F0", gridColumn: "span 2" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>Document</div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#0F172A" }}>Statement of Advice</div>
-            <div style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>Date prepared: {new Date().toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })}</div>
-            <div style={{ fontSize: 12, color: "#64748B" }}>SOA Type: {scope.soa_type || "Statement of Advice"}</div>
+          <div style={{ padding: 16, background: "var(--ps-surface-alt)", borderRadius: 10, border: "1px solid var(--ps-border)", gridColumn: "span 2" }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--ps-text-subtle)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>Document</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ps-text-primary)" }}>Statement of Advice</div>
+            <div style={{ fontSize: 12, color: "var(--ps-text-muted)", marginTop: 4 }}>Date prepared: {new Date().toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })}</div>
+            <div style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>SOA Type: {scope.soa_type || "Statement of Advice"}</div>
           </div>
         </div>
       )},
@@ -3727,36 +3727,36 @@ Write professional SOA content for this section. Be specific with the client dat
         <div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 16 }}>
             {[
-              { label: "Net Position", value: fmt(netPosition), color: netPosition >= 0 ? "#059669" : "#DC2626" },
-              { label: "Total Assets", value: fmt(totalAssets), color: "#0F172A" },
-              { label: "Total Liabilities", value: fmt(totalLiabilities), color: totalLiabilities > 0 ? "#DC2626" : "#059669" },
+              { label: "Net Position", value: fmt(netPosition), color: netPosition >= 0 ? "var(--ps-green)" : "var(--ps-red)" },
+              { label: "Total Assets", value: fmt(totalAssets), color: "var(--ps-text-primary)" },
+              { label: "Total Liabilities", value: fmt(totalLiabilities), color: totalLiabilities > 0 ? "var(--ps-red)" : "var(--ps-green)" },
             ].map(k => (
-              <div key={k.label} style={{ padding: "12px 14px", borderRadius: 10, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase" }}>{k.label}</div>
+              <div key={k.label} style={{ padding: "12px 14px", borderRadius: 10, background: "var(--ps-surface-alt)", border: "1px solid var(--ps-border)" }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)", textTransform: "uppercase" }}>{k.label}</div>
                 <div style={{ fontSize: 18, fontWeight: 800, color: k.color, fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>{k.value}</div>
               </div>
             ))}
           </div>
-          <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.7 }}>
+          <p style={{ fontSize: 13, color: "var(--ps-text-secondary)", lineHeight: 1.7 }}>
             Based on our analysis of {hasPartner ? "your combined" : "your"} financial position, we recommend the following key strategies:
           </p>
           {strategies.length > 0 ? (
-            <ul style={{ margin: "8px 0 0 16px", fontSize: 13, color: "#475569", lineHeight: 1.8 }}>
+            <ul style={{ margin: "8px 0 0 16px", fontSize: 13, color: "var(--ps-text-secondary)", lineHeight: 1.8 }}>
               {strategies.slice(0, 8).map((s, i) => (
                 <li key={i}>{strategyLabels[s.strategy_id] || `Strategy ${s.strategy_id}`}{s.amount ? ` — ${fmt(parseFloat(s.amount))}` : ""}{s.end_year === "Ongoing" ? " (ongoing)" : s.end_year ? ` (FY${s.start_year}–${s.end_year})` : ""}</li>
               ))}
             </ul>
           ) : (
-            <div style={{ padding: 12, background: "#FEF3C7", borderRadius: 8, fontSize: 12, color: "#92400E", marginTop: 8 }}>⚠ No strategies configured. Add strategies in the Advice Request section.</div>
+            <div style={{ padding: 12, background: "var(--ps-surface-amber)", borderRadius: 8, fontSize: 12, color: "var(--ps-h1-amb-text)", marginTop: 8 }}>⚠ No strategies configured. Add strategies in the Advice Request section.</div>
           )}
         </div>
       )},
       { id: "scope-of-advice", title: "Scope of Advice", subtitle: "What this advice covers", render: () => (
         <div>
           {scope.additional_notes ? (
-            <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.7 }}>{scope.additional_notes}</p>
+            <p style={{ fontSize: 13, color: "var(--ps-text-secondary)", lineHeight: 1.7 }}>{scope.additional_notes}</p>
           ) : (
-            <div style={{ padding: 12, background: "#FEF3C7", borderRadius: 8, fontSize: 12, color: "#92400E" }}>⚠ Scope notes not yet configured. <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => navigateTo(["Advice Detail", "Objectives"])}>Go to Objectives →</span></div>
+            <div style={{ padding: 12, background: "var(--ps-surface-amber)", borderRadius: 8, fontSize: 12, color: "var(--ps-h1-amb-text)" }}>⚠ Scope notes not yet configured. <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => navigateTo(["Advice Detail", "Objectives"])}>Go to Objectives →</span></div>
           )}
         </div>
       )},
@@ -3772,10 +3772,10 @@ Write professional SOA content for this section. Be specific with the client dat
               [fmt(c1Salary), hasPartner ? fmt(c2Salary) : "—"],
               [`Retirement: ${retAge1}`, hasPartner ? `Retirement: ${retAge2}` : "—"],
             ].map((row, ri) => (
-              <tr key={ri} style={{ borderBottom: "1px solid #F1F5F9" }}>
-                <td style={{ padding: "8px 12px", fontWeight: 600, color: "#475569", width: "25%" }}>{["Name", "DOB", "Employment", "Gross Income", "Target"][ri]}</td>
-                <td style={{ padding: "8px 12px", color: "#0F172A" }}>{row[0]}</td>
-                {hasPartner && <td style={{ padding: "8px 12px", color: "#0F172A" }}>{row[1]}</td>}
+              <tr key={ri} style={{ borderBottom: "1px solid var(--ps-border-light)" }}>
+                <td style={{ padding: "8px 12px", fontWeight: 600, color: "var(--ps-text-secondary)", width: "25%" }}>{["Name", "DOB", "Employment", "Gross Income", "Target"][ri]}</td>
+                <td style={{ padding: "8px 12px", color: "var(--ps-text-primary)" }}>{row[0]}</td>
+                {hasPartner && <td style={{ padding: "8px 12px", color: "var(--ps-text-primary)" }}>{row[1]}</td>}
               </tr>
             ))}
           </tbody>
@@ -3783,42 +3783,42 @@ Write professional SOA content for this section. Be specific with the client dat
       )},
       { id: "assets-liabilities", title: "Assets & Liabilities", subtitle: "Current financial position", render: () => (
         <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", marginBottom: 6 }}>Assets</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ps-text-primary)", marginBottom: 6 }}>Assets</div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, marginBottom: 12 }}>
-            <thead><tr style={{ background: "#F8FAFC" }}>
-              <th style={{ padding: "6px 12px", textAlign: "left", fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Asset</th>
-              <th style={{ padding: "6px 12px", textAlign: "left", fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Type</th>
-              <th style={{ padding: "6px 12px", textAlign: "right", fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Value</th>
+            <thead><tr style={{ background: "var(--ps-surface-alt)" }}>
+              <th style={{ padding: "6px 12px", textAlign: "left", fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Asset</th>
+              <th style={{ padding: "6px 12px", textAlign: "left", fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Type</th>
+              <th style={{ padding: "6px 12px", textAlign: "right", fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Value</th>
             </tr></thead>
             <tbody>
               {assets.map((a, i) => (
-                <tr key={i} style={{ borderBottom: "1px solid #F1F5F9" }}>
-                  <td style={{ padding: "6px 12px", color: "#0F172A" }}>{a.a_name || "—"}</td>
-                  <td style={{ padding: "6px 12px", color: "#64748B" }}>{({ "1": "Principal Residence", "18": "Investment Property", "21": "Commercial Property", "19": "PR (Absent)", "8": "Cash", "9": "Term Deposit", "12": "AU Shares", "13": "Intl Shares", "26": "Managed Funds" })[a.a_type] || a.a_type}</td>
+                <tr key={i} style={{ borderBottom: "1px solid var(--ps-border-light)" }}>
+                  <td style={{ padding: "6px 12px", color: "var(--ps-text-primary)" }}>{a.a_name || "—"}</td>
+                  <td style={{ padding: "6px 12px", color: "var(--ps-text-muted)" }}>{({ "1": "Principal Residence", "18": "Investment Property", "21": "Commercial Property", "19": "PR (Absent)", "8": "Cash", "9": "Term Deposit", "12": "AU Shares", "13": "Intl Shares", "26": "Managed Funds" })[a.a_type] || a.a_type}</td>
                   <td style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>{fmt(parseFloat(a.a_value) || 0)}</td>
                 </tr>
               ))}
-              <tr style={{ borderTop: "2px solid #E2E8F0", fontWeight: 700 }}>
+              <tr style={{ borderTop: "2px solid var(--ps-border)", fontWeight: 700 }}>
                 <td colSpan={2} style={{ padding: "8px 12px" }}>Total Assets</td>
-                <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "'JetBrains Mono', monospace", color: "#059669" }}>{fmt(totalAssets)}</td>
+                <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "'JetBrains Mono', monospace", color: "var(--ps-green)" }}>{fmt(totalAssets)}</td>
               </tr>
             </tbody>
           </table>
           {liabilities.length > 0 && (
             <>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", marginBottom: 6 }}>Liabilities</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ps-text-primary)", marginBottom: 6 }}>Liabilities</div>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-                <thead><tr style={{ background: "#FEF2F2" }}>
-                  <th style={{ padding: "6px 12px", textAlign: "left", fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Liability</th>
-                  <th style={{ padding: "6px 12px", textAlign: "right", fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Balance</th>
-                  <th style={{ padding: "6px 12px", textAlign: "right", fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Rate</th>
+                <thead><tr style={{ background: "var(--ps-surface-red)" }}>
+                  <th style={{ padding: "6px 12px", textAlign: "left", fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Liability</th>
+                  <th style={{ padding: "6px 12px", textAlign: "right", fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Balance</th>
+                  <th style={{ padding: "6px 12px", textAlign: "right", fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Rate</th>
                 </tr></thead>
                 <tbody>
                   {liabilities.map((d, i) => (
-                    <tr key={i} style={{ borderBottom: "1px solid #F1F5F9" }}>
-                      <td style={{ padding: "6px 12px", color: "#0F172A" }}>{d.d_name || "—"}</td>
-                      <td style={{ padding: "6px 12px", textAlign: "right", fontFamily: "'JetBrains Mono', monospace", color: "#DC2626" }}>{fmt(parseFloat(d.d_balance) || 0)}</td>
-                      <td style={{ padding: "6px 12px", textAlign: "right", color: "#64748B" }}>{d.d_rate ? `${d.d_rate}%` : "—"}</td>
+                    <tr key={i} style={{ borderBottom: "1px solid var(--ps-border-light)" }}>
+                      <td style={{ padding: "6px 12px", color: "var(--ps-text-primary)" }}>{d.d_name || "—"}</td>
+                      <td style={{ padding: "6px 12px", textAlign: "right", fontFamily: "'JetBrains Mono', monospace", color: "var(--ps-red)" }}>{fmt(parseFloat(d.d_balance) || 0)}</td>
+                      <td style={{ padding: "6px 12px", textAlign: "right", color: "var(--ps-text-muted)" }}>{d.d_rate ? `${d.d_rate}%` : "—"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -3829,28 +3829,28 @@ Write professional SOA content for this section. Be specific with the client dat
       )},
       { id: "superannuation", title: "Superannuation", subtitle: "Current super positions", render: () => (
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-          <thead><tr style={{ background: "#F8FAFC" }}>
-            <th style={{ padding: "6px 12px", textAlign: "left", fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Fund</th>
-            <th style={{ padding: "6px 12px", textAlign: "left", fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Owner</th>
-            <th style={{ padding: "6px 12px", textAlign: "right", fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Balance</th>
+          <thead><tr style={{ background: "var(--ps-surface-alt)" }}>
+            <th style={{ padding: "6px 12px", textAlign: "left", fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Fund</th>
+            <th style={{ padding: "6px 12px", textAlign: "left", fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Owner</th>
+            <th style={{ padding: "6px 12px", textAlign: "right", fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Balance</th>
           </tr></thead>
           <tbody>
             {superFunds.map((sf, i) => (
-              <tr key={i} style={{ borderBottom: "1px solid #F1F5F9" }}>
-                <td style={{ padding: "6px 12px", color: "#0F172A" }}>{sf.fund_name || `Super Fund ${i + 1}`}</td>
-                <td style={{ padding: "6px 12px", color: "#64748B" }}>{sf.owner === "client1" ? c1Display : c2Display}</td>
+              <tr key={i} style={{ borderBottom: "1px solid var(--ps-border-light)" }}>
+                <td style={{ padding: "6px 12px", color: "var(--ps-text-primary)" }}>{sf.fund_name || `Super Fund ${i + 1}`}</td>
+                <td style={{ padding: "6px 12px", color: "var(--ps-text-muted)" }}>{sf.owner === "client1" ? c1Display : c2Display}</td>
                 <td style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>{fmt(parseFloat(sf.balance) || 0)}</td>
               </tr>
             ))}
             {pensions.map((pf, i) => (
-              <tr key={`p${i}`} style={{ borderBottom: "1px solid #F1F5F9" }}>
-                <td style={{ padding: "6px 12px", color: "#0F172A" }}>{pf.fund_name || `Pension ${i + 1}`} <span style={{ fontSize: 10, color: "#8B5CF6" }}>(Pension)</span></td>
-                <td style={{ padding: "6px 12px", color: "#64748B" }}>{pf.owner === "client1" ? c1Display : c2Display}</td>
+              <tr key={`p${i}`} style={{ borderBottom: "1px solid var(--ps-border-light)" }}>
+                <td style={{ padding: "6px 12px", color: "var(--ps-text-primary)" }}>{pf.fund_name || `Pension ${i + 1}`} <span style={{ fontSize: 10, color: "#8B5CF6" }}>(Pension)</span></td>
+                <td style={{ padding: "6px 12px", color: "var(--ps-text-muted)" }}>{pf.owner === "client1" ? c1Display : c2Display}</td>
                 <td style={{ padding: "6px 12px", textAlign: "right", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>{fmt(parseFloat(pf.balance) || 0)}</td>
               </tr>
             ))}
             {superFunds.length === 0 && pensions.length === 0 && (
-              <tr><td colSpan={3} style={{ padding: 12, textAlign: "center", color: "#94A3B8" }}>No super funds recorded</td></tr>
+              <tr><td colSpan={3} style={{ padding: 12, textAlign: "center", color: "var(--ps-text-subtle)" }}>No super funds recorded</td></tr>
             )}
           </tbody>
         </table>
@@ -3862,22 +3862,22 @@ Write professional SOA content for this section. Be specific with the client dat
       subtitle: `${s.owner_id === "client2" ? c2Display : c1Display} · FY${s.start_year}${s.end_year ? `–${s.end_year}` : ""}`,
       render: () => (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-          <div style={{ padding: "10px 14px", borderRadius: 8, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
-            <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Strategy</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>{strategyLabels[s.strategy_id] || s.strategy_id}</div>
+          <div style={{ padding: "10px 14px", borderRadius: 8, background: "var(--ps-surface-alt)", border: "1px solid var(--ps-border)" }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Strategy</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ps-text-primary)", marginTop: 2 }}>{strategyLabels[s.strategy_id] || s.strategy_id}</div>
           </div>
-          <div style={{ padding: "10px 14px", borderRadius: 8, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
-            <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Owner</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>{s.owner_id === "client2" ? c2Display : c1Display}</div>
+          <div style={{ padding: "10px 14px", borderRadius: 8, background: "var(--ps-surface-alt)", border: "1px solid var(--ps-border)" }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Owner</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ps-text-primary)", marginTop: 2 }}>{s.owner_id === "client2" ? c2Display : c1Display}</div>
           </div>
-          <div style={{ padding: "10px 14px", borderRadius: 8, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
-            <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Amount</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>{s.amount ? fmt(parseFloat(s.amount)) : "N/A"}</div>
+          <div style={{ padding: "10px 14px", borderRadius: 8, background: "var(--ps-surface-alt)", border: "1px solid var(--ps-border)" }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Amount</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ps-text-primary)", marginTop: 2 }}>{s.amount ? fmt(parseFloat(s.amount)) : "N/A"}</div>
           </div>
         </div>
       ),
     })) : [{ id: "no-strategies", title: "No Strategies", subtitle: "Add strategies in the model", render: () => (
-      <div style={{ padding: 16, background: "#FEF3C7", borderRadius: 8, fontSize: 12, color: "#92400E", textAlign: "center" }}>
+      <div style={{ padding: 16, background: "var(--ps-surface-amber)", borderRadius: 8, fontSize: 12, color: "var(--ps-h1-amb-text)", textAlign: "center" }}>
         No strategies have been configured. <span style={{ cursor: "pointer", textDecoration: "underline", fontWeight: 600 }} onClick={() => navigateTo(["Advice Detail", "Recommendations"])}>Go to Recommendations →</span>
       </div>
     )}]},
@@ -3885,28 +3885,28 @@ Write professional SOA content for this section. Be specific with the client dat
       { id: "age-pension", title: "Age Pension Assessment", subtitle: "Centrelink entitlement", render: () => ssData ? (
         <div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 12 }}>
-            <div style={{ padding: "10px 14px", borderRadius: 8, background: "#ECFDF5", border: "1px solid #6EE7B7" }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Maximum Annual Pension</div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#059669", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>{fmt(ssData.maxAnnual)}</div>
+            <div style={{ padding: "10px 14px", borderRadius: 8, background: "var(--ps-surface-emerald)", border: "1px solid var(--ps-ring-green)" }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Maximum Annual Pension</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ps-green)", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>{fmt(ssData.maxAnnual)}</div>
             </div>
-            <div style={{ padding: "10px 14px", borderRadius: 8, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Status</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>{ssData.isCouple ? "Couple" : "Single"} · {ssData.isHomeowner ? "Homeowner" : "Non-homeowner"}</div>
+            <div style={{ padding: "10px 14px", borderRadius: 8, background: "var(--ps-surface-alt)", border: "1px solid var(--ps-border)" }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Status</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ps-text-primary)", marginTop: 2 }}>{ssData.isCouple ? "Couple" : "Single"} · {ssData.isHomeowner ? "Homeowner" : "Non-homeowner"}</div>
             </div>
-            <div style={{ padding: "10px 14px", borderRadius: 8, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8" }}>Applied Test</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", marginTop: 2 }}>{ssData.appliedTest || "—"}</div>
+            <div style={{ padding: "10px 14px", borderRadius: 8, background: "var(--ps-surface-alt)", border: "1px solid var(--ps-border)" }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "var(--ps-text-subtle)" }}>Applied Test</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ps-text-primary)", marginTop: 2 }}>{ssData.appliedTest || "—"}</div>
             </div>
           </div>
         </div>
-      ) : <div style={{ fontSize: 12, color: "#94A3B8" }}>Age Pension data not available</div>},
+      ) : <div style={{ fontSize: 12, color: "var(--ps-text-subtle)" }}>Age Pension data not available</div>},
     ]},
     { id: "fees", icon: "💰", title: "Fees & Disclosure", color: "#8B5CF6", sections: [
       { id: "adviser-fees", title: "Adviser Fee Disclosure", subtitle: "Full fee disclosure", render: () => (
-        <div style={{ padding: 12, background: "#FEF3C7", borderRadius: 8, fontSize: 12, color: "#92400E" }}>✨ AI will generate fee disclosure based on configured fees from the Assumptions page.</div>
+        <div style={{ padding: 12, background: "var(--ps-surface-amber)", borderRadius: 8, fontSize: 12, color: "var(--ps-h1-amb-text)" }}>✨ AI will generate fee disclosure based on configured fees from the Assumptions page.</div>
       )},
       { id: "how-to-proceed", title: "How to Proceed", subtitle: "Next steps", render: () => (
-        <div style={{ padding: 12, background: "#FEF3C7", borderRadius: 8, fontSize: 12, color: "#92400E" }}>✨ AI will generate next steps based on recommended strategies.</div>
+        <div style={{ padding: 12, background: "var(--ps-surface-amber)", borderRadius: 8, fontSize: 12, color: "var(--ps-h1-amb-text)" }}>✨ AI will generate next steps based on recommended strategies.</div>
       )},
     ]},
   ];
@@ -4018,7 +4018,7 @@ Write professional SOA content for this section. Be specific with the client dat
               }}>
                 <span style={{ fontSize: 13 }}>{group.icon}</span>
                 <span style={{ flex: 1 }}>{group.title}</span>
-                {groupDone > 0 && <span style={{ fontSize: 9, fontWeight: 700, color: "#059669" }}>{groupDone}/{group.sections.length}</span>}
+                {groupDone > 0 && <span style={{ fontSize: 9, fontWeight: 700, color: "var(--ps-green)" }}>{groupDone}/{group.sections.length}</span>}
               </div>
 
               {/* Section items */}
@@ -4149,7 +4149,7 @@ Write professional SOA content for this section. Be specific with the client dat
               </div>
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 {sectionStatus[activeSection.id] === "done" ? (
-                  <span style={{ padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700, background: "#ECFDF5", color: "#059669" }}>✓ Approved</span>
+                  <span style={{ padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700, background: "#ECFDF5", color: "var(--ps-green)" }}>✓ Approved</span>
                 ) : (
                   <span style={{ padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700, background: "#FEF3C7", color: "#B45309" }}>Pending</span>
                 )}
@@ -4236,7 +4236,7 @@ Write professional SOA content for this section. Be specific with the client dat
                           onClick={() => setEditingSection(null)}
                           style={{
                             padding: "3px 10px", borderRadius: 5, fontSize: 10, fontWeight: 600, border: "1px solid #6EE7B7",
-                            background: "#ECFDF5", color: "#059669", cursor: "pointer",
+                            background: "#ECFDF5", color: "var(--ps-green)", cursor: "pointer",
                           }}
                         >✓ Done Editing</button>
                       )}
@@ -4285,7 +4285,7 @@ Write professional SOA content for this section. Be specific with the client dat
                 style={{
                   padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
                   border: sectionStatus[activeSection.id] === "done" ? "1px solid #6EE7B7" : "1px solid #6EE7B7",
-                  background: sectionStatus[activeSection.id] === "done" ? "#ECFDF5" : "transparent", color: "#059669",
+                  background: sectionStatus[activeSection.id] === "done" ? "#ECFDF5" : "transparent", color: "var(--ps-green)",
                 }}
               >{sectionStatus[activeSection.id] === "done" ? "✓ Approved — click to revert" : "✓ Approve Section"}</button>
               <button
