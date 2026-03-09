@@ -1,11 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRole } from '../RoleContext';
-import { useCompletionLogic } from './useCompletionLogic';
-import { useSectionState } from './useSectionState';
 
 const sectionGroups = [
   {
@@ -69,12 +66,9 @@ const sectionGroups = [
   }
 ];
 
-export default function FactFindLayout({ children, currentSection, factFind }) {
+export default function FactFindLayout({ children, currentSection, factFindId }) {
   const navigate = useNavigate();
   const { navigationChain } = useRole();
-  const [showDashboard, setShowDashboard] = useState(false);
-  const { calculateAllSectionCompletion, getDisplayState } = useCompletionLogic();
-  const { SECTIONS } = useSectionState();
   const [activeTabId, setActiveTabId] = useState(currentSection || 'prefill');
 
   // Update active tab when section changes
@@ -84,42 +78,12 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
     }
   }, [currentSection]);
 
-  const handleNavClick = async (e, targetPath) => {
+  const handleNavClick = (e, targetPath) => {
     e.preventDefault();
-    
-    console.log('=== NAV START ===');
-    
-    // Wait for save to complete
-    const savePromise = new Promise((resolve) => {
-      const handler = () => {
-        window.removeEventListener('factfind-save-complete', handler);
-        console.log('=== SAVE COMPLETE RECEIVED ===');
-        resolve();
-      };
-      window.addEventListener('factfind-save-complete', handler);
-      
-      // Dispatch the save event
-      window.dispatchEvent(new Event('factfind-save-before-nav'));
-      
-      // Safety timeout — navigate anyway after 2 seconds if save hangs
-      setTimeout(() => {
-        window.removeEventListener('factfind-save-complete', handler);
-        console.log('=== SAVE TIMEOUT — NAVIGATING ANYWAY ===');
-        resolve();
-      }, 2000);
-    });
-    
-    await savePromise;
-    
-    // NOW navigate
-    console.log('=== NAVIGATING TO:', targetPath, '===');
     navigate(targetPath);
   };
 
-  const displayState = useMemo(() => {
-    if (!factFind) return {};
-    return getDisplayState(factFind);
-  }, [factFind, getDisplayState]);
+  const displayState = {};
 
   const getCompletionForSection = (sectionId) => {
     const sectionKey = sectionId === 'personal' ? 'personal'
@@ -196,8 +160,8 @@ export default function FactFindLayout({ children, currentSection, factFind }) {
                    return (
                      <Link
                        key={section.id}
-                       to={createPageUrl(section.path) + (factFind?.id ? `?id=${factFind.id}` : '')}
-                       onClick={(e) => handleNavClick(e, createPageUrl(section.path) + (factFind?.id ? `?id=${factFind.id}` : ''))}
+                       to={createPageUrl(section.path) + (factFindId ? `?id=${factFindId}` : '')}
+                       onClick={(e) => handleNavClick(e, createPageUrl(section.path) + (factFindId ? `?id=${factFindId}` : ''))}
                        className={cn(
                          "flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all text-sm",
                          isActive 

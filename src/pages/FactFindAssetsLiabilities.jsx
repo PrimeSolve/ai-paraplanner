@@ -81,22 +81,6 @@ export default function FactFindAssetsLiabilities() {
     return () => clearTimeout(timeoutId);
   }, [factFind?.id, dataLoaded, assetsList, debtsList, updateSection]);
 
-  useEffect(() => {
-    const handleSaveBeforeNav = async () => {
-      try {
-        await updateSection('assets_liabilities', buildAssetsLiabilitiesPayloadRef.current());
-      } catch (err) {
-        console.error('Save failed:', err);
-      }
-      window.dispatchEvent(new Event('factfind-save-complete'));
-    };
-
-    window.addEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-    return () => window.removeEventListener('factfind-save-before-nav', handleSaveBeforeNav);
-  }, [updateSection]);
-
-
-
   // ASSETS
   const addAsset = useCallback(() => {
     const newAsset = { a_name: '', a_description: '', a_ownType: '', a_owner: '', a_type: '', a_value: '', a_growth: '', a_purchase_price: '', a_purchase_date: '', a_rental_income: '', a_rental_freq: '' };
@@ -193,7 +177,7 @@ export default function FactFindAssetsLiabilities() {
 
   if (ffLoading) {
     return (
-      <FactFindLayout currentSection="assets_liabilities" factFind={factFind}>
+      <FactFindLayout currentSection="assets_liabilities" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -205,7 +189,7 @@ export default function FactFindAssetsLiabilities() {
   const activeDebt = activeDebtIndex !== null ? debtsList[activeDebtIndex] : null;
 
   return (
-    <FactFindLayout currentSection="assets_liabilities" factFind={factFind}>
+    <FactFindLayout currentSection="assets_liabilities" factFindId={factFind?.id}>
       <FactFindHeader
         title="Assets & Liabilities"
         description="Add your assets and debts. Use the summary to select an item; edit its full details below."

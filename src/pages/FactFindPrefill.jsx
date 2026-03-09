@@ -311,7 +311,7 @@ export default function FactFindPrefill() {
 
   if (loading) {
     return (
-      <FactFindLayout currentSection="prefill" factFind={factFind}>
+      <FactFindLayout currentSection="prefill" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -336,7 +336,7 @@ export default function FactFindPrefill() {
   const extractedCount = [...processingDocs.values()].filter(s => s === 'extracted').length;
 
   return (
-    <FactFindLayout currentSection="prefill" factFind={factFind}>
+    <FactFindLayout currentSection="prefill" factFindId={factFind?.id}>
       <FactFindHeader
         title="Getting started — Pre-fill your Fact Find"
         description="Save time by uploading your financial documents. Our AI will pre-fill as much of the Fact Find as possible for you to review and confirm."

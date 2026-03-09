@@ -176,7 +176,7 @@ export default function FactFindReview() {
 
   if (ffLoading) {
     return (
-      <FactFindLayout currentSection="review" factFind={factFind}>
+      <FactFindLayout currentSection="review" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -388,7 +388,7 @@ export default function FactFindReview() {
         </DialogContent>
       </Dialog>
 
-      <FactFindLayout currentSection="review" factFind={factFind}>
+      <FactFindLayout currentSection="review" factFindId={factFind?.id}>
         <div className="flex-1 overflow-y-auto p-8 bg-slate-50">
           <div className="space-y-8">
             {/* Header */}

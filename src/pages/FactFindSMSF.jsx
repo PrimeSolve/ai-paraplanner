@@ -983,7 +983,7 @@ export default function FactFindSMSF() {
 
   if (ffLoading) {
     return (
-      <FactFindLayout currentSection="smsf" factFind={factFind}>
+      <FactFindLayout currentSection="smsf" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -992,7 +992,7 @@ export default function FactFindSMSF() {
   }
 
   return (
-    <FactFindLayout currentSection="smsf" factFind={factFind}>
+    <FactFindLayout currentSection="smsf" factFindId={factFind?.id}>
       <FactFindHeader
         title="SMSF"
         description="Add details about your SMSF, including trustees, members, and pension accounts."
