@@ -158,38 +158,6 @@ export default function FactFindSuperannuation() {
     return () => clearTimeout(timeoutId);
   }, [factFind?.id, dataLoaded, superFunds, pensions, annuities, updateSection]);
 
-  // CRITICAL: Save before navigating away
-  const buildSuperSaveBeforeNavRef = useRef(null);
-  buildSuperSaveBeforeNavRef.current = () => {
-    let fundsToSave = [...superFunds];
-    let pensionsToSave = [...pensions];
-    let annuitiesToSave = [...annuities];
-
-    if (view === 'detail' && currentItem) {
-      if (mainTab === 'super') {
-        if (editingIndex !== null) {
-          fundsToSave[editingIndex] = currentItem;
-        } else {
-          fundsToSave.push(currentItem);
-        }
-      } else if (mainTab === 'pension') {
-        if (editingIndex !== null) {
-          pensionsToSave[editingIndex] = currentItem;
-        } else {
-          pensionsToSave.push(currentItem);
-        }
-      } else if (mainTab === 'annuity') {
-        if (editingIndex !== null) {
-          annuitiesToSave[editingIndex] = currentItem;
-        } else {
-          annuitiesToSave.push(currentItem);
-        }
-      }
-    }
-
-    return { funds: fundsToSave, pensions: pensionsToSave, annuities: annuitiesToSave };
-  };
-
   const getCurrentList = () => {
     if (mainTab === 'super') return superFunds;
     if (mainTab === 'pension') return pensions;
