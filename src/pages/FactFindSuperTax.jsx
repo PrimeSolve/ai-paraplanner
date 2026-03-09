@@ -51,15 +51,15 @@ export default function FactFindSuperTax() {
   });
 
   // Determine if partner exists from Personal section (read-only)
-  const hasPartner = factFind?.personal?.partner?.first_name ? true : false;
+  const hasPartner = factFind?.client1_profile?.partner?.first_name ? true : false;
 
   // Get principal names for pill labels
   const principalNames = useMemo(() => {
-    const clientName = factFind?.personal?.first_name
-      ? `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim()
+    const clientName = factFind?.client1_profile?.first_name
+      ? `${factFind.client1_profile.first_name} ${factFind.client1_profile.last_name || ''}`.trim()
       : 'Client';
-    const partnerName = factFind?.personal?.partner?.first_name
-      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim()
+    const partnerName = factFind?.client1_profile?.partner?.first_name
+      ? `${factFind.client1_profile.partner.first_name} ${factFind.client1_profile.partner.last_name || ''}`.trim()
       : 'Partner';
 
     return { client: clientName, partner: partnerName };
@@ -78,8 +78,8 @@ export default function FactFindSuperTax() {
   }, []);
 
   useEffect(() => {
-    if (factFind?.super_tax) {
-      const st = factFind.super_tax;
+    if (factFind?.client1_profile?.super_tax) {
+      const st = factFind.client1_profile.super_tax;
       setData({
         client: {
           super: st.client?.super || { ...EMPTY_SUPER },
@@ -113,7 +113,7 @@ export default function FactFindSuperTax() {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('super_tax', buildSuperTaxPayloadRef.current());
+        await updateSection('Client1FactFind', { SuperTax: buildSuperTaxPayloadRef.current() });
       } catch (error) {
         console.error('Auto-save super/tax failed:', error);
       }
@@ -160,12 +160,12 @@ export default function FactFindSuperTax() {
     setSaving(true);
     try {
       // Save current section data
-      await updateSection('super_tax', {
+      await updateSection('Client1FactFind', { SuperTax: {
         currentTab,
         activePerson,
         client: data.client,
         partner: data.partner
-      });
+      } });
 
       // Mark section as complete
       const sectionsCompleted = [...(factFind.sections_completed || [])];

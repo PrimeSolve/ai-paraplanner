@@ -301,7 +301,7 @@ export default function FactFindDependants() {
       globalStateRef.current.dependants.currentTab = currentTab;
       globalStateRef.current.dependants.activeIndex = activeIndex;
       
-      await updateSection('dependants', globalStateRef.current.dependants);
+      await updateSection('Client1FactFind', { Dependants: globalStateRef.current.dependants });
     }
   }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills, factFind?.id, readTabToArray, currentTab, activeIndex, updateSection]);
 
@@ -321,13 +321,14 @@ export default function FactFindDependants() {
     loadUser();
   }, []);
 
-  // When FactFind loads, sync its dependants data
+  // When FactFind loads, sync its dependants data from client1Profile
   useEffect(() => {
-    if (factFind?.id && factFind.dependants) {
+    const depData = factFind?.client1_profile?.dependants;
+    if (factFind?.id && depData) {
       globalStateRef.current.dependants = {
-        ...factFind.dependants,
-        currentTab: factFind.dependants.currentTab || 'children',
-        activeIndex: factFind.dependants.activeIndex || 0
+        ...depData,
+        currentTab: depData.currentTab || 'children',
+        activeIndex: depData.activeIndex || 0
       };
     }
   }, [factFind?.id]);
@@ -362,7 +363,7 @@ export default function FactFindDependants() {
       globalStateRef.current.dependants.currentTab = currentTab;
       globalStateRef.current.dependants.activeIndex = activeIndex;
 
-      await updateSection('dependants', globalStateRef.current.dependants);
+      await updateSection('Client1FactFind', { Dependants: globalStateRef.current.dependants });
     } catch (error) {
       console.error('Save failed:', error);
     }
@@ -423,7 +424,7 @@ export default function FactFindDependants() {
         sectionsCompleted.push('dependants');
       }
 
-      await updateSection('dependants', globalStateRef.current.dependants);
+      await updateSection('Client1FactFind', { Dependants: globalStateRef.current.dependants });
       
       // Update sections completed separately
       await base44.entities.FactFind.update(factFind.id, {

@@ -128,12 +128,13 @@ export default function FactFindSuperannuation() {
   }, []);
 
   useEffect(() => {
-    if (factFind?.superannuation) {
-      setSuperFunds(factFind.superannuation.funds || []);
-      setPensions(factFind.superannuation.pensions || []);
-      setAnnuities(factFind.superannuation.annuities || []);
+    const superData = factFind?.client1_profile?.super_funds;
+    if (superData) {
+      setSuperFunds(superData.funds || []);
+      setPensions(superData.pensions || []);
+      setAnnuities(superData.annuities || []);
     }
-  }, [factFind?.superannuation]);
+  }, [factFind?.client1_profile?.super_funds]);
 
   // Auto-save committed list data (debounced 1.5s)
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -150,7 +151,7 @@ export default function FactFindSuperannuation() {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('superannuation', buildSuperannuationPayloadRef.current());
+        await updateSection('Client1FactFind', { SuperFunds: buildSuperannuationPayloadRef.current() });
       } catch (err) {
         console.error('Auto-save superannuation failed:', err);
       }
@@ -173,11 +174,11 @@ export default function FactFindSuperannuation() {
   const saveFunds = useCallback(async (sf, p, a) => {
     if (!factFind?.id) return;
     try {
-      await updateSection('superannuation', {
+      await updateSection('Client1FactFind', { SuperFunds: {
         funds: sf,
         pensions: p,
         annuities: a
-      });
+      } });
     } catch (error) {
       console.error('Save failed:', error);
     }
@@ -264,7 +265,7 @@ export default function FactFindSuperannuation() {
         sectionsCompleted.push('superannuation');
       }
 
-      await updateSection('superannuation', { funds: superFunds, pensions, annuities });
+      await updateSection('Client1FactFind', { SuperFunds: { funds: superFunds, pensions, annuities } });
 
       await base44.entities.FactFind.update(factFind.id, {
         sections_completed: sectionsCompleted,

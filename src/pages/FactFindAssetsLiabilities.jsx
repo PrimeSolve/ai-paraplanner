@@ -50,11 +50,11 @@ export default function FactFindAssetsLiabilities() {
   }, []);
 
   useEffect(() => {
-    if (factFind?.assets_liabilities?.assets) {
-      setAssetsList(factFind.assets_liabilities.assets);
+    if (factFind?.client1_profile?.properties) {
+      setAssetsList(factFind.client1_profile.properties);
     }
-    if (factFind?.assets_liabilities?.liabilities) {
-      setDebtsList(factFind.assets_liabilities.liabilities);
+    if (factFind?.client1_profile?.debts) {
+      setDebtsList(factFind.client1_profile.debts);
     }
   }, [factFind?.id]);
 
@@ -73,7 +73,7 @@ export default function FactFindAssetsLiabilities() {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('assets_liabilities', buildAssetsLiabilitiesPayloadRef.current());
+        await updateSection('Client1FactFind', { Properties: buildAssetsLiabilitiesPayloadRef.current().assets, Debts: buildAssetsLiabilitiesPayloadRef.current().liabilities });
       } catch (err) {
         console.error('Auto-save assets/liabilities failed:', err);
       }
@@ -105,9 +105,9 @@ export default function FactFindAssetsLiabilities() {
 
     // Save to database immediately
     if (factFind?.id) {
-      await updateSection('assets_liabilities', {
-        assets: updatedAssets,
-        liabilities: debtsList
+      await updateSection('Client1FactFind', {
+        Properties: updatedAssets,
+        Debts: debtsList
       });
     }
   }, [activeAssetIndex, assetsList, factFind?.id, debtsList, updateSection]);
@@ -136,9 +136,9 @@ export default function FactFindAssetsLiabilities() {
 
     // Save to database immediately
     if (factFind?.id) {
-      await updateSection('assets_liabilities', {
-        assets: assetsList,
-        liabilities: updatedDebts
+      await updateSection('Client1FactFind', {
+        Properties: assetsList,
+        Debts: updatedDebts
       });
     }
   }, [activeDebtIndex, debtsList, factFind?.id, assetsList, updateSection]);
@@ -156,7 +156,7 @@ export default function FactFindAssetsLiabilities() {
         sectionsCompleted.push('assets_liabilities');
       }
 
-      await updateSection('assets_liabilities', { assets: assetsList, liabilities: debtsList });
+      await updateSection('Client1FactFind', { Properties: assetsList, Debts: debtsList });
 
       await base44.entities.FactFind.update(factFind.id, {
         sections_completed: sectionsCompleted,

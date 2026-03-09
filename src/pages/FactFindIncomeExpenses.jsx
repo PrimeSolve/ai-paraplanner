@@ -34,14 +34,14 @@ export default function FactFindIncomeExpenses() {
   const [editingExpenseAdj, setEditingExpenseAdj] = useState(null);
 
   // Determine if partner exists from Personal section (read-only)
-  const hasPartner = factFind?.personal?.partner?.first_name ? true : false;
-  
+  const hasPartner = factFind?.client1_profile?.partner?.first_name ? true : false;
+
   const principalNames = useMemo(() => {
-    const clientName = factFind?.personal?.first_name
-      ? `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim()
+    const clientName = factFind?.client1_profile?.first_name
+      ? `${factFind.client1_profile.first_name} ${factFind.client1_profile.last_name || ''}`.trim()
       : 'Client';
-    const partnerName = factFind?.personal?.partner?.first_name
-      ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim()
+    const partnerName = factFind?.client1_profile?.partner?.first_name
+      ? `${factFind.client1_profile.partner.first_name} ${factFind.client1_profile.partner.last_name || ''}`.trim()
       : 'Partner';
     return { client: clientName, partner: partnerName };
   }, [factFind?.id]);
@@ -59,42 +59,50 @@ export default function FactFindIncomeExpenses() {
   }, []);
 
   useEffect(() => {
-    if (factFind?.income_expenses) {
-      const incomeData = factFind.income_expenses;
-      
-      // Load from new schema structure
-      const incomeSources = incomeData.income_sources || [];
-      const expensesList = incomeData.expenses || [];
-      
-      const clientIncome = incomeSources.find(s => s.person === 'client') || {};
-      const partnerIncome = incomeSources.find(s => s.person === 'partner') || {};
-      const expensesData = expensesList[0] || {};
-      
-      setClientFields(clientIncome.fields || {});
-      setPartnerFields(partnerIncome.fields || {});
-      setExpenseFields(expensesData.fields || {});
-      
-      setClientAdjustments(clientIncome.adjustments || []);
-      setPartnerAdjustments(partnerIncome.adjustments || []);
-      setExpenseAdjustments(expensesData.adjustments || []);
-      
+    // Read income/expense data from the API's client1Profile structure
+    // API GET returns: client1Profile.incomes and client1Profile.expenses
+    // After camelToSnakeKeys proxy conversion: client1_profile.incomes / .expenses
+    const incomes = factFind?.client1_profile?.incomes || [];
+    const expenses = factFind?.client1_profile?.expenses || [];
+
+    if (incomes.length || expenses.length) {
+      // First income record is client, second (if present) is partner
+      const clientIncome = incomes[0] || {};
+      const partnerIncome = incomes[1] || {};
+      const expenseData = expenses[0] || {};
+
+      // Separate adjustments from the flat field objects
+      const { adjustments: clientAdj, ...cFields } = clientIncome;
+      const { adjustments: partnerAdj, ...pFields } = partnerIncome;
+      const { adjustments: expAdj, ...eFields } = expenseData;
+
+      setClientFields(cFields);
+      setPartnerFields(pFields);
+      setExpenseFields(eFields);
+
+      setClientAdjustments(clientAdj || []);
+      setPartnerAdjustments(partnerAdj || []);
+      setExpenseAdjustments(expAdj || []);
+
       setCurrentTab('inc');
       setActivePerson('c1');
     }
   }, [factFind?.id]);
 
   // Build the save payload (shared by auto-save and save-before-nav)
+  // API PUT expects Client1FactFind.Incomes and Client1FactFind.Expenses
+  // Using PascalCase keys so snakeToCamelKeys in the proxy passes them through unchanged
   const buildIncomeExpensesPayload = useCallback(() => {
-    const incomeSources = [
-      { person: 'client', fields: clientFields, adjustments: clientAdjustments }
+    const Incomes = [
+      { ...clientFields, adjustments: clientAdjustments }
     ];
     if (hasPartner) {
-      incomeSources.push({ person: 'partner', fields: partnerFields, adjustments: partnerAdjustments });
+      Incomes.push({ ...partnerFields, adjustments: partnerAdjustments });
     }
-    const expenses = [
-      { fields: expenseFields, adjustments: expenseAdjustments }
+    const Expenses = [
+      { ...expenseFields, adjustments: expenseAdjustments }
     ];
-    return { income_sources: incomeSources, expenses };
+    return { Incomes, Expenses };
   }, [clientFields, partnerFields, expenseFields, clientAdjustments, partnerAdjustments, expenseAdjustments, hasPartner]);
 
   const buildIncomeExpensesPayloadRef = useRef(null);
@@ -112,7 +120,7 @@ export default function FactFindIncomeExpenses() {
     if (!factFind?.id || !dataLoaded || !hasUserEdited.current) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('income_expenses', buildIncomeExpensesPayloadRef.current());
+        await updateSection('Client1FactFind', buildIncomeExpensesPayloadRef.current());
       } catch (error) {
         console.error('Auto-save income/expenses failed:', error);
       }
@@ -223,22 +231,7 @@ export default function FactFindIncomeExpenses() {
         sectionsCompleted.push('income_expenses');
       }
 
-      const incomeSources = [
-        { person: 'client', fields: clientFields, adjustments: clientAdjustments }
-      ];
-      
-      if (hasPartner) {
-        incomeSources.push({ person: 'partner', fields: partnerFields, adjustments: partnerAdjustments });
-      }
-      
-      const expenses = [
-        { fields: expenseFields, adjustments: expenseAdjustments }
-      ];
-
-      await updateSection('income_expenses', {
-        income_sources: incomeSources,
-        expenses: expenses
-      });
+      await updateSection('Client1FactFind', buildIncomeExpensesPayloadRef.current());
 
       await base44.entities.FactFind.update(factFind.id, {
         sections_completed: sectionsCompleted,

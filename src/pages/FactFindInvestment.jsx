@@ -69,11 +69,12 @@ export default function FactFindInvestment() {
   }, []);
 
   useEffect(() => {
-    if (factFind?.investment) {
-      setWraps(factFind.investment.wraps || []);
-      setBonds(factFind.investment.bonds || []);
+    const invData = factFind?.client1_profile?.investments;
+    if (invData) {
+      setWraps(invData.wraps || []);
+      setBonds(invData.bonds || []);
     }
-  }, [factFind?.investment]);
+  }, [factFind?.client1_profile?.investments]);
 
   // Auto-save committed list data (debounced 1.5s)
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -90,7 +91,7 @@ export default function FactFindInvestment() {
     if (!factFind?.id || !dataLoaded) return;
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('investment', buildInvestmentPayloadRef.current());
+        await updateSection('Client1FactFind', { Investments: buildInvestmentPayloadRef.current() });
       } catch (err) {
         console.error('Auto-save investment failed:', err);
       }
@@ -111,10 +112,10 @@ export default function FactFindInvestment() {
   const saveInvestments = useCallback(async (w, b) => {
     if (!factFind?.id) return;
     try {
-      await updateSection('investment', {
+      await updateSection('Client1FactFind', { Investments: {
         wraps: w,
         bonds: b
-      });
+      } });
     } catch (error) {
       console.error('Save failed:', error);
     }
@@ -193,7 +194,7 @@ export default function FactFindInvestment() {
         sectionsCompleted.push('investment');
       }
 
-      await updateSection('investment', { wraps, bonds });
+      await updateSection('Client1FactFind', { Investments: { wraps, bonds } });
 
       await base44.entities.FactFind.update(factFind.id, {
         sections_completed: sectionsCompleted,

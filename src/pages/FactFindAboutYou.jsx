@@ -167,7 +167,8 @@ export default function FactFindPersonal() {
   const [dataLoaded, setDataLoaded] = useState(false);
   
   useEffect(() => {
-    if (factFind?.personal && !dataLoaded) {
+    const profile = factFind?.client1_profile;
+    if (profile && !dataLoaded) {
       // Migrate old field names to new model-aligned names
       const migrateFields = (data) => {
         const migrated = { ...data };
@@ -175,35 +176,35 @@ export default function FactFindPersonal() {
         if (migrated.employer_name && !migrated.employer) { migrated.employer = migrated.employer_name; delete migrated.employer_name; }
         return migrated;
       };
-      // Load flat structure directly
-      setClientData({ ...initialFormState, ...migrateFields(factFind.personal) });
-      
+      // Personal fields are flat at the top level of client1Profile
+      setClientData({ ...initialFormState, ...migrateFields(profile) });
+
       // Load partner data if exists
-      if (factFind.personal.partner) {
-        setPartnerData({ ...initialFormState, ...migrateFields(factFind.personal.partner) });
+      if (profile.partner) {
+        setPartnerData({ ...initialFormState, ...migrateFields(profile.partner) });
         setHasPartner(true);
       }
-      
+
       setDataLoaded(true);
     }
   }, [factFind?.id]);
 
   // Sync Client entity and RoleContext when FactFind data loads
   useEffect(() => {
-    if (factFind?.personal?.first_name && clientId) {
-      const fullName = `${factFind.personal.first_name} ${factFind.personal.last_name || ''}`.trim();
+    if (factFind?.client1_profile?.first_name && clientId) {
+      const fullName = `${factFind.client1_profile.first_name} ${factFind.client1_profile.last_name || ''}`.trim();
       updateNavigationName('client', fullName);
 
       base44.entities.Client.update(clientId, {
-        first_name: factFind.personal.first_name,
-        last_name: factFind.personal.last_name || '',
-        email: factFind.personal.email || '',
-        phone: factFind.personal.phone || '',
-        notes: factFind.personal.notes || '',
+        first_name: factFind.client1_profile.first_name,
+        last_name: factFind.client1_profile.last_name || '',
+        email: factFind.client1_profile.email || '',
+        phone: factFind.client1_profile.phone || '',
+        notes: factFind.client1_profile.notes || '',
       })
         .catch(err => console.error('Client sync failed:', err));
     }
-  }, [factFind?.personal?.first_name, factFind?.personal?.last_name, clientId, updateNavigationName]);
+  }, [factFind?.client1_profile?.first_name, factFind?.client1_profile?.last_name, clientId, updateNavigationName]);
 
 
 
@@ -226,7 +227,7 @@ export default function FactFindPersonal() {
 
     const timeoutId = setTimeout(async () => {
       try {
-        await updateSection('personal', buildAboutYouPayloadRef.current());
+        await updateSection('Client1FactFind', { PersonalDetails: buildAboutYouPayloadRef.current() });
       } catch (error) {
         console.error('Auto-save personal failed:', error);
       }
@@ -261,7 +262,7 @@ export default function FactFindPersonal() {
       };
 
       // 1. Save to FactFind
-      const result = await updateSection('personal', personalData);
+      const result = await updateSection('Client1FactFind', { PersonalDetails: personalData });
       
       // 2. Sync shared fields to Client entity
       if (clientId && clientData.first_name && clientData.last_name) {

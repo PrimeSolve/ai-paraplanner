@@ -126,7 +126,17 @@ export function useFactFind() {
         ...cleanData
       } = currentData;
 
-      const mapped = { [sectionName]: data };
+      // Deep-merge for Client1FactFind: multiple pages write different sub-fields,
+      // so we must preserve existing sub-fields when saving new ones.
+      let sectionData = data;
+      if (sectionName === 'Client1FactFind') {
+        const existing = cleanData._client1_fact_find;
+        if (existing && typeof existing === 'object' && !Array.isArray(existing)) {
+          sectionData = { ...existing, ...data };
+        }
+      }
+
+      const mapped = { [sectionName]: sectionData };
       const payload = { ...cleanData, ...mapped };
 
       await base44.entities.FactFind.update(current.id, payload);
