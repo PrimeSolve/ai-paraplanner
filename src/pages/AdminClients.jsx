@@ -63,7 +63,7 @@ export default function AdminClients() {
       }
     }
 
-    switchRole('client', client.email, clientName);
+    switchRole('client', client.id, clientName);
     navigate(createPageUrl('ClientDashboard'));
   };
 

@@ -12,48 +12,50 @@ export function useFactFind() {
   const { navigationChain } = useRole();
   const [factFind, setFactFind] = useState(null);
   const [clientId, setClientId] = useState(null);
+  const [clientEmail, setClientEmail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   console.log('=== useFactFind HOOK ===');
   console.log('navigationChain:', navigationChain);
-  
-  // Extract clientEmail at render time
+
+  // Extract client record ID at render time
   const clientNav = navigationChain?.find(n => n.type === 'client');
   console.log('clientNav:', clientNav);
-  
-  const clientEmail = clientNav?.id;
-  console.log('clientEmail:', clientEmail);
+
+  const navClientId = clientNav?.id;
+  console.log('navClientId:', navClientId);
 
   useEffect(() => {
-    // Don't run until we have a client email
-    if (!clientEmail) {
-      console.log('useFactFind: No clientEmail yet, waiting...');
+    // Don't run until we have a client ID from the navigation chain
+    if (!navClientId) {
+      console.log('useFactFind: No navClientId yet, waiting...');
       setLoading(false);
       return;
     }
 
-    console.log('useFactFind: clientEmail available, initializing...', clientEmail);
+    console.log('useFactFind: navClientId available, initializing...', navClientId);
 
     async function initFactFind() {
       try {
         setLoading(true);
         console.log('=== initFactFind START ===');
 
-        // 1. Get Client record
-        const clients = await base44.entities.Client.filter({ email: clientEmail });
+        // 1. Get Client record by its database ID
+        const clients = await base44.entities.Client.filter({ id: navClientId });
         console.log('Client query result:', clients);
-        
+
         if (!clients || clients.length === 0) {
-          throw new Error(`No client found with email: ${clientEmail}`);
+          throw new Error(`No client found with id: ${navClientId}`);
         }
         
         const client = clients[0];
         console.log('Client found:', client);
         
-        // Store the Client ID for syncing
+        // Store the Client ID and email for syncing
         setClientId(client.id);
-        console.log('Stored clientId:', client.id);
+        setClientEmail(client.email || null);
+        console.log('Stored clientId:', client.id, 'clientEmail:', client.email);
 
         // 2. Check if Client has existing FactFind
         if (client.fact_find_id) {
@@ -72,7 +74,7 @@ export function useFactFind() {
             personal: {
               first_name: client.first_name || '',
               last_name: client.last_name || '',
-              email: clientEmail,
+              email: client.email || '',
               phone: client.phone || '',
               notes: client.notes || '',
             },
@@ -101,7 +103,7 @@ export function useFactFind() {
     }
 
     initFactFind();
-  }, [clientEmail]); // Depend on clientEmail, not navigationChain
+  }, [navClientId]); // Depend on navClientId, not navigationChain
 
   const updateSection = useCallback(async (sectionName, data) => {
     if (!factFind?.id) {

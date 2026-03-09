@@ -41,28 +41,31 @@ export default function ClientSettings() {
         return;
       }
 
-      // currentLevel.id now contains the email
-      const clientEmail = currentLevel.id;
-      
-      // Load the Client entity (filter by email field in the data)
-      const clients = await base44.entities.Client.filter({ email: clientEmail });
+      // currentLevel.id now contains the Client record ID
+      const clientRecordId = currentLevel.id;
+
+      // Load the Client entity by its record ID
+      const clients = await base44.entities.Client.filter({ id: clientRecordId });
       const clientData = clients[0];
       setClient(clientData);
-      
+
       // Load the User entity for this client (may not exist)
-      const users = await base44.entities.User.filter({ email: clientEmail });
-      const clientUserData = users[0];
-      setClientUser(clientUserData);
-      
+      let clientUserData = null;
+      if (clientData?.email) {
+        const users = await base44.entities.User.filter({ email: clientData.email });
+        clientUserData = users[0] || null;
+        setClientUser(clientUserData);
+      }
+
       // Populate form with Client entity data (not User entity)
       const fullName = `${clientData?.first_name || ''} ${clientData?.last_name || ''}`.trim();
       setFormData({
         full_name: fullName || clientUserData?.full_name || '',
-        email: clientData?.email || clientEmail,
+        email: clientData?.email || '',
         phone: clientData?.phone || clientUserData?.phone || '',
         profile_image_url: clientUserData?.profile_image_url || ''
       });
-      
+
       setNotifications({
         email_updates: clientUserData?.email_updates ?? true,
         soa_ready: clientUserData?.soa_ready ?? true,
