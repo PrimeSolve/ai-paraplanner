@@ -110,7 +110,7 @@ export default function FactFindAssetsLiabilities() {
         liabilities: debtsList
       });
     }
-  }, [activeAssetIndex, assetsList, factFind, debtsList, updateSection]);
+  }, [activeAssetIndex, assetsList, factFind?.id, debtsList, updateSection]);
 
   // DEBTS
   const addDebt = useCallback(() => {
@@ -141,7 +141,7 @@ export default function FactFindAssetsLiabilities() {
         liabilities: updatedDebts
       });
     }
-  }, [activeDebtIndex, debtsList, factFind, assetsList, updateSection]);
+  }, [activeDebtIndex, debtsList, factFind?.id, assetsList, updateSection]);
 
   const handleNext = async () => {
     if (!factFind?.id) {

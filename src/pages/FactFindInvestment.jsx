@@ -98,30 +98,6 @@ export default function FactFindInvestment() {
     return () => clearTimeout(timeoutId);
   }, [factFind?.id, dataLoaded, wraps, bonds, updateSection]);
 
-  const buildInvestmentSaveBeforeNavRef = useRef(null);
-  buildInvestmentSaveBeforeNavRef.current = () => {
-    let wrapsToSave = [...wraps];
-    let bondsToSave = [...bonds];
-
-    if (view === 'detail' && currentItem) {
-      if (mainTab === 'wrap') {
-        if (editingIndex !== null) {
-          wrapsToSave[editingIndex] = currentItem;
-        } else {
-          wrapsToSave.push(currentItem);
-        }
-      } else if (mainTab === 'bond') {
-        if (editingIndex !== null) {
-          bondsToSave[editingIndex] = currentItem;
-        } else {
-          bondsToSave.push(currentItem);
-        }
-      }
-    }
-
-    return { wraps: wrapsToSave, bonds: bondsToSave };
-  };
-
   const getCurrentList = () => {
     if (mainTab === 'wrap') return wraps;
     return bonds;
