@@ -13,6 +13,7 @@ import { SectionTable } from "../common/SectionTable.jsx";
 
 export function CashflowSavingsPage({ savingsData, cashflowChartData }) {
   const [showDashboard, setShowDashboard] = useState(true);
+  const [chartTab, setChartTab] = useState("waterfall");
   const fC = (v) => {
     if (v === 0) return "$0";
     if (v < 0) return `-$${Math.abs(v).toLocaleString("en-AU")}`;
@@ -67,93 +68,152 @@ export function CashflowSavingsPage({ savingsData, cashflowChartData }) {
         ))}
       </div>
 
-      {/* Chart */}
+      {/* Single tabbed chart card */}
       <div style={{
-        background: "var(--ps-surface)", borderRadius: 12, border: "1px solid var(--ps-border)",
-        padding: "20px 16px", marginBottom: 20,
+        background: "var(--ps-surface)", borderRadius: 12,
+        border: "1px solid var(--ps-border)",
+        marginBottom: 20, overflow: "hidden",
       }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ps-text-primary)", marginBottom: 4 }}>Annual Cashflow Waterfall</div>
-        <div style={{ fontSize: 12, color: "var(--ps-text-muted)", marginBottom: 16 }}>
-          Start-of-year adjustments + income/expense surplus + end-of-year capital movements
-        </div>
-        <ResponsiveContainer width="100%" height={340}>
-          <ComposedChart data={cashflowChartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--ps-border-light)" vertical={false} />
-            <XAxis dataKey="year" tick={{ fontSize: 11, fill: "var(--ps-text-muted)" }} tickLine={false} axisLine={{ stroke: "var(--ps-border)" }} />
-            <YAxis
-              tick={{ fontSize: 11, fill: "var(--ps-text-muted)" }}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(v) => v === 0 ? "$0" : `${v < 0 ? "-" : ""}$${Math.abs(v / 1000).toFixed(0)}k`}
-            />
-            <Tooltip
-              formatter={formatTooltip}
-              contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid var(--ps-border)", background: "var(--ps-surface)", color: "var(--ps-text-primary)" }}
-              labelFormatter={(label) => `FY ${label}`}
-            />
-            <Legend
-              iconType="square"
-              wrapperStyle={{ fontSize: 11, color: "var(--ps-text-muted)" }}
-            />
-            <ReferenceLine y={0} stroke="var(--ps-text-subtle)" strokeDasharray="3 3" />
-            <Bar dataKey="startAdj" name="Adjustments (SOY)" fill="#7C3AED" radius={[2, 2, 0, 0]} />
-            <Bar dataKey="surplus" name="Surplus / Deficit" fill="#059669" radius={[2, 2, 0, 0]}>
-              {cashflowChartData.map((entry, i) => (
-                <Cell key={i} fill={entry.surplus >= 0 ? "var(--ps-green)" : "var(--ps-red)"} />
-              ))}
-            </Bar>
-            <Bar dataKey="endAdj" name="Capital Movements (EOY)" fill="#3B82F6" radius={[2, 2, 0, 0]} />
-            <Line dataKey="endValue" name="End Balance" type="monotone" stroke="var(--ps-text-strongest)" strokeWidth={2} dot={{ r: 3, fill: "var(--ps-text-strongest)" }} />
-          </ComposedChart>
-        </ResponsiveContainer>
 
-        {/* Colour legend explanation */}
-        <div style={{ display: "flex", gap: 24, marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--ps-border-light)" }}>
-          {[
-            { color: "#7C3AED", label: "Inheritance, asset sales, bond withdrawals less NCC, bond contributions, asset purchases" },
-            { color: "var(--ps-green)", label: "Income minus expenses (green = surplus, red = deficit)" },
-            { color: "#3B82F6", label: "Super withdrawals, cashflow adjustments, debt repayments" },
-          ].map((item, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, flex: 1 }}>
-              <div style={{ width: 10, height: 10, borderRadius: 2, background: item.color, flexShrink: 0, marginTop: 2 }} />
-              <span style={{ fontSize: 11, color: "var(--ps-text-muted)", lineHeight: "1.4" }}>{item.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+        {/* Tab bar */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "14px 20px 0",
+          borderBottom: "1px solid var(--ps-border-light)",
+        }}>
+          <div style={{ display: "flex", gap: 0 }}>
+            {[
+              { id: "waterfall", label: "Cashflow Waterfall" },
+              { id: "income", label: "Income vs Expenses" },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setChartTab(tab.id)}
+                style={{
+                  padding: "8px 18px 12px",
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: chartTab === tab.id ? 600 : 400,
+                  color: chartTab === tab.id ? "#4F46E5" : "var(--ps-text-muted)",
+                  borderBottom: chartTab === tab.id
+                    ? "2px solid #4F46E5"
+                    : "2px solid transparent",
+                  transition: "all 0.15s ease",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-      {/* Income vs Expenses breakdown */}
-      <div style={{
-        background: "var(--ps-surface)", borderRadius: 12, border: "1px solid var(--ps-border)",
-        padding: "20px 16px", marginBottom: 20,
-      }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ps-text-primary)", marginBottom: 16 }}>Income vs Expenses</div>
-        <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={cashflowChartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--ps-border-light)" vertical={false} />
-            <XAxis dataKey="year" tick={{ fontSize: 11, fill: "var(--ps-text-muted)" }} tickLine={false} axisLine={{ stroke: "var(--ps-border)" }} />
-            <YAxis
-              tick={{ fontSize: 11, fill: "var(--ps-text-muted)" }}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(v) => v === 0 ? "$0" : `${v < 0 ? "-" : ""}$${Math.abs(v / 1000).toFixed(0)}k`}
-            />
-            <Tooltip
-              formatter={formatTooltip}
-              contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid var(--ps-border)", background: "var(--ps-surface)", color: "var(--ps-text-primary)" }}
-              labelFormatter={(label) => `FY ${label}`}
-            />
-            <Legend iconType="square" wrapperStyle={{ fontSize: 11, color: "var(--ps-text-muted)" }} />
-            <ReferenceLine y={0} stroke="var(--ps-text-subtle)" strokeDasharray="3 3" />
-            <Bar dataKey="income" name="Total Income" fill="#059669" radius={[2, 2, 0, 0]} />
-            <Bar dataKey="expenses" name="Total Expenses" fill="#DC2626" radius={[2, 2, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+          {/* Subtitle — changes with tab */}
+          <span style={{ fontSize: 11, color: "var(--ps-text-subtle)", paddingBottom: 12 }}>
+            {chartTab === "waterfall"
+              ? "SOY adjustments + income/expense surplus + EOY capital movements"
+              : "Combined household income vs total expenses by year"}
+          </span>
+        </div>
+
+        {/* Chart body */}
+        <div style={{ padding: "16px 16px 8px" }}>
+
+          {chartTab === "waterfall" && (
+            <>
+              <ResponsiveContainer width="100%" height={300}>
+                <ComposedChart data={cashflowChartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--ps-border-light)" vertical={false} />
+                  <XAxis dataKey="year" tick={{ fontSize: 11, fill: "var(--ps-text-muted)" }} tickLine={false} axisLine={{ stroke: "var(--ps-border)" }} />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "var(--ps-text-muted)" }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(v) => v === 0 ? "$0" : `${v < 0 ? "-" : ""}$${Math.abs(v / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip
+                    formatter={formatTooltip}
+                    contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid var(--ps-border)", background: "var(--ps-surface)", color: "var(--ps-text-primary)" }}
+                    labelFormatter={(label) => `FY ${label}`}
+                  />
+                  <Legend
+                    iconType="square"
+                    wrapperStyle={{ fontSize: 11, color: "var(--ps-text-muted)" }}
+                  />
+                  <ReferenceLine y={0} stroke="var(--ps-text-subtle)" strokeDasharray="3 3" />
+                  <Bar dataKey="startAdj" name="Adjustments (SOY)" fill="#7C3AED" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="surplus" name="Surplus / Deficit" fill="#059669" radius={[2, 2, 0, 0]}>
+                    {cashflowChartData.map((entry, i) => (
+                      <Cell key={i} fill={entry.surplus >= 0 ? "var(--ps-green)" : "var(--ps-red)"} />
+                    ))}
+                  </Bar>
+                  <Bar dataKey="endAdj" name="Capital Movements (EOY)" fill="#3B82F6" radius={[2, 2, 0, 0]} />
+                  <Line dataKey="endValue" name="End Balance" type="monotone" stroke="var(--ps-text-strongest)" strokeWidth={2} dot={{ r: 3, fill: "var(--ps-text-strongest)" }} />
+                </ComposedChart>
+              </ResponsiveContainer>
+
+              {/* Colour legend explanation */}
+              <div style={{ display: "flex", gap: 24, marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--ps-border-light)" }}>
+                {[
+                  { color: "#7C3AED", label: "Inheritance, asset sales, bond withdrawals less NCC, bond contributions, asset purchases" },
+                  { color: "var(--ps-green)", label: "Income minus expenses (green = surplus, red = deficit)" },
+                  { color: "#3B82F6", label: "Super withdrawals, cashflow adjustments, debt repayments" },
+                ].map((item, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, flex: 1 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: 2, background: item.color, flexShrink: 0, marginTop: 2 }} />
+                    <span style={{ fontSize: 11, color: "var(--ps-text-muted)", lineHeight: "1.4" }}>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {chartTab === "income" && (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={cashflowChartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--ps-border-light)" vertical={false} />
+                <XAxis dataKey="year" tick={{ fontSize: 11, fill: "var(--ps-text-muted)" }} tickLine={false} axisLine={{ stroke: "var(--ps-border)" }} />
+                <YAxis
+                  tick={{ fontSize: 11, fill: "var(--ps-text-muted)" }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v) => v === 0 ? "$0" : `${v < 0 ? "-" : ""}$${Math.abs(v / 1000).toFixed(0)}k`}
+                />
+                <Tooltip
+                  formatter={formatTooltip}
+                  contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid var(--ps-border)", background: "var(--ps-surface)", color: "var(--ps-text-primary)" }}
+                  labelFormatter={(label) => `FY ${label}`}
+                />
+                <Legend iconType="square" wrapperStyle={{ fontSize: 11, color: "var(--ps-text-muted)" }} />
+                <ReferenceLine y={0} stroke="var(--ps-text-subtle)" strokeDasharray="3 3" />
+                <Bar dataKey="income" name="Total Income" fill="#059669" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="expenses" name="Total Expenses" fill="#DC2626" radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+
+        </div>
       </div>
       </>)}
 
-      {/* Full data table */}
-      <SectionTable data={savingsData} />
+      {/* Table filtered to match active chart tab */}
+      <SectionTable
+        data={{
+          ...savingsData,
+          sections: (savingsData?.sections || []).filter(s => {
+            if (["sav-open", "sav-end-initial", "sav-end-fv"].includes(s.id)) return true;
+            if (chartTab === "waterfall") {
+              return ["sav-soy-inflows", "sav-soy-outflows", "sav-revised",
+                      "sav-eoy-adjustments"].includes(s.id);
+            }
+            if (chartTab === "income") {
+              return ["sav-income", "sav-expenses"].includes(s.id);
+            }
+            return true;
+          }),
+        }}
+      />
     </div>
   );
 }
