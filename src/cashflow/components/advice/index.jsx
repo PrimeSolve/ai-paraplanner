@@ -1313,7 +1313,7 @@ export function AiFactFind({ factFind, updateFF, embedded }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
+          max_tokens: 4096,
           system: `You are an AI Fact Find assistant for an Australian financial planner. You conduct guided interviews to gather client financial information. Current client data:\n${buildContext()}\n\nAsk clear, specific questions one at a time. When the client provides information, acknowledge it and ask the next relevant question. Cover: personal details, employment & income, superannuation, investments, assets, liabilities, insurance, expenses, goals & objectives, risk profile.\n\nIf the user provides data that should be captured, note what field it maps to. Be warm, professional, and thorough.`,
           messages: [...messages.slice(1), userMsg].map(m => ({ role: m.role, content: m.content })),
         }),
@@ -1478,7 +1478,7 @@ export function AiParaplanner({ factFind, engineData, updateAdvice, summaryMeta,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
-          max_tokens: 1500,
+          max_tokens: 4096,
           system: systemPrompt,
           messages: [
             { role: "user", content: context + "\n\n---\n\nUser: " + userMsg.content },
