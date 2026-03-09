@@ -356,7 +356,7 @@ const COPILOT_TOOL_DEFINITIONS = [
   },
 ];
 
-const FACT_FIND_QUICK_PROMPTS = [
+const COPILOT_QUICK_PROMPTS = [
   "I have 2 super funds, total balance around $280k",
   "I own my home, worth about $950k",
   "We have a mortgage of $420k with Commonwealth Bank",
@@ -367,23 +367,10 @@ const FACT_FIND_QUICK_PROMPTS = [
   "We have a car loan of about $22k",
 ];
 
-const CASHFLOW_QUICK_PROMPTS = [
-  "Create 3 different advice models",
-  "Add a transition to retirement strategy from age 58",
-  "Model salary sacrifice of $20k p.a. to retirement",
-  "Add a pension account rollover from accumulation",
-  "Model debt recycling against the home loan",
-  "Set up a super contribution split between partners",
-  "Set retirement at 60 for model 1 and 63 for model 2",
-  "Add a lump sum recontribution strategy",
-];
-
 function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow" }) {
   const [messages, setMessages] = useState([{
     role: "assistant",
-    content: mode === "factfind"
-      ? "Welcome \u2014 this is your financial fact find. Work through each section at your own pace, filling in what you know and skipping what you\u2019re unsure of.\n\nAs you enter information, your financial position updates live \u2014 you\u2019ll see it come together in real time.\n\nNot sure what something means? Just ask me here and I\u2019ll explain it in plain English. I can also help you fill things in if you\u2019d prefer to just talk through it.\n\nWhen you\u2019re done, your adviser will review everything with you before anything is finalised."
-      : "Your modelling assistant. Describe the advice scenario \u2014 I\u2019ll create the models, add the strategies and populate the inputs. What would you like to model?",
+    content: "Welcome \u2014 this is your financial fact find. Work through each section at your own pace, filling in what you know and skipping what you\u2019re unsure of.\n\nAs you enter information, your financial position updates live \u2014 you\u2019ll see it come together in real time.\n\nNot sure what something means? Just ask me here and I\u2019ll explain it in plain English. I can also help you fill things in if you\u2019d prefer to just talk through it.\n\nWhen you\u2019re done, your adviser will review everything with you before anything is finalised.",
   }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -1070,7 +1057,7 @@ Use the type codes from the tool descriptions. For a "family home" or "principal
       {messages.length <= 1 && (
         <div style={{ padding: "0 14px 8px", display: "flex", flexDirection: "column", gap: 4 }}>
           <div style={{ fontSize: 10, color: "var(--ps-text-subtle)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 2 }}>QUICK START</div>
-          {(mode === "factfind" ? FACT_FIND_QUICK_PROMPTS : CASHFLOW_QUICK_PROMPTS).map((q, i) => (
+          {COPILOT_QUICK_PROMPTS.map((q, i) => (
             <button key={i} onClick={() => sendMessage(q)} style={{
               textAlign: "left", padding: "7px 10px", background: "var(--ps-surface-alt)",
               border: "1px solid var(--ps-border)", borderRadius: 8, fontSize: 11,
