@@ -4,7 +4,7 @@ export const ffLabelStyle = { fontSize: 12, fontWeight: 500, color: "var(--ps-te
 export const ffInputStyle = {
   width: "100%", padding: "8px 12px", borderRadius: 7,
   border: "1px solid var(--ps-border-input)", fontSize: 13, color: "var(--ps-text-primary)",
-  background: "var(--ps-surface)", boxSizing: "border-box", fontFamily: "inherit",
+  background: "var(--ps-surface-input)", boxSizing: "border-box", fontFamily: "inherit",
 };
 export const ffSelectStyle = { ...ffInputStyle, cursor: "pointer" };
 export const ffRowStyle = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 };

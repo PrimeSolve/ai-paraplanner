@@ -46,7 +46,7 @@ export function AgedCarePage({ data, shortYears, projYears, onUpdate }) {
   const entryFY = projYears[entryYearIdx] || `${entryYear}/${entryYear + 1}`;
 
   // Input styles
-  const controlInput = { padding: "6px 10px", border: "1px solid var(--ps-border-mid)", borderRadius: 6, fontSize: 13, fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", background: "var(--ps-surface)", color: "var(--ps-text-strongest)", width: 90, textAlign: "center" };
+  const controlInput = { padding: "6px 10px", border: "1px solid var(--ps-border-mid)", borderRadius: 6, fontSize: 13, fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", background: "var(--ps-surface-input)", color: "var(--ps-text-strongest)", width: 90, textAlign: "center" };
 
   // KPI tiles
   const totalCashflowCost = totalExpenses.reduce((s, v) => s + v, 0);
@@ -2208,8 +2208,8 @@ export function InsurancePremiumProjection({ personKey, factFind, updateFF }) {
         </div>
         {bands.map((b, i) => (
           <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 36px", gap: 10, padding: "10px 0", alignItems: "center", borderBottom: "1px solid var(--ps-border-light)" }}>
-            <input type="number" value={b.rate} onChange={e => uBand(i, "rate", e.target.value)} placeholder="5" style={{ padding: "10px 12px", border: "1px solid var(--ps-border)", borderRadius: 8, fontSize: 14, textAlign: "center", background: "var(--ps-surface)" }} />
-            <input type="number" value={b.years} onChange={e => uBand(i, "years", e.target.value)} placeholder="10" style={{ padding: "10px 12px", border: "1px solid var(--ps-border)", borderRadius: 8, fontSize: 14, textAlign: "center", background: "var(--ps-surface)" }} />
+            <input type="number" value={b.rate} onChange={e => uBand(i, "rate", e.target.value)} placeholder="5" style={{ padding: "10px 12px", border: "1px solid var(--ps-border)", borderRadius: 8, fontSize: 14, textAlign: "center", background: "var(--ps-surface-input)" }} />
+            <input type="number" value={b.years} onChange={e => uBand(i, "years", e.target.value)} placeholder="10" style={{ padding: "10px 12px", border: "1px solid var(--ps-border)", borderRadius: 8, fontSize: 14, textAlign: "center", background: "var(--ps-surface-input)" }} />
             {bands.length > 1 && <button onClick={() => rmBand(i)} style={{ border: "none", background: "var(--ps-bg-red-200)", color: "var(--ps-red)", borderRadius: 8, width: 34, height: 34, cursor: "pointer", fontWeight: 700, fontSize: 16 }}>×</button>}
           </div>
         ))}

@@ -15,6 +15,7 @@ export function injectThemeCSS(dark) {
   el.textContent = dark ? `
     :root {
       --ps-surface: #0F172A;
+      --ps-surface-input: #1E293B;
       --ps-surface-alt: #1E293B;
       --ps-surface-indigo: #1E1B4B;
       --ps-surface-green: #052E16;
@@ -105,6 +106,7 @@ export function injectThemeCSS(dark) {
   ` : `
     :root {
       --ps-surface: #ffffff;
+      --ps-surface-input: #ffffff;
       --ps-surface-alt: #F8FAFC;
       --ps-surface-indigo: #EEF2FF;
       --ps-surface-green: #F0FDF4;

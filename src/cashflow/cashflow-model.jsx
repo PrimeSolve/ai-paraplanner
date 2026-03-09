@@ -664,7 +664,7 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
           style={{
             flex: 1, padding: "8px 12px", border: "1.5px solid var(--ps-border-mid)",
             borderRadius: 10, fontSize: 13, resize: "none", fontFamily: "inherit",
-            outline: "none", background: "var(--ps-surface)",
+            outline: "none", background: "var(--ps-surface-input)",
             color: "var(--ps-text-primary)",
           }}
         />
@@ -1553,7 +1553,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
       );
     };
 
-    const inputStyle = { border: "1px solid var(--ps-ring-indigo)", borderRadius: 6, padding: "5px 10px", fontSize: 12, outline: "none", background: "var(--ps-surface)", width: "100%" };
+    const inputStyle = { border: "1px solid var(--ps-ring-indigo)", borderRadius: 6, padding: "5px 10px", fontSize: 12, outline: "none", background: "var(--ps-surface-input)", width: "100%" };
     const labelStyle = { fontSize: 11, fontWeight: 600, color: "#3730A3", marginBottom: 4 };
 
     const SectionHead = ({ label }) => (
