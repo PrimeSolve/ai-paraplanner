@@ -19,6 +19,7 @@ import { ModelComparisonDashboard, ModelComparisonDetail, AdviceSummaryTable, Sc
 import { AgedCarePage, SocialSecurityTable, EligibilityTable, SuperAssumptionsTable, SuperProductPage, PensionProductPage, BondProductPage, AnnuityProductPage, InsurancePremiumProjection, InsuranceProjectionPage, WrapProjectionPage, PotentialDeathTaxPage, AssumptionsPanel, BasicAssumptionsForm, AssetOverridesPage, AssetAssumptionsPage, SOADocumentBuilder, altEx, altSurvivalPct } from "./components/products/index.jsx";
 import { PRINCIPAL_SUB_SECTIONS, CHILD_DEFAULTS, DEPENDANT_DEFAULTS, SUPER_DEFAULTS, PENSION_DEFAULTS, ANNUITY_DEFAULTS, DB_DEFAULTS, WRAP_DEFAULTS, INV_BOND_DEFAULTS, PrincipalsForm, DependantsForm, SuperannuationForm, InvestmentsForm, TrustsCompaniesForm, SMSFForm, AssetsForm, LiabilitiesForm, InsurancePoliciesForm, IncomeForm, ExpensesForm, GoalsForm, RiskProfileForm, ScopeOfAdviceForm } from "./components/factfind/index.jsx";
 import { TransactionsForm, ProductReplacementForm, AiFactFind, AiParaplanner, StrategyForm, AdviceProductsEntitiesForm, AdviceInsuranceForm, TaxSuperPlanningForm, AssumptionsForm, PortfolioForm } from "./components/advice/index.jsx";
+import { getAccessToken } from '@/auth/msalInstance';
 class CashflowErrorBoundary extends React.Component {
   constructor(props) { super(props); this.state = { error: null }; }
   static getDerivedStateFromError(error) { return { error }; }
@@ -466,9 +467,13 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
   };
 
   const processResponse = async (apiMessages) => {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const token = await getAccessToken();
+    const response = await fetch("https://api.primesolve.com.au/api/v1/copilot/message", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: 2000,
