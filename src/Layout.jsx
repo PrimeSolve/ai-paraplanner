@@ -200,7 +200,7 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100" style={{ paddingTop: isInTestMode ? '40px' : '0' }}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100" style={{ paddingTop: isInTestMode ? '40px' : '0', ...(hideNav ? { height: '100vh', overflow: 'hidden' } : {}) }}>
       <style>{`
         :root {
           --primary: #1e293b;

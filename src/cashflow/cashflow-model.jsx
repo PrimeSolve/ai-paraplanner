@@ -1901,7 +1901,10 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
     <div style={{
       fontFamily: "'DM Sans', 'Segoe UI', system-ui, sans-serif",
       background: "var(--ps-surface)",
-      minHeight: "100vh",
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      overflow: "hidden",
       color: "var(--ps-text-primary)",
     }}>
       {/* Demo mode banner */}
@@ -1913,6 +1916,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
         padding: "12px 24px",
         borderBottom: "1px solid var(--ps-border)",
         background: "var(--ps-surface-alt)",
+        flexShrink: 0,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           {onBack ? (
@@ -2097,6 +2101,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
         borderBottom: "1px solid var(--ps-border)",
         background: "var(--ps-surface-alt)",
         overflowX: "auto",
+        flexShrink: 0,
       }}>
         {TOP_TABS.filter(tab => {
           const config = NAV_STRUCTURE[tab];
@@ -2142,6 +2147,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           padding: "0 24px",
           borderBottom: "1px solid var(--ps-border)",
           background: "var(--ps-surface)",
+          flexShrink: 0,
         }}>
           {subTabs.map(tab => {
             const isActive = activeSub === tab;
@@ -2183,6 +2189,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           padding: "0 24px",
           borderBottom: "1px solid var(--ps-border-input)",
           background: "var(--ps-surface)",
+          flexShrink: 0,
         }}>
           {subSubTabs.map(tab => {
             const isActive = activeSubSub === tab;
@@ -2222,8 +2229,8 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
       )}
 
       {/* Content area — flex row with optional co-pilot */}
-      <div style={{ display: "flex", minHeight: 0 }}>
-      <div style={{ flex: assistantOpen ? "0 0 70%" : "0 0 100%", overflowX: "auto", transition: "flex 0.2s ease" }}>
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div style={{ flex: assistantOpen ? "0 0 70%" : "0 0 100%", overflowY: "auto", overflowX: "auto", transition: "flex 0.2s ease" }}>
       <div style={{ padding: "16px 32px" }}>
         {/* Breadcrumb + Edit on same row */}
         <div style={{
@@ -2701,9 +2708,6 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           display: "flex", flexDirection: "column",
           background: "var(--ps-surface)", overflow: "hidden",
           minWidth: 320,
-          position: "sticky", top: 0,
-          height: "100vh",
-          alignSelf: "flex-start",
         }}>
           <CashflowAssistant factFind={factFind} updateFF={updateFF} />
         </div>
