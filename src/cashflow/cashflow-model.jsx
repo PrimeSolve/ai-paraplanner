@@ -728,6 +728,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
   const [adviceOpen, setAdviceOpen] = useState(false);
   const [adviceSection, setAdviceSection] = useState(null);
   const [showSOABuilder, setShowSOABuilder] = useState(false);
+  const [showSummaryDashboard, setShowSummaryDashboard] = useState(true);
 
   // Co-pilot panel state — persisted via localStorage
   const [assistantOpen, setAssistantOpen] = useState(() => {
@@ -2170,14 +2171,19 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
             {activeSub && <><span>›</span><span style={{ color: "var(--ps-text-muted)" }}>{tabDisplayName(activeSub)}</span></>}
             {activeSubSub && <><span>›</span><span style={{ color: "#4f46e5", fontWeight: 500 }}>{tabDisplayName(activeSubSub)}</span></>}
           </div>
-          {activePageData && (
-            <button style={{
-              padding: "5px 14px", borderRadius: 6,
-              border: "1px solid var(--ps-border-input)", background: "var(--ps-surface)",
-              fontSize: 12, color: "var(--ps-text-secondary)", cursor: "pointer",
-              display: "flex", alignItems: "center", gap: 6,
-            }}>
-              ✏️ Edit
+          {isFinancialSummary && (
+            <button
+              onClick={() => setShowSummaryDashboard(v => !v)}
+              style={{
+                padding: "5px 14px", borderRadius: 6,
+                border: "1px solid var(--ps-border)",
+                background: showSummaryDashboard ? "var(--ps-surface-alt)" : "var(--ps-surface-indigo)",
+                color: showSummaryDashboard ? "var(--ps-text-muted)" : "#4F46E5",
+                fontSize: 11, fontWeight: 600, cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 5,
+              }}
+            >
+              {showSummaryDashboard ? "▼ Hide" : "▶ Show"} Dashboard & Charts
             </button>
           )}
         </div>
@@ -2609,7 +2615,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           <PotentialDeathTaxPage />
         ) : activePageData ? (
           <div>
-            {isFinancialSummary && netWorthChartData && summaryMeta && (
+            {isFinancialSummary && showSummaryDashboard && netWorthChartData && summaryMeta && (
               <FinancialSummaryDashboard
                 chartData={netWorthChartData}
                 cashflowData={fsCashflowChartData}
