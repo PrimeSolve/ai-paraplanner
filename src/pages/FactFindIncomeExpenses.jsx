@@ -42,7 +42,7 @@ export default function FactFindIncomeExpenses() {
       ? `${factFind.personal.partner.first_name} ${factFind.personal.partner.last_name || ''}`.trim()
       : 'Partner';
     return { client: clientName, partner: partnerName };
-  }, [factFind]);
+  }, [factFind?.id]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -79,7 +79,7 @@ export default function FactFindIncomeExpenses() {
       setCurrentTab('inc');
       setActivePerson('c1');
     }
-  }, [factFind]);
+  }, [factFind?.id]);
 
   // Build the save payload (shared by auto-save and save-before-nav)
   const buildIncomeExpensesPayload = useCallback(() => {

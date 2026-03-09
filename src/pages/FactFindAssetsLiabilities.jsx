@@ -56,7 +56,7 @@ export default function FactFindAssetsLiabilities() {
     if (factFind?.assets_liabilities?.liabilities) {
       setDebtsList(factFind.assets_liabilities.liabilities);
     }
-  }, [factFind]);
+  }, [factFind?.id]);
 
   // Auto-save on data changes (debounced 1.5s)
   const [dataLoaded, setDataLoaded] = useState(false);

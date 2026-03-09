@@ -264,7 +264,7 @@ export default function FactFindAdviceReason() {
       : 'Partner';
 
     return { client: clientName, partner: partnerName };
-  }, [factFind]);
+  }, [factFind?.id]);
 
 
 
@@ -287,7 +287,7 @@ export default function FactFindAdviceReason() {
       if (r.quick) setQuick(r.quick);
       if (r.objectives) setObjectives(r.objectives);
     }
-  }, [factFind]);
+  }, [factFind?.id]);
 
   // Auto-save on field changes (debounced 1.5s)
   const [dataLoaded, setDataLoaded] = useState(false);

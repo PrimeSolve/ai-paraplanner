@@ -118,7 +118,7 @@ export default function FactFindInsurance() {
       setPolicies(migratedPolicies);
       setActiveIdx(insuranceData.activeIdx || 0);
     }
-  }, [factFind]);
+  }, [factFind?.id]);
 
   // Auto-save on field changes (debounced 1.5s)
   const [dataLoaded, setDataLoaded] = useState(false);
