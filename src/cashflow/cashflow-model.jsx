@@ -673,8 +673,8 @@ Confirm what you've done, not what you're about to do. Keep it to one line per a
           disabled={loading || !input.trim()}
           style={{
             padding: "10px 16px",
-            background: loading || !input.trim() ? "#E2E8F0" : "#4F46E5",
-            color: loading || !input.trim() ? "#94A3B8" : "#fff",
+            background: loading || !input.trim() ? "var(--ps-border)" : "#4F46E5",
+            color: loading || !input.trim() ? "var(--ps-text-subtle)" : "#fff",
             border: "none", borderRadius: 10, fontWeight: 700, fontSize: 13,
             cursor: loading || !input.trim() ? "default" : "pointer",
             alignSelf: "flex-end", flexShrink: 0,

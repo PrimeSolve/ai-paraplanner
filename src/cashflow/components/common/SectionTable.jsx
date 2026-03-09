@@ -40,19 +40,19 @@ const H1V = {
   slate:   { borderLeft: "4px solid var(--ps-h1-slate-border)", background: "var(--ps-h1-slate-bg)", color: "var(--ps-h1-slate-text)" },
 };
 
-// H2 sub-header variants
+// H2 sub-header variants — uses CSS variables for dark mode support
 const H2V = {
-  cath: { bg: "rgba(79,70,229,0.06)", bl: "3px solid #4F46E5", color: "#4338CA", bb: "1px solid rgba(79,70,229,0.08)", dot: "#4F46E5" },
-  paul: { bg: "rgba(8,145,178,0.06)", bl: "3px solid #0891B2", color: "#0369A1", bb: "1px solid rgba(8,145,178,0.08)", dot: "#0891B2" },
+  cath: { bg: "rgba(79,70,229,0.06)", bl: "3px solid #4F46E5", color: "var(--ps-h1-income-text)", bb: "1px solid rgba(79,70,229,0.08)", dot: "#4F46E5" },
+  paul: { bg: "rgba(8,145,178,0.06)", bl: "3px solid #0891B2", color: "var(--ps-text-secondary)", bb: "1px solid rgba(8,145,178,0.08)", dot: "#0891B2" },
   neu:  { bg: "var(--ps-surface-alt)", bl: "3px solid var(--ps-text-subtle)", color: "var(--ps-text-secondary)", bb: "1px solid var(--ps-border-light)", dot: "var(--ps-text-subtle)" },
-  grn:  { bg: "rgba(5,150,105,0.05)", bl: "3px solid #059669", color: "#065F46", bb: "1px solid rgba(5,150,105,0.06)", dot: "#059669" },
+  grn:  { bg: "rgba(5,150,105,0.05)", bl: "3px solid #059669", color: "var(--ps-h1-nw-text)", bb: "1px solid rgba(5,150,105,0.06)", dot: "#059669" },
 };
 
-// H4 entity bracket styles (coloured left + bottom border)
+// H4 entity bracket styles (coloured left + bottom border) — uses CSS variables for dark mode support
 const H4B = {
-  cath: { bg: "rgba(79,70,229,0.13)", color: "#3730A3", bl: "3px solid rgba(79,70,229,0.5)", bt: "1px solid rgba(79,70,229,0.18)", bb: "2px solid rgba(79,70,229,0.15)" },
-  paul: { bg: "rgba(8,145,178,0.13)", color: "#0C4A6E", bl: "3px solid rgba(8,145,178,0.5)", bt: "1px solid rgba(8,145,178,0.18)", bb: "2px solid rgba(8,145,178,0.15)" },
-  grn:  { bg: "rgba(5,150,105,0.11)", color: "#064E3B", bl: "3px solid rgba(5,150,105,0.5)", bt: "1px solid rgba(5,150,105,0.15)", bb: "2px solid rgba(5,150,105,0.12)" },
+  cath: { bg: "rgba(79,70,229,0.13)", color: "var(--ps-h1-income-text)", bl: "3px solid rgba(79,70,229,0.5)", bt: "1px solid rgba(79,70,229,0.18)", bb: "2px solid rgba(79,70,229,0.15)" },
+  paul: { bg: "rgba(8,145,178,0.13)", color: "var(--ps-text-secondary)", bl: "3px solid rgba(8,145,178,0.5)", bt: "1px solid rgba(8,145,178,0.18)", bb: "2px solid rgba(8,145,178,0.15)" },
+  grn:  { bg: "rgba(5,150,105,0.11)", color: "var(--ps-h1-nw-text)", bl: "3px solid rgba(5,150,105,0.5)", bt: "1px solid rgba(5,150,105,0.15)", bb: "2px solid rgba(5,150,105,0.12)" },
 };
 
 // Section accent colours for grand-total border-left
@@ -118,8 +118,8 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
     "child-negative": { bg: "var(--ps-surface)", color: "var(--ps-red)",   weight: 400, indent: 20 },
     "subtotal":       { bg: "var(--ps-border-light)", color: "var(--ps-text-body)",   weight: 600, indent: 0, isSub: true },
     "total":          { bg: "var(--ps-border-light)", color: "var(--ps-text-primary)",   weight: 700, indent: 0, borderTop: true, isSub: true },
-    "highlight":      { bg: "rgba(79,70,229,0.07)", color: "#3730A3", weight: 700, indent: 0, isHl: true },
-    "current-value":  { bg: "rgba(37,99,235,0.08)", color: "#2563EB", weight: 700, indent: 0 },
+    "highlight":      { bg: "rgba(79,70,229,0.07)", color: "var(--ps-h1-income-text)", weight: 700, indent: 0, isHl: true },
+    "current-value":  { bg: "rgba(37,99,235,0.08)", color: "var(--ps-retirement-text)", weight: 700, indent: 0 },
     "end-value":      { bg: "rgba(5,150,105,0.06)", color: "var(--ps-text-primary)", weight: 700, indent: 0 },
     "subheader":      { bg: "var(--ps-surface-alt)", color: "var(--ps-text-secondary)",   weight: 600, indent: 0 },
   };
@@ -137,18 +137,18 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
     return { accent: SECTION_ACCENT[variant] || "#059669" };
   }
 
-  // Value cell colour for grand total (dark bg)
+  // Value cell colour for grand total (dark bg — always on --ps-grand-total-bg)
   function grandValColor(val) {
-    if (val === null || val === undefined) return "#475569";
-    if (val < 0) return "#FCA5A5";
-    return "#F1F5F9";
+    if (val === null || val === undefined) return "var(--ps-text-subtle)";
+    if (val < 0) return "var(--ps-red-bold)";
+    return "var(--ps-text-strongest)";
   }
 
   // Value cell colour for hl rows
   function hlValColor(val) {
     if (val === null || val === undefined) return "var(--ps-border)";
     if (val < 0) return "var(--ps-red)";
-    return "#3730A3";
+    return "var(--ps-h1-income-text)";
   }
 
   // Standard value cell colour
@@ -164,7 +164,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
       <tr key={key}>
         <td style={{
           position: "sticky", left: 0, zIndex: 1,
-          background: "rgba(79,70,229,0.07)", color: "#3730A3",
+          background: "rgba(79,70,229,0.07)", color: "var(--ps-h1-income-text)",
           borderLeft: "3px solid rgba(79,70,229,0.5)",
           borderTop: "1px solid rgba(79,70,229,0.15)",
           borderBottom: "2px solid rgba(79,70,229,0.12)",
@@ -192,7 +192,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
       <tr key={key}>
         <td style={{
           position: "sticky", left: 0, zIndex: 1,
-          background: "var(--ps-grand-total-bg)", color: "#F1F5F9",
+          background: "var(--ps-grand-total-bg)", color: "var(--ps-text-strongest)",
           borderLeft: `4px solid ${gs.accent}`,
           borderTop: "2px solid var(--ps-border-mid)",
           padding: "12px 12px 12px 16px",
@@ -356,7 +356,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                 const isCath = et === "cath";
                 const isPaul = et === "paul";
                 const bgColor = isCath ? "rgba(79,70,229,0.07)" : isPaul ? "rgba(8,145,178,0.07)" : "var(--ps-surface-alt)";
-                const textColor = isCath ? "#6366F1" : isPaul ? "#0891B2" : "var(--ps-text-secondary)";
+                const textColor = isCath ? "var(--ps-h1-income-text)" : isPaul ? "var(--ps-text-secondary)" : "var(--ps-text-secondary)";
                 const blColor = isCath ? "#4F46E5" : isPaul ? "#0891B2" : "var(--ps-text-subtle)";
                 return (
                   <tr key={`age-${section.id}-${ri}`}>
@@ -364,7 +364,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                       position: "sticky", left: 0, zIndex: 1,
                       background: bgColor, color: textColor,
                       borderLeft: `3px solid ${blColor}`,
-                      borderBottom: isPaul ? "2px solid #CBD5E1" : undefined,
+                      borderBottom: isPaul ? "2px solid var(--ps-border-mid)" : undefined,
                       fontSize: 11, fontWeight: 600, padding: "6px 12px",
                       whiteSpace: "nowrap",
                     }}>
@@ -375,7 +375,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                         padding: "6px 12px", textAlign: "right",
                         background: bgColor, color: textColor,
                         fontSize: 11, fontWeight: 600,
-                        borderBottom: isPaul ? "2px solid #CBD5E1" : undefined,
+                        borderBottom: isPaul ? "2px solid var(--ps-border-mid)" : undefined,
                       }}>
                         {age != null ? (row.retirementAge && age === row.retirementAge ? `${age} 🌴` : age) : "–"}
                       </td>
@@ -407,7 +407,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                         </span>
                         {section.title}
                         {section.isNew && (
-                          <span style={{ marginLeft: 8, fontSize: 9, padding: "1px 6px", borderRadius: 4, background: "#DBEAFE", color: "#2563EB", fontWeight: 700, verticalAlign: "middle" }}>NEW</span>
+                          <span style={{ marginLeft: 8, fontSize: 9, padding: "1px 6px", borderRadius: 4, background: "var(--ps-surface-indigo)", color: "var(--ps-retirement-text)", fontWeight: 700, verticalAlign: "middle" }}>NEW</span>
                         )}
                         {section.source && onNavigate && (
                           <span
@@ -485,7 +485,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                           </span>
                         )}
                         {section.isNew && (
-                          <span style={{ marginLeft: 8, fontSize: 9, padding: "1px 6px", borderRadius: 4, background: "#DBEAFE", color: "#2563EB", fontWeight: 700, verticalAlign: "middle" }}>NEW</span>
+                          <span style={{ marginLeft: 8, fontSize: 9, padding: "1px 6px", borderRadius: 4, background: "var(--ps-surface-indigo)", color: "var(--ps-retirement-text)", fontWeight: 700, verticalAlign: "middle" }}>NEW</span>
                         )}
                         {section.source && onNavigate && (
                           <span
@@ -545,7 +545,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                       </div>
                       {section.popupData.assets.length > 0 && (
                         <div style={{ marginBottom: section.popupData.debts.length > 0 ? 12 : 0 }}>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "#059669", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Assets</div>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--ps-green)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Assets</div>
                           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                             <tbody>
                               {section.popupData.assets.map((a, i) => (
@@ -706,7 +706,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                                   <select
                                     value={row.currentFreq}
                                     onChange={e => onCellEdit(row.debtRef, e.target.value)}
-                                    style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, border: "1px solid #6366F1", background: "#EEF2FF", color: "#4338CA", cursor: "pointer", fontWeight: 600 }}
+                                    style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, border: "1px solid var(--ps-retirement-text)", background: "var(--ps-surface-indigo)", color: "var(--ps-h1-income-text)", cursor: "pointer", fontWeight: 600 }}
                                   >
                                     {[{v:"52",l:"Weekly"},{v:"26",l:"Fortnightly"},{v:"12",l:"Monthly"},{v:"4",l:"Quarterly"},{v:"1",l:"Annually"}].map(o => (
                                       <option key={o.v} value={o.v}>{o.l}</option>
@@ -811,7 +811,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                               <select
                                 value={row.currentFreq}
                                 onChange={e => onCellEdit(row.debtRef, e.target.value)}
-                                style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, border: "1px solid #6366F1", background: "#EEF2FF", color: "#4338CA", cursor: "pointer", fontWeight: 600 }}
+                                style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, border: "1px solid var(--ps-retirement-text)", background: "var(--ps-surface-indigo)", color: "var(--ps-h1-income-text)", cursor: "pointer", fontWeight: 600 }}
                               >
                                 {[{v:"52",l:"Weekly"},{v:"26",l:"Fortnightly"},{v:"12",l:"Monthly"},{v:"4",l:"Quarterly"},{v:"1",l:"Annually"}].map(o => (
                                   <option key={o.v} value={o.v}>{o.l}</option>
@@ -965,7 +965,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                               }}
                               onMouseLeave={() => { const el = document.getElementById(ttId); if(el) el.style.display = "none"; }}
                             >
-                              <span style={{ fontSize: 13, cursor: "help", background: "#EEF2FF", border: "1px solid #C7D2FE", borderRadius: 6, padding: "1px 6px", lineHeight: 1 }}>💡</span>
+                              <span style={{ fontSize: 13, cursor: "help", background: "var(--ps-surface-indigo)", border: "1px solid var(--ps-ring-indigo)", borderRadius: 6, padding: "1px 6px", lineHeight: 1 }}>💡</span>
                             </span>
                           );
                         })()}
@@ -980,8 +980,8 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                               fontSize: 11, fontWeight: 600, cursor: "pointer",
                               padding: "3px 10px", borderRadius: 6, marginLeft: 8,
                               color: row.indexToggle.active ? "var(--ps-surface)" : "var(--ps-text-muted)",
-                              background: row.indexToggle.active ? "#059669" : "var(--ps-border-light)",
-                              border: `1px solid ${row.indexToggle.active ? "#059669" : "#CBD5E1"}`,
+                              background: row.indexToggle.active ? "var(--ps-green)" : "var(--ps-border-light)",
+                              border: `1px solid ${row.indexToggle.active ? "var(--ps-green)" : "var(--ps-border-mid)"}`,
                               userSelect: "none",
                               display: "inline-block",
                             }}
@@ -1018,7 +1018,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                               <select
                                 value={row.ioForYear[vi] ? "1" : "2"}
                                 onChange={e => onCellEdit(row.debtRef, e.target.value, "io", vi)}
-                                style={{ fontSize: 10, padding: "1px 4px", borderRadius: 4, border: row.ioYearOverrides[vi] !== undefined ? "1px solid #6366F1" : "1px solid var(--ps-border-mid)", background: row.ioYearOverrides[vi] !== undefined ? "#EEF2FF" : "var(--ps-surface)", color: row.ioYearOverrides[vi] !== undefined ? "#4338CA" : "var(--ps-text-secondary)", cursor: "pointer", fontWeight: row.ioYearOverrides[vi] !== undefined ? 700 : 400 }}
+                                style={{ fontSize: 10, padding: "1px 4px", borderRadius: 4, border: row.ioYearOverrides[vi] !== undefined ? "1px solid var(--ps-retirement-text)" : "1px solid var(--ps-border-mid)", background: row.ioYearOverrides[vi] !== undefined ? "var(--ps-surface-indigo)" : "var(--ps-surface)", color: row.ioYearOverrides[vi] !== undefined ? "var(--ps-h1-income-text)" : "var(--ps-text-secondary)", cursor: "pointer", fontWeight: row.ioYearOverrides[vi] !== undefined ? 700 : 400 }}
                               >
                                 {[{v:"2",l:"P & I"},{v:"1",l:"IO"}].map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
                               </select>
@@ -1026,7 +1026,7 @@ export function SectionTable({ data, onNavigate, onToggleIndex, onCellEdit }) {
                               <select
                                 value={row.currentFreq}
                                 onChange={e => onCellEdit(row.debtRef, e.target.value, "freq")}
-                                style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, border: "1px solid #6366F1", background: "#EEF2FF", color: "#4338CA", cursor: "pointer", fontWeight: 600 }}
+                                style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, border: "1px solid var(--ps-retirement-text)", background: "var(--ps-surface-indigo)", color: "var(--ps-h1-income-text)", cursor: "pointer", fontWeight: 600 }}
                               >
                                 {[{v:"52",l:"Weekly"},{v:"26",l:"Fortnightly"},{v:"12",l:"Monthly"},{v:"4",l:"Quarterly"},{v:"1",l:"Annually"}].map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
                               </select>
