@@ -90,19 +90,18 @@ export default function FactFindIncomeExpenses() {
   }, [factFind?.id]);
 
   // Build the save payload (shared by auto-save and save-before-nav)
-  // API PUT expects Client1FactFind.Incomes and Client1FactFind.Expenses
-  // Using PascalCase keys so snakeToCamelKeys in the proxy passes them through unchanged
+  // Uses snake_case keys so the proxy's snakeToCamelKeys converts to API's camelCase
   const buildIncomeExpensesPayload = useCallback(() => {
-    const Incomes = [
+    const incomes = [
       { ...clientFields, adjustments: clientAdjustments }
     ];
     if (hasPartner) {
-      Incomes.push({ ...partnerFields, adjustments: partnerAdjustments });
+      incomes.push({ ...partnerFields, adjustments: partnerAdjustments });
     }
-    const Expenses = [
+    const expenses = [
       { ...expenseFields, adjustments: expenseAdjustments }
     ];
-    return { Incomes, Expenses };
+    return { incomes, expenses };
   }, [clientFields, partnerFields, expenseFields, clientAdjustments, partnerAdjustments, expenseAdjustments, hasPartner]);
 
   const buildIncomeExpensesPayloadRef = useRef(null);
