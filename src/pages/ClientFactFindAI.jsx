@@ -109,6 +109,11 @@ function dbToModelFormat(db) {
  * Calls updateSection for each section that maps to a DB section key.
  */
 async function saveAllSections(modelFF, updateSection) {
+  console.log('[ClientFactFindAI] saveAllSections CALLED');
+  console.log('[ClientFactFindAI] modelFF.income:', JSON.stringify(modelFF.income, null, 2));
+  console.log('[ClientFactFindAI] modelFF.expenses:', JSON.stringify(modelFF.expenses));
+  console.log('[ClientFactFindAI] modelFF.incomeAdjustments:', JSON.stringify(modelFF.incomeAdjustments));
+
   const { client2, ...client1Rest } = modelFF.client1 || {};
 
   // personal
@@ -143,10 +148,12 @@ async function saveAllSections(modelFF, updateSection) {
   if (modelFF.client2) {
     incomeSources.push({ person: 'partner', fields: modelFF.income?.client2 || {}, adjustments: [] });
   }
-  await updateSection('income_expenses', {
+  const incomeExpensesPayload = {
     income_sources: incomeSources,
     expenses: [{ fields: modelFF.expenses || {}, adjustments: modelFF.expenseAdjustments || [] }],
-  });
+  };
+  console.log('[ClientFactFindAI] income_expenses PAYLOAD:', JSON.stringify(incomeExpensesPayload, null, 2));
+  await updateSection('income_expenses', incomeExpensesPayload);
 
   // insurance
   await updateSection('insurance', {

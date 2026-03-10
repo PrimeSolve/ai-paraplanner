@@ -112,6 +112,7 @@ export function useFactFind() {
   const updateSection = useCallback(async (sectionName, data) => {
     const current = factFindRef.current;
     if (!current?.id) {
+      console.log('[updateSection] ABORT: no current factFind id');
       return false;
     }
 
@@ -126,11 +127,17 @@ export function useFactFind() {
     // snakeToCamelKeys correctly converts them to the API's camelCase
     const normalizedData = toSnakeKeys(data);
 
+    console.log(`[updateSection] CALLED with sectionName="${sectionName}", sectionKey="${sectionKey}"`);
+    console.log('[updateSection] raw data received:', JSON.stringify(data, null, 2));
+    console.log('[updateSection] normalizedData:', JSON.stringify(normalizedData, null, 2));
+
     // Skip save if the section data is identical to what we already have
     const existing = current[sectionKey];
+    console.log(`[updateSection] existing local state for "${sectionKey}":`, existing !== undefined ? 'EXISTS' : 'UNDEFINED');
     if (existing !== undefined) {
       try {
         if (JSON.stringify(existing) === JSON.stringify(normalizedData)) {
+          console.log('[updateSection] SKIP: data identical to local state');
           return true;
         }
       } catch (_) {
@@ -142,6 +149,7 @@ export function useFactFind() {
       // FETCH CURRENT DATA FROM DATABASE (not local state)
       const records = await base44.entities.FactFind.filter({ id: current.id });
       const currentData = records[0];
+      console.log('[updateSection] DB record keys:', Object.keys(currentData));
 
       // Strip metadata fields and client_id from current data
       // (client_id from the DB may be a blank GUID; we always set it explicitly below)
@@ -161,6 +169,10 @@ export function useFactFind() {
         ...cleanData
       } = currentData;
 
+      console.log('[updateSection] cleanData keys:', Object.keys(cleanData));
+      console.log(`[updateSection] cleanData["${sectionKey}"] exists?`, sectionKey in cleanData);
+      console.log('[updateSection] cleanData["client1_profile"] exists?', 'client1_profile' in cleanData);
+
       // Deep-merge for client1_fact_find: multiple pages write different sub-fields,
       // so we must preserve existing sub-fields when saving new ones.
       let sectionData = normalizedData;
@@ -168,6 +180,7 @@ export function useFactFind() {
         const existingSection = cleanData[sectionKey];
         if (existingSection && typeof existingSection === 'object' && !Array.isArray(existingSection)) {
           sectionData = { ...existingSection, ...normalizedData };
+          console.log('[updateSection] deep-merged with existing client1_fact_find');
         }
       }
 
@@ -179,7 +192,11 @@ export function useFactFind() {
         client1_id: clientIdRef.current || _staleClientId,
       };
 
+      console.log('[updateSection] FINAL PAYLOAD keys:', Object.keys(payload));
+      console.log('[updateSection] FINAL PAYLOAD:', JSON.stringify(payload, null, 2));
+
       await base44.entities.FactFind.update(current.id, payload);
+      console.log('[updateSection] API update DONE');
 
       // Update local state with snake_case key
       setFactFind(prev => ({
@@ -189,7 +206,7 @@ export function useFactFind() {
 
       return true;
     } catch (err) {
-      console.error(`Failed to save section "${sectionName}":`, err);
+      console.error(`[updateSection] FAILED for section "${sectionName}":`, err);
       return false;
     }
   }, []);

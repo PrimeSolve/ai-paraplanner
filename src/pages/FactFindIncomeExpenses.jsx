@@ -92,6 +92,10 @@ export default function FactFindIncomeExpenses() {
   // Build the save payload (shared by auto-save and save-before-nav)
   // Uses snake_case keys so the proxy's snakeToCamelKeys converts to API's camelCase
   const buildIncomeExpensesPayload = useCallback(() => {
+    console.log('[IncomeExpenses] buildIncomeExpensesPayload called');
+    console.log('[IncomeExpenses] clientFields:', JSON.stringify(clientFields));
+    console.log('[IncomeExpenses] partnerFields:', JSON.stringify(partnerFields));
+    console.log('[IncomeExpenses] expenseFields:', JSON.stringify(expenseFields));
     const incomes = [
       { ...clientFields, adjustments: clientAdjustments }
     ];
@@ -101,7 +105,9 @@ export default function FactFindIncomeExpenses() {
     const expenses = [
       { ...expenseFields, adjustments: expenseAdjustments }
     ];
-    return { incomes, expenses };
+    const payload = { incomes, expenses };
+    console.log('[IncomeExpenses] PAYLOAD returned:', JSON.stringify(payload, null, 2));
+    return payload;
   }, [clientFields, partnerFields, expenseFields, clientAdjustments, partnerAdjustments, expenseAdjustments, hasPartner]);
 
   const buildIncomeExpensesPayloadRef = useRef(null);
@@ -116,10 +122,17 @@ export default function FactFindIncomeExpenses() {
   }, [factFind?.id]);
 
   useEffect(() => {
-    if (!factFind?.id || !dataLoaded || !hasUserEdited.current) return;
+    if (!factFind?.id || !dataLoaded || !hasUserEdited.current) {
+      console.log(`[IncomeExpenses] auto-save SKIP: id=${!!factFind?.id}, dataLoaded=${dataLoaded}, hasUserEdited=${hasUserEdited.current}`);
+      return;
+    }
+    console.log('[IncomeExpenses] auto-save effect triggered, will fire in 1.5s');
     const timeoutId = setTimeout(async () => {
+      const payload = buildIncomeExpensesPayloadRef.current();
+      console.log('[IncomeExpenses] AUTO-SAVE firing with payload:', JSON.stringify(payload, null, 2));
       try {
-        await updateSection('Client1FactFind', buildIncomeExpensesPayloadRef.current());
+        await updateSection('Client1FactFind', payload);
+        console.log('[IncomeExpenses] AUTO-SAVE completed');
       } catch (error) {
         console.error('Auto-save income/expenses failed:', error);
       }
@@ -128,8 +141,13 @@ export default function FactFindIncomeExpenses() {
   }, [factFind?.id, dataLoaded, clientFields, partnerFields, expenseFields, clientAdjustments, partnerAdjustments, expenseAdjustments, updateSection]);
 
   const updateClientField = useCallback((field, value) => {
+    console.log(`[IncomeExpenses] updateClientField("${field}", "${value}")`);
     hasUserEdited.current = true;
-    setClientFields(prev => ({ ...prev, [field]: value }));
+    setClientFields(prev => {
+      const next = { ...prev, [field]: value };
+      console.log('[IncomeExpenses] clientFields after update:', JSON.stringify(next));
+      return next;
+    });
   }, []);
 
   const updatePartnerField = useCallback((field, value) => {
