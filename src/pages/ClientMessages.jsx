@@ -1,319 +1,458 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from "react";
 import ClientLayout from '../components/client/ClientLayout';
-import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import { formatRelativeDate } from '../utils/dateUtils';
-import {
-  Bell,
-  FileText,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  Inbox,
-  ArrowRight,
-  Filter,
-} from 'lucide-react';
 
-const typeConfig = {
-  action_required: {
-    icon: AlertCircle,
-    color: '#f97316',
-    bg: '#fff7ed',
-    border: '#fed7aa',
-    badge: 'Action Required',
-    badgeBg: '#fff7ed',
-    badgeColor: '#c2410c',
-  },
-  document_ready: {
-    icon: FileText,
-    color: '#10b981',
-    bg: '#ecfdf5',
-    border: '#a7f3d0',
-    badge: 'Document Ready',
-    badgeBg: '#ecfdf5',
-    badgeColor: '#047857',
-  },
-  info: {
-    icon: Clock,
-    color: '#3b82f6',
-    bg: '#eff6ff',
-    border: '#bfdbfe',
-    badge: 'Information',
-    badgeBg: '#eff6ff',
-    badgeColor: '#1d4ed8',
-  },
-  completed: {
-    icon: CheckCircle2,
-    color: '#059669',
-    bg: '#ecfdf5',
-    border: '#a7f3d0',
-    badge: 'Completed',
-    badgeBg: '#ecfdf5',
-    badgeColor: '#047857',
-  },
+const TASK_TYPES = ["All", "Send PDS", "Authority to Proceed", "Read PDS", "Document Request", "Follow-up", "Compliance Deadline", "Internal To-Do", "Client Action"];
+
+const STATUS = ["To Do", "In Progress", "Done"];
+
+const STATUS_COLOR = {
+  "To Do":       "#94A3B8",
+  "In Progress": "#4F46E5",
+  "Done":        "#16A34A",
 };
 
-const filterOptions = [
-  { label: 'All', value: 'all' },
-  { label: 'Action Required', value: 'action_required' },
-  { label: 'Documents Ready', value: 'document_ready' },
-  { label: 'Information', value: 'info' },
+const STATUS_BG = {
+  "To Do":       { bg: "#F1F5F9", fg: "#475569" },
+  "In Progress": { bg: "#EEF2FF", fg: "#4F46E5" },
+  "Done":        { bg: "#F0FDF4", fg: "#16A34A" },
+};
+
+const TYPE_COLOR = {
+  "Send PDS":             "#4F46E5",
+  "Authority to Proceed": "#9333EA",
+  "Read PDS":             "#2563EB",
+  "Document Request":     "#EA580C",
+  "Follow-up":            "#16A34A",
+  "Compliance Deadline":  "#DC2626",
+  "Internal To-Do":       "#64748B",
+  "Client Action":        "#D97706",
+};
+
+const ASSIGNED_COLOR = {
+  Adviser: "#4F46E5",
+  Client:  "#16A34A",
+};
+
+const SAMPLE_TASKS = [
+  { id: 1,  title: "Send PDS — AustralianSuper Accumulation",     type: "Send PDS",             assignedTo: "Adviser", status: "To Do",       due: "2026-03-12", notes: "Send before advice meeting." },
+  { id: 2,  title: "Client to sign Authority to Proceed",          type: "Authority to Proceed", assignedTo: "Client",  status: "To Do",       due: "2026-03-14", notes: "" },
+  { id: 3,  title: "Read PDS — MLC MasterKey Super",               type: "Read PDS",             assignedTo: "Client",  status: "In Progress", due: "2026-03-13", notes: "Sent via email 8 Mar." },
+  { id: 4,  title: "Request ATO Tax Return 2024-25",               type: "Document Request",     assignedTo: "Client",  status: "To Do",       due: "2026-03-15", notes: "" },
+  { id: 5,  title: "Follow up on super consolidation",             type: "Follow-up",            assignedTo: "Adviser", status: "In Progress", due: "2026-03-11", notes: "Called once, no answer." },
+  { id: 6,  title: "FDS due — annual renewal",                     type: "Compliance Deadline",  assignedTo: "Adviser", status: "To Do",       due: "2026-03-20", notes: "Must be sent before 20 March." },
+  { id: 7,  title: "Prepare cashflow model for review meeting",    type: "Internal To-Do",       assignedTo: "Adviser", status: "To Do",       due: "2026-03-18", notes: "" },
+  { id: 8,  title: "Client to upload Hostplus statement",          type: "Document Request",     assignedTo: "Client",  status: "To Do",       due: "2026-03-16", notes: "" },
+  { id: 9,  title: "Send PDS — Hostplus Indexed Balanced",         type: "Send PDS",             assignedTo: "Adviser", status: "Done",        due: "2026-03-07", notes: "" },
+  { id: 10, title: "Authority to Proceed — insurance replacement", type: "Authority to Proceed", assignedTo: "Client",  status: "Done",        due: "2026-03-06", notes: "Signed and returned." },
+  { id: 11, title: "Book annual review meeting",                   type: "Client Action",        assignedTo: "Client",  status: "To Do",       due: "2026-03-25", notes: "" },
+  { id: 12, title: "Opt-in notice — due this month",               type: "Compliance Deadline",  assignedTo: "Adviser", status: "In Progress", due: "2026-03-22", notes: "" },
 ];
 
+const today = new Date().toISOString().split("T")[0];
+
+function relativeDate(due) {
+  if (!due) return null;
+  const diff = Math.round((new Date(due) - new Date(today)) / 86400000);
+  if (diff < 0) return { label: `${Math.abs(diff)}d overdue`, overdue: true };
+  if (diff === 0) return { label: "Today", today: true };
+  if (diff === 1) return { label: "Tomorrow", soon: true };
+  if (diff <= 7) return { label: `${diff} days`, soon: diff <= 3 };
+  return { label: new Date(due).toLocaleDateString("en-AU", { day: "numeric", month: "short" }), overdue: false };
+}
+
+function Avatar({ name, color }) {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: "50%", background: color + "20", color: color, fontSize: 9, fontWeight: 800, flexShrink: 0 }}>
+      {name[0]}
+    </span>
+  );
+}
+
+function StatCard({ icon, label, value, sub, color }) {
+  return (
+    <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 14, padding: "18px 22px", display: "flex", flexDirection: "column", gap: 10, position: "relative", overflow: "hidden", flex: 1 }}>
+      <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: color + "15" }} />
+      <div style={{ width: 36, height: 36, borderRadius: 10, background: color + "15", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{icon}</div>
+      <div>
+        <div style={{ fontSize: 26, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</div>
+        <div style={{ fontSize: 12, color: "#64748B", marginTop: 4, fontWeight: 500 }}>{label}</div>
+        {sub && <div style={{ fontSize: 11, color: color, marginTop: 2, fontWeight: 600 }}>{sub}</div>}
+      </div>
+    </div>
+  );
+}
+
+const EMPTY_TASK = { title: "", type: "Follow-up", assignedTo: "Adviser", status: "To Do", due: "", notes: "" };
+
 export default function ClientMessages() {
-  const [loading, setLoading] = useState(true);
-  const [notifications, setNotifications] = useState([]);
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [tasks, setTasks] = useState(SAMPLE_TASKS);
+  const [filterType, setFilterType] = useState("All");
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [search, setSearch] = useState("");
+  const [sortCol, setSortCol] = useState("due");
+  const [sortDir, setSortDir] = useState("asc");
+  const [view, setView] = useState("list");
+  const [menuOpen, setMenuOpen] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [editTask, setEditTask] = useState(null);
+  const [form, setForm] = useState(EMPTY_TASK);
+  const [dragging, setDragging] = useState(null);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const user = await base44.auth.me();
+  const filtered = tasks
+    .filter(t =>
+      (filterType === "All" || t.type === filterType) &&
+      (filterStatus === "All" || t.status === filterStatus) &&
+      (!search || t.title.toLowerCase().includes(search.toLowerCase()))
+    )
+    .sort((a, b) => {
+      let av = a[sortCol] || "", bv = b[sortCol] || "";
+      return sortDir === "asc" ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+    });
 
-        const [factFinds, soaRequests] = await Promise.all([
-          base44.entities.FactFind.filter({ created_by: user.email }, '-created_date'),
-          base44.entities.SOARequest.filter({ client_email: user.email }, '-created_date'),
-        ]);
+  const openCount = tasks.filter(t => t.status !== "Done").length;
+  const overdueCount = tasks.filter(t => t.status !== "Done" && t.due && t.due < today).length;
+  const doneThisWeek = tasks.filter(t => {
+    if (t.status !== "Done") return false;
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
+    return t.due >= weekAgo;
+  }).length;
 
-        const items = [];
+  const handleSort = col => {
+    if (sortCol === col) setSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setSortCol(col); setSortDir("asc"); }
+  };
 
-        factFinds.forEach(ff => {
-          if (ff.status === 'in_progress' || ff.status === 'not_started' || !ff.status) {
-            items.push({
-              id: `ff-action-${ff.id}`,
-              type: 'action_required',
-              title: 'Complete your Fact Find',
-              description: ff.completion_percentage
-                ? `You're ${ff.completion_percentage}% complete. Continue where you left off to help your adviser prepare your plan.`
-                : 'Start your Fact Find to help your adviser understand your financial situation and goals.',
-              date: ff.updated_date || ff.created_date,
-              unread: true,
-              link: createPageUrl('FactFindWelcome') + `?id=${ff.id}`,
-              linkText: 'Continue Fact Find',
-            });
-          }
-          if (ff.status === 'submitted' || ff.status === 'completed') {
-            items.push({
-              id: `ff-done-${ff.id}`,
-              type: 'completed',
-              title: 'Fact Find submitted successfully',
-              description: 'Your Fact Find has been submitted to your adviser. They will use this to prepare your personalised financial plan.',
-              date: ff.updated_date || ff.created_date,
-              unread: false,
-            });
-          }
-        });
-
-        soaRequests.forEach(soa => {
-          if (soa.status === 'in_progress' || soa.status === 'submitted') {
-            items.push({
-              id: `soa-progress-${soa.id}`,
-              type: 'info',
-              title: 'Your Statement of Advice is being prepared',
-              description: 'Your adviser is working on your personalised financial plan. We\'ll notify you as soon as it\'s ready for review.',
-              date: soa.updated_date || soa.created_date,
-              unread: true,
-            });
-          }
-          if (soa.status === 'completed') {
-            items.push({
-              id: `soa-ready-${soa.id}`,
-              type: 'document_ready',
-              title: 'Your Statement of Advice is ready',
-              description: 'Your personalised financial plan is ready for review. Download and review it at your convenience.',
-              date: soa.completed_date || soa.updated_date || soa.created_date,
-              unread: true,
-              link: createPageUrl('ClientDocuments'),
-              linkText: 'View Documents',
-            });
-          }
-        });
-
-        items.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-        setNotifications(items);
-      } catch (error) {
-        console.error('Error loading notifications:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, []);
-
-  const filteredNotifications = notifications.filter(n =>
-    activeFilter === 'all' || n.type === activeFilter
+  const SortIcon = ({ col }) => (
+    <span style={{ fontSize: 10, opacity: sortCol === col ? 1 : 0.3, marginLeft: 3 }}>
+      {sortCol === col ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+    </span>
   );
 
-  const unreadCount = notifications.filter(n => n.unread).length;
+  const cycleStatus = id => {
+    setTasks(prev => prev.map(t => t.id !== id ? t : { ...t, status: STATUS[(STATUS.indexOf(t.status) + 1) % STATUS.length] }));
+  };
 
-  if (loading) {
+  const deleteTask = id => { setTasks(prev => prev.filter(t => t.id !== id)); setMenuOpen(null); };
+
+  const openNew = () => { setEditTask(null); setForm(EMPTY_TASK); setShowModal(true); };
+  const openEdit = task => { setEditTask(task.id); setForm({ title: task.title, type: task.type, assignedTo: task.assignedTo, status: task.status, due: task.due, notes: task.notes }); setShowModal(true); setMenuOpen(null); };
+
+  const saveTask = () => {
+    if (!form.title.trim()) return;
+    if (editTask) setTasks(prev => prev.map(t => t.id === editTask ? { ...t, ...form } : t));
+    else setTasks(prev => [...prev, { ...form, id: Date.now() }]);
+    setShowModal(false);
+  };
+
+  const moveToStatus = (taskId, status) => {
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+  };
+
+  const inputStyle = { width: "100%", padding: "9px 12px", border: "1.5px solid #E2E8F0", borderRadius: 8, fontSize: 13, outline: "none", fontFamily: "inherit", color: "#0F172A", background: "#fff" };
+
+  const isOverdue = t => t.status !== "Done" && t.due && t.due < today;
+
+  // ── LIST ROW ──────────────────────────────────────────────────────────────
+  const ListRow = ({ task, i, last }) => {
+    const rd = relativeDate(task.due);
+    const overdue = isOverdue(task);
+    const done = task.status === "Done";
     return (
-      <ClientLayout currentPage="ClientMessages">
-        <div style={{ padding: '24px 32px' }} className="flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-        </div>
-      </ClientLayout>
-    );
-  }
+      <div className="task-row" style={{
+        display: "grid", gridTemplateColumns: "4px 1fr 160px 90px 90px 80px",
+        borderBottom: last ? "none" : "1px solid #F1F5F9",
+        alignItems: "stretch", background: "#fff", transition: "background 0.1s",
+        opacity: done ? 0.55 : 1,
+      }}>
+        {/* Status bar */}
+        <div style={{ background: overdue ? "#DC2626" : STATUS_COLOR[task.status], borderRadius: i === 0 ? "0" : "0", flexShrink: 0 }} />
 
-  return (
-    <ClientLayout currentPage="ClientMessages">
-      <div style={{ padding: '24px 32px' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>Notifications</h1>
-          {unreadCount > 0 && (
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minWidth: '24px',
-              height: '24px',
-              borderRadius: '12px',
-              background: '#3b82f6',
-              color: 'white',
-              fontSize: '12px',
-              fontWeight: '700',
-              padding: '0 8px',
-            }}>
-              {unreadCount}
+        {/* Title + notes */}
+        <div className="task-row-inner" style={{ padding: "11px 14px 11px 12px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", lineHeight: 1.3, textDecoration: done ? "line-through" : "none" }}>{task.title}</div>
+          {task.notes && <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>{task.notes}</div>}
+        </div>
+
+        {/* Type */}
+        <div style={{ display: "flex", alignItems: "center", padding: "0 8px" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: TYPE_COLOR[task.type] || "#64748B", background: (TYPE_COLOR[task.type] || "#64748B") + "15", padding: "3px 8px", borderRadius: 6, whiteSpace: "nowrap" }}>
+            {task.type}
+          </span>
+        </div>
+
+        {/* Assigned */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 8px" }}>
+          <Avatar name={task.assignedTo} color={ASSIGNED_COLOR[task.assignedTo]} />
+          <span style={{ fontSize: 12, color: "#64748B", fontWeight: 500 }}>{task.assignedTo}</span>
+        </div>
+
+        {/* Due */}
+        <div style={{ display: "flex", alignItems: "center", padding: "0 8px" }}>
+          {rd ? (
+            <span style={{ fontSize: 11, fontWeight: 700, color: rd.overdue ? "#DC2626" : rd.today ? "#D97706" : rd.soon ? "#D97706" : "#64748B" }}>
+              {rd.label}
+            </span>
+          ) : <span style={{ color: "#CBD5E1", fontSize: 12 }}>—</span>}
+        </div>
+
+        {/* Actions */}
+        <div className="row-actions" style={{ display: "flex", alignItems: "center", gap: 4, padding: "0 10px", opacity: 0, transition: "opacity 0.15s" }}>
+          <button className="action-btn" onClick={() => cycleStatus(task.id)} title="Cycle status" style={{ width: 26, height: 26, borderRadius: 6, border: "1px solid #E2E8F0", background: "#fff", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: STATUS_COLOR[task.status] }}>●</button>
+          <button className="action-btn" onClick={() => openEdit(task)} style={{ width: 26, height: 26, borderRadius: 6, border: "1px solid #E2E8F0", background: "#fff", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748B" }}>✎</button>
+          <div style={{ position: "relative" }}>
+            <button className="action-btn" onClick={() => setMenuOpen(menuOpen === task.id ? null : task.id)} style={{ width: 26, height: 26, borderRadius: 6, border: "1px solid #E2E8F0", background: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748B" }}>⋯</button>
+            {menuOpen === task.id && (
+              <div style={{ position: "absolute", right: 0, top: 30, zIndex: 50, background: "#fff", border: "1px solid #E2E8F0", borderRadius: 10, padding: 4, boxShadow: "0 8px 24px rgba(0,0,0,0.08)", minWidth: 160 }}>
+                {["Mark as Done", "Edit", "Delete"].map((action, ai) => (
+                  <button key={ai} className={`menu-item${action === "Delete" ? " danger" : ""}`}
+                    onClick={() => {
+                      if (action === "Delete") deleteTask(task.id);
+                      else if (action === "Edit") openEdit(task);
+                      else { setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: "Done" } : t)); setMenuOpen(null); }
+                    }}
+                    style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", borderRadius: 6, border: "none", background: "transparent", cursor: "pointer", fontSize: 12, fontWeight: 500, color: action === "Delete" ? "#DC2626" : "#374151" }}>
+                    {action}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ── BOARD CARD ────────────────────────────────────────────────────────────
+  const BoardCard = ({ task }) => {
+    const rd = relativeDate(task.due);
+    const overdue = isOverdue(task);
+    return (
+      <div
+        draggable
+        onDragStart={() => setDragging(task.id)}
+        onDragEnd={() => setDragging(null)}
+        onClick={() => openEdit(task)}
+        style={{
+          background: "#fff", borderRadius: 10,
+          border: `1px solid ${overdue ? "#FECACA" : "#E2E8F0"}`,
+          borderLeft: `3px solid ${overdue ? "#DC2626" : TYPE_COLOR[task.type] || "#E2E8F0"}`,
+          padding: "10px 12px", cursor: "pointer",
+          boxShadow: dragging === task.id ? "0 8px 24px rgba(0,0,0,0.12)" : "0 1px 3px rgba(0,0,0,0.04)",
+          opacity: dragging === task.id ? 0.5 : 1,
+          transition: "box-shadow 0.15s, opacity 0.15s",
+          userSelect: "none",
+        }}
+      >
+        <div style={{ fontSize: 12, fontWeight: 700, color: TYPE_COLOR[task.type] || "#64748B", marginBottom: 6 }}>{task.type}</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", lineHeight: 1.4, marginBottom: 8 }}>{task.title}</div>
+        {task.notes && <div style={{ fontSize: 11, color: "#94A3B8", marginBottom: 8, lineHeight: 1.4 }}>{task.notes}</div>}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <Avatar name={task.assignedTo} color={ASSIGNED_COLOR[task.assignedTo]} />
+            <span style={{ fontSize: 11, color: "#64748B" }}>{task.assignedTo}</span>
+          </div>
+          {rd && (
+            <span style={{ fontSize: 11, fontWeight: 700, color: rd.overdue ? "#DC2626" : rd.today || rd.soon ? "#D97706" : "#94A3B8" }}>
+              {rd.label}
             </span>
           )}
         </div>
+      </div>
+    );
+  };
 
-        {/* Filter Bar */}
-        <div style={{
-          display: 'flex',
-          gap: '8px',
-          marginBottom: '20px',
-          flexWrap: 'wrap',
-        }}>
-          {filterOptions.map(filter => (
-            <button
-              key={filter.value}
-              onClick={() => setActiveFilter(filter.value)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '8px',
-                border: '1px solid',
-                borderColor: activeFilter === filter.value ? '#3b82f6' : '#e2e8f0',
-                background: activeFilter === filter.value ? '#eff6ff' : 'white',
-                color: activeFilter === filter.value ? '#1d4ed8' : '#64748b',
-                fontSize: '13px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-            >
-              {filter.label}
-            </button>
-          ))}
+  // ── BOARD COLUMN ──────────────────────────────────────────────────────────
+  const BoardColumn = ({ status }) => {
+    const colTasks = tasks.filter(t =>
+      t.status === status &&
+      (filterType === "All" || t.type === filterType) &&
+      (!search || t.title.toLowerCase().includes(search.toLowerCase()))
+    );
+    return (
+      <div
+        onDragOver={e => e.preventDefault()}
+        onDrop={() => { if (dragging) moveToStatus(dragging, status); }}
+        style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 0 }}
+      >
+        {/* Column header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "0 2px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: STATUS_COLOR[status] }} />
+            <span style={{ fontSize: 13, fontWeight: 800, color: "#0F172A" }}>{status}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, background: "#F1F5F9", color: "#64748B", padding: "1px 7px", borderRadius: 10 }}>{colTasks.length}</span>
+          </div>
+          <button onClick={() => { setForm({ ...EMPTY_TASK, status }); setEditTask(null); setShowModal(true); }} style={{ width: 24, height: 24, borderRadius: 6, border: "1px solid #E2E8F0", background: "#fff", color: "#94A3B8", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 300 }}>+</button>
         </div>
 
-        {/* Notifications List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {filteredNotifications.length > 0 ? (
-            filteredNotifications.map(notification => {
-              const config = typeConfig[notification.type] || typeConfig.info;
-              const IconComponent = config.icon;
+        {/* Cards */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, minHeight: 80 }}>
+          {colTasks.length === 0 && (
+            <div style={{ border: "2px dashed #E2E8F0", borderRadius: 10, padding: "20px 12px", textAlign: "center", color: "#CBD5E1", fontSize: 12 }}>Drop here</div>
+          )}
+          {colTasks.map(t => <BoardCard key={t.id} task={t} />)}
+        </div>
+      </div>
+    );
+  };
 
-              return (
-                <div
-                  key={notification.id}
-                  style={{
-                    background: 'white',
-                    borderRadius: '12px',
-                    border: '1px solid #e2e8f0',
-                    borderLeft: notification.unread ? '4px solid #3b82f6' : '4px solid transparent',
-                    padding: '20px',
-                    transition: 'box-shadow 0.2s',
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'}
-                  onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
-                >
-                  <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                    {/* Icon */}
-                    <div style={{
-                      width: '44px',
-                      height: '44px',
-                      borderRadius: '10px',
-                      background: config.bg,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}>
-                      <IconComponent style={{ width: '22px', height: '22px', color: config.color }} />
-                    </div>
+  return (
+    <ClientLayout currentPage="ClientMessages">
+      <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#F8FAFC", minHeight: "100vh", padding: "28px 32px", color: "#0F172A" }}>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+          * { box-sizing: border-box; }
+          .pill:hover { background: #EEF2FF !important; color: #4F46E5 !important; border-color: #C7D2FE !important; }
+          .task-row:hover { background: #F8FAFC !important; }
+          .task-row:hover .row-actions { opacity: 1 !important; }
+          .action-btn:hover { background: #EEF2FF !important; color: #4F46E5 !important; }
+          .menu-item:hover { background: #F8FAFC !important; }
+          .menu-item.danger:hover { background: #FEF2F2 !important; color: #DC2626 !important; }
+          .board-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important; }
+          .view-btn { transition: all 0.15s; }
+          .view-btn:hover { background: #F1F5F9 !important; }
+        `}</style>
 
-                    {/* Content */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
-                        <h3 style={{ fontSize: '15px', fontWeight: '600', color: '#1e293b', margin: 0 }}>
-                          {notification.title}
-                        </h3>
-                        <span style={{
-                          padding: '3px 8px',
-                          borderRadius: '6px',
-                          fontSize: '11px',
-                          fontWeight: '600',
-                          background: config.badgeBg,
-                          color: config.badgeColor,
-                        }}>
-                          {config.badge}
-                        </span>
-                      </div>
-                      <p style={{ fontSize: '14px', color: '#64748b', lineHeight: '1.5', margin: '0 0 8px 0' }}>
-                        {notification.description}
-                      </p>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                        <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-                          {formatRelativeDate(notification.date)}
-                        </span>
-                        {notification.link && (
-                          <Link
-                            to={notification.link}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              fontSize: '13px',
-                              fontWeight: '600',
-                              color: '#3b82f6',
-                              textDecoration: 'none',
-                            }}
-                          >
-                            {notification.linkText}
-                            <ArrowRight style={{ width: '14px', height: '14px' }} />
-                          </Link>
-                        )}
-                      </div>
-                    </div>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
+          <div>
+            <h1 style={{ fontSize: 24, fontWeight: 800, color: "#0F172A", margin: 0, letterSpacing: "-0.03em" }}>Tasks</h1>
+            <p style={{ fontSize: 13, color: "#64748B", margin: "4px 0 0" }}>Actions, requests and compliance items</p>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* View toggle */}
+            <div style={{ display: "flex", background: "#F1F5F9", borderRadius: 10, padding: 3, gap: 2 }}>
+              {[{ id: "list", icon: "☰", label: "List" }, { id: "board", icon: "⊞", label: "Board" }].map(v => (
+                <button key={v.id} className="view-btn" onClick={() => setView(v.id)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 8, border: "none", background: view === v.id ? "#fff" : "transparent", color: view === v.id ? "#0F172A" : "#94A3B8", fontWeight: view === v.id ? 700 : 500, fontSize: 12, cursor: "pointer", boxShadow: view === v.id ? "0 1px 4px rgba(0,0,0,0.08)" : "none", fontFamily: "inherit" }}>
+                  <span style={{ fontSize: 14 }}>{v.icon}</span> {v.label}
+                </button>
+              ))}
+            </div>
+            <button onClick={openNew} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 10, background: "#4F46E5", color: "#fff", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 2px 12px rgba(79,70,229,0.3)" }}>
+              + Add Task
+            </button>
+          </div>
+        </div>
+
+        {/* Stat tiles */}
+        <div style={{ display: "flex", gap: 14, marginBottom: 24 }}>
+          <StatCard icon="✅" label="Open Tasks"          value={openCount}     sub={`${tasks.length} total`}                                    color="#4F46E5" />
+          <StatCard icon="⚠️" label="Overdue"             value={overdueCount}  sub={overdueCount > 0 ? "Needs attention" : "All on track"}       color="#DC2626" />
+          <StatCard icon="🏁" label="Completed This Week"  value={doneThisWeek} sub="Last 7 days"                                                 color="#059669" />
+        </div>
+
+        {/* Filters */}
+        <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 14, padding: "12px 16px", marginBottom: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "#94A3B8" }}>🔍</span>
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search tasks…" style={{ paddingLeft: 32, paddingRight: 12, paddingTop: 8, paddingBottom: 8, border: "1.5px solid #E2E8F0", borderRadius: 8, fontSize: 13, outline: "none", width: 200, background: "#F8FAFC", color: "#0F172A", fontFamily: "inherit" }} />
+            </div>
+            <div style={{ width: 1, height: 28, background: "#E2E8F0" }} />
+            {["All", ...STATUS].map(s => (
+              <button key={s} className="pill" onClick={() => setFilterStatus(s)} style={{ padding: "5px 14px", borderRadius: 20, border: `1.5px solid ${filterStatus === s ? "#4F46E5" : "#E2E8F0"}`, background: filterStatus === s ? "#EEF2FF" : "#fff", color: filterStatus === s ? "#4F46E5" : "#64748B", fontSize: 12, fontWeight: filterStatus === s ? 700 : 500, cursor: "pointer", transition: "all 0.12s", whiteSpace: "nowrap" }}>
+                {s}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {TASK_TYPES.map(type => (
+              <button key={type} className="pill" onClick={() => setFilterType(type)} style={{ padding: "5px 12px", borderRadius: 20, border: `1.5px solid ${filterType === type ? "#4F46E5" : "#E2E8F0"}`, background: filterType === type ? "#EEF2FF" : "#fff", color: filterType === type ? "#4F46E5" : "#64748B", fontSize: 12, fontWeight: filterType === type ? 700 : 500, cursor: "pointer", transition: "all 0.12s", whiteSpace: "nowrap" }}>
+                {type}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── LIST VIEW ── */}
+        {view === "list" && (
+          <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 14, overflow: "hidden" }}>
+            {/* Column headers */}
+            <div style={{ display: "grid", gridTemplateColumns: "4px 1fr 160px 90px 90px 80px", background: "#F8FAFC", borderBottom: "1.5px solid #E2E8F0" }}>
+              <div />
+              {[
+                { key: "title",      label: "Task"        },
+                { key: "type",       label: "Type"        },
+                { key: "assignedTo", label: "Assigned To" },
+                { key: "due",        label: "Due"         },
+                { key: null,         label: ""            },
+              ].map(({ key, label }, i) => (
+                <div key={i} onClick={() => key && handleSort(key)} style={{ padding: "9px 8px 9px 12px", fontSize: 11, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", cursor: key ? "pointer" : "default", userSelect: "none" }}>
+                  {label}{key && <SortIcon col={key} />}
+                </div>
+              ))}
+            </div>
+
+            {filtered.length === 0 && <div style={{ padding: "48px 24px", textAlign: "center", color: "#94A3B8", fontSize: 13 }}>No tasks found</div>}
+            {filtered.map((task, i) => <ListRow key={task.id} task={task} i={i} last={i === filtered.length - 1} />)}
+
+            <div style={{ padding: "9px 16px", borderTop: "1px solid #F1F5F9", background: "#F8FAFC", fontSize: 12, color: "#94A3B8", display: "flex", justifyContent: "space-between" }}>
+              <span>{filtered.length} task{filtered.length !== 1 ? "s" : ""}</span>
+              {(filterType !== "All" || filterStatus !== "All") && <span>Filtered</span>}
+            </div>
+          </div>
+        )}
+
+        {/* ── BOARD VIEW ── */}
+        {view === "board" && (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+            {STATUS.map(s => <BoardColumn key={s} status={s} />)}
+          </div>
+        )}
+
+        {/* ── MODAL ── */}
+        {showModal && (
+          <div onClick={() => setShowModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 16, width: 500, padding: 28, boxShadow: "0 24px 64px rgba(0,0,0,0.15)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <div>
+                  <div style={{ fontSize: 17, fontWeight: 800, color: "#0F172A" }}>{editTask ? "Edit Task" : "Add Task"}</div>
+                  <div style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>Fill in the details below</div>
+                </div>
+                <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "#94A3B8" }}>✕</button>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>Title</label>
+                  <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="e.g. Send PDS to client" style={inputStyle} />
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>Type</label>
+                    <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))} style={inputStyle}>
+                      {TASK_TYPES.filter(t => t !== "All").map(t => <option key={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>Assigned To</label>
+                    <select value={form.assignedTo} onChange={e => setForm(f => ({ ...f, assignedTo: e.target.value }))} style={inputStyle}>
+                      <option>Adviser</option>
+                      <option>Client</option>
+                    </select>
                   </div>
                 </div>
-              );
-            })
-          ) : (
-            <div style={{
-              background: 'white',
-              borderRadius: '16px',
-              border: '1px solid #e2e8f0',
-              padding: '48px',
-              textAlign: 'center',
-            }}>
-              <Inbox style={{ width: '48px', height: '48px', color: '#cbd5e1', margin: '0 auto 16px' }} />
-              <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#475569', marginBottom: '8px' }}>
-                All caught up!
-              </h3>
-              <p style={{ fontSize: '14px', color: '#94a3b8' }}>
-                {activeFilter !== 'all'
-                  ? 'No notifications match this filter.'
-                  : 'You have no notifications at the moment. New updates will appear here.'}
-              </p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>Status</label>
+                    <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} style={inputStyle}>
+                      {STATUS.map(s => <option key={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>Due Date</label>
+                    <input type="date" value={form.due} onChange={e => setForm(f => ({ ...f, due: e.target.value }))} style={inputStyle} />
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>Notes <span style={{ fontWeight: 400, color: "#94A3B8" }}>(optional)</span></label>
+                  <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Any additional context…" rows={3} style={{ ...inputStyle, resize: "none" }} />
+                </div>
+              </div>
+              <button onClick={saveTask} style={{ width: "100%", padding: 11, background: "#4F46E5", color: "#fff", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", marginTop: 20 }}>
+                {editTask ? "Save Changes" : "Add Task"}
+              </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </ClientLayout>
   );

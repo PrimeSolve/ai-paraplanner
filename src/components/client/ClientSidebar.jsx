@@ -163,7 +163,7 @@ export default function ClientSidebar({ currentPage }) {
           <NavLink path="ClientAdviceHistory" label="Advice History" icon={Clock} />
 
           <NavLink path="ClientDocuments" label="Documents" icon={FileCheck} />
-          <NavLink path="ClientMessages" label="Messages" icon={MessageSquare} />
+          <NavLink path="ClientMessages" label="Tasks" icon={MessageSquare} />
         </div>
 
         {/* ACCOUNT section */}
