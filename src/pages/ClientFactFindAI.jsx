@@ -242,12 +242,12 @@ async function saveAllSections(modelFF, updateSection) {
       partner: modelFF.client2 || null,
     },
 
-    // SuperFunds (FactFindSuperannuation)
-    SuperFunds: {
-      funds: modelFF.superProducts || [],
-      pensions: modelFF.pensions || [],
-      annuities: modelFF.annuities || [],
-    },
+    // SuperFunds (FactFindSuperannuation) — flat array for API compatibility
+    SuperFunds: [
+      ...(modelFF.superProducts || []).map(f => ({ ...f, type: 'super' })),
+      ...(modelFF.pensions || []).map(p => ({ ...p, type: 'pension' })),
+      ...(modelFF.annuities || []).map(a => ({ ...a, type: 'annuity' })),
+    ],
 
     // Investments (FactFindInvestment)
     Investments: {

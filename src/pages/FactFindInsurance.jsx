@@ -45,9 +45,35 @@ export default function FactFindInsurance() {
     if (!ownerId || !factFind) return [];
     const funds = [];
 
-    // Get super funds for this owner
-    if (factFind?.client1_profile?.super_funds?.funds) {
-      factFind.client1_profile.super_funds.funds
+    // Get super funds and pensions for this owner
+    const superData = factFind?.client1_profile?.super_funds;
+    if (superData) {
+      const superItems = Array.isArray(superData) ? superData : [];
+      const legacyFunds = !Array.isArray(superData) ? (superData.funds || []) : [];
+      const legacyPensions = !Array.isArray(superData) ? (superData.pensions || []) : [];
+
+      // Flat array format
+      superItems
+        .filter(f => (!f.type || f.type === 'super') && f.owner === ownerId)
+        .forEach((f, i) => {
+          funds.push({
+            id: `super_fund_${i}`,
+            label: f.fund_name || 'Unnamed Super Fund',
+            type: 'Superannuation'
+          });
+        });
+      superItems
+        .filter(p => p.type === 'pension' && p.owner === ownerId)
+        .forEach((p, i) => {
+          funds.push({
+            id: `pension_${i}`,
+            label: p.fund_name || 'Unnamed Pension',
+            type: 'Pension'
+          });
+        });
+
+      // Legacy object format fallback
+      legacyFunds
         .filter(f => f.owner === ownerId)
         .forEach((f, i) => {
           funds.push({
@@ -56,11 +82,7 @@ export default function FactFindInsurance() {
             type: 'Superannuation'
           });
         });
-    }
-
-    // Get pensions for this owner
-    if (factFind?.client1_profile?.super_funds?.pensions) {
-      factFind.client1_profile.super_funds.pensions
+      legacyPensions
         .filter(p => p.owner === ownerId)
         .forEach((p, i) => {
           funds.push({
