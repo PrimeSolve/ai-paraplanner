@@ -20,11 +20,11 @@ namespace PrimeSolve.Api.Models
 
         [Required]
         [MaxLength(50)]
-        public string Type { get; set; } = string.Empty;
+        public string RecordType { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(500)]
-        public string Name { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -32,6 +32,12 @@ namespace PrimeSolve.Api.Models
         public string CreatedBy { get; set; } = string.Empty;
 
         [Column(TypeName = "nvarchar(max)")]
-        public string SnapshotJson { get; set; } = "{}";
+        public string? FactFindSnapshot { get; set; }
+
+        [Column(TypeName = "nvarchar(max)")]
+        public string? AdviceModelSnapshot { get; set; }
+
+        [Column(TypeName = "nvarchar(max)")]
+        public string? ProjectionSnapshot { get; set; }
     }
 }

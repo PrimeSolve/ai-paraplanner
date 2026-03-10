@@ -8,20 +8,25 @@ export const adviceHistoryApi = {
   /**
    * Create an immutable advice record snapshot.
    * @param {string} clientId
-   * @param {{ type: string, name: string, snapshotJson: string }} data
-   * @returns {Promise<object>} The created record (without snapshotJson)
+   * @param {object} data
+   * @param {string} data.recordType
+   * @param {string} data.title
+   * @param {string} [data.factFindSnapshot]
+   * @param {string} [data.adviceModelSnapshot]
+   * @param {string} [data.projectionSnapshot]
+   * @returns {Promise<object>} The created record (without snapshots)
    */
-  async create(clientId, { type, name, snapshotJson }) {
+  async create(clientId, { recordType, title, factFindSnapshot, adviceModelSnapshot, projectionSnapshot }) {
     const response = await axiosInstance.post(
       `/clients/${clientId}/advice-history`,
-      { type, name, snapshotJson }
+      { recordType, title, factFindSnapshot, adviceModelSnapshot, projectionSnapshot }
     );
     return response.data;
   },
 
   /**
    * List all advice records for a client (ordered by createdAt DESC).
-   * Does NOT include snapshotJson in the response.
+   * Does NOT include snapshots in the response.
    * @param {string} clientId
    * @returns {Promise<Array>} List of records
    */
@@ -33,10 +38,10 @@ export const adviceHistoryApi = {
   },
 
   /**
-   * Get a single advice record including the full snapshotJson.
+   * Get a single advice record including the full snapshots.
    * @param {string} clientId
    * @param {string} recordId
-   * @returns {Promise<object>} Full record with snapshotJson
+   * @returns {Promise<object>} Full record with snapshot fields
    */
   async getById(clientId, recordId) {
     const response = await axiosInstance.get(

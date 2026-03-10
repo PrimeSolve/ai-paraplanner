@@ -338,9 +338,9 @@ export default function SOARequestReview() {
             || soaRequest?.soa_details?.adviser_name
             || 'SOA Request';
           await adviceHistoryApi.create(soaRequest.client_id, {
-            type: 'SOA Request',
-            name: recordName,
-            snapshotJson: JSON.stringify(soaRequest),
+            recordType: 'strategy_recommendations',
+            title: recordName,
+            adviceModelSnapshot: JSON.stringify(soaRequest),
           });
         } catch (err) {
           console.error('[AdviceHistory] Failed to create SOA Request snapshot:', err);
