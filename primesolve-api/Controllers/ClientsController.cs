@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -307,28 +308,59 @@ namespace PrimeSolve.Api.Controllers
 
     public class CreateClientRequest
     {
+        [JsonPropertyName("firstName")]
         public string FirstName { get; set; } = string.Empty;
+
+        [JsonPropertyName("lastName")]
         public string LastName { get; set; } = string.Empty;
+
+        [JsonPropertyName("email")]
         public string Email { get; set; } = string.Empty;
+
+        [JsonPropertyName("phone")]
         public string? Phone { get; set; }
+
+        [JsonPropertyName("notes")]
         public string? Notes { get; set; }
+
+        [JsonPropertyName("adviserEmail")]
         public string? AdviserEmail { get; set; }
+
+        [JsonPropertyName("status")]
         public string? Status { get; set; }
 
         // These are accepted but IGNORED — stamped from JWT instead
+        [JsonPropertyName("adviserId")]
         public Guid? AdviserId { get; set; }
+
+        [JsonPropertyName("tenantId")]
         public Guid? TenantId { get; set; }
     }
 
     public class UpdateClientRequest
     {
+        [JsonPropertyName("firstName")]
         public string? FirstName { get; set; }
+
+        [JsonPropertyName("lastName")]
         public string? LastName { get; set; }
+
+        [JsonPropertyName("email")]
         public string? Email { get; set; }
+
+        [JsonPropertyName("phone")]
         public string? Phone { get; set; }
+
+        [JsonPropertyName("notes")]
         public string? Notes { get; set; }
+
+        [JsonPropertyName("status")]
         public string? Status { get; set; }
+
+        [JsonPropertyName("factFind")]
         public string? FactFind { get; set; }
+
+        [JsonPropertyName("factFindId")]
         public Guid? FactFindId { get; set; }
     }
 }
