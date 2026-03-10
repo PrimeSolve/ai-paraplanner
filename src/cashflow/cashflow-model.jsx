@@ -20,6 +20,7 @@ import { AgedCarePage, SocialSecurityTable, EligibilityTable, SuperAssumptionsTa
 import { PRINCIPAL_SUB_SECTIONS, CHILD_DEFAULTS, DEPENDANT_DEFAULTS, SUPER_DEFAULTS, PENSION_DEFAULTS, ANNUITY_DEFAULTS, DB_DEFAULTS, WRAP_DEFAULTS, INV_BOND_DEFAULTS, PrincipalsForm, DependantsForm, SuperannuationForm, InvestmentsForm, TrustsCompaniesForm, SMSFForm, AssetsForm, LiabilitiesForm, InsurancePoliciesForm, IncomeForm, ExpensesForm, GoalsForm, RiskProfileForm, ScopeOfAdviceForm } from "./components/factfind/index.jsx";
 import { TransactionsForm, ProductReplacementForm, AiFactFind, AiParaplanner, StrategyForm, AdviceProductsEntitiesForm, AdviceInsuranceForm, TaxSuperPlanningForm, AssumptionsForm, PortfolioForm } from "./components/advice/index.jsx";
 import { getAccessToken } from '@/auth/msalInstance';
+import { createAdviceRecord } from '@/utils/adviceRecordHelpers';
 class CashflowErrorBoundary extends React.Component {
   constructor(props) { super(props); this.state = { error: null }; }
   static getDerivedStateFromError(error) { return { error }; }
@@ -2293,7 +2294,24 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               <div style={{ width: 1, height: 24, background: "var(--ps-border)", margin: "0 2px" }} />
               {/* ── Outputs ── */}
               <button
-                onClick={() => setShowSOABuilder(true)}
+                onClick={() => {
+                  // TRIGGER 3: Create an immutable Advice History snapshot of the cashflow model
+                  try {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const cId = urlParams.get('clientId') || urlParams.get('client_id');
+                    if (cId) {
+                      const modelName = [factFind?.client1?.first_name, factFind?.client1?.last_name]
+                        .filter(Boolean).join(' ').trim() || 'Cashflow Model';
+                      createAdviceRecord({
+                        clientId: cId,
+                        type: 'Cashflow Model',
+                        name: `${modelName} — Cashflow Model`,
+                        snapshotData: { factFind, adviceModel: adviceModel1 },
+                      });
+                    }
+                  } catch { /* Don't block Build SOA flow */ }
+                  setShowSOABuilder(true);
+                }}
                 style={{
                   padding: "6px 18px", borderRadius: 8,
                   border: "none",

@@ -117,19 +117,18 @@ export default function FactFindReview() {
       };
       await updateSection('review_status', updatedReviewStatus);
 
-      // Create an immutable AdviceRecord snapshot for the submitted fact find
-      if (user) {
+      // TRIGGER 2: Create an immutable Advice History snapshot for the Fact Find
+      try {
+        const ffName = factFind.personal?.first_name && factFind.personal?.last_name
+          ? `Fact Find — ${factFind.personal.first_name} ${factFind.personal.last_name}`
+          : `Fact Find — ${new Date().toLocaleDateString()}`;
         createAdviceRecord({
-          recordType: 'fact_find',
-          title: 'Fact Find',
-          status: 'Completed',
           clientId: factFind.client_id,
-          adviserId: user.id,
-          linkedEntities: { factFindId: factFind.id },
-          snapshots: { factFind },
-          createdBy: user.email,
+          type: 'Fact Find',
+          name: ffName,
+          snapshotData: factFind,
         });
-      }
+      } catch { /* Don't block the primary flow */ }
 
       setShowConfirm(false);
       setShowSuccess(true);

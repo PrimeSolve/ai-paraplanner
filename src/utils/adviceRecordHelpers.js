@@ -1,59 +1,41 @@
-import { base44 } from '@/api/base44Client';
+import axiosInstance from '@/api/axiosInstance';
 
 /**
- * Creates an AdviceRecord with the specified type and snapshots.
+ * Creates an immutable AdviceRecord (point-in-time snapshot) via the
+ * client-scoped advice-history API.
+ *
+ * POST /api/v1/clients/{clientId}/advice-history
+ *
+ * The backend stamps createdAt, adviserId, tenantId, and createdBy from JWT.
+ * SnapshotJson is frozen and never updated after creation.
+ *
  * Silently fails if the API is not available — callers should not block
  * the primary user flow if record creation fails.
  *
  * @param {object} params
- * @param {string} params.recordType - One of: 'fact_find', 'strategy_recommendations', 'cashflow_model', 'soa_document', 'compliance_review'
- * @param {string} params.title - Human-readable title for the record
- * @param {string} params.status - Record status (e.g. 'Completed', 'Pending', 'Approved')
- * @param {string} params.clientId - Client UUID
- * @param {string} params.adviserId - Adviser (user) UUID
- * @param {object} [params.linkedEntities] - Optional linked entity IDs
- * @param {string} [params.linkedEntities.factFindId]
- * @param {string} [params.linkedEntities.adviceRequestId]
- * @param {string} [params.linkedEntities.cashflowModelId]
- * @param {string} [params.linkedEntities.soaDocumentId]
- * @param {object} [params.snapshots] - Optional frozen JSON snapshots
- * @param {object} [params.snapshots.factFind] - Fact find data at this point in time
- * @param {object} [params.snapshots.adviceModel] - Advice model data at this point in time
- * @param {object} [params.snapshots.projection] - Projection/cashflow results at this point in time
- * @param {string} [params.notes] - Adviser or compliance notes
- * @param {string} [params.createdBy] - Email or name of the creating user
- * @returns {Promise<object|null>} The created AdviceRecord or null on failure
+ * @param {string} params.clientId     - Client UUID (required)
+ * @param {string} params.type         - "SOA Request" | "Fact Find" | "Cashflow Model"
+ * @param {string} params.name         - Human-readable name for the record
+ * @param {object} params.snapshotData - The object to freeze as JSON
+ * @returns {Promise<object|null>} The created record or null on failure
  */
-export async function createAdviceRecord({
-  recordType,
-  title,
-  status,
-  clientId,
-  adviserId,
-  linkedEntities = {},
-  snapshots = {},
-  notes = null,
-  createdBy = null,
-}) {
+export async function createAdviceRecord({ clientId, type, name, snapshotData }) {
   try {
-    const record = await base44.entities.AdviceRecord.create({
-      record_type: recordType,
-      title,
-      status,
-      client_id: clientId,
-      adviser_id: adviserId,
-      fact_find_id: linkedEntities.factFindId || null,
-      advice_request_id: linkedEntities.adviceRequestId || null,
-      cashflow_model_id: linkedEntities.cashflowModelId || null,
-      soa_document_id: linkedEntities.soaDocumentId || null,
-      fact_find_snapshot: snapshots.factFind ? JSON.stringify(snapshots.factFind) : null,
-      advice_model_snapshot: snapshots.adviceModel ? JSON.stringify(snapshots.adviceModel) : null,
-      projection_snapshot: snapshots.projection ? JSON.stringify(snapshots.projection) : null,
-      notes,
-      created_by: createdBy,
-    });
+    if (!clientId) {
+      console.warn('[AdviceRecord] No clientId provided, skipping.');
+      return null;
+    }
 
-    return record;
+    const response = await axiosInstance.post(
+      `/clients/${clientId}/advice-history`,
+      {
+        type,
+        name,
+        snapshotJson: JSON.stringify(snapshotData || {}),
+      }
+    );
+
+    return response.data;
   } catch (error) {
     console.error('[AdviceRecord] Failed to create advice record:', error);
     return null;
@@ -61,20 +43,34 @@ export async function createAdviceRecord({
 }
 
 /**
- * Supersedes an existing AdviceRecord by setting its status to 'Superseded'
- * and linking it to the new record.
+ * Fetches all advice history records for a client (without snapshotJson).
  *
- * @param {string} oldRecordId - The ID of the record being superseded
- * @param {string} newRecordId - The ID of the new record that supersedes it
- * @returns {Promise<void>}
+ * @param {string} clientId
+ * @returns {Promise<Array>}
  */
-export async function supersededAdviceRecord(oldRecordId, newRecordId) {
+export async function listAdviceRecords(clientId) {
   try {
-    await base44.entities.AdviceRecord.update(oldRecordId, {
-      status: 'Superseded',
-      superseded_by_id: newRecordId,
-    });
+    const response = await axiosInstance.get(`/clients/${clientId}/advice-history`);
+    return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
-    console.error('[AdviceRecord] Failed to supersede record:', error);
+    console.error('[AdviceRecord] Failed to list advice records:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetches a single advice record including its snapshotJson.
+ *
+ * @param {string} clientId
+ * @param {string} recordId
+ * @returns {Promise<object|null>}
+ */
+export async function getAdviceRecord(clientId, recordId) {
+  try {
+    const response = await axiosInstance.get(`/clients/${clientId}/advice-history/${recordId}`);
+    return response.data;
+  } catch (error) {
+    console.error('[AdviceRecord] Failed to get advice record:', error);
+    return null;
   }
 }

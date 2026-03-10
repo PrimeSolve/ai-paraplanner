@@ -329,6 +329,20 @@ export default function SOARequestReview() {
           submitted_at: new Date().toISOString()
         }
       });
+
+      // TRIGGER 1: Create an immutable Advice History snapshot for the SOA Request
+      try {
+        const soaName = soaRequest.soa_details?.reference_number
+          || soaRequest.scope_of_advice?.soa_type
+          || `SOA Request — ${new Date().toLocaleDateString()}`;
+        createAdviceRecord({
+          clientId: soaRequest.client_id,
+          type: 'SOA Request',
+          name: soaName,
+          snapshotData: soaRequest,
+        });
+      } catch { /* Don't block the primary flow */ }
+
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Error submitting:', error);
@@ -577,35 +591,18 @@ function SuccessModal({ onClose, soaRequestId, navigate }) {
         });
         docId = newDoc.id;
 
-        // Create an AdviceRecord for the SOA document generation
+        // Create an AdviceRecord snapshot for the SOA document generation
         try {
-          const currentUser = await base44.auth.me();
           const soaReqs = await base44.entities.SOARequest.filter({ id: soaRequestId });
           const soaReq = soaReqs[0];
-          let factFindSnapshot = null;
-          if (soaReq?.fact_find_id) {
-            try {
-              const ffs = await base44.entities.FactFind.filter({ id: soaReq.fact_find_id });
-              if (ffs[0]) factFindSnapshot = ffs[0];
-            } catch { /* skip */ }
+          if (soaReq?.client_id) {
+            createAdviceRecord({
+              clientId: soaReq.client_id,
+              type: 'SOA Request',
+              name: `SOA Document — ${soaReq?.client_name || 'Client'}`,
+              snapshotData: soaReq,
+            });
           }
-          createAdviceRecord({
-            recordType: 'soa_document',
-            title: `Statement of Advice - ${soaReq?.client_name || 'Client'}`,
-            status: 'Pending',
-            clientId: soaReq?.client_id,
-            adviserId: currentUser.id,
-            linkedEntities: {
-              soaDocumentId: docId,
-              adviceRequestId: soaRequestId,
-              cashflowModelId: soaReq?.cashflow_model_id || null,
-            },
-            snapshots: {
-              factFind: factFindSnapshot,
-              adviceModel: soaReq,
-            },
-            createdBy: currentUser.email,
-          });
         } catch { /* skip - don't block SOA flow */ }
       }
       navigate(`/SOABuilder?id=${docId}`);
