@@ -73,7 +73,9 @@ function formatFileSize(bytes) {
 
 export default function AdviserDocuments() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [documents, setDocuments] = useState([]);
+  const [clientId, setClientId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -91,33 +93,38 @@ export default function AdviserDocuments() {
   const fileInputRef = useRef(null);
   const menuRef = useRef(null);
 
-  /* ─── data fetching (unchanged API calls) ─── */
+  /* ─── data fetching ─── */
 
-  const loadDocuments = useCallback(async () => {
+  const loadDocuments = useCallback(async (cId) => {
     try {
-      const response = await axiosInstance.get('/documents');
+      setError(null);
+      const response = await axiosInstance.get(`/clients/${cId}/documents`);
       const data = Array.isArray(response.data)
         ? response.data
         : response.data?.items || response.data?.data || [];
       setDocuments(data);
-    } catch (error) {
-      console.error('Failed to load documents:', error);
-      try {
-        const { documentsApi } = await import('@/api/primeSolveClient');
-        const docs = await documentsApi.getAll();
-        setDocuments(docs);
-      } catch {
-        setDocuments([]);
-      }
+    } catch (err) {
+      console.error('Failed to load documents:', err);
+      setError('Failed to load documents. Please try again.');
+      setDocuments([]);
     }
   }, []);
 
   useEffect(() => {
     const init = async () => {
       try {
-        await loadDocuments();
-      } catch (error) {
-        console.error('Failed to initialize:', error);
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        if (id) {
+          setClientId(id);
+          await loadDocuments(id);
+        } else {
+          setError('No client selected.');
+          setDocuments([]);
+        }
+      } catch (err) {
+        console.error('Failed to initialize:', err);
+        setError('Failed to initialize. Please try again.');
         setDocuments([]);
       } finally {
         setLoading(false);
@@ -185,22 +192,22 @@ export default function AdviserDocuments() {
     return new Date(Math.max(...dates.map((d) => d.getTime())));
   }, [documents]);
 
-  /* ─── handlers (unchanged API calls) ─── */
+  /* ─── handlers ─── */
 
   const handleUpload = async () => {
-    if (!selectedFiles.length) return;
+    if (!selectedFiles.length || !clientId) return;
     setUploading(true);
     try {
       for (const file of selectedFiles) {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('category', uploadCategory);
-        formData.append('shared', shareWithClient);
-        await axiosInstance.post('/documents', formData, {
+        formData.append('sharedWithClient', shareWithClient);
+        await axiosInstance.post(`/clients/${clientId}/documents`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       }
-      await loadDocuments();
+      await loadDocuments(clientId);
       setUploadModalOpen(false);
       setSelectedFiles([]);
       setUploadCategory('Other');
@@ -215,7 +222,7 @@ export default function AdviserDocuments() {
   const handleDownload = async (doc) => {
     const docId = doc.id || doc.documentId;
     try {
-      const response = await axiosInstance.get(`/documents/${docId}/download`, {
+      const response = await axiosInstance.get(`/clients/${clientId}/documents/${docId}/download`, {
         responseType: 'blob',
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -233,16 +240,24 @@ export default function AdviserDocuments() {
     }
   };
 
-  const handleView = (doc) => {
-    const url = doc.blobUrl || doc.blob_url;
-    if (url) window.open(url, '_blank');
+  const handleView = async (doc) => {
+    const docId = doc.id || doc.documentId;
+    try {
+      const response = await axiosInstance.get(`/clients/${clientId}/documents/${docId}/url`);
+      const sasUrl = response.data?.url || response.data;
+      if (sasUrl) {
+        window.open(sasUrl, '_blank');
+      }
+    } catch (err) {
+      console.error('Failed to get document URL:', err);
+    }
   };
 
   const handleDelete = async (doc) => {
     const docId = doc.id || doc.documentId;
     try {
-      await axiosInstance.delete(`/documents/${docId}`);
-      await loadDocuments();
+      await axiosInstance.delete(`/clients/${clientId}/documents/${docId}`);
+      setDocuments((prev) => prev.filter((d) => (d.id || d.documentId) !== docId));
     } catch (error) {
       console.error('Delete failed:', error);
     }
@@ -252,8 +267,8 @@ export default function AdviserDocuments() {
   const handleShare = async (doc) => {
     const docId = doc.id || doc.documentId;
     try {
-      await axiosInstance.patch(`/documents/${docId}`, { shared: !doc.shared });
-      await loadDocuments();
+      await axiosInstance.patch(`/clients/${clientId}/documents/${docId}`, { sharedWithClient: !doc.shared });
+      await loadDocuments(clientId);
     } catch (error) {
       console.error('Share toggle failed:', error);
     }
@@ -264,8 +279,8 @@ export default function AdviserDocuments() {
     if (!renameModal || !renameValue.trim()) return;
     const docId = renameModal.id || renameModal.documentId;
     try {
-      await axiosInstance.patch(`/documents/${docId}`, { fileName: renameValue.trim() });
-      await loadDocuments();
+      await axiosInstance.patch(`/clients/${clientId}/documents/${docId}`, { fileName: renameValue.trim() });
+      await loadDocuments(clientId);
     } catch (error) {
       console.error('Rename failed:', error);
     }
@@ -484,6 +499,19 @@ export default function AdviserDocuments() {
       <AdviserLayout currentPage="AdviserDocuments">
         <div style={s.page} className="flex items-center justify-center">
           <Loader2 className="w-10 h-10 animate-spin" style={{ color: '#4F46E5' }} />
+        </div>
+      </AdviserLayout>
+    );
+  }
+
+  if (error && documents.length === 0) {
+    return (
+      <AdviserLayout currentPage="AdviserDocuments">
+        <div style={s.page} className="flex items-center justify-center">
+          <div style={{ textAlign: 'center' }}>
+            <Inbox className="w-16 h-16 mx-auto" style={{ color: '#CBD5E1', marginBottom: 16 }} />
+            <p style={{ fontSize: 15, fontWeight: 500, color: '#DC2626', marginBottom: 4 }}>{error}</p>
+          </div>
         </div>
       </AdviserLayout>
     );
