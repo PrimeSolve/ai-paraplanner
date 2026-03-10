@@ -7,6 +7,7 @@ import {
   Users,
   FileText,
   CheckSquare,
+  ListChecks,
   Settings,
   Sparkles,
   MessageSquare
@@ -34,7 +35,8 @@ export default function AdviserLayout({ children, currentPage, pageActions }) {
       { label: 'Dashboard', path: 'AdviserDashboard', icon: LayoutDashboard },
       { label: 'Clients', path: 'AdviserClients', icon: Users },
       { label: 'Fact Finds', path: 'AdviserFactFinds', icon: FileText },
-      { label: 'SOA Requests', path: 'AdviserSOARequests', icon: CheckSquare }
+      { label: 'SOA Requests', path: 'AdviserSOARequests', icon: CheckSquare },
+      { label: 'Tasks', path: 'AdviserTasks', icon: ListChecks }
     ]},
     { section: 'SUPPORT', items: [
       { label: 'Support Tickets', path: 'AdviserTickets', icon: MessageSquare }
