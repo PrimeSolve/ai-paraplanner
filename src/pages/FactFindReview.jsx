@@ -140,9 +140,9 @@ export default function FactFindReview() {
             ? `Fact Find — ${factFind.personal.first_name} ${factFind.personal.last_name}`
             : `Fact Find — ${today}`;
           await adviceHistoryApi.create(factFind.client_id, {
-            type: 'Fact Find',
-            name: recordName,
-            snapshotJson: JSON.stringify(factFind),
+            recordType: 'fact_find',
+            title: recordName,
+            factFindSnapshot: JSON.stringify(factFind),
           });
         } catch (err) {
           console.error('[AdviceHistory] Failed to create Fact Find snapshot:', err);

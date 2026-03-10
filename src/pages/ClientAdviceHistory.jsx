@@ -12,26 +12,40 @@ import {
 import { Eye, Download, FileText, ClipboardList, BarChart3, Search, Loader2 } from 'lucide-react';
 
 const TYPE_CONFIG = {
-  'SOA Request': {
-    label: 'SOA Request',
-    icon: FileText,
-    bg: '#EEF2FF',
-    fg: '#4F46E5',
-    border: '#C7D2FE',
-  },
-  'Fact Find': {
+  fact_find: {
     label: 'Fact Find',
     icon: ClipboardList,
     bg: '#F0FDF4',
     fg: '#16A34A',
     border: '#BBF7D0',
   },
-  'Cashflow Model': {
+  strategy_recommendations: {
+    label: 'SOA Request',
+    icon: FileText,
+    bg: '#EEF2FF',
+    fg: '#4F46E5',
+    border: '#C7D2FE',
+  },
+  cashflow_model: {
     label: 'Cashflow Model',
     icon: BarChart3,
     bg: '#FFF7ED',
     fg: '#EA580C',
     border: '#FED7AA',
+  },
+  soa_document: {
+    label: 'Statement of Advice',
+    icon: FileText,
+    bg: '#EEF2FF',
+    fg: '#4F46E5',
+    border: '#C7D2FE',
+  },
+  compliance_review: {
+    label: 'Compliance Review',
+    icon: ClipboardList,
+    bg: '#F0FDF4',
+    fg: '#16A34A',
+    border: '#BBF7D0',
   },
 };
 
@@ -114,31 +128,37 @@ export default function ClientAdviceHistory() {
 
   const handleDownload = (record) => {
     const dateStr = new Date(record.createdAt).toISOString().slice(0, 10);
-    const safeName = (record.name || 'record').replace(/[^a-zA-Z0-9_-]/g, '_');
-    const safeType = (record.type || 'record').replace(/\s+/g, '-');
+    const safeName = (record.title || 'record').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const safeType = (record.recordType || 'record').replace(/\s+/g, '-');
     const fileName = `${safeType}-${safeName}-${dateStr}.json`;
 
-    if (viewingRecord && viewingRecord.id === record.id && viewingRecord.snapshotJson) {
-      downloadJson(viewingRecord.snapshotJson, fileName);
-      return;
+    const source = viewingRecord && viewingRecord.id === record.id ? viewingRecord : null;
+    if (source) {
+      const combined = combineSnapshots(source);
+      if (combined) {
+        downloadJson(combined, fileName);
+        return;
+      }
     }
 
-    // Fetch full record to get snapshotJson then download
+    // Fetch full record to get snapshots then download
     if (!clientId) return;
     adviceHistoryApi.getById(clientId, record.id).then(full => {
-      downloadJson(full.snapshotJson, fileName);
+      const combined = combineSnapshots(full);
+      downloadJson(combined || '{}', fileName);
     }).catch(err => {
       console.error('Failed to download:', err);
     });
   };
 
   const filteredRecords = records.filter(r => {
-    if (filterType !== 'All' && r.type !== filterType) return false;
+    if (filterType !== 'All' && r.recordType !== filterType) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
+      const typeLabel = TYPE_CONFIG[r.recordType]?.label || r.recordType || '';
       return (
-        (r.name || '').toLowerCase().includes(q) ||
-        (r.type || '').toLowerCase().includes(q) ||
+        (r.title || '').toLowerCase().includes(q) ||
+        typeLabel.toLowerCase().includes(q) ||
         (r.createdBy || '').toLowerCase().includes(q)
       );
     }
@@ -163,8 +183,8 @@ export default function ClientAdviceHistory() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
               <Eye style={{ width: 18, height: 18 }} />
-              {viewingRecord?.name || 'Advice Record'}
-              <TypeBadge type={viewingRecord?.type} />
+              {viewingRecord?.title || 'Advice Record'}
+              <TypeBadge type={viewingRecord?.recordType} />
             </DialogTitle>
           </DialogHeader>
           <div className="text-xs text-slate-500 mb-2">
@@ -185,9 +205,27 @@ export default function ClientAdviceHistory() {
               wordBreak: 'break-word',
             }}
           >
-            {viewingRecord?.snapshotJson
-              ? formatSnapshotForDisplay(viewingRecord.snapshotJson)
-              : 'No snapshot data'}
+            {viewingRecord?.factFindSnapshot && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontWeight: 700, marginBottom: 4, fontFamily: 'inherit' }}>Fact Find Snapshot</div>
+                {formatSnapshotForDisplay(viewingRecord.factFindSnapshot)}
+              </div>
+            )}
+            {viewingRecord?.adviceModelSnapshot && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontWeight: 700, marginBottom: 4, fontFamily: 'inherit' }}>Advice Model Snapshot</div>
+                {formatSnapshotForDisplay(viewingRecord.adviceModelSnapshot)}
+              </div>
+            )}
+            {viewingRecord?.projectionSnapshot && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontWeight: 700, marginBottom: 4, fontFamily: 'inherit' }}>Projection Snapshot</div>
+                {formatSnapshotForDisplay(viewingRecord.projectionSnapshot)}
+              </div>
+            )}
+            {!viewingRecord?.factFindSnapshot && !viewingRecord?.adviceModelSnapshot && !viewingRecord?.projectionSnapshot && (
+              'No snapshot data'
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -234,7 +272,7 @@ export default function ClientAdviceHistory() {
 
             {/* Type Filter */}
             <div style={{ display: 'flex', gap: 6 }}>
-              {['All', 'SOA Request', 'Fact Find', 'Cashflow Model'].map(type => (
+              {[{ key: 'All', label: 'All' }, { key: 'fact_find', label: 'Fact Find' }, { key: 'strategy_recommendations', label: 'SOA Request' }, { key: 'cashflow_model', label: 'Cashflow Model' }, { key: 'soa_document', label: 'Statement of Advice' }].map(({ key: type, label }) => (
                 <button
                   key={type}
                   onClick={() => setFilterType(type)}
@@ -250,7 +288,7 @@ export default function ClientAdviceHistory() {
                     transition: 'all 0.15s ease',
                   }}
                 >
-                  {type}
+                  {label}
                 </button>
               ))}
             </div>
@@ -284,7 +322,7 @@ export default function ClientAdviceHistory() {
                 <thead>
                   <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                     <th style={thStyle}>Type</th>
-                    <th style={thStyle}>Name</th>
+                    <th style={thStyle}>Title</th>
                     <th style={thStyle}>Created</th>
                     <th style={thStyle}>Created By</th>
                     <th style={{ ...thStyle, textAlign: 'right' }}>Actions</th>
@@ -302,10 +340,10 @@ export default function ClientAdviceHistory() {
                       onMouseLeave={e => e.currentTarget.style.background = '#fff'}
                     >
                       <td style={tdStyle}>
-                        <TypeBadge type={record.type} />
+                        <TypeBadge type={record.recordType} />
                       </td>
                       <td style={{ ...tdStyle, fontWeight: 600, color: '#1E293B' }}>
-                        {record.name || '—'}
+                        {record.title || '—'}
                       </td>
                       <td style={{ ...tdStyle, color: '#64748B', fontSize: 13 }}>
                         {formatDate(record.createdAt)}
@@ -382,6 +420,15 @@ const actionBtnStyle = {
   cursor: 'pointer',
   transition: 'all 0.15s ease',
 };
+
+function combineSnapshots(record) {
+  const combined = {};
+  if (record.factFindSnapshot) combined.factFindSnapshot = record.factFindSnapshot;
+  if (record.adviceModelSnapshot) combined.adviceModelSnapshot = record.adviceModelSnapshot;
+  if (record.projectionSnapshot) combined.projectionSnapshot = record.projectionSnapshot;
+  if (Object.keys(combined).length === 0) return null;
+  return JSON.stringify(combined, null, 2);
+}
 
 function formatSnapshotForDisplay(snapshotJson) {
   try {

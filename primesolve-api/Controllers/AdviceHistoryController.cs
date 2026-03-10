@@ -44,11 +44,13 @@ namespace PrimeSolve.Api.Controllers
                 ClientId = clientId,
                 AdviserId = adviserId,
                 TenantId = tenantId,
-                Type = request.Type,
-                Name = request.Name,
+                RecordType = request.RecordType,
+                Title = request.Title,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = createdBy,
-                SnapshotJson = request.SnapshotJson ?? "{}"
+                FactFindSnapshot = request.FactFindSnapshot,
+                AdviceModelSnapshot = request.AdviceModelSnapshot,
+                ProjectionSnapshot = request.ProjectionSnapshot
             };
 
             _db.AdviceRecords.Add(record);
@@ -58,8 +60,8 @@ namespace PrimeSolve.Api.Controllers
             {
                 id = record.Id,
                 clientId = record.ClientId,
-                type = record.Type,
-                name = record.Name,
+                recordType = record.RecordType,
+                title = record.Title,
                 createdAt = record.CreatedAt,
                 createdBy = record.CreatedBy
             });
@@ -84,8 +86,8 @@ namespace PrimeSolve.Api.Controllers
                 {
                     id = r.Id,
                     clientId = r.ClientId,
-                    type = r.Type,
-                    name = r.Name,
+                    recordType = r.RecordType,
+                    title = r.Title,
                     createdAt = r.CreatedAt,
                     createdBy = r.CreatedBy
                 })
@@ -117,11 +119,13 @@ namespace PrimeSolve.Api.Controllers
                 clientId = record.ClientId,
                 adviserId = record.AdviserId,
                 tenantId = record.TenantId,
-                type = record.Type,
-                name = record.Name,
+                recordType = record.RecordType,
+                title = record.Title,
                 createdAt = record.CreatedAt,
                 createdBy = record.CreatedBy,
-                snapshotJson = record.SnapshotJson
+                factFindSnapshot = record.FactFindSnapshot,
+                adviceModelSnapshot = record.AdviceModelSnapshot,
+                projectionSnapshot = record.ProjectionSnapshot
             });
         }
 
@@ -149,8 +153,10 @@ namespace PrimeSolve.Api.Controllers
 
     public class CreateAdviceRecordRequest
     {
-        public string Type { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string? SnapshotJson { get; set; }
+        public string RecordType { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string? FactFindSnapshot { get; set; }
+        public string? AdviceModelSnapshot { get; set; }
+        public string? ProjectionSnapshot { get; set; }
     }
 }

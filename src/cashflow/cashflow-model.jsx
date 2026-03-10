@@ -2304,9 +2304,9 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
                       const c1Last = factFind.client1?.last_name || '';
                       const modelName = [c1Name, c1Last].filter(Boolean).join(' ') || 'Cashflow Model';
                       adviceHistoryApi.create(urlClientId, {
-                        type: 'Cashflow Model',
-                        name: modelName,
-                        snapshotJson: JSON.stringify(factFind),
+                        recordType: 'cashflow_model',
+                        title: modelName,
+                        factFindSnapshot: JSON.stringify(factFind),
                       }).catch(err => console.error('[AdviceHistory] Failed to create Cashflow Model snapshot:', err));
                     }
                   } catch (err) {

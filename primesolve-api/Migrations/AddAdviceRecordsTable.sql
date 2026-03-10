@@ -10,11 +10,13 @@ BEGIN
         [ClientId]     UNIQUEIDENTIFIER NOT NULL,
         [AdviserId]    UNIQUEIDENTIFIER NOT NULL,
         [TenantId]     UNIQUEIDENTIFIER NOT NULL,
-        [Type]         NVARCHAR(50)     NOT NULL,
-        [Name]         NVARCHAR(500)    NOT NULL,
-        [CreatedAt]    DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
-        [CreatedBy]    NVARCHAR(255)    NOT NULL DEFAULT '',
-        [SnapshotJson] NVARCHAR(MAX)    NOT NULL DEFAULT '{}',
+        [RecordType]            NVARCHAR(50)     NOT NULL,
+        [Title]                 NVARCHAR(500)    NOT NULL,
+        [CreatedAt]             DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
+        [CreatedBy]             NVARCHAR(255)    NOT NULL DEFAULT '',
+        [FactFindSnapshot]      NVARCHAR(MAX)    NULL,
+        [AdviceModelSnapshot]   NVARCHAR(MAX)    NULL,
+        [ProjectionSnapshot]    NVARCHAR(MAX)    NULL,
 
         CONSTRAINT [PK_AdviceRecords] PRIMARY KEY CLUSTERED ([Id])
     );

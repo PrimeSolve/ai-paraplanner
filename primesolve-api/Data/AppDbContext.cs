@@ -43,8 +43,9 @@ namespace PrimeSolve.Api.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => new { e.TenantId, e.ClientId });
                 entity.HasIndex(e => e.CreatedAt);
-                entity.Property(e => e.SnapshotJson)
-                      .HasColumnType("nvarchar(max)");
+                entity.Property(e => e.FactFindSnapshot).HasColumnType("nvarchar(max)");
+                entity.Property(e => e.AdviceModelSnapshot).HasColumnType("nvarchar(max)");
+                entity.Property(e => e.ProjectionSnapshot).HasColumnType("nvarchar(max)");
             });
         }
     }
