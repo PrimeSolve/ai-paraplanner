@@ -11,6 +11,46 @@ import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft, Edit2, Trash2, Plus } from 'lucide-react';
 import EntityDot from '../components/factfind/EntityDot';
 
+/**
+ * Map API IncomeDto field names → frontend i_* field names.
+ * API returns: { gross_salary, income_type, salary_sacrifice, fbt_exempt, employer }
+ * Frontend uses: { i_gross, i_type, i_super_inc, i_fbt, employer }
+ * Handles both API format and legacy frontend format (backward compat).
+ */
+function mapApiIncomeToFrontend(apiIncome) {
+  if (!apiIncome || Object.keys(apiIncome).length === 0) return apiIncome;
+  return {
+    ...apiIncome,
+    // Map API → frontend (use API value if present, fall back to existing i_* value)
+    i_type:      apiIncome.income_type != null ? String(apiIncome.income_type) : (apiIncome.i_type || ''),
+    i_gross:     apiIncome.gross_salary != null ? String(apiIncome.gross_salary) : (apiIncome.i_gross || ''),
+    i_super_inc: apiIncome.salary_sacrifice != null ? String(apiIncome.salary_sacrifice) : (apiIncome.i_super_inc || '2'),
+    i_fbt:       apiIncome.fbt_exempt != null ? (apiIncome.fbt_exempt ? '1' : '2') : (apiIncome.i_fbt || '2'),
+    i_fbt_value: apiIncome.i_fbt_value || '',
+    i_bonus:     apiIncome.i_bonus || '',
+    i_increase:  apiIncome.i_increase || '',
+    i_nontax:    apiIncome.i_nontax || '2',
+    i_pay_freq:  apiIncome.i_pay_freq || '',
+    employer:    apiIncome.employer || '',
+  };
+}
+
+/**
+ * Map API ExpenseDto field names → frontend e_* field names.
+ * API returns: { amount, frequency, category, is_joint }
+ * Frontend uses: { e_disc, e_freq, e_save, e_budget }
+ */
+function mapApiExpenseToFrontend(apiExpense) {
+  if (!apiExpense || Object.keys(apiExpense).length === 0) return apiExpense;
+  return {
+    ...apiExpense,
+    e_disc:   apiExpense.amount != null ? String(apiExpense.amount) : (apiExpense.e_disc || ''),
+    e_freq:   apiExpense.frequency || apiExpense.e_freq || '',
+    e_save:   apiExpense.e_save || '',
+    e_budget: apiExpense.e_budget || '',
+  };
+}
+
 export default function FactFindIncomeExpenses() {
   const navigate = useNavigate();
   const { factFind, loading: ffLoading, updateSection } = useFactFind();
@@ -59,17 +99,18 @@ export default function FactFindIncomeExpenses() {
   }, []);
 
   useEffect(() => {
-    // Read income/expense data from the API's client1Profile structure
-    // API GET returns: client1Profile.incomes and client1Profile.expenses
-    // After camelToSnakeKeys proxy conversion: client1_profile.incomes / .expenses
+    // Read income/expense data from the API's client1Profile structure.
+    // API returns IncomeDto fields (gross_salary, income_type, salary_sacrifice, fbt_exempt)
+    // but the frontend forms use i_* prefixed names (i_gross, i_type, i_super_inc, i_fbt).
+    // Map API field names → frontend field names on load.
     const incomes = factFind?.client1_profile?.incomes || [];
     const expenses = factFind?.client1_profile?.expenses || [];
 
     if (incomes.length || expenses.length) {
       // First income record is client, second (if present) is partner
-      const clientIncome = incomes[0] || {};
-      const partnerIncome = incomes[1] || {};
-      const expenseData = expenses[0] || {};
+      const clientIncome = mapApiIncomeToFrontend(incomes[0] || {});
+      const partnerIncome = mapApiIncomeToFrontend(incomes[1] || {});
+      const expenseData = mapApiExpenseToFrontend(expenses[0] || {});
 
       // Separate adjustments from the flat field objects
       const { adjustments: clientAdj, ...cFields } = clientIncome;

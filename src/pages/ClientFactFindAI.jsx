@@ -13,6 +13,24 @@ import { useFactFind } from '@/components/factfind/useFactFind';
  * advice_reasons, risk_profile, smsf, super_tax.
  * The API also exposes it via client1_profile; we read from both with fallback.
  */
+/** Map API IncomeDto fields → frontend i_* fields (handles both formats) */
+function mapApiIncomeFields(inc) {
+  if (!inc || Object.keys(inc).length === 0) return inc;
+  return {
+    ...inc,
+    i_type:      inc.income_type != null ? String(inc.income_type) : (inc.i_type || ''),
+    i_gross:     inc.gross_salary != null ? String(inc.gross_salary) : (inc.i_gross || ''),
+    i_super_inc: inc.salary_sacrifice != null ? String(inc.salary_sacrifice) : (inc.i_super_inc || '2'),
+    i_fbt:       inc.fbt_exempt != null ? (inc.fbt_exempt ? '1' : '2') : (inc.i_fbt || '2'),
+    i_fbt_value: inc.i_fbt_value || '',
+    i_bonus:     inc.i_bonus || '',
+    i_increase:  inc.i_increase || '',
+    i_nontax:    inc.i_nontax || '2',
+    i_pay_freq:  inc.i_pay_freq || '',
+    employer:    inc.employer || '',
+  };
+}
+
 function dbToModelFormat(db) {
   if (!db) return undefined;
 
@@ -42,8 +60,9 @@ function dbToModelFormat(db) {
 
   // Map incomes/expenses — manual form stores flat objects per person
   // incomes[0] = client income (flat fields + adjustments), incomes[1] = partner
-  const clientIncomeEntry = incomes[0] || {};
-  const partnerIncomeEntry = incomes[1] || {};
+  // Map API field names (gross_salary, income_type) → frontend names (i_gross, i_type)
+  const clientIncomeEntry = mapApiIncomeFields(incomes[0] || {});
+  const partnerIncomeEntry = mapApiIncomeFields(incomes[1] || {});
   const expenseEntry = expenses[0] || {};
 
   // Separate adjustments from income/expense fields

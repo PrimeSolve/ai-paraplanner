@@ -26,16 +26,45 @@ function toSnakeKeys(obj) {
  * before sending to the API. The API expects List<T> for these fields but
  * the UI stores them as wrapper objects with metadata (activeIndex, currentTab).
  *
- * This converts:
- *   dependants: { children: [], dependants_list: [] }  →  [ ...children, ...deps ]
- *   insurance_policies: { activeIdx, policies: [] }    →  [ ...policies ]
- *   investments: { wraps: [], bonds: [] }              →  [ ...wraps, ...bonds ]
- *   trusts_companies: { entities: [] }                 →  [ ...entities ]
- *   smsf: { smsf_details: [] }                         →  [ ...smsf_details ]
+ * Also maps frontend field names (i_gross, e_disc, etc.) to API field names
+ * (gross_salary, amount, etc.) so the SubmitFactFindDataRequest DTO can
+ * deserialize them. The API's IncomeInput expects: { incomeType, employer,
+ * grossSalary } — NOT { iGross, iType }.
  */
 function normalizeFactFindForApi(data) {
   if (!data || typeof data !== 'object') return data;
   const result = { ...data };
+
+  // ── Income field mapping: frontend i_* → API camelCase-friendly names ──
+  // After this normalization, the proxy's snakeToCamelKeys converts:
+  //   income_type → incomeType  (matches IncomeInput.incomeType)
+  //   gross_salary → grossSalary (matches IncomeInput.grossSalary)
+  //   salary_sacrifice → salarySacrifice (matches IncomeDto)
+  //   fbt_exempt → fbtExempt (matches IncomeDto)
+  if (Array.isArray(result.incomes)) {
+    result.incomes = result.incomes.map(inc => {
+      const mapped = { ...inc };
+      // Map i_* fields → API field names
+      if (inc.i_type !== undefined)      { mapped.income_type = inc.i_type; }
+      if (inc.i_gross !== undefined)     { mapped.gross_salary = parseFloat(inc.i_gross) || 0; }
+      if (inc.i_super_inc !== undefined) { mapped.salary_sacrifice = inc.i_super_inc; }
+      if (inc.i_fbt !== undefined)       { mapped.fbt_exempt = inc.i_fbt === '1'; }
+      return mapped;
+    });
+  }
+
+  // ── Expense field mapping: frontend e_* → API names ──
+  // API ExpenseInput expects: { category, amount, frequency }
+  if (Array.isArray(result.expenses)) {
+    result.expenses = result.expenses.map(exp => {
+      const mapped = { ...exp };
+      if (exp.e_disc !== undefined) { mapped.amount = parseFloat(exp.e_disc) || 0; }
+      if (exp.e_freq !== undefined) { mapped.frequency = exp.e_freq; }
+      return mapped;
+    });
+  }
+
+  // ── List wrapper flattening ──
 
   // Dependants: wrapper → flat array with dep_type discriminator
   if (result.dependants && !Array.isArray(result.dependants)) {
