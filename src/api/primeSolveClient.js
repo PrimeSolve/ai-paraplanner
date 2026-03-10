@@ -187,10 +187,19 @@ function createEntityProxy(endpoint, options = {}) {
      */
     async update(id, data) {
       const apiData = snakeToCamelKeys(data);
+      console.log(`[proxy.update] endpoint="${endpoint}", id="${id}"`);
+      console.log('[proxy.update] incoming data keys:', Object.keys(data));
+      console.log('[proxy.update] apiData keys (after snakeToCamelKeys):', Object.keys(apiData));
       // Fetch current record so we can merge (PUT = full replace)
       const current = await axiosInstance.get(`/${endpoint}/${id}`);
       const { id: _id, ...currentFields } = current.data;
+      console.log('[proxy.update] currentFields keys (from API GET):', Object.keys(currentFields));
       const merged = { ...currentFields, ...apiData };
+      console.log('[proxy.update] merged keys:', Object.keys(merged));
+      console.log('[proxy.update] merged.client1Profile?.incomes:', JSON.stringify(merged.client1Profile?.incomes));
+      console.log('[proxy.update] merged.incomeExpenses:', JSON.stringify(merged.incomeExpenses));
+      console.log('[proxy.update] merged.client1FactFind:', merged.client1FactFind !== undefined ? 'EXISTS' : 'undefined');
+      console.log('[proxy.update] FULL PUT BODY:', JSON.stringify(merged, null, 2));
       const response = await axiosInstance.put(`/${endpoint}/${id}`, merged);
       return camelToSnakeKeys(response.data);
     },
