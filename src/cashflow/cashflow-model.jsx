@@ -20,6 +20,7 @@ import { AgedCarePage, SocialSecurityTable, EligibilityTable, SuperAssumptionsTa
 import { PRINCIPAL_SUB_SECTIONS, CHILD_DEFAULTS, DEPENDANT_DEFAULTS, SUPER_DEFAULTS, PENSION_DEFAULTS, ANNUITY_DEFAULTS, DB_DEFAULTS, WRAP_DEFAULTS, INV_BOND_DEFAULTS, PrincipalsForm, DependantsForm, SuperannuationForm, InvestmentsForm, TrustsCompaniesForm, SMSFForm, AssetsForm, LiabilitiesForm, InsurancePoliciesForm, IncomeForm, ExpensesForm, GoalsForm, RiskProfileForm, ScopeOfAdviceForm } from "./components/factfind/index.jsx";
 import { TransactionsForm, ProductReplacementForm, AiFactFind, AiParaplanner, StrategyForm, AdviceProductsEntitiesForm, AdviceInsuranceForm, TaxSuperPlanningForm, AssumptionsForm, PortfolioForm } from "./components/advice/index.jsx";
 import { getAccessToken } from '@/auth/msalInstance';
+import { adviceHistoryApi } from '@/api/adviceHistoryApi';
 class CashflowErrorBoundary extends React.Component {
   constructor(props) { super(props); this.state = { error: null }; }
   static getDerivedStateFromError(error) { return { error }; }
@@ -2293,7 +2294,26 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               <div style={{ width: 1, height: 24, background: "var(--ps-border)", margin: "0 2px" }} />
               {/* ── Outputs ── */}
               <button
-                onClick={() => setShowSOABuilder(true)}
+                onClick={() => {
+                  // Create an immutable advice history snapshot before opening SOA builder
+                  try {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const urlClientId = urlParams.get('clientId');
+                    if (urlClientId && factFind) {
+                      const c1Name = factFind.client1?.first_name || '';
+                      const c1Last = factFind.client1?.last_name || '';
+                      const modelName = [c1Name, c1Last].filter(Boolean).join(' ') || 'Cashflow Model';
+                      adviceHistoryApi.create(urlClientId, {
+                        type: 'Cashflow Model',
+                        name: modelName,
+                        snapshotJson: JSON.stringify(factFind),
+                      }).catch(err => console.error('[AdviceHistory] Failed to create Cashflow Model snapshot:', err));
+                    }
+                  } catch (err) {
+                    console.error('[AdviceHistory] Error creating snapshot:', err);
+                  }
+                  setShowSOABuilder(true);
+                }}
                 style={{
                   padding: "6px 18px", borderRadius: 8,
                   border: "none",

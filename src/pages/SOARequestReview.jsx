@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { base44 as primeSolveClient } from '@/api/primeSolveClient';
 import { openModel } from '../utils/modelLauncher';
 import { createAdviceRecord } from '@/utils/adviceRecordHelpers';
+import { adviceHistoryApi } from '@/api/adviceHistoryApi';
 
 // ==========================================================================
 // SECTION CONFIGURATION
@@ -329,6 +330,23 @@ export default function SOARequestReview() {
           submitted_at: new Date().toISOString()
         }
       });
+
+      // Create an immutable advice history snapshot for this SOA Request submission
+      if (soaRequest?.client_id) {
+        try {
+          const recordName = soaRequest?.soa_details?.reference_number
+            || soaRequest?.soa_details?.adviser_name
+            || 'SOA Request';
+          await adviceHistoryApi.create(soaRequest.client_id, {
+            type: 'SOA Request',
+            name: recordName,
+            snapshotJson: JSON.stringify(soaRequest),
+          });
+        } catch (err) {
+          console.error('[AdviceHistory] Failed to create SOA Request snapshot:', err);
+        }
+      }
+
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Error submitting:', error);
