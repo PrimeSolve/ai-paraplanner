@@ -3,6 +3,25 @@ import { base44 } from '@/api/base44Client';
 import { useRole } from '@/components/RoleContext';
 
 /**
+ * Convert PascalCase/camelCase keys to snake_case (no leading underscore).
+ * Recursively processes nested objects and arrays.
+ * e.g. 'Client1FactFind' → 'client1_fact_find', 'Incomes' → 'incomes'
+ */
+function toSnakeKeys(obj) {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) return obj.map(toSnakeKeys);
+  if (typeof obj !== 'object') return obj;
+  if (obj instanceof Date) return obj;
+
+  const result = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const snake = key.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
+    result[snake] = toSnakeKeys(value);
+  }
+  return result;
+}
+
+/**
  * Hook to manage FactFind initialization and auto-creation
  * - Waits for navigationChain to be ready
  * - Loads existing FactFind or creates new one
@@ -96,11 +115,22 @@ export function useFactFind() {
       return false;
     }
 
+    // Convert section name to snake_case key matching the proxy's convention
+    // e.g. 'Client1FactFind' → 'client1_fact_find'
+    const sectionKey = sectionName
+      .replace(/([A-Z])/g, '_$1')
+      .toLowerCase()
+      .replace(/^_/, '');
+
+    // Normalize incoming data keys to snake_case so the proxy's
+    // snakeToCamelKeys correctly converts them to the API's camelCase
+    const normalizedData = toSnakeKeys(data);
+
     // Skip save if the section data is identical to what we already have
-    const existing = current[sectionName];
+    const existing = current[sectionKey];
     if (existing !== undefined) {
       try {
-        if (JSON.stringify(existing) === JSON.stringify(data)) {
+        if (JSON.stringify(existing) === JSON.stringify(normalizedData)) {
           return true;
         }
       } catch (_) {
@@ -131,29 +161,30 @@ export function useFactFind() {
         ...cleanData
       } = currentData;
 
-      // Deep-merge for Client1FactFind: multiple pages write different sub-fields,
+      // Deep-merge for client1_fact_find: multiple pages write different sub-fields,
       // so we must preserve existing sub-fields when saving new ones.
-      let sectionData = data;
-      if (sectionName === 'Client1FactFind') {
-        const existing = cleanData._client1_fact_find;
-        if (existing && typeof existing === 'object' && !Array.isArray(existing)) {
-          sectionData = { ...existing, ...data };
+      let sectionData = normalizedData;
+      if (sectionKey === 'client1_fact_find') {
+        const existingSection = cleanData[sectionKey];
+        if (existingSection && typeof existingSection === 'object' && !Array.isArray(existingSection)) {
+          sectionData = { ...existingSection, ...normalizedData };
         }
       }
 
-      const mapped = { [sectionName]: sectionData };
+      // Write new data under the correct snake_case key (replaces any old value)
+      cleanData[sectionKey] = sectionData;
+
       const payload = {
         ...cleanData,
-        ...mapped,
         client1_id: clientIdRef.current || _staleClientId,
       };
 
       await base44.entities.FactFind.update(current.id, payload);
 
-      // Update local state
+      // Update local state with snake_case key
       setFactFind(prev => ({
         ...prev,
-        ...mapped
+        [sectionKey]: sectionData
       }));
 
       return true;
