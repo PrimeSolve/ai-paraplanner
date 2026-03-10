@@ -94,8 +94,12 @@ export default function FactFindInsurance() {
     }
 
     // Get SMSF accounts for this owner
-    if (factFind?.client1_profile?.smsf?.smsf_details) {
-      factFind.client1_profile.smsf.smsf_details.forEach((smsf, smsfIdx) => {
+    // Handle both flat array and wrapper object formats
+    const smsfList = Array.isArray(factFind?.client1_profile?.smsf)
+      ? factFind.client1_profile.smsf
+      : factFind?.client1_profile?.smsf?.smsf_details;
+    if (smsfList) {
+      smsfList.forEach((smsf, smsfIdx) => {
         if (Array.isArray(smsf.accounts)) {
           smsf.accounts
             .filter(a => a.owner === ownerId)
@@ -129,8 +133,15 @@ export default function FactFindInsurance() {
   useEffect(() => {
     if (factFind?.client1_profile?.insurance_policies) {
       const insuranceData = factFind.client1_profile.insurance_policies;
+      // Handle both flat array format (from API) and legacy wrapper format
+      let policiesList;
+      if (Array.isArray(insuranceData)) {
+        policiesList = insuranceData;
+      } else {
+        policiesList = insuranceData.policies || [];
+      }
       // Migrate old pol_insurer field to pol_provider
-      const migratedPolicies = (insuranceData.policies || []).map(p => {
+      const migratedPolicies = policiesList.map(p => {
         if (p.pol_insurer && !p.pol_provider) {
           const { pol_insurer, ...rest } = p;
           return { ...rest, pol_provider: pol_insurer };
@@ -138,7 +149,7 @@ export default function FactFindInsurance() {
         return p;
       });
       setPolicies(migratedPolicies);
-      setActiveIdx(insuranceData.activeIdx || 0);
+      setActiveIdx(Array.isArray(insuranceData) ? 0 : (insuranceData.activeIdx || 0));
     }
   }, [factFind?.id]);
 

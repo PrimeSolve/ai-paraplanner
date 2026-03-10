@@ -778,8 +778,15 @@ export default function FactFindSMSF() {
   useEffect(() => {
     const smsfData = factFind?.client1_profile?.smsf;
     if (factFind?.id && smsfData) {
-      globalStateRef.current.smsf_details = smsfData.smsf_details || [];
-      globalStateRef.current.activeIndex = smsfData.activeIndex || 0;
+      if (Array.isArray(smsfData)) {
+        // Flat array format from API
+        globalStateRef.current.smsf_details = smsfData;
+        globalStateRef.current.activeIndex = 0;
+      } else {
+        // Legacy wrapper format
+        globalStateRef.current.smsf_details = smsfData.smsf_details || [];
+        globalStateRef.current.activeIndex = smsfData.activeIndex || 0;
+      }
     }
   }, [factFind?.id]);
 

@@ -63,110 +63,121 @@ export function useFactFindEntities(factFind, options = {}) {
       });
     }
 
-    // Add children dependants
-    if (Array.isArray(factFind?.dependants?.children)) {
-      factFind.dependants.children.forEach((child, i) => {
-        if (child.child_name) {
-          entities.push({
-            id: `child_${i}`,
-            label: child.child_name,
-            type: 'Dependant (Child)',
-            index: i,
-            color: '#22C55E'
-          });
-        }
-      });
+    // Add children dependants — handle both flat array and wrapper format
+    const depData = factFind?.dependants;
+    let childrenList, depsList;
+    if (Array.isArray(depData)) {
+      // Flat array from API with dep_type discriminator
+      childrenList = depData.filter(d => d.dep_type === 'child');
+      depsList = depData.filter(d => d.dep_type === 'dependant');
+    } else {
+      childrenList = depData?.children || [];
+      depsList = depData?.dependants_list || [];
     }
 
-    // Add adult dependants
-    if (Array.isArray(factFind?.dependants?.dependants_list)) {
-      factFind.dependants.dependants_list.forEach((dep, i) => {
-        if (dep.dep_name) {
-          entities.push({
-            id: `dependent_${i}`,
-            label: dep.dep_name,
-            type: 'Dependant',
-            index: i,
-            color: '#F59E0B'
-          });
-        }
-      });
-    }
+    childrenList.forEach((child, i) => {
+      if (child.child_name) {
+        entities.push({
+          id: `child_${i}`,
+          label: child.child_name,
+          type: 'Dependant (Child)',
+          index: i,
+          color: '#22C55E'
+        });
+      }
+    });
 
-    // Add trusts
-    if (Array.isArray(factFind?.trusts_companies?.entities)) {
-      factFind.trusts_companies.entities.forEach((entity, i) => {
-        if (entity.type === 'trust' && entity.trust_name) {
-          entities.push({
-            id: `trust_${i}`,
-            label: entity.trust_name,
-            type: 'Trust',
-            index: i,
-            color: '#EF4444'
-          });
-        }
-      });
-    }
+    depsList.forEach((dep, i) => {
+      if (dep.dep_name) {
+        entities.push({
+          id: `dependent_${i}`,
+          label: dep.dep_name,
+          type: 'Dependant',
+          index: i,
+          color: '#F59E0B'
+        });
+      }
+    });
+
+    // Add trusts — handle both flat array and wrapper format
+    const tcData = factFind?.trusts_companies;
+    const tcEntities = Array.isArray(tcData) ? tcData : (tcData?.entities || []);
+
+    tcEntities.forEach((entity, i) => {
+      if (entity.type === 'trust' && entity.trust_name) {
+        entities.push({
+          id: `trust_${i}`,
+          label: entity.trust_name,
+          type: 'Trust',
+          index: i,
+          color: '#EF4444'
+        });
+      }
+    });
 
     // Add companies
-    if (Array.isArray(factFind?.trusts_companies?.entities)) {
-      factFind.trusts_companies.entities.forEach((entity, i) => {
-        if (entity.type === 'company' && entity.company_name) {
-          entities.push({
-            id: `company_${i}`,
-            label: entity.company_name,
-            type: 'Company',
-            index: i,
-            color: '#F97316'
-          });
-        }
-      });
+    tcEntities.forEach((entity, i) => {
+      if (entity.type === 'company' && entity.company_name) {
+        entities.push({
+          id: `company_${i}`,
+          label: entity.company_name,
+          type: 'Company',
+          index: i,
+          color: '#F97316'
+        });
+      }
+    });
+
+    // Add SMSFs — handle both flat array and wrapper format
+    const smsfData = factFind?.smsf;
+    const smsfList = Array.isArray(smsfData) ? smsfData : (smsfData?.smsf_details || []);
+    smsfList.forEach((smsf, i) => {
+      if (smsf.smsf_name) {
+        entities.push({
+          id: `smsf_${i}`,
+          label: smsf.smsf_name,
+          type: 'SMSF',
+          index: i,
+          color: '#92400E'
+        });
+      }
+    });
+
+    // Add Wraps and Bonds — handle both flat array and wrapper format
+    const invData = factFind?.investment;
+    let wrapsList, bondsList;
+    if (Array.isArray(invData)) {
+      // Flat array from API with inv_type discriminator
+      wrapsList = invData.filter(i => i.inv_type === 'wrap' || !i.inv_type);
+      bondsList = invData.filter(i => i.inv_type === 'bond');
+    } else {
+      wrapsList = invData?.wraps || [];
+      bondsList = invData?.bonds || [];
     }
 
-    // Add SMSFs
-    if (Array.isArray(factFind?.smsf?.smsf_details)) {
-      factFind.smsf.smsf_details.forEach((smsf, i) => {
-        if (smsf.smsf_name) {
-          entities.push({
-            id: `smsf_${i}`,
-            label: smsf.smsf_name,
-            type: 'SMSF',
-            index: i,
-            color: '#92400E'
-          });
-        }
-      });
-    }
+    wrapsList.forEach((wrap, i) => {
+      if (wrap.platform_name) {
+        entities.push({
+          id: `wrap_${i}`,
+          label: wrap.platform_name,
+          type: 'Wrap',
+          index: i,
+          color: '#3B82F6'
+        });
+      }
+    });
 
-    // Add Wraps
-    if (Array.isArray(factFind?.investment?.wraps)) {
-      factFind.investment.wraps.forEach((wrap, i) => {
-        if (wrap.platform_name) {
-          entities.push({
-            id: `wrap_${i}`,
-            label: wrap.platform_name,
-            type: 'Wrap',
-            index: i,
-            color: '#3B82F6'
-          });
-        }
-      });
-    }
-
-    // Add Bonds
-    if (Array.isArray(factFind?.investment?.bonds)) {
-      factFind.investment.bonds.forEach((bond, i) => {
-        if (bond.product_name) {
-          entities.push({
-            id: `bond_${i}`,
-            label: bond.product_name,
-            type: 'Bond',
-            index: i,
-            color: '#3B82F6'
-          });
-        }
-      });
-    }
+    bondsList.forEach((bond, i) => {
+      if (bond.product_name) {
+        entities.push({
+          id: `bond_${i}`,
+          label: bond.product_name,
+          type: 'Bond',
+          index: i,
+          color: '#3B82F6'
+        });
+      }
+    });
 
     // Apply filters
     let filtered = entities;

@@ -21,14 +21,21 @@ function dbToModelFormat(db) {
 
   const personal = ff.personal_details || {};
   const superData = ff.super_funds || {};
-  const investData = ff.investments || {};
+  const rawInvest = ff.investments;
   const incomes = ff.incomes || [];
   const expenses = ff.expenses || [];
-  const insData = ff.insurance_policies || {};
-  const depData = ff.dependants || {};
-  const tcData = ff.trusts_companies || {};
-  const smsfData = ff.smsf || {};
+  const rawIns = ff.insurance_policies;
+  const rawDep = ff.dependants;
+  const rawTc = ff.trusts_companies;
+  const rawSmsf = ff.smsf;
   const superTaxData = ff.super_tax || {};
+
+  // Handle both flat array (API) and wrapper object (legacy) formats
+  const investData = Array.isArray(rawInvest) ? { wraps: rawInvest.filter(i => i.inv_type === 'wrap' || !i.inv_type), bonds: rawInvest.filter(i => i.inv_type === 'bond') } : (rawInvest || {});
+  const insData = Array.isArray(rawIns) ? { policies: rawIns } : (rawIns || {});
+  const depData = Array.isArray(rawDep) ? { children: rawDep.filter(d => d.dep_type === 'child').map(({ dep_type, ...r }) => r), dependants_list: rawDep.filter(d => d.dep_type === 'dependant').map(({ dep_type, ...r }) => r) } : (rawDep || {});
+  const tcData = Array.isArray(rawTc) ? { entities: rawTc } : (rawTc || {});
+  const smsfData = Array.isArray(rawSmsf) ? { smsf_details: rawSmsf } : (rawSmsf || {});
 
   // Map personal_details → client1 (strip out the partner sub-object)
   const { partner, ...client1Fields } = personal;
