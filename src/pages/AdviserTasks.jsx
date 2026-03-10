@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import AdviserLayout from '../components/adviser/AdviserLayout';
 import axiosInstance from '@/api/axiosInstance';
+import { base44 } from '@/api/base44Client';
 import {
   Dialog,
   DialogContent,
@@ -108,6 +109,8 @@ export default function AdviserTasks() {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [draggingId, setDraggingId] = useState(null);
   const [dragOverCol, setDragOverCol] = useState(null);
+  const [clientName, setClientName] = useState('Client');
+  const [adviserName, setAdviserName] = useState('Adviser');
   const menuRef = useRef(null);
 
   // Modal form state
@@ -146,6 +149,22 @@ export default function AdviserTasks() {
       } catch (error) {
         console.error('Failed to initialize:', error);
         setTasks([]);
+      }
+      try {
+        const userData = await base44.auth.me();
+        const advisers = await base44.entities.Adviser.filter({ email: userData.email });
+        if (advisers.length > 0) {
+          const adv = advisers[0];
+          setAdviserName((adv.first_name || '') + ' ' + (adv.last_name || ''));
+          // Load client for this adviser
+          const clients = await base44.entities.Client.filter({ adviser_email: adv.email });
+          if (clients.length > 0) {
+            const cl = clients[0];
+            setClientName((cl.first_name || '') + ' ' + (cl.last_name || ''));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load names:', error);
       } finally {
         setLoading(false);
       }
@@ -324,6 +343,12 @@ export default function AdviserTasks() {
     setDragOverCol(null);
   };
 
+  const getDisplayName = useCallback((key) => {
+    if (key === 'Adviser') return adviserName;
+    if (key === 'Client') return clientName;
+    return key;
+  }, [adviserName, clientName]);
+
   /* ─── inline styles ─── */
 
   const s = {
@@ -465,16 +490,18 @@ export default function AdviserTasks() {
 
   /* ─── render helpers ─── */
 
-  const renderAvatar = (name) => {
-    const letter = (name || 'A')[0].toUpperCase();
+  const renderAvatar = (assigneeKey) => {
+    const displayName = getDisplayName(assigneeKey);
+    const letter = (displayName || 'A')[0].toUpperCase();
+    const isAdviser = assigneeKey === 'Adviser';
     return (
       <div
         style={{
           width: 24,
           height: 24,
           borderRadius: '50%',
-          background: '#EEF2FF',
-          color: '#4F46E5',
+          background: isAdviser ? '#EEF2FF' : '#ECFDF5',
+          color: isAdviser ? '#4F46E5' : '#059669',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -514,8 +541,10 @@ export default function AdviserTasks() {
   if (loading) {
     return (
       <AdviserLayout currentPage="AdviserTasks">
-        <div style={s.page} className="flex items-center justify-center">
-          <Loader2 className="w-10 h-10 animate-spin" style={{ color: '#4F46E5' }} />
+        <div style={s.page}>
+          <div style={{ maxWidth: 1200, margin: '0 auto' }} className="flex items-center justify-center">
+            <Loader2 className="w-10 h-10 animate-spin" style={{ color: '#4F46E5' }} />
+          </div>
         </div>
       </AdviserLayout>
     );
@@ -524,6 +553,7 @@ export default function AdviserTasks() {
   return (
     <AdviserLayout currentPage="AdviserTasks">
       <div style={s.page}>
+      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         {/* ─── Header Row ─── */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
           <div>
@@ -674,7 +704,7 @@ export default function AdviserTasks() {
                 <Inbox className="w-16 h-16 mx-auto" style={{ color: '#CBD5E1', marginBottom: 16 }} />
                 <h3 style={{ fontSize: 17, fontWeight: 600, color: '#334155', marginBottom: 6 }}>No tasks yet</h3>
                 <p style={{ fontSize: 14, color: '#64748B', maxWidth: 380, margin: '0 auto 20px' }}>
-                  Create your first task to get started. Tasks help you track work for clients and your practice.
+                  No tasks yet — click + Add Task to get started.
                 </p>
                 <button style={s.addBtn} onClick={() => openAddModal()}>
                   <Plus className="w-4 h-4" />
@@ -745,7 +775,7 @@ export default function AdviserTasks() {
                       {/* Assigned To */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, minWidth: 100 }}>
                         {renderAvatar(assignee)}
-                        <span style={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>{assignee}</span>
+                        <span style={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>{getDisplayName(assignee)}</span>
                       </div>
 
                       {/* Due date */}
@@ -964,7 +994,7 @@ export default function AdviserTasks() {
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                               {renderAvatar(assignee)}
-                              <span style={{ fontSize: 12, color: '#64748B' }}>{assignee}</span>
+                              <span style={{ fontSize: 12, color: '#64748B' }}>{getDisplayName(assignee)}</span>
                             </div>
                             <span style={{ fontSize: 12, fontWeight: 500, color: rel.colour }}>{rel.text}</span>
                           </div>
@@ -977,6 +1007,7 @@ export default function AdviserTasks() {
             })}
           </div>
         )}
+      </div>
       </div>
 
       {/* ─── Add / Edit Modal ─── */}
@@ -1058,8 +1089,8 @@ export default function AdviserTasks() {
                   fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                <option value="Adviser">Adviser</option>
-                <option value="Client">Client</option>
+                <option value="Adviser">{adviserName}</option>
+                <option value="Client">{clientName}</option>
               </select>
             </div>
           </div>
