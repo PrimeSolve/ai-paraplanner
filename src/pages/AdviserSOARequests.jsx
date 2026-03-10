@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatDate } from '../utils/dateUtils';
+import { openModel } from '../utils/modelLauncher';
 import NewSOARequestModal from '../components/adviser/NewSOARequestModal.jsx';
 
 export default function AdviserSOARequests() {
@@ -62,7 +63,12 @@ export default function AdviserSOARequests() {
         })
       );
       
-      setRequests(requestsWithClientNames);
+      // Filter out ghost records (no real client name)
+      const realRequests = requestsWithClientNames.filter(req => {
+        const name = req.client_name?.trim();
+        return name && name !== 'Client';
+      });
+      setRequests(realRequests);
     } catch (error) {
       console.error('Failed to load requests:', error);
     } finally {
@@ -92,6 +98,16 @@ export default function AdviserSOARequests() {
   const getClientColor = (index) => {
     const colors = ['#2563eb', '#16a34a', '#ea580c', '#a855f7', '#ec4899', '#06b6d4', '#dc2626', '#b45309'];
     return colors[index % colors.length];
+  };
+
+  const handleDelete = async (req) => {
+    if (!window.confirm('Delete this SOA request? This cannot be undone.')) return;
+    try {
+      await base44.entities.SOARequest.delete(req.id);
+      setRequests(prev => prev.filter(r => r.id !== req.id));
+    } catch (err) {
+      console.error('Failed to delete SOA request:', err);
+    }
   };
 
   const filteredRequests = requests.filter(req => {
@@ -198,6 +214,7 @@ export default function AdviserSOARequests() {
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Client</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Source</th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Type</th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Priority</th>
@@ -219,6 +236,17 @@ export default function AdviserSOARequests() {
                         </div>
                         <span className="font-semibold text-sm text-slate-800">{req.client_name}</span>
                       </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {req.cashflow_model_id ? (
+                        <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold" style={{ background: '#dcfce7', color: '#16a34a' }}>
+                          From Cashflow
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold" style={{ background: '#ede9fe', color: '#7c3aed' }}>
+                          From Form
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-slate-800 font-medium">{req.type || 'Comprehensive'}</div>
@@ -246,7 +274,7 @@ export default function AdviserSOARequests() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <AdviserViewButton soaRequestId={req.id} />
+                        <AdviserViewButton soaRequest={req} />
                         {req.status === 'completed' && (
                           <button className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
                             Download
@@ -259,10 +287,7 @@ export default function AdviserSOARequests() {
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">
+                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(req)}>
                               Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -273,8 +298,8 @@ export default function AdviserSOARequests() {
                 );
               }) : (
                 <tr>
-                  <td colSpan="7" className="px-6 py-8 text-center text-slate-600">
-                    No requests found
+                  <td colSpan="8" className="px-6 py-8 text-center text-slate-600">
+                    No SOA requests yet. Use the Build SOA button in a cashflow model or submit an SOA Request form to create one.
                   </td>
                 </tr>
               )}
@@ -324,22 +349,26 @@ export default function AdviserSOARequests() {
        );
        }
 
-function AdviserViewButton({ soaRequestId }) {
+function AdviserViewButton({ soaRequest }) {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(false);
 
   const handleClick = async (e) => {
     e.preventDefault();
+    if (soaRequest.cashflow_model_id) {
+      openModel({ modelId: soaRequest.cashflow_model_id });
+      return;
+    }
     setChecking(true);
     try {
-      const docs = await base44.entities.SoaDocument.filter({ soa_request_id: soaRequestId });
+      const docs = await base44.entities.SoaDocument.filter({ soa_request_id: soaRequest.id });
       if (docs.length > 0) {
         navigate(`/SOABuilder?id=${docs[0].id}`);
       } else {
-        navigate(`/SOARequestWelcome?id=${soaRequestId}`);
+        navigate(`/SOARequestWelcome?id=${soaRequest.id}`);
       }
     } catch {
-      navigate(`/SOARequestWelcome?id=${soaRequestId}`);
+      navigate(`/SOARequestWelcome?id=${soaRequest.id}`);
     } finally {
       setChecking(false);
     }
