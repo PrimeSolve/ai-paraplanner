@@ -71,8 +71,15 @@ export default function FactFindInvestment() {
   useEffect(() => {
     const invData = factFind?.client1_profile?.investments;
     if (invData) {
-      setWraps(invData.wraps || []);
-      setBonds(invData.bonds || []);
+      if (Array.isArray(invData)) {
+        // Flat array format from API: split by inv_type discriminator
+        setWraps(invData.filter(i => i.inv_type === 'wrap' || !i.inv_type));
+        setBonds(invData.filter(i => i.inv_type === 'bond'));
+      } else {
+        // Legacy wrapper format
+        setWraps(invData.wraps || []);
+        setBonds(invData.bonds || []);
+      }
     }
   }, [factFind?.client1_profile?.investments]);
 

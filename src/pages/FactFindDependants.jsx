@@ -325,11 +325,19 @@ export default function FactFindDependants() {
   useEffect(() => {
     const depData = factFind?.client1_profile?.dependants;
     if (factFind?.id && depData) {
-      globalStateRef.current.dependants = {
-        ...depData,
-        currentTab: depData.currentTab || 'children',
-        activeIndex: depData.activeIndex || 0
-      };
+      if (Array.isArray(depData)) {
+        // Flat array format from API: split by dep_type discriminator
+        const children = depData.filter(d => d.dep_type === 'child').map(({ dep_type, ...rest }) => rest);
+        const deps = depData.filter(d => d.dep_type === 'dependant').map(({ dep_type, ...rest }) => rest);
+        globalStateRef.current.dependants = { children, dependants_list: deps, currentTab: 'children', activeIndex: 0 };
+      } else {
+        // Legacy wrapper format
+        globalStateRef.current.dependants = {
+          ...depData,
+          currentTab: depData.currentTab || 'children',
+          activeIndex: depData.activeIndex || 0
+        };
+      }
     }
   }, [factFind?.id]);
 

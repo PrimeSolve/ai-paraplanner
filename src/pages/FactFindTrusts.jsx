@@ -25,15 +25,19 @@ export default function FactFindTrusts() {
   
   // Calculate current entity ID for exclusion
   const currentEntityId = useMemo(() => {
-    if (!factFind?.client1_profile?.trusts_companies?.entities) return null;
-    
-    const entities = factFind.client1_profile.trusts_companies.entities.filter(e => e.type === currentTab);
+    // Handle both flat array and wrapper object formats
+    const tcData = factFind?.client1_profile?.trusts_companies;
+    const allEntities = Array.isArray(tcData) ? tcData : tcData?.entities;
+    if (!allEntities) return null;
+
+    const entities = allEntities.filter(e => e.type === currentTab);
     if (activeIndex >= entities.length) return null;
-    
+
     // Find the actual index in the full entities array
     const currentEntity = entities[activeIndex];
-    const fullIndex = factFind.trusts_companies.entities.findIndex(e => e === currentEntity);
-    
+    const tcTopLevel = Array.isArray(factFind?.trusts_companies) ? factFind.trusts_companies : factFind?.trusts_companies?.entities;
+    const fullIndex = (tcTopLevel || allEntities).findIndex(e => e === currentEntity);
+
     return fullIndex >= 0 ? `${currentTab}_${fullIndex}` : null;
   }, [factFind?.id, currentTab, activeIndex]);
   
@@ -473,9 +477,17 @@ export default function FactFindTrusts() {
   useEffect(() => {
     const tcData = factFind?.client1_profile?.trusts_companies;
     if (factFind?.id && tcData) {
-      globalStateRef.current.entities = tcData.entities || [];
-      globalStateRef.current.currentTab = tcData.currentTab || 'trust';
-      globalStateRef.current.activeIndex = tcData.activeIndex || { trust: 0, company: 0 };
+      if (Array.isArray(tcData)) {
+        // Flat array format from API
+        globalStateRef.current.entities = tcData;
+        globalStateRef.current.currentTab = 'trust';
+        globalStateRef.current.activeIndex = { trust: 0, company: 0 };
+      } else {
+        // Legacy wrapper format
+        globalStateRef.current.entities = tcData.entities || [];
+        globalStateRef.current.currentTab = tcData.currentTab || 'trust';
+        globalStateRef.current.activeIndex = tcData.activeIndex || { trust: 0, company: 0 };
+      }
     }
   }, [factFind?.id]);
 

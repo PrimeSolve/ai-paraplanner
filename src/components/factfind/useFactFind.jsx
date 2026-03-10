@@ -22,6 +22,54 @@ function toSnakeKeys(obj) {
 }
 
 /**
+ * Normalize client1_fact_find sub-fields from wrapper objects to flat arrays
+ * before sending to the API. The API expects List<T> for these fields but
+ * the UI stores them as wrapper objects with metadata (activeIndex, currentTab).
+ *
+ * This converts:
+ *   dependants: { children: [], dependants_list: [] }  →  [ ...children, ...deps ]
+ *   insurance_policies: { activeIdx, policies: [] }    →  [ ...policies ]
+ *   investments: { wraps: [], bonds: [] }              →  [ ...wraps, ...bonds ]
+ *   trusts_companies: { entities: [] }                 →  [ ...entities ]
+ *   smsf: { smsf_details: [] }                         →  [ ...smsf_details ]
+ */
+function normalizeFactFindForApi(data) {
+  if (!data || typeof data !== 'object') return data;
+  const result = { ...data };
+
+  // Dependants: wrapper → flat array with dep_type discriminator
+  if (result.dependants && !Array.isArray(result.dependants)) {
+    const children = (result.dependants.children || []).map(c => ({ ...c, dep_type: 'child' }));
+    const deps = (result.dependants.dependants_list || []).map(d => ({ ...d, dep_type: 'dependant' }));
+    result.dependants = [...children, ...deps];
+  }
+
+  // InsurancePolicies: wrapper → flat array (strip activeIdx metadata)
+  if (result.insurance_policies && !Array.isArray(result.insurance_policies)) {
+    result.insurance_policies = result.insurance_policies.policies || [];
+  }
+
+  // Investments: wrapper → flat array with inv_type discriminator
+  if (result.investments && !Array.isArray(result.investments)) {
+    const wraps = (result.investments.wraps || []).map(w => ({ ...w, inv_type: 'wrap' }));
+    const bonds = (result.investments.bonds || []).map(b => ({ ...b, inv_type: 'bond' }));
+    result.investments = [...wraps, ...bonds];
+  }
+
+  // TrustsCompanies: wrapper → flat array (strip currentTab/activeIndex metadata)
+  if (result.trusts_companies && !Array.isArray(result.trusts_companies)) {
+    result.trusts_companies = result.trusts_companies.entities || [];
+  }
+
+  // Smsf: wrapper → flat array (strip activeIndex metadata)
+  if (result.smsf && !Array.isArray(result.smsf)) {
+    result.smsf = result.smsf.smsf_details || [];
+  }
+
+  return result;
+}
+
+/**
  * Hook to manage FactFind initialization and auto-creation
  * - Waits for navigationChain to be ready
  * - Loads existing FactFind or creates new one
@@ -186,6 +234,13 @@ export function useFactFind() {
 
       // Write new data under the correct snake_case key (replaces any old value)
       cleanData[sectionKey] = sectionData;
+
+      // Normalize client1_fact_find wrapper objects → flat arrays before API call.
+      // The API expects List<T> for dependants, insurance_policies, investments,
+      // trusts_companies, and smsf — but the UI stores them as wrapper objects.
+      if (cleanData.client1_fact_find && typeof cleanData.client1_fact_find === 'object') {
+        cleanData.client1_fact_find = normalizeFactFindForApi(cleanData.client1_fact_find);
+      }
 
       const payload = {
         ...cleanData,
