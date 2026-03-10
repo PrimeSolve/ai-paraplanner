@@ -367,7 +367,7 @@ const COPILOT_QUICK_PROMPTS = [
   "We have a car loan of about $22k",
 ];
 
-function CashflowAssistant({ factFind, updateFF, darkMode }) {
+function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow" }) {
   const [messages, setMessages] = useState([{
     role: "assistant",
     content: "Welcome \u2014 this is your financial fact find. Work through each section at your own pace, filling in as much as you can. I\u2019ll handle the data entry.",
@@ -856,6 +856,16 @@ Current context:
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 15, color: "#fff" }}>{"\u2726"}</span>
           <span style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Co-pilot</span>
+          <span style={{
+            fontSize: 9, fontWeight: 700,
+            color: mode === "factfind" ? "#4ADE80" : "#A5B4FC",
+            background: mode === "factfind" ? "#4ADE8018" : "#A5B4FC18",
+            border: `1px solid ${mode === "factfind" ? "#4ADE8035" : "#A5B4FC35"}`,
+            borderRadius: 4, padding: "2px 6px",
+            textTransform: "uppercase", letterSpacing: "0.07em",
+          }}>
+            {mode === "factfind" ? "Fact Find" : "Cashflow Model"}
+          </span>
         </div>
       </div>
 
@@ -2931,7 +2941,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           background: "var(--ps-surface)", overflow: "hidden",
           minWidth: 320,
         }}>
-          <CashflowAssistant factFind={factFind} updateFF={updateFF} darkMode={darkMode} />
+          <CashflowAssistant factFind={factFind} updateFF={updateFF} darkMode={darkMode} mode={mode || "cashflow"} />
         </div>
       )}
       </div>
