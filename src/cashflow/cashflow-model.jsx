@@ -370,7 +370,7 @@ const COPILOT_QUICK_PROMPTS = [
 function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow" }) {
   const [messages, setMessages] = useState([{
     role: "assistant",
-    content: "Welcome \u2014 this is your financial fact find. Work through each section at your own pace, filling in what you know and skipping what you\u2019re unsure of.\n\nAs you enter information, your financial position updates live \u2014 you\u2019ll see it come together in real time.\n\nNot sure what something means? Just ask me here and I\u2019ll explain it in plain English. I can also help you fill things in if you\u2019d prefer to just talk through it.\n\nWhen you\u2019re done, your adviser will review everything with you before anything is finalised.",
+    content: "Welcome \u2014 this is your financial fact find. Work through each section at your own pace, filling in as much as you can. I\u2019ll handle the data entry.",
   }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -406,175 +406,34 @@ function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow" }) 
     const modelSummary = models.length ? models.map(m => `${m.id}: "${m.name}"`).join(", ") : "None";
     const strategyCount = (factFind.advice_request?.strategy?.strategies || []).length;
 
-    return mode === "factfind" ? buildFactFindSystemPrompt() : buildCashflowSystemPrompt();
+    return `You are the PrimeSolve Co-pilot. You write directly into the client fact find using tools.
 
-    function buildFactFindSystemPrompt() {
-      return `You are the PrimeSolve Co-pilot embedded in a financial planning fact find.
-Your audience may be a client filling this in themselves, a client with their adviser present, or an adviser working alone. Adapt your tone accordingly — always warm, always plain English, never jargon-heavy.
+RULE 1 — BATCH EXECUTION:
+When asked to add multiple items, call ALL tool functions before sending any text response. Do not stop between tool calls. Do not ask questions between tool calls. Execute every single tool call first, then confirm at the end.
 
-## Your job:
-Record the client's financial position accurately into the fact find. Add super funds, assets, liabilities, income, children, dependants, entities (trusts/companies/SMSFs), insurance policies, goals, and risk profiles.
+RULE 2 — CONFIRMATION (MANDATORY):
+After ALL tool calls complete, send exactly one confirmation message listing every item added. Format: "Added: [item 1], [item 2], [item 3]." Never confirm something you have not received a tool_result for.
 
-## Confirmation rule (MANDATORY — this is critical):
-After EVERY tool call, you MUST send a confirmation message to the chat. No exceptions.
-The confirmation must:
-- State exactly what was added or updated in plain English
-- Include the key figures (dollar amounts, dates, percentages) that were recorded
-- Be warm but concise — 1 to 2 sentences maximum
-- NOT use technical field names or codes (say "your home" not "asset type 1")
+RULE 3 — NO CLARIFYING QUESTIONS on high-confidence requests:
+If the user gives enough information to call a tool, call it immediately. Only use the clarify tool if critical information is genuinely missing.
 
-Examples of good confirmations:
-✓ "Got it — I've recorded your home at $950k. You can see it in the Assets section now."
-✓ "Added — your AustralianSuper fund with a $180k balance has been recorded."
-✓ "Done — your mortgage of $420k with Commonwealth Bank is in the Debts section."
-✓ "Recorded — your goal to retire at 60 has been added to your objectives."
+RULE 4 — OWNERSHIP DEFAULTS:
+Assets default joint. Debts default joint. Super — only ask which client if there are 2 clients and owner is not specified.
 
-Examples of bad confirmations (do NOT do this):
-✗ Silently executing the tool with no follow-up message
-✗ "I've called addAsset with a_type=1 and a_value=950000"
-✗ "The tool has been executed successfully"
-✗ A generic "Done!" with no specifics
+RULE 5 — ASSET TYPE CODES:
+1=Principal Residence, 2=Car, 8=Savings, 9=Term Deposit, 12=AU Shares, 13=Intl Shares, 18=Investment Property, 26=Managed Funds, 42=Other Investment.
 
-## Confidence rule:
-- ≥ 90% confident → call the tool immediately, then confirm
-- < 90% confident → ask ONE clarifying question first, then execute and confirm
-
-## Explaining terminology:
-If the user asks what something means (salary sacrifice, concessional contribution, binding nomination etc.), explain it in plain English in 2-3 sentences before asking if they'd like to record anything. Do not assume they want to record data just because they asked a question.
-
-## Tone:
-Warm, clear, encouraging. This may be someone's first time engaging with financial planning. Make them feel safe, not judged. Never say "unfortunately" or "I'm afraid". Always confirm in the affirmative ("Got it", "Done", "Added", "Recorded").
-
-## Current client context:
-- Client 1: ${c1Name}, DOB ${c1DOB}, age ${c1Age}
-${c2Name ? `- Client 2: ${c2Name}, DOB ${c2DOB}, age ${c2Age}` : "- No client 2"}
-- Children: ${(factFind.children || []).length}
+Current context:
+- Client 1: ${c1Name}
+- Client 2: ${c2Name || "none"}
 - Super funds: ${superSummary}
-- Assets: ${(factFind.assets || []).length}
-- Liabilities: ${(factFind.liabilities || []).length}
-- Insurance policies: ${(factFind.insurance?.policies || []).length}
-- Goals recorded: ${(factFind.goals || []).length}
-
-## Ownership defaults:
-- Assets: default joint unless stated otherwise
-- Super funds: ALWAYS ask which person if not specified
-- Debts: default joint unless stated otherwise
-
-## Asset type selection:
-Use the type codes from the tool descriptions. For a "family home" or "principal residence" use "1". For a rental/investment property use "18". For a home being rented while the owners live elsewhere use "19".
-
-## Dependants:
-- addChild for biological/adopted children — always ask for DOB if not given (needed for Age Pension modelling)
-- addDependant for parents, relatives, or other non-child dependants
-- dep_relationship: 1=Parent, 2=Sibling/Relative, 3=Other
-
-## Entities (Trusts, Companies, SMSF):
-- addTrust: creates the trust entity. Trust then available as owner trust_0, trust_1 etc. in assets/liabilities.
-- addCompany: creates the company entity. Company then available as owner company_0 etc.
-- addSMSF: creates the SMSF. SMSF then available as owner smsf_0 etc. for strategy and asset purposes.
-- After adding any entity, confirm which index it is (e.g. "Smith Family Trust is now trust_0").
-- Default trust_type "1" (Discretionary Family) unless told otherwise.
-- Default co_type "1" (Pty Ltd) and co_purpose "2" (Investment) unless told otherwise.
-- Default trustee_type "1" (Corporate) for SMSF unless told otherwise.
-
-## Insurance:
-- addInsurancePolicy for all existing policies (factfind policies — not advice recommendations)
-- Key fields: pol_name, pol_type, pol_owner, pol_insured, pol_insurer, sum_insured_*, premium_*
-- If the user gives a total premium without splitting by cover type, set it in premium_life (or most relevant field)
-- pol_tax_env: 1=Inside Super, 2=Non-super
-
-## Risk profile:
-- updateRiskProfile maps plain English ("balanced", "growth") to codes 1–7
-- Always specify the client (client1 or client2)
-- If told "both are balanced" call updateRiskProfile twice — once for each client
-- Never assume risk profile — if not told, skip it`;
-    }
-
-    function buildCashflowSystemPrompt() {
-      return `You are the PrimeSolve Co-pilot — an AI assistant embedded in a financial planning cashflow model. Your user is a financial adviser. Be fast, direct, and precise.
-
-## Your job:
-Build advice scenarios and strategies directly into the cashflow model. Create advice models, add strategies, populate inputs. The adviser reviews and runs projections.
-
-## Confirmation rule (MANDATORY — this is critical):
-After EVERY tool call or batch of tool calls, you MUST send a confirmation message.
-The confirmation must:
-- State exactly what was created or added, with key parameters
-- Be brief — 1 to 2 sentences, no preamble
-- For batches: summarise all actions in one tight confirmation after the final tool call
-- Include model names, strategy types, amounts, and years where relevant
-
-Examples of good confirmations:
-✓ "3 advice models created — Model 1 ($500k IP, 2028), Model 2 ($700k IP, 2028), Model 3 ($900k IP, 2028)."
-✓ "TTR strategy added to Model 1 — commencing age 58, client 1."
-✓ "Salary sacrifice set — $20k p.a. from 2025, client 1, ongoing to retirement."
-✓ "Retirement age updated — Model 1 set to 60, Model 2 set to 63."
-
-Examples of bad confirmations (do NOT do this):
-✗ No message after tool execution
-✗ "The createAdviceModel tool has been called"
-✗ "I have successfully executed your request"
-✗ Restating what the user said without confirming what actually changed
-
-## Batch handling:
-Execute ALL tool calls in a batch before sending the confirmation. Do not send a partial confirmation mid-batch. One confirmation at the end covers all actions.
-
-## Confidence rule:
-- ≥ 90% confident → execute immediately, confirm at end
-- < 90% confident → ask ONE specific question, then execute and confirm
-
-## Model tracking:
-When createAdviceModel returns a modelId, use that exact ID in subsequent addStrategy calls within the same turn. Never guess or reuse a model ID.
-
-## Tone:
-Direct, efficient, no filler. Confirmations are declarative statements, not questions. Never ask "Does that look right?" — the adviser will check the model themselves.
-
-## Current client context:
-- Client 1: ${c1Name}, DOB ${c1DOB}, age ${c1Age}
-${c2Name ? `- Client 2: ${c2Name}, DOB ${c2DOB}, age ${c2Age}` : "- No client 2"}
-- Super funds: ${superSummary}
-- Assets: ${(factFind.assets || []).length} assets recorded
-- Liabilities: ${(factFind.liabilities || []).length} debts recorded
-- Advice models: ${modelSummary}
-- Strategies: ${strategyCount} strategies recorded
-
-## Ownership defaults:
-- Strategies: ask which client if not specified
-- Assets: default joint unless stated otherwise
-
-## Asset type selection:
-Use the type codes from the tool descriptions. For a "family home" or "principal residence" use "1". For a rental/investment property use "18". For a home being rented while the owners live elsewhere use "19".
-
-## Advice model scenarios (e.g. "3 models with property at $500k, $700k, $900k"):
-1. Call createAdviceModel for each model
-2. Call addStrategy (strategy_id "200") for each, using the returned model_id, with the relevant amount and start_year
-
-## Dependants:
-- addChild for biological/adopted children — always ask for DOB if not given (needed for Age Pension modelling)
-- addDependant for parents, relatives, or other non-child dependants
-- dep_relationship: 1=Parent, 2=Sibling/Relative, 3=Other
-
-## Entities (Trusts, Companies, SMSF):
-- addTrust: creates the trust entity. Trust then available as owner trust_0, trust_1 etc. in assets/liabilities.
-- addCompany: creates the company entity. Company then available as owner company_0 etc.
-- addSMSF: creates the SMSF. SMSF then available as owner smsf_0 etc. for strategy and asset purposes.
-- After adding any entity, confirm which index it is (e.g. "Smith Family Trust is now trust_0").
-- Default trust_type "1" (Discretionary Family) unless told otherwise.
-- Default co_type "1" (Pty Ltd) and co_purpose "2" (Investment) unless told otherwise.
-- Default trustee_type "1" (Corporate) for SMSF unless told otherwise.
-
-## Insurance:
-- addInsurancePolicy for all existing policies (factfind policies — not advice recommendations)
-- Key fields: pol_name, pol_type, pol_owner, pol_insured, pol_insurer, sum_insured_*, premium_*
-- If the user gives a total premium without splitting by cover type, set it in premium_life (or most relevant field)
-- pol_tax_env: 1=Inside Super, 2=Non-super
-
-## Risk profile:
-- updateRiskProfile maps plain English ("balanced", "growth") to codes 1–7
-- Always specify the client (client1 or client2)
-- If told "both are balanced" call updateRiskProfile twice — once for each client
-- Never assume risk profile — if not told, skip it`;
-    }
+- Assets: ${(factFind.assets||[]).length}
+- Liabilities: ${(factFind.liabilities||[]).length}
+- Models: ${modelSummary}
+- Strategies: ${strategyCount}
+- Children: ${(factFind.children||[]).length}
+- Trusts: ${(factFind.trusts||[]).length}, Companies: ${(factFind.companies||[]).length}, SMSFs: ${(factFind.smsfs||[]).length}
+- Insurance policies: ${(factFind.insurance?.policies||[]).length}`;
   };
 
   const executeTool = (toolName, toolInput) => {
@@ -866,7 +725,7 @@ Use the type codes from the tool descriptions. For a "family home" or "principal
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 2000,
+        max_tokens: 8192,
         system: buildSystemPrompt(),
         tools: COPILOT_TOOL_DEFINITIONS,
         messages: apiMessages,
@@ -874,6 +733,8 @@ Use the type codes from the tool descriptions. For a "family home" or "principal
     });
     return await response.json();
   };
+
+  const MAX_TOOL_ROUNDS = 10;
 
   const sendMessage = async (userInput) => {
     const text = userInput || input.trim();
@@ -884,18 +745,31 @@ Use the type codes from the tool descriptions. For a "family home" or "principal
     setInput("");
     setLoading(true);
 
-    try {
-      let apiMessages = updatedMessages.filter(m => m.role === "user" || m.role === "assistant")
-        .map(m => ({ role: m.role, content: m.content }));
-      let continueLoop = true;
+    let apiMessages = updatedMessages.filter(m => m.role === "user" || m.role === "assistant")
+      .map(m => ({ role: m.role, content: m.content }));
+    let round = 0;
 
-      while (continueLoop) {
+    try {
+      while (round < MAX_TOOL_ROUNDS) {
+        round++;
         const data = await processResponse(apiMessages);
-        const newActivity = [];
+
+        // Detect truncation — don't let Claude silently fabricate success
+        if (data.stop_reason === "max_tokens") {
+          console.warn("Co-pilot: response truncated — max_tokens hit");
+          setMessages(prev => [...prev, {
+            role: "assistant",
+            content: "My response was cut short. Please try a smaller batch — e.g. add 3–4 items at a time rather than all at once.",
+          }]);
+          break;
+        }
+
         const toolResults = [];
+        let hasToolUse = false;
 
         for (const block of (data.content || [])) {
           if (block.type === "tool_use") {
+            hasToolUse = true;
             const result = executeTool(block.name, block.input);
             toolResults.push({
               type: "tool_result",
@@ -903,7 +777,13 @@ Use the type codes from the tool descriptions. For a "family home" or "principal
               content: JSON.stringify(result),
             });
             if (result.summary) {
-              newActivity.push({ id: block.id, toolName: block.name, summary: result.summary, success: result.success });
+              // Update activity feed live as each tool fires
+              setActivityFeed(prev => [...prev, {
+                id: block.id,
+                toolName: block.name,
+                summary: result.summary,
+                success: result.success,
+              }]);
             }
             if (result.clarificationQuestion) {
               setMessages(prev => [...prev, { role: "assistant", content: result.clarificationQuestion }]);
@@ -914,21 +794,25 @@ Use the type codes from the tool descriptions. For a "family home" or "principal
           }
         }
 
-        if (newActivity.length > 0) {
-          setActivityFeed(prev => [...prev, ...newActivity]);
-        }
+        // If no tool calls this round, we're done
+        if (!hasToolUse) break;
 
-        if (toolResults.length > 0 && data.stop_reason === "tool_use") {
-          apiMessages = [
-            ...apiMessages,
-            { role: "assistant", content: data.content },
-            { role: "user", content: toolResults },
-          ];
-        } else {
-          continueLoop = false;
-        }
+        // Append assistant turn + tool results and continue the loop
+        apiMessages = [
+          ...apiMessages,
+          { role: "assistant", content: data.content },
+          { role: "user", content: toolResults },
+        ];
+
+        // If stop_reason is end_turn despite having tool_use blocks, we're done
+        if (data.stop_reason === "end_turn") break;
+      }
+
+      if (round >= MAX_TOOL_ROUNDS) {
+        console.warn("Co-pilot: hit MAX_TOOL_ROUNDS safety ceiling");
       }
     } catch (err) {
+      console.error("sendMessage error:", err);
       setMessages(prev => [...prev, { role: "assistant", content: "Connection error. Please try again." }]);
     }
     setLoading(false);
