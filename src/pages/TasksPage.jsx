@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import AdviserLayout from '../components/adviser/AdviserLayout';
 import axiosInstance from '@/api/axiosInstance';
+import { base44 } from '@/api/base44Client';
 import {
   Search,
   Inbox,
@@ -48,7 +49,7 @@ const TYPE_COLOURS = {
   'Client Action': '#D97706',
 };
 
-const ASSIGNEES = ['Adviser', 'Client'];
+const ASSIGNEE_KEYS = ['Adviser', 'Client'];
 
 function daysBetween(a, b) {
   const msPerDay = 86400000;
@@ -102,6 +103,8 @@ export default function TasksPage() {
   const [viewMode, setViewMode] = useState('list');
   const [draggingId, setDraggingId] = useState(null);
   const [dragOverCol, setDragOverCol] = useState(null);
+  const [clientName, setClientName] = useState('Client');
+  const [adviserName, setAdviserName] = useState('Adviser');
   const menuRef = useRef(null);
 
   const emptyForm = { title: '', type: 'Send PDS', assignedTo: 'Adviser', status: 'To Do', due: '', notes: '' };
@@ -135,6 +138,22 @@ export default function TasksPage() {
       } catch (error) {
         console.error('Failed to initialize:', error);
         setTasks([]);
+      }
+      try {
+        const userData = await base44.auth.me();
+        const clients = await base44.entities.Client.filter({ user_email: userData.email });
+        const clientData = clients[0];
+        if (clientData) {
+          setClientName((clientData.first_name || '') + ' ' + (clientData.last_name || ''));
+          if (clientData.adviser_email) {
+            const advisers = await base44.entities.Adviser.filter({ email: clientData.adviser_email });
+            if (advisers.length > 0) {
+              setAdviserName((advisers[0].first_name || '') + ' ' + (advisers[0].last_name || ''));
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load names:', error);
       } finally {
         setLoading(false);
       }
@@ -302,6 +321,12 @@ export default function TasksPage() {
     }
   };
 
+  const assigneeDisplayName = useCallback((key) => {
+    if (key === 'Adviser') return adviserName;
+    if (key === 'Client') return clientName;
+    return key;
+  }, [adviserName, clientName]);
+
   /* ─── inline styles ─── */
 
   const s = {
@@ -451,12 +476,12 @@ export default function TasksPage() {
         whiteSpace: 'nowrap',
       };
     },
-    avatar: (name) => ({
+    avatar: (assigneeKey) => ({
       width: 24,
       height: 24,
       borderRadius: '50%',
-      background: name === 'Adviser' ? '#EEF2FF' : '#ECFDF5',
-      color: name === 'Adviser' ? '#4F46E5' : '#059669',
+      background: assigneeKey === 'Adviser' ? '#EEF2FF' : '#ECFDF5',
+      color: assigneeKey === 'Adviser' ? '#4F46E5' : '#059669',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -495,8 +520,10 @@ export default function TasksPage() {
   if (loading) {
     return (
       <AdviserLayout currentPage="TasksPage">
-        <div style={s.page} className="flex items-center justify-center">
-          <Loader2 className="w-10 h-10 animate-spin" style={{ color: '#4F46E5' }} />
+        <div style={s.page}>
+          <div style={{ maxWidth: 1200, margin: '0 auto' }} className="flex items-center justify-center">
+            <Loader2 className="w-10 h-10 animate-spin" style={{ color: '#4F46E5' }} />
+          </div>
         </div>
       </AdviserLayout>
     );
@@ -505,6 +532,7 @@ export default function TasksPage() {
   return (
     <AdviserLayout currentPage="TasksPage">
       <div style={s.page}>
+      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         {/* ─── Header Row ─── */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
           <div>
@@ -652,7 +680,7 @@ export default function TasksPage() {
                 <Inbox className="w-16 h-16 mx-auto" style={{ color: '#CBD5E1', marginBottom: 16 }} />
                 <h3 style={{ fontSize: 17, fontWeight: 600, color: '#334155', marginBottom: 6 }}>No tasks yet</h3>
                 <p style={{ fontSize: 14, color: '#64748B', maxWidth: 380, margin: '0 auto 20px' }}>
-                  Create your first task to start tracking client actions and deadlines.
+                  No tasks yet — click + Add Task to get started.
                 </p>
                 <button
                   style={s.addBtn}
@@ -747,9 +775,9 @@ export default function TasksPage() {
                             <td style={{ padding: '14px 12px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                                 <div style={s.avatar(task.assignedTo)}>
-                                  {(task.assignedTo || 'A')[0]}
+                                  {(assigneeDisplayName(task.assignedTo) || 'A')[0]}
                                 </div>
-                                <span style={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>{task.assignedTo}</span>
+                                <span style={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>{assigneeDisplayName(task.assignedTo)}</span>
                               </div>
                             </td>
 
@@ -984,9 +1012,9 @@ export default function TasksPage() {
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <div style={s.avatar(task.assignedTo)}>
-                                  {(task.assignedTo || 'A')[0]}
+                                  {(assigneeDisplayName(task.assignedTo) || 'A')[0]}
                                 </div>
-                                <span style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>{task.assignedTo}</span>
+                                <span style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>{assigneeDisplayName(task.assignedTo)}</span>
                               </div>
                               <span style={{ fontSize: 12, fontWeight: 500, color: dueColour }}>{dueText}</span>
                             </div>
@@ -1000,6 +1028,7 @@ export default function TasksPage() {
             })}
           </div>
         )}
+      </div>
       </div>
 
       {/* ─── Add / Edit Modal ─── */}
@@ -1077,8 +1106,8 @@ export default function TasksPage() {
                   fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                {ASSIGNEES.map((a) => (
-                  <option key={a} value={a}>{a}</option>
+                {ASSIGNEE_KEYS.map((a) => (
+                  <option key={a} value={a}>{assigneeDisplayName(a)}</option>
                 ))}
               </select>
             </div>
