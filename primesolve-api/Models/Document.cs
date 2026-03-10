@@ -39,6 +39,13 @@ namespace PrimeSolve.Api.Models
 
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
 
+        public long? SizeBytes { get; set; }
+
+        [MaxLength(100)]
+        public string? Category { get; set; }
+
+        public bool Shared { get; set; }
+
         [Column(TypeName = "nvarchar(max)")]
         public string? ExtractedSectionsJson { get; set; }
 

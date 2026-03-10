@@ -39,7 +39,9 @@ namespace PrimeSolve.Api.Controllers
         public async Task<IActionResult> Upload(
             [FromForm] IFormFile file,
             [FromForm] string clientId,
-            [FromForm] string? fileType)
+            [FromForm] string? fileType,
+            [FromForm] string? category,
+            [FromForm] bool? shared)
         {
             if (file == null || file.Length == 0)
                 return BadRequest(new { error = "No file provided." });
@@ -69,7 +71,10 @@ namespace PrimeSolve.Api.Controllers
                 FileType = fileType ?? DetectFileType(file.FileName),
                 BlobUrl = blobUrl,
                 Status = DocumentStatus.Processing,
-                UploadedAt = DateTime.UtcNow
+                UploadedAt = DateTime.UtcNow,
+                SizeBytes = file.Length,
+                Category = category ?? "Other",
+                Shared = shared ?? false
             };
 
             _db.Documents.Add(document);
@@ -92,11 +97,15 @@ namespace PrimeSolve.Api.Controllers
             return Ok(new
             {
                 id = document.Id,
+                clientId = document.ClientId,
                 fileName = document.FileName,
                 fileType = document.FileType,
+                category = document.Category,
                 blobUrl = document.BlobUrl,
                 status = document.Status.ToString(),
-                uploadedAt = document.UploadedAt
+                uploadedAt = document.UploadedAt,
+                fileSize = document.SizeBytes,
+                shared = document.Shared
             });
         }
 
@@ -120,9 +129,12 @@ namespace PrimeSolve.Api.Controllers
                     clientId = d.ClientId,
                     fileName = d.FileName,
                     fileType = d.FileType,
+                    category = d.Category,
                     blobUrl = d.BlobUrl,
                     status = d.Status.ToString(),
                     uploadedAt = d.UploadedAt,
+                    fileSize = d.SizeBytes,
+                    shared = d.Shared,
                     extractedSections = d.ExtractedSectionsJson
                 })
                 .ToListAsync();
@@ -150,9 +162,12 @@ namespace PrimeSolve.Api.Controllers
                 clientId = doc.ClientId,
                 fileName = doc.FileName,
                 fileType = doc.FileType,
+                category = doc.Category,
                 blobUrl = doc.BlobUrl,
                 status = doc.Status.ToString(),
                 uploadedAt = doc.UploadedAt,
+                fileSize = doc.SizeBytes,
+                shared = doc.Shared,
                 extractedSections = doc.ExtractedSectionsJson
             });
         }
