@@ -48,25 +48,37 @@ function dbToModelFormat(db) {
   const entities = tcData.entities || [];
   const trusts = entities.filter(e => e.type === 'trust');
   const companies = entities.filter(e => e.type === 'company');
+  const tcCurrentTab = tcData.current_tab || 'trust';
+  const tcActiveIndex = tcData.active_index || { trust: 0, company: 0 };
+  const smsfActiveIndex = smsfData.active_index ?? 0;
 
-  // Map risk_profile — manual form uses client/partner keys
+  // Map risk_profile — manual form uses client/partner keys.
+  // Spread the raw DB object to preserve extra fields (otherInfo, currentPerson,
+  // currentTab, completionPct) that CashflowModel doesn't manage but the manual
+  // form saves.  We only remap the person-keyed sub-objects.
   const riskData = ff.risk_profile || {};
+  const {
+    client: riskClient, partner: riskPartner,
+    adjust_risk: riskAdjustRisk,
+    ...riskRest               // otherInfo, currentPerson, currentTab, completionPct, etc.
+  } = riskData;
   const mappedRiskProfile = {
-    client1: riskData.client || { answers: {}, score: 0, profile: '' },
-    client2: riskData.partner || { answers: {}, score: 0, profile: '' },
+    ...riskRest,
+    client1: riskClient || { answers: {}, score: 0, profile: '' },
+    client2: riskPartner || { answers: {}, score: 0, profile: '' },
     mode: riskData.mode || '',
-    adjustRisk: riskData.adjust_risk || 'no',
+    adjustRisk: riskAdjustRisk || 'no',
   };
 
-  // Map advice_reasons — manual form uses client/partner keys in quick
+  // Map advice_reasons — manual form uses client/partner keys in quick.
+  // Spread raw DB object to preserve any extra fields.
   const advData = ff.advice_reasons || {};
   const mappedAdviceReason = {
-    reasons: advData.reasons || [],
+    ...advData,
     quick: {
       client1: advData.quick?.client || { ret_age: '65' },
       client2: advData.quick?.partner || { ret_age: '67' },
     },
-    objectives: advData.objectives || [],
   };
 
   return {
@@ -88,6 +100,8 @@ function dbToModelFormat(db) {
     client2: partner ? { ...partner } : null,
     children: depData.children || [],
     dependants_list: depData.dependants_list || [],
+    _depCurrentTab: depData.current_tab || 'children',
+    _depActiveIndex: depData.active_index ?? 0,
     superProducts: superData.funds || [],
     pensions: superData.pensions || [],
     annuities: superData.annuities || [],
@@ -95,6 +109,9 @@ function dbToModelFormat(db) {
     trusts,
     companies,
     smsfs: smsfData.smsf_details || [],
+    _smsfActiveIndex: smsfActiveIndex,
+    _tcCurrentTab: tcCurrentTab,
+    _tcActiveIndex: tcActiveIndex,
     homeMortgage: { interestRate: 0.06, remainingYears: 25 },
     investmentBonds: investData.bonds || [],
     assets: ff.properties || [],
@@ -103,6 +120,7 @@ function dbToModelFormat(db) {
     debtsRegister: [],
     insurancePolicies: insData.policies || [],
     insurance: { policies: insData.policies || [] },
+    _insActiveIdx: insData.active_idx ?? 0,
     income: {
       client1: Object.keys(clientIncFields).length ? clientIncFields : { i_gross: '', i_super_inc: '2', i_fbt: '2', i_fbt_value: '', i_bonus: '', i_increase: '2.5', i_nontax: '2', i_cgt_losses: '', i_revenue_losses: '', adjustments: [] },
       client2: Object.keys(partnerIncFields).length ? partnerIncFields : { i_gross: '', i_super_inc: '2', i_fbt: '2', i_fbt_value: '', i_bonus: '', i_increase: '2.5', i_nontax: '2', i_cgt_losses: '', i_revenue_losses: '', adjustments: [] },
@@ -186,24 +204,34 @@ async function saveAllSections(modelFF, updateSection) {
   const trustEntities = (modelFF.trusts || []).map(t => ({ ...t, type: 'trust' }));
   const companyEntities = (modelFF.companies || []).map(c => ({ ...c, type: 'company' }));
 
-  // Map advice_reason — CashflowModel uses client1/client2, manual form uses client/partner
+  // Map advice_reason — CashflowModel uses client1/client2, manual form uses client/partner.
+  // Spread raw object to preserve any extra fields, then override the person-keyed quick.
   const adviceReason = modelFF.advice_reason || {};
+  const { client1: aqClient1, client2: aqClient2, ...aqQuickRest } = adviceReason.quick || {};
   const mappedAdviceReasons = {
-    reasons: adviceReason.reasons || [],
+    ...adviceReason,
     quick: {
-      client: adviceReason.quick?.client1 || {},
-      partner: adviceReason.quick?.client2 || {},
+      ...aqQuickRest,
+      client: aqClient1 || {},
+      partner: aqClient2 || {},
     },
-    objectives: adviceReason.objectives || [],
   };
+  // Remove the CashflowModel-only keys that don't exist in the manual form
+  delete mappedAdviceReasons.quick.client1;
+  delete mappedAdviceReasons.quick.client2;
 
-  // Map risk_profile — CashflowModel uses client1/client2, manual form uses client/partner
+  // Map risk_profile — CashflowModel uses client1/client2, manual form uses client/partner.
+  // Spread raw object to preserve otherInfo, currentPerson, currentTab, completionPct.
   const riskProfile = modelFF.risk_profile || {};
+  const {
+    client1: rpClient1, client2: rpClient2, adjustRisk: rpAdjustRisk,
+    ...rpRest   // preserves otherInfo, currentPerson, currentTab, completionPct, mode, etc.
+  } = riskProfile;
   const mappedRiskProfile = {
-    client: riskProfile.client1 || { answers: {}, score: 0, profile: '' },
-    partner: riskProfile.client2 || { answers: {}, score: 0, profile: '' },
-    mode: riskProfile.mode || '',
-    adjustRisk: riskProfile.adjustRisk || 'no',
+    ...rpRest,
+    client: rpClient1 || { answers: {}, score: 0, profile: '' },
+    partner: rpClient2 || { answers: {}, score: 0, profile: '' },
+    adjustRisk: rpAdjustRisk || 'no',
   };
 
   // Single updateSection call with all sub-keys — deep-merge in useFactFind preserves each
@@ -237,6 +265,7 @@ async function saveAllSections(modelFF, updateSection) {
 
     // InsurancePolicies (FactFindInsurance)
     InsurancePolicies: {
+      activeIdx: modelFF._insActiveIdx ?? 0,
       policies: modelFF.insurancePolicies || modelFF.insurance?.policies || [],
     },
 
@@ -244,11 +273,15 @@ async function saveAllSections(modelFF, updateSection) {
     Dependants: {
       children: modelFF.children || [],
       dependants_list: modelFF.dependants_list || [],
+      currentTab: modelFF._depCurrentTab || 'children',
+      activeIndex: modelFF._depActiveIndex ?? 0,
     },
 
     // TrustsCompanies (FactFindTrusts)
     TrustsCompanies: {
       entities: [...trustEntities, ...companyEntities],
+      currentTab: modelFF._tcCurrentTab || 'trust',
+      activeIndex: modelFF._tcActiveIndex || { trust: 0, company: 0 },
     },
 
     // AdviceReasons (FactFindAdviceReason)
@@ -260,6 +293,7 @@ async function saveAllSections(modelFF, updateSection) {
     // Smsf (FactFindSMSF)
     Smsf: {
       smsf_details: modelFF.smsfs || [],
+      activeIndex: modelFF._smsfActiveIndex ?? 0,
     },
   });
 }
