@@ -130,9 +130,17 @@ export default function FactFindSuperannuation() {
   useEffect(() => {
     const superData = factFind?.client1_profile?.super_funds;
     if (superData) {
-      setSuperFunds(superData.funds || []);
-      setPensions(superData.pensions || []);
-      setAnnuities(superData.annuities || []);
+      if (Array.isArray(superData)) {
+        // New flat array format: split by type tag
+        setSuperFunds(superData.filter(item => !item.type || item.type === 'super'));
+        setPensions(superData.filter(item => item.type === 'pension'));
+        setAnnuities(superData.filter(item => item.type === 'annuity'));
+      } else {
+        // Legacy object format: { funds, pensions, annuities }
+        setSuperFunds(superData.funds || []);
+        setPensions(superData.pensions || []);
+        setAnnuities(superData.annuities || []);
+      }
     }
   }, [factFind?.client1_profile?.super_funds]);
 
@@ -145,7 +153,11 @@ export default function FactFindSuperannuation() {
   }, [factFind?.id]);
 
   const buildSuperannuationPayloadRef = useRef(null);
-  buildSuperannuationPayloadRef.current = () => ({ funds: superFunds, pensions, annuities });
+  buildSuperannuationPayloadRef.current = () => ([
+    ...superFunds.map(f => ({ ...f, type: 'super' })),
+    ...pensions.map(p => ({ ...p, type: 'pension' })),
+    ...annuities.map(a => ({ ...a, type: 'annuity' })),
+  ]);
 
   useEffect(() => {
     if (!factFind?.id || !dataLoaded) return;
@@ -174,11 +186,11 @@ export default function FactFindSuperannuation() {
   const saveFunds = useCallback(async (sf, p, a) => {
     if (!factFind?.id) return;
     try {
-      await updateSection('Client1FactFind', { SuperFunds: {
-        funds: sf,
-        pensions: p,
-        annuities: a
-      } });
+      await updateSection('Client1FactFind', { SuperFunds: [
+        ...sf.map(f => ({ ...f, type: 'super' })),
+        ...p.map(item => ({ ...item, type: 'pension' })),
+        ...a.map(item => ({ ...item, type: 'annuity' })),
+      ] });
     } catch (error) {
       console.error('Save failed:', error);
     }
@@ -265,7 +277,11 @@ export default function FactFindSuperannuation() {
         sectionsCompleted.push('superannuation');
       }
 
-      await updateSection('Client1FactFind', { SuperFunds: { funds: superFunds, pensions, annuities } });
+      await updateSection('Client1FactFind', { SuperFunds: [
+        ...superFunds.map(f => ({ ...f, type: 'super' })),
+        ...pensions.map(p => ({ ...p, type: 'pension' })),
+        ...annuities.map(a => ({ ...a, type: 'annuity' })),
+      ] });
 
       await base44.entities.FactFind.update(factFind.id, {
         sections_completed: sectionsCompleted,
