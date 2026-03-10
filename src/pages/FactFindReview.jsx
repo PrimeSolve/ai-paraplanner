@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { Info, RefreshCw, CheckCircle2, AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { createAdviceRecord } from '@/utils/adviceRecordHelpers';
+import { adviceHistoryApi } from '@/api/adviceHistoryApi';
 import {
   Dialog,
   DialogContent,
@@ -129,6 +130,23 @@ export default function FactFindReview() {
           snapshots: { factFind },
           createdBy: user.email,
         });
+      }
+
+      // Create an immutable advice history snapshot for this Fact Find submission
+      if (factFind?.client_id) {
+        try {
+          const today = new Date().toISOString().slice(0, 10);
+          const recordName = factFind?.personal?.first_name && factFind?.personal?.last_name
+            ? `Fact Find — ${factFind.personal.first_name} ${factFind.personal.last_name}`
+            : `Fact Find — ${today}`;
+          await adviceHistoryApi.create(factFind.client_id, {
+            type: 'Fact Find',
+            name: recordName,
+            snapshotJson: JSON.stringify(factFind),
+          });
+        } catch (err) {
+          console.error('[AdviceHistory] Failed to create Fact Find snapshot:', err);
+        }
       }
 
       setShowConfirm(false);
