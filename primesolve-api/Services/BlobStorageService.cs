@@ -1,7 +1,9 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
@@ -31,6 +33,35 @@ namespace PrimeSolve.Api.Services
                 ContentType = file.ContentType
             });
 
+            return blobClient.Uri.ToString();
+        }
+
+        public string GetSasUrl(string blobUrl, TimeSpan validFor)
+        {
+            var blobPath = blobUrl;
+            if (blobUrl.StartsWith("http"))
+            {
+                var uri = new Uri(blobUrl);
+                var segments = uri.AbsolutePath.TrimStart('/').Split('/', 2);
+                blobPath = segments.Length > 1 ? segments[1] : segments[0];
+            }
+
+            var blobClient = _container.GetBlobClient(blobPath);
+
+            if (blobClient.CanGenerateSasUri)
+            {
+                var sasBuilder = new BlobSasBuilder
+                {
+                    BlobContainerName = _container.Name,
+                    BlobName = blobPath,
+                    Resource = "b",
+                    ExpiresOn = DateTimeOffset.UtcNow.Add(validFor)
+                };
+                sasBuilder.SetPermissions(BlobSasPermissions.Read);
+                return blobClient.GenerateSasUri(sasBuilder).ToString();
+            }
+
+            // Fallback: return the raw blob URL if SAS generation isn't available
             return blobClient.Uri.ToString();
         }
 

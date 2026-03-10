@@ -268,10 +268,16 @@ export default function ClientDocuments() {
     }
   };
 
-  const handleView = (doc) => {
-    const url = doc.blobUrl || doc.blob_url;
-    if (url) {
-      window.open(url, '_blank');
+  const handleView = async (doc) => {
+    const docId = doc.id || doc.documentId;
+    try {
+      const response = await axiosInstance.get(`/clients/${clientId}/documents/${docId}/url`);
+      const sasUrl = response.data?.url || response.data;
+      if (sasUrl) {
+        window.open(sasUrl, '_blank');
+      }
+    } catch (err) {
+      console.error('Failed to get document URL:', err);
     }
   };
 
