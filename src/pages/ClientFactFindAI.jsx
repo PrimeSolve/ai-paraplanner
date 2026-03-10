@@ -14,7 +14,6 @@ function dbToModelFormat(db) {
   const superData = db.superannuation || {};
   const investData = db.investment || {};
   const alData = db.assets_liabilities || {};
-  const ieData = db.income_expenses || {};
   const insData = db.insurance || {};
   const depData = db.dependants || {};
   const tcData = db.trusts_companies || {};
@@ -23,11 +22,17 @@ function dbToModelFormat(db) {
   // Map personal → client1 (strip out the partner sub-object)
   const { partner, ...client1Fields } = personal;
 
-  // Map income_expenses → income / expenses in CashflowModel shape
-  const incomeSources = ieData.income_sources || [];
-  const clientIncome = incomeSources.find(s => s.person === 'client') || {};
-  const partnerIncome = incomeSources.find(s => s.person === 'partner') || {};
-  const expenseEntry = (ieData.expenses || [])[0] || {};
+  // Read income/expenses from client1_profile (same key the API returns and
+  // FactFindIncomeExpenses reads from). Each income object is a flat field map
+  // with an embedded `adjustments` array.
+  const profileIncomes = db.client1_profile?.incomes || [];
+  const profileExpenses = db.client1_profile?.expenses || [];
+  const clientIncomeObj = profileIncomes[0] || {};
+  const partnerIncomeObj = profileIncomes[1] || {};
+  const expenseObj = profileExpenses[0] || {};
+  const { adjustments: clientIncAdj, ...clientIncFields } = clientIncomeObj;
+  const { adjustments: partnerIncAdj, ...partnerIncFields } = partnerIncomeObj;
+  const { adjustments: expAdj, ...expFields } = expenseObj;
 
   // Map trusts_companies entities into separate arrays
   const entities = tcData.entities || [];
@@ -69,17 +74,17 @@ function dbToModelFormat(db) {
     insurancePolicies: insData.policies || [],
     insurance: { policies: insData.policies || [] },
     income: {
-      client1: clientIncome.fields || { i_gross: '', i_super_inc: '2', i_fbt: '2', i_fbt_value: '', i_bonus: '', i_increase: '2.5', i_nontax: '2', i_cgt_losses: '', i_revenue_losses: '', adjustments: [] },
-      client2: partnerIncome.fields || { i_gross: '', i_super_inc: '2', i_fbt: '2', i_fbt_value: '', i_bonus: '', i_increase: '2.5', i_nontax: '2', i_cgt_losses: '', i_revenue_losses: '', adjustments: [] },
+      client1: Object.keys(clientIncFields).length ? clientIncFields : { i_gross: '', i_super_inc: '2', i_fbt: '2', i_fbt_value: '', i_bonus: '', i_increase: '2.5', i_nontax: '2', i_cgt_losses: '', i_revenue_losses: '', adjustments: [] },
+      client2: Object.keys(partnerIncFields).length ? partnerIncFields : { i_gross: '', i_super_inc: '2', i_fbt: '2', i_fbt_value: '', i_bonus: '', i_increase: '2.5', i_nontax: '2', i_cgt_losses: '', i_revenue_losses: '', adjustments: [] },
     },
-    expenses: expenseEntry.fields || {},
+    expenses: Object.keys(expFields).length ? expFields : {},
     cashflowConfig: { livingExpenses: 0, livingExpensesGrowth: 0.025 },
     assetAssumptions: {},
     goals: [],
     advice_reason: db.advice_reason || { reasons: [], quick: { client1: { ret_age: '65' }, client2: { ret_age: '67' } }, objectives: [] },
     risk_profile: db.risk_profile || { client1: { answers: {}, score: 0, profile: '' }, client2: { answers: {}, score: 0, profile: '' }, mode: '', adjustRisk: 'no' },
-    incomeAdjustments: clientIncome.adjustments || [],
-    expenseAdjustments: expenseEntry.adjustments || [],
+    incomeAdjustments: clientIncAdj || [],
+    expenseAdjustments: expAdj || [],
     products: {
       lifetimePensions: [],
       annuities: [],
@@ -141,19 +146,21 @@ async function saveAllSections(modelFF, updateSection) {
     liabilities: modelFF.liabilities || [],
   });
 
-  // income_expenses
-  const incomeSources = [
-    { person: 'client', fields: modelFF.income?.client1 || {}, adjustments: modelFF.incomeAdjustments || [] },
+  // income_expenses — save to Client1FactFind with the same { incomes, expenses }
+  // structure that FactFindIncomeExpenses uses, so the API stores it under
+  // client1Profile where all pages read from.
+  const incomes = [
+    { ...(modelFF.income?.client1 || {}), adjustments: modelFF.incomeAdjustments || [] },
   ];
   if (modelFF.client2) {
-    incomeSources.push({ person: 'partner', fields: modelFF.income?.client2 || {}, adjustments: [] });
+    incomes.push({ ...(modelFF.income?.client2 || {}), adjustments: [] });
   }
-  const incomeExpensesPayload = {
-    income_sources: incomeSources,
-    expenses: [{ fields: modelFF.expenses || {}, adjustments: modelFF.expenseAdjustments || [] }],
-  };
+  const expenses = [
+    { ...(modelFF.expenses || {}), adjustments: modelFF.expenseAdjustments || [] },
+  ];
+  const incomeExpensesPayload = { incomes, expenses };
   console.log('[ClientFactFindAI] income_expenses PAYLOAD:', JSON.stringify(incomeExpensesPayload, null, 2));
-  await updateSection('income_expenses', incomeExpensesPayload);
+  await updateSection('Client1FactFind', incomeExpensesPayload);
 
   // insurance
   await updateSection('insurance', {
