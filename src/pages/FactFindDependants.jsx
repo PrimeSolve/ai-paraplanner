@@ -20,6 +20,7 @@ export default function FactFindDependants() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [childrenCount, setChildrenCount] = useState(0);
   const [dependantsCount, setDependantsCount] = useState(0);
+  const [dependantsLoaded, setDependantsLoaded] = useState(false);
 
   // Global state for form data
   const globalStateRef = React.useRef({
@@ -227,7 +228,7 @@ export default function FactFindDependants() {
   // ADD ENTRY
   // ============================================
 
-  const addEntry = useCallback(async (tab, existingData = null) => {
+  const addEntry = useCallback((tab, existingData = null) => {
     const wrap = wrapForTab(tab);
     if (!wrap) return;
 
@@ -246,18 +247,8 @@ export default function FactFindDependants() {
       }
     }
 
-    // If this is a brand-new entry (no existing data or no id), create via API
-    if (!existingData?.id && clientId) {
-      try {
-        const depType = tab === 'children' ? 'child' : 'dependant';
-        const created = await dependantsApi.create({ ...(existingData || {}), dep_type: depType, client_id: clientId });
-        if (created?.id) {
-          node.dataset.recordId = created.id;
-        }
-      } catch (error) {
-        console.error('Failed to create dependant:', error);
-      }
-    }
+    // Mark which tab type this entry belongs to (for deferred create)
+    node.dataset.depType = tab === 'children' ? 'child' : 'dependant';
 
     // Setup remove button
     const removeBtn = node.querySelector('.entry-remove');
@@ -284,7 +275,7 @@ export default function FactFindDependants() {
       updatePills(tab, newIndex);
       showOnlyActiveEntry(tab, newIndex);
     }, 0);
-  }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry, clientId]);
+  }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry]);
 
   // ============================================
   // REMOVE ENTRY
@@ -346,11 +337,13 @@ export default function FactFindDependants() {
     async function loadDependants() {
       try {
         const all = await dependantsApi.getAll(clientId);
-        const children = all.filter(d => d.dep_type === 'child').map(({ dep_type, ...rest }) => rest);
-        const deps = all.filter(d => d.dep_type === 'dependant').map(({ dep_type, ...rest }) => rest);
+        const children = all.filter(d => d.dep_type === 'child');
+        const deps = all.filter(d => d.dep_type === 'dependant');
         globalStateRef.current.dependants = { children, dependants_list: deps, currentTab: 'children', activeIndex: 0 };
       } catch (error) {
         console.error('Failed to load dependants:', error);
+      } finally {
+        setDependantsLoaded(true);
       }
     }
 
@@ -378,40 +371,54 @@ export default function FactFindDependants() {
   // SAVE STATE
   // ============================================
 
+  const readCardData = useCallback((card) => {
+    const data = {};
+    const inputs = card.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+      if (input.type === 'radio') {
+        const baseName = input.name.replace(/__\d+$/, '');
+        if (input.checked) data[baseName] = input.value;
+      } else if (input.type === 'checkbox') {
+        if (input.checked) data[input.name] = input.value;
+      } else {
+        data[input.name] = input.value;
+      }
+    });
+    return data;
+  }, []);
+
   const saveDependantsState = useCallback(async () => {
-    if (!factFind?.id) return;
+    if (!factFind?.id || !clientId) return;
 
     try {
-      // Update each entry that has a server-side record ID
-      const updateEntries = async (tab) => {
+      const saveEntries = async (tab) => {
         const wrap = wrapForTab(tab);
         if (!wrap) return;
         const cards = [...wrap.querySelectorAll('.entry')];
         for (const card of cards) {
           const recordId = card.dataset.recordId;
-          if (!recordId) continue;
-          const data = {};
-          const inputs = card.querySelectorAll('input, select, textarea');
-          inputs.forEach(input => {
-            if (input.type === 'radio') {
-              const baseName = input.name.replace(/__\d+$/, '');
-              if (input.checked) data[baseName] = input.value;
-            } else if (input.type === 'checkbox') {
-              if (input.checked) data[input.name] = input.value;
-            } else {
-              data[input.name] = input.value;
+          const data = readCardData(card);
+
+          if (recordId) {
+            // Existing record → update
+            await dependantsApi.update(recordId, data);
+          } else {
+            // New record → create, then store the returned id
+            const depType = card.dataset.depType || (tab === 'children' ? 'child' : 'dependant');
+            const created = await dependantsApi.create({ ...data, dep_type: depType, client_id: clientId });
+            if (created?.id) {
+              card.dataset.recordId = created.id;
             }
-          });
-          await dependantsApi.update(recordId, data);
+          }
         }
       };
 
-      await updateEntries('children');
-      await updateEntries('dependants');
+      await saveEntries('children');
+      await saveEntries('dependants');
     } catch (error) {
       console.error('Save failed:', error);
     }
-  }, [factFind?.id, wrapForTab]);
+  }, [factFind?.id, clientId, wrapForTab, readCardData]);
 
   // ============================================
   // INITIALIZE DOM
@@ -422,7 +429,7 @@ export default function FactFindDependants() {
   }, [currentTab, activeIndex]);
 
   useEffect(() => {
-    if (!ffLoading && factFind?.id) {
+    if (!ffLoading && factFind?.id && dependantsLoaded) {
       setTimeout(() => {
         const childrenWrap = document.getElementById('childrenWrap');
         const dependantsWrap = document.getElementById('dependantsWrap');
@@ -449,7 +456,7 @@ export default function FactFindDependants() {
         showOnlyActiveEntry(currentTab, globalStateRef.current.dependants.activeIndex || 0);
       }, 50);
     }
-  }, [ffLoading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
+  }, [ffLoading, factFind?.id, dependantsLoaded, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
 
   // ============================================
   // NAVIGATION
@@ -463,7 +470,7 @@ export default function FactFindDependants() {
 
     setSaving(true);
     try {
-      // Save any pending edits to the API
+      // Save dependants via dedicated API (create new / update existing)
       await saveDependantsState();
 
       const sectionsCompleted = [...(factFind.sections_completed || [])];
@@ -471,7 +478,13 @@ export default function FactFindDependants() {
         sectionsCompleted.push('dependants');
       }
 
-      // Update sections completed
+      // Also sync a copy to the FactFind record via updateSection
+      // (read-modify-write pattern matching all other FactFind pages)
+      globalStateRef.current.dependants.children = readTabToArray('children');
+      globalStateRef.current.dependants.dependants_list = readTabToArray('dependants');
+      await updateSection('Client1FactFind', { Dependants: globalStateRef.current.dependants });
+
+      // Update sections completed (uses same base44 call as all other pages)
       await base44.entities.FactFind.update(factFind.id, {
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
