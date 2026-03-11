@@ -363,7 +363,7 @@ export default function FactFindDependants() {
         setCurrentTab('dependants');
         setActiveIndex(0);
       } else {
-        navigate(createPageUrl('FactFindTrusts') + `?id=${factFind.id}`);
+        navigate(createPageUrl('FactFindTrusts') + `?id=${factFind.id}` + (clientId ? `&clientId=${clientId}` : ''));
       }
     } catch (error) {
       toast.error('Failed to save data');
@@ -373,12 +373,12 @@ export default function FactFindDependants() {
   };
 
   const handleBack = () => {
-    navigate(createPageUrl('FactFindAboutYou') + `?id=${factFind?.id || ''}`);
+    navigate(createPageUrl('FactFindAboutYou') + `?id=${factFind?.id || ''}` + (clientId ? `&clientId=${clientId}` : ''));
   };
 
   if (ffLoading || !loaded) {
     return (
-      <FactFindLayout currentSection="dependants" factFindId={factFind?.id}>
+      <FactFindLayout currentSection="dependants" factFindId={factFind?.id} clientId={clientId}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -389,7 +389,7 @@ export default function FactFindDependants() {
   const activeItem = activeList[activeIndex];
 
   return (
-    <FactFindLayout currentSection="dependants" factFindId={factFind?.id}>
+    <FactFindLayout currentSection="dependants" factFindId={factFind?.id} clientId={clientId}>
       <FactFindHeader
         title="Dependants"
         description="Add children and other dependants."

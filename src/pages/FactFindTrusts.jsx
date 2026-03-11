@@ -677,7 +677,8 @@ export default function FactFindTrusts() {
   };
 
   const handleBack = () => {
-    navigate(createPageUrl('FactFindDependants') + `?id=${factFind?.id || ''}`);
+    const urlClientId = new URLSearchParams(window.location.search).get('clientId');
+    navigate(createPageUrl('FactFindDependants') + `?id=${factFind?.id || ''}` + (urlClientId ? `&clientId=${urlClientId}` : ''));
   };
 
   if (ffLoading) {
