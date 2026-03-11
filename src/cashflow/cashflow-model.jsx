@@ -997,7 +997,7 @@ Current context:
   );
 }
 
-function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvice }) {
+function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvice, clientId: clientIdProp }) {
   const isFactfindMode = mode === "factfind";
   const [activeTop, setActiveTop] = useState("Summary of Results");
 
@@ -1016,14 +1016,18 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
   } = useFactFind(initialData);
 
   // ── Principals API: load on mount, auto-save on change ──────
+  // Resolve clientId from: (1) prop passed by parent, (2) URL query string
   const urlClientId = useMemo(() => {
+    if (clientIdProp) return clientIdProp;
     try {
       return new URLSearchParams(window.location.search).get('clientId');
     } catch { return null; }
-  }, []);
+  }, [clientIdProp]);
 
-  // Load principals from API on mount when clientId is available
+  // Load principals from API on mount when clientId is available.
+  // We track how many client data changes to skip (initial render + load response).
   const principalsLoadedRef = useRef(false);
+  const skipSaveCountRef = useRef(2); // skip: (1) initial render, (2) loadPrincipals response
   useEffect(() => {
     if (urlClientId && !principalsLoadedRef.current) {
       principalsLoadedRef.current = true;
@@ -1031,13 +1035,12 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
     }
   }, [urlClientId, loadPrincipals]);
 
-  // Auto-save principals to API when client1/client2 data changes (debounced)
+  // Auto-save principals to API when client1/client2 data changes (debounced).
+  // Skips the first two triggers (initial mount + data from loadPrincipals GET).
   const principalsSaveTimerRef = useRef(null);
-  const principalsInitialised = useRef(false);
   useEffect(() => {
-    // Skip the first render and the initial load population
-    if (!principalsInitialised.current) {
-      principalsInitialised.current = true;
+    if (skipSaveCountRef.current > 0) {
+      skipSaveCountRef.current -= 1;
       return;
     }
     if (!urlClientId) return;
@@ -3096,8 +3099,8 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
   );
 }
 
-export default function CashflowModel({ initialData, onDataChange, onBack, mode, hideAdvice } = {}) {
+export default function CashflowModel({ initialData, onDataChange, onBack, mode, hideAdvice, clientId } = {}) {
   return React.createElement(CashflowErrorBoundary, null,
-    React.createElement(CashflowModelInner, { initialData, onDataChange, onBack, mode, hideAdvice })
+    React.createElement(CashflowModelInner, { initialData, onDataChange, onBack, mode, hideAdvice, clientId })
   );
 }

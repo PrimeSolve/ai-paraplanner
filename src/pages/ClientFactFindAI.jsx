@@ -307,7 +307,7 @@ async function saveAllSections(modelFF, updateSection) {
 
 export default function ClientFactFindAI() {
   const navigate = useNavigate();
-  const { factFind, loading, error, updateSection } = useFactFind();
+  const { factFind, loading, error, updateSection, clientId } = useFactFind();
 
   // Transform DB data → CashflowModel format (only recompute when factFind changes)
   const initialData = useMemo(() => dbToModelFormat(factFind), [factFind]);
@@ -351,6 +351,7 @@ export default function ClientFactFindAI() {
         initialData={initialData}
         onDataChange={handleDataChange}
         onBack={() => navigate(-1)}
+        clientId={clientId}
       />
     </div>
   );
