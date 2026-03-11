@@ -36,8 +36,8 @@ function ChildCard({ child, index, onFieldChange, onRemove }) {
             <label className="block text-sm font-semibold text-slate-700 mb-2">Child name *</label>
             <input
               type="text"
-              value={child.child_name || ''}
-              onChange={(e) => onFieldChange('child_name', e.target.value)}
+              value={child.name || ''}
+              onChange={(e) => onFieldChange('name', e.target.value)}
               placeholder="e.g. Emma"
               className={INPUT_CLASS}
             />
@@ -46,8 +46,8 @@ function ChildCard({ child, index, onFieldChange, onRemove }) {
             <label className="block text-sm font-semibold text-slate-700 mb-2">Date of birth</label>
             <input
               type="date"
-              value={child.child_dob || ''}
-              onChange={(e) => onFieldChange('child_dob', e.target.value)}
+              value={child.date_of_birth || ''}
+              onChange={(e) => onFieldChange('date_of_birth', e.target.value)}
               className={INPUT_CLASS}
             />
           </div>
@@ -58,10 +58,10 @@ function ChildCard({ child, index, onFieldChange, onRemove }) {
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
-                name={`child_fin_dep__${index}`}
+                name={`financially_dependent__${index}`}
                 value="1"
-                checked={child.child_fin_dep === '1'}
-                onChange={(e) => onFieldChange('child_fin_dep', e.target.value)}
+                checked={child.financially_dependent === '1'}
+                onChange={(e) => onFieldChange('financially_dependent', e.target.value)}
                 className="w-4 h-4"
               />
               <span className="text-sm text-slate-700">Yes</span>
@@ -69,10 +69,10 @@ function ChildCard({ child, index, onFieldChange, onRemove }) {
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
-                name={`child_fin_dep__${index}`}
+                name={`financially_dependent__${index}`}
                 value="2"
-                checked={child.child_fin_dep === '2'}
-                onChange={(e) => onFieldChange('child_fin_dep', e.target.value)}
+                checked={child.financially_dependent === '2'}
+                onChange={(e) => onFieldChange('financially_dependent', e.target.value)}
                 className="w-4 h-4"
               />
               <span className="text-sm text-slate-700">No</span>
@@ -83,8 +83,8 @@ function ChildCard({ child, index, onFieldChange, onRemove }) {
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">Education status</label>
             <select
-              value={child.child_edu || ''}
-              onChange={(e) => onFieldChange('child_edu', e.target.value)}
+              value={child.education_status || ''}
+              onChange={(e) => onFieldChange('education_status', e.target.value)}
               className={INPUT_CLASS}
             >
               <option value="">Select...</option>
@@ -99,8 +99,8 @@ function ChildCard({ child, index, onFieldChange, onRemove }) {
             <label className="block text-sm font-semibold text-slate-700 mb-2">Expected age of financial dependence</label>
             <input
               type="number"
-              value={child.child_fin_age || ''}
-              onChange={(e) => onFieldChange('child_fin_age', e.target.value)}
+              value={child.financial_dependence_age || ''}
+              onChange={(e) => onFieldChange('financial_dependence_age', e.target.value)}
               placeholder="e.g. 25"
               className={INPUT_CLASS}
             />
@@ -110,8 +110,8 @@ function ChildCard({ child, index, onFieldChange, onRemove }) {
           <label className="block text-sm font-semibold text-slate-700 mb-2">Health issues or concerns</label>
           <input
             type="text"
-            value={child.child_health || ''}
-            onChange={(e) => onFieldChange('child_health', e.target.value)}
+            value={child.health_issues || ''}
+            onChange={(e) => onFieldChange('health_issues', e.target.value)}
             placeholder="e.g. Asthma, food allergy"
             className={INPUT_CLASS}
           />
@@ -144,8 +144,8 @@ function DependantCard({ dependant, index, onFieldChange, onRemove }) {
             <label className="block text-sm font-semibold text-slate-700 mb-2">Name *</label>
             <input
               type="text"
-              value={dependant.dep_name || ''}
-              onChange={(e) => onFieldChange('dep_name', e.target.value)}
+              value={dependant.name || ''}
+              onChange={(e) => onFieldChange('name', e.target.value)}
               placeholder="e.g. Parent name"
               className={INPUT_CLASS}
             />
@@ -154,8 +154,8 @@ function DependantCard({ dependant, index, onFieldChange, onRemove }) {
             <label className="block text-sm font-semibold text-slate-700 mb-2">Date of birth</label>
             <input
               type="date"
-              value={dependant.dep_dob || ''}
-              onChange={(e) => onFieldChange('dep_dob', e.target.value)}
+              value={dependant.date_of_birth || ''}
+              onChange={(e) => onFieldChange('date_of_birth', e.target.value)}
               className={INPUT_CLASS}
             />
           </div>
@@ -165,8 +165,8 @@ function DependantCard({ dependant, index, onFieldChange, onRemove }) {
             <label className="block text-sm font-semibold text-slate-700 mb-2">Expected age of dependence until</label>
             <input
               type="number"
-              value={dependant.dep_until_age || ''}
-              onChange={(e) => onFieldChange('dep_until_age', e.target.value)}
+              value={dependant.dependant_until_age || ''}
+              onChange={(e) => onFieldChange('dependant_until_age', e.target.value)}
               placeholder="e.g. 85"
               className={INPUT_CLASS}
             />
@@ -174,8 +174,8 @@ function DependantCard({ dependant, index, onFieldChange, onRemove }) {
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">Relationship</label>
             <select
-              value={dependant.dep_relationship || ''}
-              onChange={(e) => onFieldChange('dep_relationship', e.target.value)}
+              value={dependant.relationship || ''}
+              onChange={(e) => onFieldChange('relationship', e.target.value)}
               className={INPUT_CLASS}
             >
               <option value="">Select...</option>
@@ -192,10 +192,10 @@ function DependantCard({ dependant, index, onFieldChange, onRemove }) {
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
-                name={`dep_interdep__${index}`}
+                name={`interdependency__${index}`}
                 value="1"
-                checked={dependant.dep_interdep === '1'}
-                onChange={(e) => onFieldChange('dep_interdep', e.target.value)}
+                checked={dependant.interdependency === '1'}
+                onChange={(e) => onFieldChange('interdependency', e.target.value)}
                 className="w-4 h-4"
               />
               <span className="text-sm text-slate-700">Yes</span>
@@ -203,10 +203,10 @@ function DependantCard({ dependant, index, onFieldChange, onRemove }) {
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
-                name={`dep_interdep__${index}`}
+                name={`interdependency__${index}`}
                 value="2"
-                checked={dependant.dep_interdep === '2'}
-                onChange={(e) => onFieldChange('dep_interdep', e.target.value)}
+                checked={dependant.interdependency === '2'}
+                onChange={(e) => onFieldChange('interdependency', e.target.value)}
                 className="w-4 h-4"
               />
               <span className="text-sm text-slate-700">No</span>
@@ -454,8 +454,8 @@ export default function FactFindDependants() {
                 <div className="flex items-center gap-2">
                   {activeList.map((item, i) => {
                     const displayName = currentTab === 'children'
-                      ? (item.child_name?.trim() || `Child ${i + 1}`)
-                      : (item.dep_name?.trim() || `Dependant ${i + 1}`);
+                      ? (item.name?.trim() || `Child ${i + 1}`)
+                      : (item.name?.trim() || `Dependant ${i + 1}`);
                     const isActive = i === activeIndex;
                     return (
                       <button

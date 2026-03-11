@@ -244,14 +244,14 @@ const COPILOT_TOOL_DEFINITIONS = [
     input_schema: {
       type: "object",
       properties: {
-        child_name:    { type: "string", description: "Child's full name" },
-        child_dob:     { type: "string", description: "Date of birth YYYY-MM-DD" },
-        child_fin_dep: { type: "string", description: "Financially dependent: 1=Yes, 2=No" },
-        child_edu:     { type: "string", description: "1=Primary, 2=Secondary, 3=Tertiary, 4=TAFE/Trade, 5=Not in education" },
-        child_fin_age: { type: "string", description: "Age at which financial dependency ends e.g. '25'" },
-        child_health:  { type: "string", description: "Any health conditions (free text, optional)" },
+        name:                     { type: "string", description: "Child's full name" },
+        date_of_birth:            { type: "string", description: "Date of birth YYYY-MM-DD" },
+        financially_dependent:    { type: "string", description: "Financially dependent: 1=Yes, 2=No" },
+        education_status:         { type: "string", description: "1=Primary, 2=Secondary, 3=Tertiary, 4=TAFE/Trade, 5=Not in education" },
+        financial_dependence_age: { type: "string", description: "Age at which financial dependency ends e.g. '25'" },
+        health_issues:            { type: "string", description: "Any health conditions (free text, optional)" },
       },
-      required: ["child_name"],
+      required: ["name"],
     },
   },
   {
@@ -260,13 +260,13 @@ const COPILOT_TOOL_DEFINITIONS = [
     input_schema: {
       type: "object",
       properties: {
-        dep_name:         { type: "string", description: "Dependant's full name" },
-        dep_dob:          { type: "string", description: "Date of birth YYYY-MM-DD" },
-        dep_relationship: { type: "string", description: "1=Parent, 2=Sibling/Relative, 3=Other" },
-        dep_interdep:     { type: "string", description: "Financially interdependent: 1=Yes, 2=No" },
-        dep_until_age:    { type: "string", description: "Age dependency ends (optional)" },
+        name:               { type: "string", description: "Dependant's full name" },
+        date_of_birth:      { type: "string", description: "Date of birth YYYY-MM-DD" },
+        relationship:       { type: "string", description: "1=Parent, 2=Sibling/Relative, 3=Other" },
+        interdependency:    { type: "string", description: "Financially interdependent: 1=Yes, 2=No" },
+        dependant_until_age: { type: "string", description: "Age dependency ends (optional)" },
       },
-      required: ["dep_name"],
+      required: ["name"],
     },
   },
   {
@@ -567,26 +567,26 @@ Current context:
       case "addChild": {
         const children = factFind.children || [];
         updateFF("children", [...children, {
-          child_name:    toolInput.child_name,
-          child_dob:     toolInput.child_dob     || "",
-          child_fin_dep: toolInput.child_fin_dep || "1",
-          child_edu:     toolInput.child_edu     || "",
-          child_fin_age: toolInput.child_fin_age || "",
-          child_health:  toolInput.child_health  || "",
+          name:                     toolInput.name,
+          date_of_birth:            toolInput.date_of_birth            || "",
+          financially_dependent:    toolInput.financially_dependent    || "1",
+          education_status:         toolInput.education_status         || "",
+          financial_dependence_age: toolInput.financial_dependence_age || "",
+          health_issues:            toolInput.health_issues            || "",
         }]);
-        return { success: true, summary: `Added child: ${toolInput.child_name}${toolInput.child_dob ? ` (DOB ${toolInput.child_dob})` : ""}` };
+        return { success: true, summary: `Added child: ${toolInput.name}${toolInput.date_of_birth ? ` (DOB ${toolInput.date_of_birth})` : ""}` };
       }
       case "addDependant": {
         const depList = factFind.dependants_list || [];
         updateFF("dependants_list", [...depList, {
-          dep_name:         toolInput.dep_name,
-          dep_dob:          toolInput.dep_dob          || "",
-          dep_relationship: toolInput.dep_relationship || "",
-          dep_interdep:     toolInput.dep_interdep     || "2",
-          dep_until_age:    toolInput.dep_until_age    || "",
+          name:               toolInput.name,
+          date_of_birth:      toolInput.date_of_birth      || "",
+          relationship:       toolInput.relationship       || "",
+          interdependency:    toolInput.interdependency    || "2",
+          dependant_until_age: toolInput.dependant_until_age || "",
         }]);
-        const relLabel = { "1":"Parent", "2":"Relative", "3":"Other" }[toolInput.dep_relationship] || "Dependant";
-        return { success: true, summary: `Added dependant: ${toolInput.dep_name} (${relLabel})` };
+        const relLabel = { "1":"Parent", "2":"Relative", "3":"Other" }[toolInput.relationship] || "Dependant";
+        return { success: true, summary: `Added dependant: ${toolInput.name} (${relLabel})` };
       }
       case "addTrust": {
         const trusts = factFind.trusts || [];
