@@ -9,10 +9,42 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft, Plus } from 'lucide-react';
+import { dependantsApi } from '../api/dependantsApi';
+
+/**
+ * Persist dependants via the dedicated /dependants endpoint.
+ * Mirrors the pattern used by principalsApi.save() for PersonalDetails.
+ */
+async function saveDependantsToApi(clientId, depState) {
+  const localChildren = (depState.children || []).map(c => ({ ...c, dep_type: 'child' }));
+  const localDeps = (depState.dependants_list || []).map(d => ({ ...d, dep_type: 'dependant' }));
+  const localAll = [...localChildren, ...localDeps];
+
+  // Fetch current server state to diff against
+  const serverAll = await dependantsApi.getAll(clientId);
+  const serverById = new Map((serverAll || []).filter(r => r.id).map(r => [r.id, r]));
+  const localById = new Map(localAll.filter(r => r.id).map(r => [r.id, r]));
+
+  // Delete server records not present locally
+  for (const serverId of serverById.keys()) {
+    if (!localById.has(serverId)) {
+      await dependantsApi.remove(serverId);
+    }
+  }
+
+  // Create or update local records
+  for (const rec of localAll) {
+    if (rec.id && serverById.has(rec.id)) {
+      await dependantsApi.update(rec.id, { ...rec, client_id: clientId });
+    } else {
+      await dependantsApi.create({ ...rec, client_id: clientId });
+    }
+  }
+}
 
 export default function FactFindDependants() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading, updateSection } = useFactFind();
+  const { factFind, loading: ffLoading, clientId } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('children');
@@ -294,16 +326,16 @@ export default function FactFindDependants() {
       setActiveIndex(0);
     }
 
-    // Save to database immediately
-    if (factFind?.id) {
+    // Save to database immediately via dedicated dependants endpoint
+    if (clientId) {
       globalStateRef.current.dependants.children = readTabToArray('children');
       globalStateRef.current.dependants.dependants_list = readTabToArray('dependants');
       globalStateRef.current.dependants.currentTab = currentTab;
       globalStateRef.current.dependants.activeIndex = activeIndex;
-      
-      await updateSection('Client1FactFind', { Dependants: globalStateRef.current.dependants });
+
+      await saveDependantsToApi(clientId, globalStateRef.current.dependants);
     }
-  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills, factFind?.id, readTabToArray, currentTab, activeIndex, updateSection]);
+  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills, factFind?.id, readTabToArray, currentTab, activeIndex, clientId]);
 
   // ============================================
   // LOAD USER AND SYNC FACTFIND
@@ -321,25 +353,24 @@ export default function FactFindDependants() {
     loadUser();
   }, []);
 
-  // When FactFind loads, sync its dependants data from client1Profile
+  // When FactFind loads, fetch dependants from the dedicated /dependants endpoint
   useEffect(() => {
-    const depData = factFind?.client1_profile?.dependants;
-    if (factFind?.id && depData) {
-      if (Array.isArray(depData)) {
-        // Flat array format from API: split by dep_type discriminator
-        const children = depData.filter(d => d.dep_type === 'child').map(({ dep_type, ...rest }) => rest);
-        const deps = depData.filter(d => d.dep_type === 'dependant').map(({ dep_type, ...rest }) => rest);
+    if (!clientId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const records = await dependantsApi.getAll(clientId);
+        if (cancelled) return;
+        const arr = Array.isArray(records) ? records : [];
+        const children = arr.filter(d => d.dep_type === 'child').map(({ dep_type, ...rest }) => rest);
+        const deps = arr.filter(d => d.dep_type === 'dependant').map(({ dep_type, ...rest }) => rest);
         globalStateRef.current.dependants = { children, dependants_list: deps, currentTab: 'children', activeIndex: 0 };
-      } else {
-        // Legacy wrapper format
-        globalStateRef.current.dependants = {
-          ...depData,
-          currentTab: depData.currentTab || 'children',
-          activeIndex: depData.activeIndex || 0
-        };
+      } catch (err) {
+        console.error('[FactFindDependants] Failed to load dependants from API:', err);
       }
-    }
-  }, [factFind?.id]);
+    })();
+    return () => { cancelled = true; };
+  }, [clientId]);
 
   // ============================================
   // SETUP INPUT LISTENERS
@@ -363,7 +394,7 @@ export default function FactFindDependants() {
   // ============================================
 
   const saveDependantsState = useCallback(async () => {
-    if (!factFind?.id) return;
+    if (!clientId) return;
 
     try {
       globalStateRef.current.dependants.children = readTabToArray('children');
@@ -371,11 +402,11 @@ export default function FactFindDependants() {
       globalStateRef.current.dependants.currentTab = currentTab;
       globalStateRef.current.dependants.activeIndex = activeIndex;
 
-      await updateSection('Client1FactFind', { Dependants: globalStateRef.current.dependants });
+      await saveDependantsToApi(clientId, globalStateRef.current.dependants);
     } catch (error) {
       console.error('Save failed:', error);
     }
-  }, [factFind?.id, readTabToArray, currentTab, activeIndex, updateSection]);
+  }, [clientId, readTabToArray, currentTab, activeIndex]);
 
   // ============================================
   // INITIALIZE DOM
@@ -432,8 +463,8 @@ export default function FactFindDependants() {
         sectionsCompleted.push('dependants');
       }
 
-      await updateSection('Client1FactFind', { Dependants: globalStateRef.current.dependants });
-      
+      await saveDependantsToApi(clientId, globalStateRef.current.dependants);
+
       // Update sections completed separately
       await base44.entities.FactFind.update(factFind.id, {
         sections_completed: sectionsCompleted,

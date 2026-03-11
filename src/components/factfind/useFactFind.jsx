@@ -37,12 +37,10 @@ function normalizeFactFindForApi(data) {
   if (!data || typeof data !== 'object') return data;
   const result = { ...data };
 
-  // Dependants: wrapper → flat array with dep_type discriminator
-  if (result.dependants && !Array.isArray(result.dependants)) {
-    const children = (result.dependants.children || []).map(c => ({ ...c, dep_type: 'child' }));
-    const deps = (result.dependants.dependants_list || []).map(d => ({ ...d, dep_type: 'dependant' }));
-    result.dependants = [...children, ...deps];
-  }
+  // Dependants are persisted via the dedicated /dependants endpoint
+  // (same pattern as PersonalDetails / principalsApi). Strip them from
+  // the advice-request payload so they never overwrite the wrong resource.
+  delete result.dependants;
 
   // InsurancePolicies: wrapper → flat array (strip activeIdx metadata)
   if (result.insurance_policies && !Array.isArray(result.insurance_policies)) {
