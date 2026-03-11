@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import React from "react";
 import { _psInitialDark, injectThemeCSS } from "../constants/theme.jsx";
 import { principalsApi } from "../../api/principalsApi.js";
+import { dependantsApi } from "../../api/dependantsApi.js";
 
 export function useFactFind(initialData) {
   const [darkMode, setDarkMode] = useState(_psInitialDark);
@@ -218,11 +219,83 @@ export function useFactFind(initialData) {
     }
   }, [factFind]);
 
+  // ── Dependants API integration ─────────────────────────────
+
+  /**
+   * Load dependants from GET /dependants?clientId={id} and populate
+   * factFind.children and factFind.dependants_list based on dep_type.
+   * @param {string} clientId - The client ID (GUID)
+   */
+  const loadDependants = useCallback(async (clientId) => {
+    try {
+      const records = await dependantsApi.getAll(clientId);
+      const arr = Array.isArray(records) ? records : [];
+      const children = arr.filter(d => d.dep_type === 'child').map(({ dep_type, ...rest }) => rest);
+      const depsList = arr.filter(d => d.dep_type === 'dependant').map(({ dep_type, ...rest }) => rest);
+
+      setFactFind(prev => {
+        const next = JSON.parse(JSON.stringify(prev));
+        next.children = children;
+        next.dependants_list = depsList;
+        return next;
+      });
+      setAdviceModel1(prev => {
+        if (!prev) return prev;
+        const next = JSON.parse(JSON.stringify(prev));
+        next.children = children;
+        next.dependants_list = depsList;
+        return next;
+      });
+    } catch (err) {
+      console.error('[useFactFind] Failed to load dependants from API:', err);
+    }
+  }, []);
+
+  /**
+   * Save dependants by syncing the full list via create/update/delete.
+   * Compares local state against the API and reconciles differences.
+   * @param {string} clientId - The client ID (GUID)
+   */
+  const saveDependants = useCallback(async (clientId) => {
+    try {
+      const ff = factFind;
+      const localChildren = (ff.children || []).map(c => ({ ...c, dep_type: 'child' }));
+      const localDeps = (ff.dependants_list || []).map(d => ({ ...d, dep_type: 'dependant' }));
+      const localAll = [...localChildren, ...localDeps];
+
+      // Fetch current server state to diff against
+      const serverAll = await dependantsApi.getAll(clientId);
+      const serverById = new Map((serverAll || []).filter(r => r.id).map(r => [r.id, r]));
+
+      // Determine which local records have IDs (existing) vs new
+      const localById = new Map(localAll.filter(r => r.id).map(r => [r.id, r]));
+
+      // Delete server records not present locally
+      for (const serverId of serverById.keys()) {
+        if (!localById.has(serverId)) {
+          await dependantsApi.remove(serverId);
+        }
+      }
+
+      // Create or update local records
+      for (const rec of localAll) {
+        if (rec.id && serverById.has(rec.id)) {
+          await dependantsApi.update(rec.id, { ...rec, client_id: clientId });
+        } else {
+          await dependantsApi.create({ ...rec, client_id: clientId });
+        }
+      }
+    } catch (err) {
+      console.error('[useFactFind] Failed to save dependants to API:', err);
+    }
+  }, [factFind]);
+
   return {
     factFind, setFactFind, adviceModel1, setAdviceModel1,
     updateFF, updateAdvice, resetAdviceModel,
     addPrincipal, removePrincipal,
     loadPrincipals, savePrincipals,
+    loadDependants, saveDependants,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
