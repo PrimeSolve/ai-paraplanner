@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
 import { useRole } from '../RoleContext';
@@ -66,9 +66,13 @@ const sectionGroups = [
   }
 ];
 
-export default function FactFindLayout({ children, currentSection, factFindId }) {
+export default function FactFindLayout({ children, currentSection, factFindId, clientId: clientIdProp }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { navigationChain } = useRole();
+  const clientId = useMemo(() => {
+    return clientIdProp || searchParams.get('clientId') || null;
+  }, [clientIdProp, searchParams]);
   const [activeTabId, setActiveTabId] = useState(currentSection || 'prefill');
 
   // Update active tab when section changes
@@ -157,11 +161,17 @@ export default function FactFindLayout({ children, currentSection, factFindId })
                    const isActive = currentSection === section.id;
                    const Icon = section.icon;
 
+                   const queryParams = [
+                     factFindId ? `id=${factFindId}` : '',
+                     clientId ? `clientId=${clientId}` : ''
+                   ].filter(Boolean).join('&');
+                   const sectionUrl = createPageUrl(section.path) + (queryParams ? `?${queryParams}` : '');
+
                    return (
                      <Link
                        key={section.id}
-                       to={createPageUrl(section.path) + (factFindId ? `?id=${factFindId}` : '')}
-                       onClick={(e) => handleNavClick(e, createPageUrl(section.path) + (factFindId ? `?id=${factFindId}` : ''))}
+                       to={sectionUrl}
+                       onClick={(e) => handleNavClick(e, sectionUrl)}
                        className={cn(
                          "flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all text-sm",
                          isActive 

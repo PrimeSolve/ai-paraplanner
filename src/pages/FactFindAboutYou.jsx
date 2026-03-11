@@ -288,7 +288,7 @@ export default function FactFindPersonal() {
           toast.success('Progress saved');
         }
       } else {
-        navigate(createPageUrl('FactFindDependants') + `?id=${factFind.id}`);
+        navigate(createPageUrl('FactFindDependants') + `?id=${factFind.id}` + (clientId ? `&clientId=${clientId}` : ''));
       }
     } catch (error) {
       toast.error('Failed to save data');
@@ -316,7 +316,7 @@ export default function FactFindPersonal() {
 
   if (ffLoading) {
     return (
-      <FactFindLayout currentSection="personal" factFindId={factFind?.id}>
+      <FactFindLayout currentSection="personal" factFindId={factFind?.id} clientId={clientId}>
         <div className="flex items-center justify-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
@@ -336,7 +336,7 @@ export default function FactFindPersonal() {
   const partnerName = partnerData.first_name || 'Partner';
 
   return (
-    <FactFindLayout currentSection="personal" factFindId={factFind?.id}>
+    <FactFindLayout currentSection="personal" factFindId={factFind?.id} clientId={clientId}>
       <FactFindHeader
         title="Personal Details"
         description="Please provide basic information about you and your partner."
