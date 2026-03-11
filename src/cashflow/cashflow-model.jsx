@@ -1010,6 +1010,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
     updateFF, updateAdvice, resetAdviceModel,
     addPrincipal, removePrincipal,
     loadPrincipals, savePrincipals,
+    loadDependants, saveDependants,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
@@ -1051,6 +1052,36 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
       if (principalsSaveTimerRef.current) clearTimeout(principalsSaveTimerRef.current);
     };
   }, [factFind.client1, factFind.client2, urlClientId, savePrincipals]);
+
+  // ── Dependants API: load on mount, auto-save on change ─────
+  const dependantsLoadedRef = useRef(false);
+  useEffect(() => {
+    if (urlClientId && !dependantsLoadedRef.current) {
+      dependantsLoadedRef.current = true;
+      loadDependants(urlClientId);
+    }
+  }, [urlClientId, loadDependants]);
+
+  // Auto-save dependants to API when children/dependants_list changes (debounced)
+  const dependantsSaveTimerRef = useRef(null);
+  const dependantsInitialised = useRef(false);
+  useEffect(() => {
+    // Skip the first render and the initial load population
+    if (!dependantsInitialised.current) {
+      dependantsInitialised.current = true;
+      return;
+    }
+    if (!urlClientId) return;
+
+    if (dependantsSaveTimerRef.current) clearTimeout(dependantsSaveTimerRef.current);
+    dependantsSaveTimerRef.current = setTimeout(() => {
+      saveDependants(urlClientId);
+    }, 2000);
+
+    return () => {
+      if (dependantsSaveTimerRef.current) clearTimeout(dependantsSaveTimerRef.current);
+    };
+  }, [factFind.children, factFind.dependants_list, urlClientId, saveDependants]);
 
   // Notify parent when factFind data changes (for API auto-save)
   const isFirstRender = useRef(true);
