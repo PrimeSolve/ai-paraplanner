@@ -60,7 +60,7 @@ function ChildCard({ child, index, onFieldChange, onRemove }) {
                 type="radio"
                 name={`child_fin_dep__${index}`}
                 value="1"
-                checked={child.child_fin_dep === '1'}
+                checked={String(child.child_fin_dep) === '1'}
                 onChange={(e) => onFieldChange('child_fin_dep', e.target.value)}
                 className="w-4 h-4"
               />
@@ -71,7 +71,7 @@ function ChildCard({ child, index, onFieldChange, onRemove }) {
                 type="radio"
                 name={`child_fin_dep__${index}`}
                 value="2"
-                checked={child.child_fin_dep === '2'}
+                checked={String(child.child_fin_dep) === '2'}
                 onChange={(e) => onFieldChange('child_fin_dep', e.target.value)}
                 className="w-4 h-4"
               />
@@ -194,7 +194,7 @@ function DependantCard({ dependant, index, onFieldChange, onRemove }) {
                 type="radio"
                 name={`dep_interdep__${index}`}
                 value="1"
-                checked={dependant.dep_interdep === '1'}
+                checked={String(dependant.dep_interdep) === '1'}
                 onChange={(e) => onFieldChange('dep_interdep', e.target.value)}
                 className="w-4 h-4"
               />
@@ -205,7 +205,7 @@ function DependantCard({ dependant, index, onFieldChange, onRemove }) {
                 type="radio"
                 name={`dep_interdep__${index}`}
                 value="2"
-                checked={dependant.dep_interdep === '2'}
+                checked={String(dependant.dep_interdep) === '2'}
                 onChange={(e) => onFieldChange('dep_interdep', e.target.value)}
                 className="w-4 h-4"
               />
@@ -230,6 +230,11 @@ export default function FactFindDependants() {
   const [loaded, setLoaded] = useState(false);
 
   const debounceTimers = useRef({});
+  // Keep refs to latest state so we can flush pending saves
+  const childrenRef = useRef(children);
+  childrenRef.current = children;
+  const dependantsRef = useRef(dependants);
+  dependantsRef.current = dependants;
 
   // Load user
   useEffect(() => {
@@ -245,8 +250,16 @@ export default function FactFindDependants() {
       try {
         const all = await dependantsApi.getAll(clientId);
         if (cancelled) return;
-        setChildren(all.filter(d => d.dep_type === 'child'));
-        setDependants(all.filter(d => d.dep_type === 'dependant'));
+        // Normalize all field values to strings for controlled inputs
+        const normalize = (record) => {
+          const out = {};
+          for (const [k, v] of Object.entries(record)) {
+            out[k] = v != null ? String(v) : '';
+          }
+          return out;
+        };
+        setChildren(all.filter(d => d.dep_type === 'child').map(normalize));
+        setDependants(all.filter(d => d.dep_type === 'dependant').map(normalize));
       } catch (error) {
         console.error('Failed to load dependants:', error);
       } finally {
@@ -259,18 +272,44 @@ export default function FactFindDependants() {
     return () => { cancelled = true; };
   }, [factFind?.id, clientId]);
 
-  // Debounced update to API
-  const debouncedUpdate = useCallback((id, data) => {
+  // Schedule a debounced API update for a record
+  const scheduleUpdate = useCallback((id, getData) => {
     if (debounceTimers.current[id]) {
       clearTimeout(debounceTimers.current[id]);
     }
     debounceTimers.current[id] = setTimeout(async () => {
+      delete debounceTimers.current[id];
       try {
+        const data = getData();
         await dependantsApi.update(id, data);
       } catch (error) {
         console.error('Failed to update dependant:', error);
       }
     }, 500);
+  }, []);
+
+  // Flush all pending debounced saves immediately
+  const flushPendingSaves = useCallback(async () => {
+    const pending = [];
+    // Flush children
+    for (const child of childrenRef.current) {
+      if (child.id && debounceTimers.current[child.id]) {
+        clearTimeout(debounceTimers.current[child.id]);
+        delete debounceTimers.current[child.id];
+        const { id, dep_type, client_id, ...fields } = child;
+        pending.push(dependantsApi.update(id, fields));
+      }
+    }
+    // Flush dependants
+    for (const dep of dependantsRef.current) {
+      if (dep.id && debounceTimers.current[dep.id]) {
+        clearTimeout(debounceTimers.current[dep.id]);
+        delete debounceTimers.current[dep.id];
+        const { id, dep_type, client_id, ...fields } = dep;
+        pending.push(dependantsApi.update(id, fields));
+      }
+    }
+    await Promise.all(pending);
   }, []);
 
   // Cleanup timers on unmount
@@ -281,20 +320,26 @@ export default function FactFindDependants() {
   }, []);
 
   const activeList = currentTab === 'children' ? children : dependants;
-  const setActiveList = currentTab === 'children' ? setChildren : setDependants;
 
-  const handleFieldChange = useCallback((list, setList, index, field, value) => {
+  const handleFieldChange = useCallback((setList, index, field, value, recordId) => {
+    // Update React state (pure)
     setList(prev => {
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
-      const record = updated[index];
-      if (record.id) {
-        const { id, dep_type, client_id, ...fields } = record;
-        debouncedUpdate(id, fields);
-      }
       return updated;
     });
-  }, [debouncedUpdate]);
+    // Schedule debounced API save (side effect, outside state updater)
+    if (recordId) {
+      scheduleUpdate(recordId, () => {
+        // Read latest state at fire time from refs
+        const allLists = [...childrenRef.current, ...dependantsRef.current];
+        const latest = allLists.find(r => r.id === recordId);
+        if (!latest) return {};
+        const { id, dep_type, client_id, ...fields } = latest;
+        return fields;
+      });
+    }
+  }, [scheduleUpdate]);
 
   const handleAdd = useCallback(async () => {
     if (!clientId) return;
@@ -343,6 +388,9 @@ export default function FactFindDependants() {
 
     setSaving(true);
     try {
+      // Flush any pending debounced field saves
+      await flushPendingSaves();
+
       const sectionsCompleted = [...(factFind.sections_completed || [])];
       if (!sectionsCompleted.includes('dependants')) {
         sectionsCompleted.push('dependants');
@@ -481,7 +529,7 @@ export default function FactFindDependants() {
                 <ChildCard
                   child={activeItem}
                   index={activeIndex}
-                  onFieldChange={(field, value) => handleFieldChange(children, setChildren, activeIndex, field, value)}
+                  onFieldChange={(field, value) => handleFieldChange(setChildren, activeIndex, field, value, activeItem.id)}
                   onRemove={() => handleRemove(activeItem.id, 'children')}
                 />
               )}
@@ -489,7 +537,7 @@ export default function FactFindDependants() {
                 <DependantCard
                   dependant={activeItem}
                   index={activeIndex}
-                  onFieldChange={(field, value) => handleFieldChange(dependants, setDependants, activeIndex, field, value)}
+                  onFieldChange={(field, value) => handleFieldChange(setDependants, activeIndex, field, value, activeItem.id)}
                   onRemove={() => handleRemove(activeItem.id, 'dependants')}
                 />
               )}
