@@ -6,6 +6,7 @@ import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
 import { useFactFind } from '../components/factfind/useFactFind';
+import { useRole } from '@/components/RoleContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -220,7 +221,11 @@ function DependantCard({ dependant, index, onFieldChange, onRemove }) {
 
 export default function FactFindDependants() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading, clientId } = useFactFind();
+  const { factFind, loading: ffLoading, clientId: ffClientId } = useFactFind();
+  // Fallback: resolve clientId from navigation chain if useFactFind doesn't provide it
+  const { navigationChain } = useRole();
+  const navClientId = navigationChain?.find(n => n.type === 'client')?.id;
+  const clientId = ffClientId || navClientId || null;
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('children');

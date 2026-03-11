@@ -3,8 +3,13 @@ import React from "react";
 import { _psInitialDark, injectThemeCSS } from "../constants/theme.jsx";
 import { principalsApi } from "../../api/principalsApi.js";
 import { dependantsApi } from "../../api/dependantsApi.js";
+import { useRole } from "../../components/RoleContext.jsx";
 
 export function useFactFind(initialData) {
+  // Resolve clientId from navigation chain
+  const { navigationChain } = useRole();
+  const clientNav = navigationChain?.find(n => n.type === 'client');
+  const clientId = clientNav?.id || null;
   const [darkMode, setDarkMode] = useState(_psInitialDark);
   // Inject theme CSS on mount and when darkMode changes
   React.useEffect(() => {
@@ -299,5 +304,6 @@ export function useFactFind(initialData) {
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
+    clientId,
   };
 }
