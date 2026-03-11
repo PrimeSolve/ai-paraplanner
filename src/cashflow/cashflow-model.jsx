@@ -997,7 +997,7 @@ Current context:
   );
 }
 
-function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvice }) {
+function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvice, clientId }) {
   const isFactfindMode = mode === "factfind";
   const [activeTop, setActiveTop] = useState("Summary of Results");
 
@@ -1018,9 +1018,9 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
   // ── Principals API: load on mount, auto-save on change ──────
   const urlClientId = useMemo(() => {
     try {
-      return new URLSearchParams(window.location.search).get('clientId');
+      return clientId || new URLSearchParams(window.location.search).get('clientId');
     } catch { return null; }
-  }, []);
+  }, [clientId]);
 
   // Load principals from API on mount when clientId is available
   const principalsLoadedRef = useRef(false);
@@ -3096,8 +3096,8 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
   );
 }
 
-export default function CashflowModel({ initialData, onDataChange, onBack, mode, hideAdvice } = {}) {
+export default function CashflowModel({ initialData, onDataChange, onBack, mode, hideAdvice, clientId } = {}) {
   return React.createElement(CashflowErrorBoundary, null,
-    React.createElement(CashflowModelInner, { initialData, onDataChange, onBack, mode, hideAdvice })
+    React.createElement(CashflowModelInner, { initialData, onDataChange, onBack, mode, hideAdvice, clientId })
   );
 }
