@@ -189,7 +189,11 @@ function dbToModelFormat(db) {
 async function saveAllSections(modelFF, updateSection) {
   console.log('[ClientFactFindAI] saveAllSections CALLED');
 
-  const { client2: _c2, ...client1Rest } = modelFF.client1 || {};
+  // NOTE: PersonalDetails (client1/client2 principal data) is intentionally
+  // excluded from this save.  Principal fields are persisted via
+  // principalsApi.save() which targets PUT /clients/{id} — the correct
+  // endpoint.  Including them here would send them to /advice-requests/{id}
+  // instead, overwriting the wrong resource.
 
   // Build incomes array — flat objects with adjustments included (matches manual form)
   const clientIncomeFields = modelFF.income?.client1 || {};
@@ -242,13 +246,9 @@ async function saveAllSections(modelFF, updateSection) {
   };
 
   // Single updateSection call with all sub-keys — deep-merge in useFactFind preserves each
+  // PersonalDetails is NOT included here — it is saved via principalsApi.save()
+  // which correctly targets PUT /api/v1/clients/{id}.
   await updateSection('Client1FactFind', {
-    // PersonalDetails (FactFindAboutYou)
-    PersonalDetails: {
-      ...client1Rest,
-      partner: modelFF.client2 || null,
-    },
-
     // SuperFunds (FactFindSuperannuation) — flat array for API compatibility
     SuperFunds: [
       ...(modelFF.superProducts || []).map(f => ({ ...f, type: 'super' })),
