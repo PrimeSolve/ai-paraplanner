@@ -351,20 +351,20 @@ export function PrincipalsForm({ factFind, updateFF, addPrincipal, removePrincip
 // ===========================================================================
 
 export const CHILD_DEFAULTS = {
-  child_name: "",
-  child_dob: "",
-  child_fin_dep: "",            // "1"=Yes, "2"=No
-  child_edu: "",                // "1"=Primary, "2"=Secondary, "3"=Tertiary, "4"=TAFE/Trade, "5"=Not in education
-  child_fin_age: "",
-  child_health: "",
+  name: "",
+  date_of_birth: "",
+  financially_dependent: "",            // "1"=Yes, "2"=No
+  education_status: "",                // "1"=Primary, "2"=Secondary, "3"=Tertiary, "4"=TAFE/Trade, "5"=Not in education
+  financial_dependence_age: "",
+  health_issues: "",
 };
 
 export const DEPENDANT_DEFAULTS = {
-  dep_name: "",
-  dep_dob: "",
-  dep_until_age: "",
-  dep_relationship: "",         // "1"=Child, "2"=Parent, "3"=Relative, "4"=Other
-  dep_interdep: "",             // "1"=Yes, "2"=No
+  name: "",
+  date_of_birth: "",
+  dependant_until_age: "",
+  relationship: "",         // "1"=Child, "2"=Parent, "3"=Relative, "4"=Other
+  interdependency: "",             // "1"=Yes, "2"=No
 };
 
 export function DependantsForm({ factFind, updateFF, clientId }) {
@@ -533,24 +533,24 @@ export function DependantsForm({ factFind, updateFF, clientId }) {
               <div style={{ padding: "10px 16px", background: "#EC489908", borderBottom: "1px solid var(--ps-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#EC4899", color: "var(--ps-surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>👶</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ps-text-primary)" }}>{data.child_name || `Child ${idx + 1}`}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ps-text-primary)" }}>{data.name || `Child ${idx + 1}`}</div>
                 </div>
                 <button onClick={() => removeChild(idx)} style={{ padding: "2px 8px", borderRadius: 4, border: "1px solid var(--ps-ring-red)", background: "var(--ps-surface-red)", cursor: "pointer", fontSize: 10, color: "var(--ps-red)", fontWeight: 500 }}>Remove</button>
               </div>
               <div style={{ padding: 14 }}>
                 <div style={ffRowStyle}>
-                  <FFInput label="Child Name" value={data.child_name} onChange={v => updateChild(idx, "child_name", v)} placeholder="e.g. Emma" />
-                  <FFInput label="Date of Birth" value={data.child_dob} onChange={v => updateChild(idx, "child_dob", v)} type="date" />
+                  <FFInput label="Child Name" value={data.name} onChange={v => updateChild(idx, "name", v)} placeholder="e.g. Emma" />
+                  <FFInput label="Date of Birth" value={data.date_of_birth} onChange={v => updateChild(idx, "date_of_birth", v)} type="date" />
                 </div>
                 <div style={ffRowStyle}>
-                  <FFRadioRow label="Financially Dependent?" value={data.child_fin_dep} onChange={v => updateChild(idx, "child_fin_dep", v)}
+                  <FFRadioRow label="Financially Dependent?" value={data.financially_dependent} onChange={v => updateChild(idx, "financially_dependent", v)}
                     options={[{ value: "1", label: "Yes" }, { value: "2", label: "No" }]} />
-                  <FFSelect label="Education Status" value={data.child_edu} onChange={v => updateChild(idx, "child_edu", v)}
+                  <FFSelect label="Education Status" value={data.education_status} onChange={v => updateChild(idx, "education_status", v)}
                     options={[{ value: "", label: "Select..." }, { value: "1", label: "Primary" }, { value: "2", label: "Secondary" }, { value: "3", label: "Tertiary" }, { value: "4", label: "TAFE/Trade" }, { value: "5", label: "Not in education" }]} />
                 </div>
                 <div style={ffRowStyle}>
-                  <FFInput label="Expected Age of Financial Dependence" value={data.child_fin_age} onChange={v => updateChild(idx, "child_fin_age", v)} type="number" step="1" placeholder="e.g. 25" />
-                  <FFInput label="Health Issues or Concerns" value={data.child_health} onChange={v => updateChild(idx, "child_health", v)} placeholder="e.g. Asthma, food allergy" />
+                  <FFInput label="Expected Age of Financial Dependence" value={data.financial_dependence_age} onChange={v => updateChild(idx, "financial_dependence_age", v)} type="number" step="1" placeholder="e.g. 25" />
+                  <FFInput label="Health Issues or Concerns" value={data.health_issues} onChange={v => updateChild(idx, "health_issues", v)} placeholder="e.g. Asthma, food allergy" />
                 </div>
               </div>
             </div>
@@ -568,22 +568,22 @@ export function DependantsForm({ factFind, updateFF, clientId }) {
               <div style={{ padding: "10px 16px", background: "#7C3AED08", borderBottom: "1px solid var(--ps-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#7C3AED", color: "var(--ps-surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>👥</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ps-text-primary)" }}>{data.dep_name || `Dependant ${idx + 1}`}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ps-text-primary)" }}>{data.name || `Dependant ${idx + 1}`}</div>
                 </div>
                 <button onClick={() => removeDep(idx)} style={{ padding: "2px 8px", borderRadius: 4, border: "1px solid var(--ps-ring-red)", background: "var(--ps-surface-red)", cursor: "pointer", fontSize: 10, color: "var(--ps-red)", fontWeight: 500 }}>Remove</button>
               </div>
               <div style={{ padding: 14 }}>
                 <div style={ffRowStyle}>
-                  <FFInput label="Name" value={data.dep_name} onChange={v => updateDep(idx, "dep_name", v)} placeholder="e.g. Parent name" />
-                  <FFInput label="Date of Birth" value={data.dep_dob} onChange={v => updateDep(idx, "dep_dob", v)} type="date" />
+                  <FFInput label="Name" value={data.name} onChange={v => updateDep(idx, "name", v)} placeholder="e.g. Parent name" />
+                  <FFInput label="Date of Birth" value={data.date_of_birth} onChange={v => updateDep(idx, "date_of_birth", v)} type="date" />
                 </div>
                 <div style={ffRowStyle}>
-                  <FFInput label="Expected Age of Dependence Until" value={data.dep_until_age} onChange={v => updateDep(idx, "dep_until_age", v)} type="number" step="1" placeholder="e.g. 85" />
-                  <FFSelect label="Relationship" value={data.dep_relationship} onChange={v => updateDep(idx, "dep_relationship", v)}
+                  <FFInput label="Expected Age of Dependence Until" value={data.dependant_until_age} onChange={v => updateDep(idx, "dependant_until_age", v)} type="number" step="1" placeholder="e.g. 85" />
+                  <FFSelect label="Relationship" value={data.relationship} onChange={v => updateDep(idx, "relationship", v)}
                     options={[{ value: "", label: "Select..." }, { value: "1", label: "Child" }, { value: "2", label: "Parent" }, { value: "3", label: "Relative" }, { value: "4", label: "Other" }]} />
                 </div>
                 <div style={ffRowStyle}>
-                  <FFRadioRow label="Is There Interdependency?" value={data.dep_interdep} onChange={v => updateDep(idx, "dep_interdep", v)}
+                  <FFRadioRow label="Is There Interdependency?" value={data.interdependency} onChange={v => updateDep(idx, "interdependency", v)}
                     options={[{ value: "1", label: "Yes" }, { value: "2", label: "No" }]} />
                   <div />
                 </div>

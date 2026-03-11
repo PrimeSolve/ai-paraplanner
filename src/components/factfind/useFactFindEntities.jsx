@@ -76,10 +76,10 @@ export function useFactFindEntities(factFind, options = {}) {
     }
 
     childrenList.forEach((child, i) => {
-      if (child.child_name) {
+      if (child.name) {
         entities.push({
           id: `child_${i}`,
-          label: child.child_name,
+          label: child.name,
           type: 'Dependant (Child)',
           index: i,
           color: '#22C55E'
@@ -88,10 +88,10 @@ export function useFactFindEntities(factFind, options = {}) {
     });
 
     depsList.forEach((dep, i) => {
-      if (dep.dep_name) {
+      if (dep.name) {
         entities.push({
           id: `dependent_${i}`,
-          label: dep.dep_name,
+          label: dep.name,
           type: 'Dependant',
           index: i,
           color: '#F59E0B'
