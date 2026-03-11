@@ -185,8 +185,10 @@ export function PrincipalCardBody({ prefix, data, updateFF, subSection }) {
   return null;
 }
 
-export function PrincipalsForm({ factFind, updateFF, addPrincipal, removePrincipal }) {
+export function PrincipalsForm({ factFind, updateFF, addPrincipal, removePrincipal, onSavePrincipals }) {
   const [subSection, setSubSection] = useState("basic");
+  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState(null); // "saved" | "error" | null
   const hasClient1 = factFind.client1 !== null;
   const hasClient2 = factFind.client2 !== null;
   const count = (hasClient1 ? 1 : 0) + (hasClient2 ? 1 : 0);
@@ -253,6 +255,23 @@ export function PrincipalsForm({ factFind, updateFF, addPrincipal, removePrincip
     );
   };
 
+  const handleSave = async () => {
+    if (!onSavePrincipals || saving) return;
+    setSaving(true);
+    setSaveStatus(null);
+    try {
+      await onSavePrincipals();
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus(null), 3000);
+    } catch (err) {
+      console.error('[PrincipalsForm] Save failed:', err);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus(null), 5000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div>
       {/* Status bar */}
@@ -263,9 +282,29 @@ export function PrincipalsForm({ factFind, updateFF, addPrincipal, removePrincip
         <div style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>
           <span style={{ fontWeight: 600, color: "var(--ps-text-primary)" }}>{count}</span> of 2 principals added
         </div>
-        <div style={{ display: "flex", gap: 4 }}>
-          <div style={{ width: 32, height: 4, borderRadius: 2, background: hasClient1 ? "#4F46E5" : "var(--ps-border)" }} />
-          <div style={{ width: 32, height: 4, borderRadius: 2, background: hasClient2 ? "#0891B2" : "var(--ps-border)" }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {onSavePrincipals && (
+            <>
+              {saveStatus === "saved" && (
+                <span style={{ fontSize: 11, color: "#059669", fontWeight: 500 }}>Saved</span>
+              )}
+              {saveStatus === "error" && (
+                <span style={{ fontSize: 11, color: "#DC2626", fontWeight: 500 }}>Save failed</span>
+              )}
+              <button onClick={handleSave} disabled={saving} style={{
+                padding: "4px 12px", borderRadius: 6, border: "1px solid #4F46E5",
+                background: saving ? "#E0E7FF" : "#4F46E5", color: saving ? "#4F46E5" : "#fff",
+                fontSize: 11, fontWeight: 600, cursor: saving ? "not-allowed" : "pointer",
+                transition: "all 0.15s ease",
+              }}>
+                {saving ? "Saving..." : "Save"}
+              </button>
+            </>
+          )}
+          <div style={{ display: "flex", gap: 4 }}>
+            <div style={{ width: 32, height: 4, borderRadius: 2, background: hasClient1 ? "#4F46E5" : "var(--ps-border)" }} />
+            <div style={{ width: 32, height: 4, borderRadius: 2, background: hasClient2 ? "#0891B2" : "var(--ps-border)" }} />
+          </div>
         </div>
       </div>
 
