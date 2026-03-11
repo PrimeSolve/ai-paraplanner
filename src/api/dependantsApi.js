@@ -70,7 +70,12 @@ export const dependantsApi = {
    */
   async update(id, data) {
     const apiData = snakeToCamelKeys(data);
-    const response = await axiosInstance.put(`/dependants/${id}`, apiData);
+    // Fetch current record and merge — the API's PUT does a full replace,
+    // so sending partial data would wipe missing fields (e.g. clientId, depType).
+    const current = await axiosInstance.get(`/dependants/${id}`);
+    const { id: _id, ...currentFields } = current.data;
+    const merged = { ...currentFields, ...apiData };
+    const response = await axiosInstance.put(`/dependants/${id}`, merged);
     return camelToSnakeKeys(response.data);
   },
 
