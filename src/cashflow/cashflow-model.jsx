@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area, AreaChart, Cell, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, PieChart, Pie, ReferenceLine, Customized } from "recharts";
 
 import { THEME_STYLE_ID, _psInitialDark, injectThemeCSS, T } from "./constants/theme.jsx";
@@ -1009,10 +1009,48 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
     factFind, setFactFind, adviceModel1, setAdviceModel1,
     updateFF, updateAdvice, resetAdviceModel,
     addPrincipal, removePrincipal,
+    loadPrincipals, savePrincipals,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
   } = useFactFind(initialData);
+
+  // ── Principals API: load on mount, auto-save on change ──────
+  const urlClientId = useMemo(() => {
+    try {
+      return new URLSearchParams(window.location.search).get('clientId');
+    } catch { return null; }
+  }, []);
+
+  // Load principals from API on mount when clientId is available
+  const principalsLoadedRef = useRef(false);
+  useEffect(() => {
+    if (urlClientId && !principalsLoadedRef.current) {
+      principalsLoadedRef.current = true;
+      loadPrincipals(urlClientId);
+    }
+  }, [urlClientId, loadPrincipals]);
+
+  // Auto-save principals to API when client1/client2 data changes (debounced)
+  const principalsSaveTimerRef = useRef(null);
+  const principalsInitialised = useRef(false);
+  useEffect(() => {
+    // Skip the first render and the initial load population
+    if (!principalsInitialised.current) {
+      principalsInitialised.current = true;
+      return;
+    }
+    if (!urlClientId) return;
+
+    if (principalsSaveTimerRef.current) clearTimeout(principalsSaveTimerRef.current);
+    principalsSaveTimerRef.current = setTimeout(() => {
+      savePrincipals(urlClientId);
+    }, 2000);
+
+    return () => {
+      if (principalsSaveTimerRef.current) clearTimeout(principalsSaveTimerRef.current);
+    };
+  }, [factFind.client1, factFind.client2, urlClientId, savePrincipals]);
 
   // Notify parent when factFind data changes (for API auto-save)
   const isFirstRender = useRef(true);
@@ -1707,6 +1745,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
                 updateFF={updateFF}
                 addPrincipal={addPrincipal}
                 removePrincipal={removePrincipal}
+                onSavePrincipals={urlClientId ? () => savePrincipals(urlClientId) : null}
               />
             ) : factFindSection === "dependants" ? (
               <DependantsForm

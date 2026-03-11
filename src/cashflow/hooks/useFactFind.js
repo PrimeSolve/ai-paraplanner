@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import React from "react";
 import { _psInitialDark, injectThemeCSS } from "../constants/theme.jsx";
+import { principalsApi } from "../../api/principalsApi.js";
 
 export function useFactFind(initialData) {
   const [darkMode, setDarkMode] = useState(_psInitialDark);
@@ -155,10 +156,73 @@ export function useFactFind(initialData) {
     updateFF(`client${num}`, null);
   };
 
+  // ── Principals API integration ──────────────────────────────
+
+  /**
+   * Load principal data from GET /clients/{clientId} and merge into
+   * the factFind.client1 (and optionally client2) state.
+   * @param {string} clientId - The primary client's ID
+   * @param {string} [client2Id] - Optional partner/spouse client ID
+   */
+  const loadPrincipals = useCallback(async (clientId, client2Id) => {
+    try {
+      const data = await principalsApi.get(clientId);
+      setFactFind(prev => {
+        const next = JSON.parse(JSON.stringify(prev));
+        next.client1 = { ...next.client1, ...data };
+        return next;
+      });
+      setAdviceModel1(prev => {
+        if (!prev) return prev;
+        const next = JSON.parse(JSON.stringify(prev));
+        next.client1 = { ...next.client1, ...data };
+        return next;
+      });
+
+      if (client2Id) {
+        const data2 = await principalsApi.get(client2Id);
+        setFactFind(prev => {
+          const next = JSON.parse(JSON.stringify(prev));
+          next.client2 = { ...(next.client2 || {}), ...data2 };
+          return next;
+        });
+        setAdviceModel1(prev => {
+          if (!prev) return prev;
+          const next = JSON.parse(JSON.stringify(prev));
+          next.client2 = { ...(next.client2 || {}), ...data2 };
+          return next;
+        });
+      }
+    } catch (err) {
+      console.error('[useFactFind] Failed to load principals from API:', err);
+    }
+  }, []);
+
+  /**
+   * Save principal data via PUT /clients/{clientId}.
+   * Extracts client1/client2 fields from factFind and saves to the API.
+   * @param {string} clientId - The primary client's ID
+   * @param {string} [client2Id] - Optional partner/spouse client ID
+   */
+  const savePrincipals = useCallback(async (clientId, client2Id) => {
+    try {
+      const ff = factFind;
+      if (ff.client1) {
+        await principalsApi.save(clientId, ff.client1);
+      }
+      if (client2Id && ff.client2) {
+        await principalsApi.save(client2Id, ff.client2);
+      }
+    } catch (err) {
+      console.error('[useFactFind] Failed to save principals to API:', err);
+    }
+  }, [factFind]);
+
   return {
     factFind, setFactFind, adviceModel1, setAdviceModel1,
     updateFF, updateAdvice, resetAdviceModel,
     addPrincipal, removePrincipal,
+    loadPrincipals, savePrincipals,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
