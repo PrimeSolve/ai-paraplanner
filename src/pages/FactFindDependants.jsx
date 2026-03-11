@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { dependantsApi } from '@/api/dependantsApi';
@@ -11,453 +11,329 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft, Plus } from 'lucide-react';
 
+const INPUT_CLASS = 'w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent';
+
+function ChildCard({ child, index, onFieldChange, onRemove }) {
+  return (
+    <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6">
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <h3 className="text-lg font-bold text-slate-900">Child {index + 1}</h3>
+          <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+        >
+          <span>✕</span>
+          <span>Remove</span>
+        </button>
+      </div>
+      <div className="space-y-5">
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Child name *</label>
+            <input
+              type="text"
+              value={child.child_name || ''}
+              onChange={(e) => onFieldChange('child_name', e.target.value)}
+              placeholder="e.g. Emma"
+              className={INPUT_CLASS}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Date of birth</label>
+            <input
+              type="date"
+              value={child.child_dob || ''}
+              onChange={(e) => onFieldChange('child_dob', e.target.value)}
+              className={INPUT_CLASS}
+            />
+          </div>
+        </div>
+        <div className="pt-2">
+          <label className="block text-sm font-semibold text-slate-700 mb-3">Financially dependent?</label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name={`child_fin_dep__${index}`}
+                value="1"
+                checked={child.child_fin_dep === '1'}
+                onChange={(e) => onFieldChange('child_fin_dep', e.target.value)}
+                className="w-4 h-4"
+              />
+              <span className="text-sm text-slate-700">Yes</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name={`child_fin_dep__${index}`}
+                value="2"
+                checked={child.child_fin_dep === '2'}
+                onChange={(e) => onFieldChange('child_fin_dep', e.target.value)}
+                className="w-4 h-4"
+              />
+              <span className="text-sm text-slate-700">No</span>
+            </label>
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Education status</label>
+            <select
+              value={child.child_edu || ''}
+              onChange={(e) => onFieldChange('child_edu', e.target.value)}
+              className={INPUT_CLASS}
+            >
+              <option value="">Select...</option>
+              <option value="1">Primary</option>
+              <option value="2">Secondary</option>
+              <option value="3">Tertiary</option>
+              <option value="4">TAFE/Trade</option>
+              <option value="5">Not in education</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Expected age of financial dependence</label>
+            <input
+              type="number"
+              value={child.child_fin_age || ''}
+              onChange={(e) => onFieldChange('child_fin_age', e.target.value)}
+              placeholder="e.g. 25"
+              className={INPUT_CLASS}
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Health issues or concerns</label>
+          <input
+            type="text"
+            value={child.child_health || ''}
+            onChange={(e) => onFieldChange('child_health', e.target.value)}
+            placeholder="e.g. Asthma, food allergy"
+            className={INPUT_CLASS}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DependantCard({ dependant, index, onFieldChange, onRemove }) {
+  return (
+    <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6">
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <h3 className="text-lg font-bold text-slate-900">Dependant {index + 1}</h3>
+          <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+        >
+          <span>✕</span>
+          <span>Remove</span>
+        </button>
+      </div>
+      <div className="space-y-5">
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Name *</label>
+            <input
+              type="text"
+              value={dependant.dep_name || ''}
+              onChange={(e) => onFieldChange('dep_name', e.target.value)}
+              placeholder="e.g. Parent name"
+              className={INPUT_CLASS}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Date of birth</label>
+            <input
+              type="date"
+              value={dependant.dep_dob || ''}
+              onChange={(e) => onFieldChange('dep_dob', e.target.value)}
+              className={INPUT_CLASS}
+            />
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Expected age of dependence until</label>
+            <input
+              type="number"
+              value={dependant.dep_until_age || ''}
+              onChange={(e) => onFieldChange('dep_until_age', e.target.value)}
+              placeholder="e.g. 85"
+              className={INPUT_CLASS}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Relationship</label>
+            <select
+              value={dependant.dep_relationship || ''}
+              onChange={(e) => onFieldChange('dep_relationship', e.target.value)}
+              className={INPUT_CLASS}
+            >
+              <option value="">Select...</option>
+              <option value="1">Child</option>
+              <option value="2">Parent</option>
+              <option value="3">Relative</option>
+              <option value="4">Other</option>
+            </select>
+          </div>
+        </div>
+        <div className="pt-2">
+          <label className="block text-sm font-semibold text-slate-700 mb-3">Is there interdependency?</label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name={`dep_interdep__${index}`}
+                value="1"
+                checked={dependant.dep_interdep === '1'}
+                onChange={(e) => onFieldChange('dep_interdep', e.target.value)}
+                className="w-4 h-4"
+              />
+              <span className="text-sm text-slate-700">Yes</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name={`dep_interdep__${index}`}
+                value="2"
+                checked={dependant.dep_interdep === '2'}
+                onChange={(e) => onFieldChange('dep_interdep', e.target.value)}
+                className="w-4 h-4"
+              />
+              <span className="text-sm text-slate-700">No</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function FactFindDependants() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading, updateSection, clientId } = useFactFind();
+  const { factFind, loading: ffLoading, clientId } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('children');
   const [activeIndex, setActiveIndex] = useState(0);
-  const [childrenCount, setChildrenCount] = useState(0);
-  const [dependantsCount, setDependantsCount] = useState(0);
-  const [dependantsLoaded, setDependantsLoaded] = useState(false);
+  const [children, setChildren] = useState([]);
+  const [dependants, setDependants] = useState([]);
+  const [loaded, setLoaded] = useState(false);
 
-  // Global state for form data
-  const globalStateRef = React.useRef({
-    dependants: {
-      children: [],
-      dependants_list: [],
-      currentTab: 'children',
-      activeIndex: 0
-    }
-  });
+  const debounceTimers = useRef({});
 
-  // ============================================
-  // CORE DOM MANIPULATION FUNCTIONS
-  // ============================================
-
-  const wrapForTab = useCallback((tab) => {
-    const id = tab === 'children' ? 'childrenWrap' : 'dependantsWrap';
-    return document.getElementById(id);
-  }, []);
-
-  const cloneTemplateDiv = useCallback((id) => {
-    const src = document.getElementById(id);
-    if (!src) {
-      console.error(`Template not found: ${id}`);
-      return null;
-    }
-    const tmp = document.createElement('div');
-    tmp.innerHTML = (src.innerHTML || '').trim();
-    return tmp.firstElementChild;
-  }, []);
-
-  // ============================================
-  // READ DATA FROM DOM
-  // ============================================
-
-  const readTabToArray = useCallback((tab) => {
-    const wrap = wrapForTab(tab);
-    if (!wrap) return [];
-
-    const cards = [...wrap.querySelectorAll('.entry')];
-    return cards.map((card) => {
-      const data = {};
-      const inputs = card.querySelectorAll('input, select, textarea');
-      
-      inputs.forEach(input => {
-        // Handle radio buttons - normalize the name by removing suffix
-        if (input.type === 'radio') {
-          const baseName = input.name.replace(/__\d+$/, '');
-          if (input.checked) {
-            data[baseName] = input.value;
-          }
-        } else if (input.type === 'checkbox') {
-          if (input.checked) {
-            data[input.name] = input.value;
-          }
-        } else {
-          data[input.name] = input.value;
-        }
-      });
-      
-      return data;
-    });
-  }, [wrapForTab]);
-
-  // ============================================
-  // RENUMBER ENTRIES
-  // ============================================
-
-  const renumber = useCallback((tab) => {
-    const wrap = wrapForTab(tab);
-    if (!wrap) return;
-
-    [...wrap.querySelectorAll('.entry')].forEach((card, i) => {
-      const idxSpan = card.querySelector('.idx');
-      if (idxSpan) idxSpan.textContent = i + 1;
-
-      if (tab === 'children') {
-        card.querySelectorAll('input[type="radio"][name^="child_fin_dep"]')
-          .forEach(r => { r.name = 'child_fin_dep__' + (i + 1); });
-      } else {
-        card.querySelectorAll('input[type="radio"][name^="dep_interdep"]')
-          .forEach(r => { r.name = 'dep_interdep__' + (i + 1); });
-      }
-    });
-  }, [wrapForTab]);
-
-  // ============================================
-  // FILL CARD WITH DATA
-  // ============================================
-
-  const fillCardFromData = useCallback((card, tab, data) => {
-    if (!data || !card) return;
-
-    if (tab === 'children') {
-      const nameInput = card.querySelector('input[name="child_name"]');
-      if (nameInput && data.child_name) nameInput.value = data.child_name;
-
-      const dobInput = card.querySelector('input[name="child_dob"]');
-      if (dobInput && data.child_dob) dobInput.value = data.child_dob;
-
-      const eduSelect = card.querySelector('select[name="child_edu"]');
-      if (eduSelect && data.child_edu) eduSelect.value = data.child_edu;
-
-      const finAgeInput = card.querySelector('input[name="child_fin_age"]');
-      if (finAgeInput && data.child_fin_age) finAgeInput.value = data.child_fin_age;
-
-      const healthInput = card.querySelector('input[name="child_health"]');
-      if (healthInput && data.child_health) healthInput.value = data.child_health;
-
-      // Radio: Financially dependent
-      if (data.child_fin_dep) {
-        const radios = card.querySelectorAll('input[type="radio"][name^="child_fin_dep"]');
-        radios.forEach(r => {
-          r.checked = r.value === data.child_fin_dep;
-        });
-      }
-    } else {
-      const nameInput = card.querySelector('input[name="dep_name"]');
-      if (nameInput && data.dep_name) nameInput.value = data.dep_name;
-
-      const dobInput = card.querySelector('input[name="dep_dob"]');
-      if (dobInput && data.dep_dob) dobInput.value = data.dep_dob;
-
-      const ageInput = card.querySelector('input[name="dep_until_age"]');
-      if (ageInput && data.dep_until_age) ageInput.value = data.dep_until_age;
-
-      const relSelect = card.querySelector('select[name="dep_relationship"]');
-      if (relSelect && data.dep_relationship) relSelect.value = data.dep_relationship;
-
-      // Radio: Interdependency
-      if (data.dep_interdep) {
-        const radios = card.querySelectorAll('input[type="radio"][name^="dep_interdep"]');
-        radios.forEach(r => {
-          r.checked = r.value === data.dep_interdep;
-        });
-      }
-    }
-  }, []);
-
-  // ============================================
-  // UPDATE PILL NAVIGATION
-  // ============================================
-
-  const updatePills = useCallback((tab, index) => {
-    const pillsId = tab === 'children' ? 'childPills' : 'dependantPills';
-    const pillsContainer = document.getElementById(pillsId);
-    if (!pillsContainer) return;
-
-    pillsContainer.innerHTML = '';
-    const wrap = wrapForTab(tab);
-    if (!wrap) return;
-
-    const cards = [...wrap.querySelectorAll('.entry')];
-    
-    cards.forEach((card, i) => {
-      const pill = document.createElement('button');
-      const isActive = i === index;
-      pill.type = 'button';
-
-      let displayName = '';
-      if (tab === 'children') {
-        const nameInput = card.querySelector('input[name="child_name"]');
-        displayName = nameInput && nameInput.value.trim()
-          ? nameInput.value.trim()
-          : `Child ${i + 1}`;
-      } else {
-        const nameInput = card.querySelector('input[name="dep_name"]');
-        displayName = nameInput && nameInput.value.trim()
-          ? nameInput.value.trim()
-          : `Dependant ${i + 1}`;
-      }
-
-      pill.className = `px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-        isActive
-          ? 'bg-white border-blue-500 text-blue-700 shadow-sm'
-          : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-      }`;
-      pill.textContent = displayName;
-
-      pill.onclick = (e) => {
-        e.preventDefault();
-        setActiveIndex(i);
-        showOnlyActiveEntry(tab, i);
-      };
-
-      pillsContainer.appendChild(pill);
-    });
-  }, [wrapForTab]);
-
-  // ============================================
-  // SHOW ONLY ACTIVE ENTRY
-  // ============================================
-
-  const showOnlyActiveEntry = useCallback((tab, index) => {
-    const wrap = wrapForTab(tab);
-    if (!wrap) return;
-
-    const cards = [...wrap.querySelectorAll('.entry')];
-    cards.forEach((card, i) => {
-      card.style.display = i === index ? '' : 'none';
-    });
-  }, [wrapForTab]);
-
-  // ============================================
-  // ADD ENTRY
-  // ============================================
-
-  const addEntry = useCallback(async (tab, existingData = null) => {
-    const wrap = wrapForTab(tab);
-    if (!wrap) return;
-
-    const templateId = tab === 'children' ? 'childTemplate' : 'depTemplate';
-    const node = cloneTemplateDiv(templateId);
-    if (!node) return;
-
-    wrap.appendChild(node);
-
-    // Fill with existing data if provided
-    if (existingData) {
-      fillCardFromData(node, tab, existingData);
-      // If loading from API, the record already has an id
-      if (existingData.id) {
-        node.dataset.recordId = existingData.id;
-      }
-    }
-
-    // If this is a brand-new entry (no existing data or no id), create via API
-    if (!existingData?.id && clientId) {
-      try {
-        const depType = tab === 'children' ? 'child' : 'dependant';
-        const created = await dependantsApi.create({ ...(existingData || {}), dep_type: depType, client_id: clientId });
-        if (created?.id) {
-          node.dataset.recordId = created.id;
-        }
-      } catch (error) {
-        console.error('Failed to create dependant:', error);
-      }
-    }
-
-    // Setup remove button
-    const removeBtn = node.querySelector('.entry-remove');
-    if (removeBtn) {
-      removeBtn.onclick = (e) => {
-        e.preventDefault();
-        removeEntry(node, tab);
-      };
-    }
-
-    renumber(tab);
-    const newCount = wrap.querySelectorAll('.entry').length;
-    if (tab === 'children') {
-      setChildrenCount(newCount);
-    } else {
-      setDependantsCount(newCount);
-    }
-
-    const newIndex = newCount - 1;
-    setActiveIndex(newIndex);
-
-    // Use setTimeout to ensure state updates before showing entry
-    setTimeout(() => {
-      updatePills(tab, newIndex);
-      showOnlyActiveEntry(tab, newIndex);
-    }, 0);
-  }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry, clientId]);
-
-  // ============================================
-  // REMOVE ENTRY
-  // ============================================
-
-  const removeEntry = useCallback(async (node, tab) => {
-    // Remove from API if it has a server-side record ID
-    const recordId = node.dataset.recordId;
-    if (recordId) {
-      try {
-        await dependantsApi.remove(recordId);
-      } catch (error) {
-        console.error('Failed to remove dependant:', error);
-      }
-    }
-
-    node.remove();
-    const wrap = wrapForTab(tab);
-    if (!wrap) return;
-    const remaining = wrap.querySelectorAll('.entry').length;
-    renumber(tab);
-
-    if (tab === 'children') {
-      setChildrenCount(remaining);
-    } else {
-      setDependantsCount(remaining);
-    }
-
-    if (remaining > 0) {
-      const newIndex = Math.max(0, remaining - 1);
-      setActiveIndex(newIndex);
-      showOnlyActiveEntry(tab, newIndex);
-      updatePills(tab, newIndex);
-    } else {
-      setActiveIndex(0);
-    }
-  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
-
-  // ============================================
-  // LOAD USER AND SYNC FACTFIND
-  // ============================================
-
+  // Load user
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-      } catch (error) {
-        console.error('Error loading user:', error);
-      }
-    };
-    loadUser();
+    base44.auth.me().then(setUser).catch(console.error);
   }, []);
 
-  // When FactFind loads, fetch dependants from the dedicated API
+  // Load dependants from API
   useEffect(() => {
     if (!factFind?.id || !clientId) return;
 
-    async function loadDependants() {
+    let cancelled = false;
+    async function load() {
       try {
         const all = await dependantsApi.getAll(clientId);
-        const children = all.filter(d => d.dep_type === 'child').map(({ dep_type, ...rest }) => rest);
-        const deps = all.filter(d => d.dep_type === 'dependant').map(({ dep_type, ...rest }) => rest);
-        globalStateRef.current.dependants = { children, dependants_list: deps, currentTab: 'children', activeIndex: 0 };
+        if (cancelled) return;
+        setChildren(all.filter(d => d.dep_type === 'child'));
+        setDependants(all.filter(d => d.dep_type === 'dependant'));
       } catch (error) {
         console.error('Failed to load dependants:', error);
       } finally {
-        setDependantsLoaded(true);
+        if (!cancelled) setLoaded(true);
       }
     }
 
-    setDependantsLoaded(false);
-    loadDependants();
+    setLoaded(false);
+    load();
+    return () => { cancelled = true; };
   }, [factFind?.id, clientId]);
 
-  // ============================================
-  // SETUP INPUT LISTENERS
-  // ============================================
-
-  const setupInputListeners = useCallback(() => {
-    document.addEventListener('input', (e) => {
-      if (e.target.matches('input[name="child_name"], input[name="dep_name"]')) {
-        updatePills(currentTab, activeIndex);
+  // Debounced update to API
+  const debouncedUpdate = useCallback((id, data) => {
+    if (debounceTimers.current[id]) {
+      clearTimeout(debounceTimers.current[id]);
+    }
+    debounceTimers.current[id] = setTimeout(async () => {
+      try {
+        await dependantsApi.update(id, data);
+      } catch (error) {
+        console.error('Failed to update dependant:', error);
       }
+    }, 500);
+  }, []);
 
-      clearTimeout(window._depSaveTimeout);
-      window._depSaveTimeout = setTimeout(() => {
-        saveDependantsState();
-      }, 500);
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach(clearTimeout);
+    };
+  }, []);
+
+  const activeList = currentTab === 'children' ? children : dependants;
+  const setActiveList = currentTab === 'children' ? setChildren : setDependants;
+
+  const handleFieldChange = useCallback((list, setList, index, field, value) => {
+    setList(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      const record = updated[index];
+      if (record.id) {
+        const { id, dep_type, client_id, ...fields } = record;
+        debouncedUpdate(id, fields);
+      }
+      return updated;
     });
-  }, [currentTab, activeIndex]);
+  }, [debouncedUpdate]);
 
-  // ============================================
-  // SAVE STATE
-  // ============================================
-
-  const saveDependantsState = useCallback(async () => {
-    if (!factFind?.id) return;
-
+  const handleAdd = useCallback(async () => {
+    if (!clientId) return;
+    const depType = currentTab === 'children' ? 'child' : 'dependant';
     try {
-      // Update each entry that has a server-side record ID
-      const updateEntries = async (tab) => {
-        const wrap = wrapForTab(tab);
-        if (!wrap) return;
-        const cards = [...wrap.querySelectorAll('.entry')];
-        for (const card of cards) {
-          const recordId = card.dataset.recordId;
-          if (!recordId) continue;
-          const data = {};
-          const inputs = card.querySelectorAll('input, select, textarea');
-          inputs.forEach(input => {
-            if (input.type === 'radio') {
-              const baseName = input.name.replace(/__\d+$/, '');
-              if (input.checked) data[baseName] = input.value;
-            } else if (input.type === 'checkbox') {
-              if (input.checked) data[input.name] = input.value;
-            } else {
-              data[input.name] = input.value;
-            }
-          });
-          await dependantsApi.update(recordId, data);
-        }
-      };
-
-      await updateEntries('children');
-      await updateEntries('dependants');
+      const created = await dependantsApi.create({ dep_type: depType, client_id: clientId });
+      if (currentTab === 'children') {
+        setChildren(prev => {
+          const next = [...prev, created];
+          setActiveIndex(next.length - 1);
+          return next;
+        });
+      } else {
+        setDependants(prev => {
+          const next = [...prev, created];
+          setActiveIndex(next.length - 1);
+          return next;
+        });
+      }
     } catch (error) {
-      console.error('Save failed:', error);
+      console.error('Failed to create dependant:', error);
+      toast.error('Failed to add entry');
     }
-  }, [factFind?.id, wrapForTab]);
+  }, [clientId, currentTab]);
 
-  // ============================================
-  // INITIALIZE DOM
-  // ============================================
-
-  useEffect(() => {
-    setupInputListeners();
-  }, [currentTab, activeIndex]);
-
-  useEffect(() => {
-    if (!ffLoading && factFind?.id && dependantsLoaded) {
-      setTimeout(() => {
-        const childrenWrap = document.getElementById('childrenWrap');
-        const dependantsWrap = document.getElementById('dependantsWrap');
-
-        if (childrenWrap) childrenWrap.innerHTML = '';
-        if (dependantsWrap) dependantsWrap.innerHTML = '';
-
-        // Add children with existing data
-        if (globalStateRef.current.dependants.children?.length > 0) {
-          globalStateRef.current.dependants.children.forEach((childData) => {
-            addEntry('children', childData);
-          });
-        }
-
-        // Add dependants with existing data
-        if (globalStateRef.current.dependants.dependants_list?.length > 0) {
-          globalStateRef.current.dependants.dependants_list.forEach((depData) => {
-            addEntry('dependants', depData);
-          });
-        }
-
-        setActiveIndex(globalStateRef.current.dependants.activeIndex || 0);
-        updatePills(currentTab, globalStateRef.current.dependants.activeIndex || 0);
-        showOnlyActiveEntry(currentTab, globalStateRef.current.dependants.activeIndex || 0);
-      }, 50);
+  const handleRemove = useCallback(async (id, tab) => {
+    try {
+      await dependantsApi.remove(id);
+      const setter = tab === 'children' ? setChildren : setDependants;
+      setter(prev => {
+        const next = prev.filter(item => item.id !== id);
+        setActiveIndex(idx => Math.min(idx, Math.max(0, next.length - 1)));
+        return next;
+      });
+    } catch (error) {
+      console.error('Failed to remove dependant:', error);
+      toast.error('Failed to remove entry');
     }
-  }, [ffLoading, factFind?.id, dependantsLoaded, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
-
-  // ============================================
-  // NAVIGATION
-  // ============================================
+  }, []);
 
   const handleNext = async () => {
     if (!factFind?.id) {
@@ -467,15 +343,11 @@ export default function FactFindDependants() {
 
     setSaving(true);
     try {
-      // Save any pending edits to the API
-      await saveDependantsState();
-
       const sectionsCompleted = [...(factFind.sections_completed || [])];
       if (!sectionsCompleted.includes('dependants')) {
         sectionsCompleted.push('dependants');
       }
 
-      // Update sections completed
       await base44.entities.FactFind.update(factFind.id, {
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
@@ -483,6 +355,7 @@ export default function FactFindDependants() {
 
       if (currentTab === 'children') {
         setCurrentTab('dependants');
+        setActiveIndex(0);
       } else {
         navigate(createPageUrl('FactFindTrusts') + `?id=${factFind.id}`);
       }
@@ -497,7 +370,7 @@ export default function FactFindDependants() {
     navigate(createPageUrl('FactFindAboutYou') + `?id=${factFind?.id || ''}`);
   };
 
-  if (ffLoading) {
+  if (ffLoading || !loaded) {
     return (
       <FactFindLayout currentSection="dependants" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
@@ -506,6 +379,8 @@ export default function FactFindDependants() {
       </FactFindLayout>
     );
   }
+
+  const activeItem = activeList[activeIndex];
 
   return (
     <FactFindLayout currentSection="dependants" factFindId={factFind?.id}>
@@ -516,167 +391,36 @@ export default function FactFindDependants() {
         user={user}
       />
 
-      {/* Hidden Templates */}
-      <div id="childTemplate" style={{ display: 'none' }}>
-        <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6">
-          <div className="entry-head flex justify-between items-start mb-6">
-            <div className="entry-title">
-              <h3 className="text-lg font-bold text-slate-900">Child <span className="idx">1</span></h3>
-              <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
-            </div>
-            <button type="button" className="entry-remove inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
-              <span>✕</span>
-              <span>Remove</span>
-            </button>
-          </div>
-          <div className="form-grid space-y-5">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Child name *</label>
-                <input type="text" name="child_name" placeholder="e.g. Emma" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Date of birth</label>
-                <input type="date" name="child_dob" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-              </div>
-            </div>
-            <div className="pt-2">
-              <label className="block text-sm font-semibold text-slate-700 mb-3">Financially dependent?</label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="child_fin_dep__1" value="1" className="w-4 h-4" />
-                  <span className="text-sm text-slate-700">Yes</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="child_fin_dep__1" value="2" className="w-4 h-4" />
-                  <span className="text-sm text-slate-700">No</span>
-                </label>
-              </div>
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Education status</label>
-                <select name="child_edu" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  <option value="">Select...</option>
-                  <option value="1">Primary</option>
-                  <option value="2">Secondary</option>
-                  <option value="3">Tertiary</option>
-                  <option value="4">TAFE/Trade</option>
-                  <option value="5">Not in education</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Expected age of financial dependence</label>
-                <input type="number" name="child_fin_age" placeholder="e.g. 25" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Health issues or concerns</label>
-              <input type="text" name="child_health" placeholder="e.g. Asthma, food allergy" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="depTemplate" style={{ display: 'none' }}>
-        <div className="entry bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6">
-          <div className="entry-head flex justify-between items-start mb-6">
-            <div className="entry-title">
-              <h3 className="text-lg font-bold text-slate-900">Dependant <span className="idx">1</span></h3>
-              <p className="text-xs text-slate-500 mt-1">Fill in the details below</p>
-            </div>
-            <button type="button" className="entry-remove inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
-              <span>✕</span>
-              <span>Remove</span>
-            </button>
-          </div>
-          <div className="form-grid space-y-5">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Name *</label>
-                <input type="text" name="dep_name" placeholder="e.g. Parent name" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Date of birth</label>
-                <input type="date" name="dep_dob" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-              </div>
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Expected age of dependence until</label>
-                <input type="number" name="dep_until_age" placeholder="e.g. 85" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Relationship</label>
-                <select name="dep_relationship" className="w-full h-9 px-3 py-1 border border-slate-300 rounded-md bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  <option value="">Select...</option>
-                  <option value="1">Child</option>
-                  <option value="2">Parent</option>
-                  <option value="3">Relative</option>
-                  <option value="4">Other</option>
-                </select>
-              </div>
-            </div>
-            <div className="pt-2">
-              <label className="block text-sm font-semibold text-slate-700 mb-3">Is there interdependency?</label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="dep_interdep__1" value="1" className="w-4 h-4" />
-                  <span className="text-sm text-slate-700">Yes</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="dep_interdep__1" value="2" className="w-4 h-4" />
-                  <span className="text-sm text-slate-700">No</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50 to-slate-100">
-       <div className="w-full space-y-6">
-         {/* Tabs - Part of form content */}
-         <div className="flex gap-2">
-           <button
-             onClick={() => {
-               setCurrentTab('children');
-               setActiveIndex(0);
-               setTimeout(() => updatePills('children', 0), 0);
-             }}
-             className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
-               currentTab === 'children'
-                 ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-             }`}
-           >
-             <span>👶</span>
-             Children
-           </button>
-           <button
-             onClick={() => {
-               setCurrentTab('dependants');
-               setActiveIndex(0);
-               setTimeout(() => updatePills('dependants', 0), 0);
-             }}
-             className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
-               currentTab === 'dependants'
-                 ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-             }`}
-           >
-             <span>👥</span>
-             Dependants
-           </button>
-         </div>
+        <div className="w-full space-y-6">
+          {/* Tabs */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setCurrentTab('children'); setActiveIndex(0); }}
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
+                currentTab === 'children'
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <span>👶</span>
+              Children
+            </button>
+            <button
+              onClick={() => { setCurrentTab('dependants'); setActiveIndex(0); }}
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
+                currentTab === 'dependants'
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <span>👥</span>
+              Dependants
+            </button>
+          </div>
 
-         {/* Containers - Always exist, visibility based on active tab */}
-         <div id="childrenWrap" className="space-y-4" style={{ display: currentTab === 'children' ? 'block' : 'none' }} />
-         <div id="dependantsWrap" className="space-y-4" style={{ display: currentTab === 'dependants' ? 'block' : 'none' }} />
-
-          {/* Welcome Screen */}
-          {(currentTab === 'children' ? childrenCount : dependantsCount) === 0 ? (
+          {/* Empty state */}
+          {activeList.length === 0 ? (
             <div className="border border-gray-200 rounded-lg p-12 text-center bg-white">
               <div className="text-5xl mb-4">
                 {currentTab === 'children' ? '👨‍👩‍👧‍👦' : '👥'}
@@ -685,12 +429,12 @@ export default function FactFindDependants() {
                 {currentTab === 'children' ? 'Do you have any children?' : 'Do you have any dependants?'}
               </h3>
               <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                {currentTab === 'children' 
+                {currentTab === 'children'
                   ? 'Add information about your children to help us understand your family situation better.'
                   : 'Add information about your dependants so we can factor them into your financial plan.'}
               </p>
               <button
-                onClick={() => addEntry(currentTab)}
+                onClick={handleAdd}
                 className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors"
               >
                 <Plus className="w-4 h-4" />
@@ -699,17 +443,56 @@ export default function FactFindDependants() {
             </div>
           ) : (
             <>
-              {/* Pills Navigation - SEPARATED: Items left, Add right */}
+              {/* Pills navigation + Add button */}
               <div className="flex items-center justify-between mb-4">
-                <div id={currentTab === 'children' ? 'childPills' : 'dependantPills'} className="flex items-center gap-2" />
+                <div className="flex items-center gap-2">
+                  {activeList.map((item, i) => {
+                    const displayName = currentTab === 'children'
+                      ? (item.child_name?.trim() || `Child ${i + 1}`)
+                      : (item.dep_name?.trim() || `Dependant ${i + 1}`);
+                    const isActive = i === activeIndex;
+                    return (
+                      <button
+                        key={item.id || i}
+                        type="button"
+                        onClick={() => setActiveIndex(i)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                          isActive
+                            ? 'bg-white border-blue-500 text-blue-700 shadow-sm'
+                            : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        {displayName}
+                      </button>
+                    );
+                  })}
+                </div>
                 <button
-                  onClick={() => addEntry(currentTab)}
+                  onClick={handleAdd}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   Add {currentTab === 'children' ? 'Child' : 'Dependant'}
                 </button>
               </div>
+
+              {/* Active card */}
+              {activeItem && currentTab === 'children' && (
+                <ChildCard
+                  child={activeItem}
+                  index={activeIndex}
+                  onFieldChange={(field, value) => handleFieldChange(children, setChildren, activeIndex, field, value)}
+                  onRemove={() => handleRemove(activeItem.id, 'children')}
+                />
+              )}
+              {activeItem && currentTab === 'dependants' && (
+                <DependantCard
+                  dependant={activeItem}
+                  index={activeIndex}
+                  onFieldChange={(field, value) => handleFieldChange(dependants, setDependants, activeIndex, field, value)}
+                  onRemove={() => handleRemove(activeItem.id, 'dependants')}
+                />
+              )}
             </>
           )}
 
