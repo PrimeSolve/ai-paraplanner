@@ -20,6 +20,7 @@ export default function FactFindDependants() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [childrenCount, setChildrenCount] = useState(0);
   const [dependantsCount, setDependantsCount] = useState(0);
+  const [dependantsLoaded, setDependantsLoaded] = useState(false);
 
   // Global state for form data
   const globalStateRef = React.useRef({
@@ -351,9 +352,12 @@ export default function FactFindDependants() {
         globalStateRef.current.dependants = { children, dependants_list: deps, currentTab: 'children', activeIndex: 0 };
       } catch (error) {
         console.error('Failed to load dependants:', error);
+      } finally {
+        setDependantsLoaded(true);
       }
     }
 
+    setDependantsLoaded(false);
     loadDependants();
   }, [factFind?.id, clientId]);
 
@@ -422,7 +426,7 @@ export default function FactFindDependants() {
   }, [currentTab, activeIndex]);
 
   useEffect(() => {
-    if (!ffLoading && factFind?.id) {
+    if (!ffLoading && factFind?.id && dependantsLoaded) {
       setTimeout(() => {
         const childrenWrap = document.getElementById('childrenWrap');
         const dependantsWrap = document.getElementById('dependantsWrap');
@@ -449,7 +453,7 @@ export default function FactFindDependants() {
         showOnlyActiveEntry(currentTab, globalStateRef.current.dependants.activeIndex || 0);
       }, 50);
     }
-  }, [ffLoading, factFind?.id, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
+  }, [ffLoading, factFind?.id, dependantsLoaded, addEntry, updatePills, showOnlyActiveEntry, currentTab]);
 
   // ============================================
   // NAVIGATION
