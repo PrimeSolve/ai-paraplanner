@@ -58,6 +58,10 @@ export const dependantsApi = {
    */
   async create(data) {
     const apiData = snakeToCamelKeys(data);
+    if (apiData.depType !== undefined) {
+      apiData.DepType = apiData.depType;
+      delete apiData.depType;
+    }
     const response = await axiosInstance.post('/dependants', apiData);
     return camelToSnakeKeys(response.data);
   },
@@ -70,6 +74,10 @@ export const dependantsApi = {
    */
   async update(id, data) {
     const apiData = snakeToCamelKeys(data);
+    if (apiData.depType !== undefined) {
+      apiData.DepType = apiData.depType;
+      delete apiData.depType;
+    }
     const response = await axiosInstance.put(`/dependants/${id}`, apiData);
     return camelToSnakeKeys(response.data);
   },
