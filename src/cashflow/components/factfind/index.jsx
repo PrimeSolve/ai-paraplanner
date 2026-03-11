@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { ffRowStyle, FFInput, FFSelect, FFToggle, FFRadioRow } from "../common/FormFields.jsx";
+import { dependantsApi } from "@/api/dependantsApi";
 
 // ===========================================================================
 // FACT FIND — Principals Form (aligned to Base44 FactFindPersonal)
@@ -366,18 +367,124 @@ export const DEPENDANT_DEFAULTS = {
   dep_interdep: "",             // "1"=Yes, "2"=No
 };
 
-export function DependantsForm({ factFind, updateFF }) {
+export function DependantsForm({ factFind, updateFF, clientId }) {
   const [subTab, setSubTab] = useState("children");
-  const children = factFind.children || [];
-  const depList = factFind.dependants_list || [];
+  const [children, setChildren] = useState([]);
+  const [depList, setDepList] = useState([]);
+  const debounceTimers = useRef({});
 
-  const addChild = () => updateFF("children", [...children, { ...CHILD_DEFAULTS }]);
-  const removeChild = (idx) => updateFF("children", children.filter((_, i) => i !== idx));
-  const updateChild = (idx, field, value) => updateFF("children", children.map((item, i) => i === idx ? { ...item, [field]: value } : item));
+  // Load dependants from API on mount
+  useEffect(() => {
+    if (!clientId) return;
+    let cancelled = false;
+    async function load() {
+      try {
+        const all = await dependantsApi.getAll(clientId);
+        if (cancelled) return;
+        setChildren(all.filter(d => d.dep_type === "child"));
+        setDepList(all.filter(d => d.dep_type === "dependant"));
+      } catch (error) {
+        console.error("Failed to load dependants:", error);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [clientId]);
 
-  const addDep = () => updateFF("dependants_list", [...depList, { ...DEPENDANT_DEFAULTS }]);
-  const removeDep = (idx) => updateFF("dependants_list", depList.filter((_, i) => i !== idx));
-  const updateDep = (idx, field, value) => updateFF("dependants_list", depList.map((item, i) => i === idx ? { ...item, [field]: value } : item));
+  // Cleanup debounce timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach(clearTimeout);
+    };
+  }, []);
+
+  // Debounced update to API
+  const debouncedUpdate = useCallback((id, data) => {
+    if (debounceTimers.current[id]) {
+      clearTimeout(debounceTimers.current[id]);
+    }
+    debounceTimers.current[id] = setTimeout(async () => {
+      try {
+        await dependantsApi.update(id, data);
+      } catch (error) {
+        console.error("Failed to update dependant:", error);
+      }
+    }, 500);
+  }, []);
+
+  // Children handlers
+  const addChild = useCallback(async () => {
+    if (!clientId) return;
+    try {
+      const created = await dependantsApi.create({ dep_type: "child", client_id: clientId, ...CHILD_DEFAULTS });
+      setChildren(prev => [...prev, created]);
+    } catch (error) {
+      console.error("Failed to create child:", error);
+    }
+  }, [clientId]);
+
+  const removeChild = useCallback(async (idx) => {
+    const child = children[idx];
+    if (child?.id) {
+      try {
+        await dependantsApi.remove(child.id);
+      } catch (error) {
+        console.error("Failed to remove child:", error);
+        return;
+      }
+    }
+    setChildren(prev => prev.filter((_, i) => i !== idx));
+  }, [children]);
+
+  const updateChild = useCallback((idx, field, value) => {
+    setChildren(prev => {
+      const updated = [...prev];
+      updated[idx] = { ...updated[idx], [field]: value };
+      const record = updated[idx];
+      if (record.id) {
+        const { id, dep_type, client_id, ...fields } = record;
+        debouncedUpdate(id, fields);
+      }
+      return updated;
+    });
+  }, [debouncedUpdate]);
+
+  // Dependants handlers
+  const addDep = useCallback(async () => {
+    if (!clientId) return;
+    try {
+      const created = await dependantsApi.create({ dep_type: "dependant", client_id: clientId, ...DEPENDANT_DEFAULTS });
+      setDepList(prev => [...prev, created]);
+    } catch (error) {
+      console.error("Failed to create dependant:", error);
+    }
+  }, [clientId]);
+
+  const removeDep = useCallback(async (idx) => {
+    const dep = depList[idx];
+    if (dep?.id) {
+      try {
+        await dependantsApi.remove(dep.id);
+      } catch (error) {
+        console.error("Failed to remove dependant:", error);
+        return;
+      }
+    }
+    setDepList(prev => prev.filter((_, i) => i !== idx));
+  }, [depList]);
+
+  const updateDep = useCallback((idx, field, value) => {
+    setDepList(prev => {
+      const updated = [...prev];
+      updated[idx] = { ...updated[idx], [field]: value };
+      const record = updated[idx];
+      if (record.id) {
+        const { id, dep_type, client_id, ...fields } = record;
+        debouncedUpdate(id, fields);
+      }
+      return updated;
+    });
+  }, [debouncedUpdate]);
 
   // Sub-tab bar
   const subTabBar = (
