@@ -276,13 +276,9 @@ async function saveAllSections(modelFF, updateSection) {
       policies: modelFF.insurancePolicies || modelFF.insurance?.policies || [],
     },
 
-    // Dependants (FactFindDependants)
-    Dependants: {
-      children: modelFF.children || [],
-      dependants_list: modelFF.dependants_list || [],
-      currentTab: modelFF._depCurrentTab || 'children',
-      activeIndex: modelFF._depActiveIndex ?? 0,
-    },
+    // Dependants is intentionally excluded from this save — dependant
+    // fields are persisted via their own dedicated endpoint, mirroring the
+    // same pattern used for PersonalDetails / principalsApi.save().
 
     // TrustsCompanies (FactFindTrusts)
     TrustsCompanies: {
