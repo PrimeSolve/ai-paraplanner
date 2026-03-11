@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { dependantsApi } from '@/api/dependantsApi';
 import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
@@ -12,7 +13,7 @@ import { ArrowRight, ArrowLeft, Plus } from 'lucide-react';
 
 export default function FactFindDependants() {
   const navigate = useNavigate();
-  const { factFind, loading: ffLoading, updateSection } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection, clientId } = useFactFind();
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [currentTab, setCurrentTab] = useState('children');
@@ -226,7 +227,7 @@ export default function FactFindDependants() {
   // ADD ENTRY
   // ============================================
 
-  const addEntry = useCallback((tab, existingData = null) => {
+  const addEntry = useCallback(async (tab, existingData = null) => {
     const wrap = wrapForTab(tab);
     if (!wrap) return;
 
@@ -239,6 +240,23 @@ export default function FactFindDependants() {
     // Fill with existing data if provided
     if (existingData) {
       fillCardFromData(node, tab, existingData);
+      // If loading from API, the record already has an id
+      if (existingData.id) {
+        node.dataset.recordId = existingData.id;
+      }
+    }
+
+    // If this is a brand-new entry (no existing data or no id), create via API
+    if (!existingData?.id && clientId) {
+      try {
+        const depType = tab === 'children' ? 'child' : 'dependant';
+        const created = await dependantsApi.create({ ...(existingData || {}), dep_type: depType, client_id: clientId });
+        if (created?.id) {
+          node.dataset.recordId = created.id;
+        }
+      } catch (error) {
+        console.error('Failed to create dependant:', error);
+      }
     }
 
     // Setup remove button
@@ -260,25 +278,35 @@ export default function FactFindDependants() {
 
     const newIndex = newCount - 1;
     setActiveIndex(newIndex);
-    
+
     // Use setTimeout to ensure state updates before showing entry
     setTimeout(() => {
       updatePills(tab, newIndex);
       showOnlyActiveEntry(tab, newIndex);
     }, 0);
-  }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry]);
+  }, [wrapForTab, cloneTemplateDiv, fillCardFromData, renumber, updatePills, showOnlyActiveEntry, clientId]);
 
   // ============================================
   // REMOVE ENTRY
   // ============================================
 
   const removeEntry = useCallback(async (node, tab) => {
+    // Remove from API if it has a server-side record ID
+    const recordId = node.dataset.recordId;
+    if (recordId) {
+      try {
+        await dependantsApi.remove(recordId);
+      } catch (error) {
+        console.error('Failed to remove dependant:', error);
+      }
+    }
+
     node.remove();
     const wrap = wrapForTab(tab);
     if (!wrap) return;
     const remaining = wrap.querySelectorAll('.entry').length;
     renumber(tab);
-    
+
     if (tab === 'children') {
       setChildrenCount(remaining);
     } else {
@@ -293,17 +321,7 @@ export default function FactFindDependants() {
     } else {
       setActiveIndex(0);
     }
-
-    // Save to database immediately
-    if (factFind?.id) {
-      globalStateRef.current.dependants.children = readTabToArray('children');
-      globalStateRef.current.dependants.dependants_list = readTabToArray('dependants');
-      globalStateRef.current.dependants.currentTab = currentTab;
-      globalStateRef.current.dependants.activeIndex = activeIndex;
-      
-      await updateSection('Client1FactFind', { Dependants: globalStateRef.current.dependants });
-    }
-  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills, factFind?.id, readTabToArray, currentTab, activeIndex, updateSection]);
+  }, [wrapForTab, renumber, showOnlyActiveEntry, updatePills]);
 
   // ============================================
   // LOAD USER AND SYNC FACTFIND
@@ -321,25 +339,23 @@ export default function FactFindDependants() {
     loadUser();
   }, []);
 
-  // When FactFind loads, sync its dependants data from client1Profile
+  // When FactFind loads, fetch dependants from the dedicated API
   useEffect(() => {
-    const depData = factFind?.client1_profile?.dependants;
-    if (factFind?.id && depData) {
-      if (Array.isArray(depData)) {
-        // Flat array format from API: split by dep_type discriminator
-        const children = depData.filter(d => d.dep_type === 'child').map(({ dep_type, ...rest }) => rest);
-        const deps = depData.filter(d => d.dep_type === 'dependant').map(({ dep_type, ...rest }) => rest);
+    if (!factFind?.id || !clientId) return;
+
+    async function loadDependants() {
+      try {
+        const all = await dependantsApi.getAll(clientId);
+        const children = all.filter(d => d.dep_type === 'child').map(({ dep_type, ...rest }) => rest);
+        const deps = all.filter(d => d.dep_type === 'dependant').map(({ dep_type, ...rest }) => rest);
         globalStateRef.current.dependants = { children, dependants_list: deps, currentTab: 'children', activeIndex: 0 };
-      } else {
-        // Legacy wrapper format
-        globalStateRef.current.dependants = {
-          ...depData,
-          currentTab: depData.currentTab || 'children',
-          activeIndex: depData.activeIndex || 0
-        };
+      } catch (error) {
+        console.error('Failed to load dependants:', error);
       }
     }
-  }, [factFind?.id]);
+
+    loadDependants();
+  }, [factFind?.id, clientId]);
 
   // ============================================
   // SETUP INPUT LISTENERS
@@ -366,16 +382,36 @@ export default function FactFindDependants() {
     if (!factFind?.id) return;
 
     try {
-      globalStateRef.current.dependants.children = readTabToArray('children');
-      globalStateRef.current.dependants.dependants_list = readTabToArray('dependants');
-      globalStateRef.current.dependants.currentTab = currentTab;
-      globalStateRef.current.dependants.activeIndex = activeIndex;
+      // Update each entry that has a server-side record ID
+      const updateEntries = async (tab) => {
+        const wrap = wrapForTab(tab);
+        if (!wrap) return;
+        const cards = [...wrap.querySelectorAll('.entry')];
+        for (const card of cards) {
+          const recordId = card.dataset.recordId;
+          if (!recordId) continue;
+          const data = {};
+          const inputs = card.querySelectorAll('input, select, textarea');
+          inputs.forEach(input => {
+            if (input.type === 'radio') {
+              const baseName = input.name.replace(/__\d+$/, '');
+              if (input.checked) data[baseName] = input.value;
+            } else if (input.type === 'checkbox') {
+              if (input.checked) data[input.name] = input.value;
+            } else {
+              data[input.name] = input.value;
+            }
+          });
+          await dependantsApi.update(recordId, data);
+        }
+      };
 
-      await updateSection('Client1FactFind', { Dependants: globalStateRef.current.dependants });
+      await updateEntries('children');
+      await updateEntries('dependants');
     } catch (error) {
       console.error('Save failed:', error);
     }
-  }, [factFind?.id, readTabToArray, currentTab, activeIndex, updateSection]);
+  }, [factFind?.id, wrapForTab]);
 
   // ============================================
   // INITIALIZE DOM
@@ -427,14 +463,15 @@ export default function FactFindDependants() {
 
     setSaving(true);
     try {
+      // Save any pending edits to the API
+      await saveDependantsState();
+
       const sectionsCompleted = [...(factFind.sections_completed || [])];
       if (!sectionsCompleted.includes('dependants')) {
         sectionsCompleted.push('dependants');
       }
 
-      await updateSection('Client1FactFind', { Dependants: globalStateRef.current.dependants });
-      
-      // Update sections completed separately
+      // Update sections completed
       await base44.entities.FactFind.update(factFind.id, {
         sections_completed: sectionsCompleted,
         completion_percentage: Math.round((sectionsCompleted.length / 14) * 100)
