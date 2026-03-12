@@ -5,7 +5,8 @@ import axiosInstance from './axiosInstance';
 // ──────────────────────────────────────────────────────────────
 
 function camelToSnake(str) {
-  return str.replace(/([A-Z])/g, '_$1').toLowerCase();
+  const s = str.charAt(0).toLowerCase() + str.slice(1);
+  return s.replace(/([A-Z])/g, '_$1').toLowerCase();
 }
 
 function snakeToPascal(str) {
