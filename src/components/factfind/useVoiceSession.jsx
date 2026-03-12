@@ -167,6 +167,11 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
         setStatus('connected');
         console.log('[Voice] Connected to room');
 
+        // Publish microphone only after room is fully connected and subscriptions are ready
+        room.localParticipant.setMicrophoneEnabled(true)
+          .then(() => console.log('[Voice] Microphone enabled'))
+          .catch(err => console.error('[Voice] Microphone enable error:', err));
+
         // Send initial TAB_ACTIVATED so the agent knows which tab to start on
         const currentTab = activeTabId || 'basic_details';
         const payload = JSON.stringify({
@@ -188,7 +193,6 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
 
       const serverUrl = url || 'wss://primesolve-0l2qm4rm.livekit.cloud';
       await room.connect(serverUrl, token);
-      await room.localParticipant.setMicrophoneEnabled(true);
 
     } catch (err) {
       console.error('[Voice] Start failed:', err);
