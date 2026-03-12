@@ -409,8 +409,10 @@ function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow", on
     onSay: (text) => {
       // Add agent speech as an assistant message in the chat
       setMessages(prev => [...prev, { role: 'assistant', content: text }]);
+      setVoiceTranscript(prev => [...prev, { type: 'agent', text }]);
     }
   });
+  const [voiceTranscript, setVoiceTranscript] = useState([]);
   const [activityFeed, setActivityFeed] = useState([]);
   const [highlightedRecordId, setHighlightedRecordId] = useState(null);
   const chatEndRef = useRef(null);
@@ -897,10 +899,18 @@ Current context:
       role: 'assistant',
       content: `✓ Captured: **${field}** → ${value}`
     }]);
+    setVoiceTranscript(prev => [...prev, { type: 'write', text: `✓ ${field}: ${value}` }]);
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--ps-surface)" }}>
+      <style>{`
+        @keyframes pulse {
+          0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+          70% { box-shadow: 0 0 0 20px rgba(239,68,68,0); }
+          100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+        }
+      `}</style>
       {/* Panel header */}
       <div style={{
         padding: "10px 14px",
@@ -971,93 +981,137 @@ Current context:
         ))}
       </div>
 
-      {/* Chat messages */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
-        {messages.map((m, i) => (
-          <div key={i} style={{
-            display: "flex", flexDirection: "column",
-            alignItems: m.role === "user" ? "flex-end" : "flex-start",
-          }}>
+      {(voiceConnected || voiceConnecting) ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', height: '100%', padding: '24px 16px' }}>
+          {/* Pulsing mic */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 24 }}>
             <div style={{
-              maxWidth: "88%", padding: "10px 14px",
-              borderRadius: m.role === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-              background: m.role === "user" ? "#4F46E5" : "var(--ps-surface-alt)",
-              color: m.role === "user" ? "#fff" : "var(--ps-text-primary)",
-              border: m.role === "user" ? "none" : "1px solid var(--ps-border)",
-              fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap",
-            }}>{m.content}</div>
+              width: 72, height: 72, borderRadius: '50%',
+              background: voiceConnected ? '#ef4444' : '#f59e0b',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 32,
+              boxShadow: voiceConnected ? '0 0 0 16px rgba(239,68,68,0.15)' : '0 0 0 16px rgba(245,158,11,0.15)',
+              animation: voiceConnected ? 'pulse 1.5s infinite' : 'none',
+            }}>{"\uD83C\uDFA4"}</div>
+            <span style={{ color: 'var(--ps-text-muted)', fontSize: 13 }}>
+              {voiceConnecting ? 'Connecting...' : 'Listening...'}
+            </span>
           </div>
-        ))}
-        {loading && (
-          <div style={{
-            alignSelf: "flex-start", padding: "10px 14px",
-            background: "var(--ps-surface-alt)", borderRadius: "14px 14px 14px 4px",
-            border: "1px solid var(--ps-border)",
-            fontSize: 13, color: "var(--ps-text-muted)",
-          }}>
-            {"\u2726"} Thinking...
-          </div>
-        )}
-        <div ref={chatEndRef} />
-      </div>
 
-      {/* Quick prompts */}
-      {messages.length <= 1 && (
-        <div style={{ padding: "0 14px 8px", display: "flex", flexDirection: "column", gap: 4 }}>
-          <div style={{ fontSize: 10, color: "var(--ps-text-subtle)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 2 }}>QUICK START</div>
-          {COPILOT_QUICK_PROMPTS.map((q, i) => (
-            <button key={i} onClick={() => sendMessage(q)} style={{
-              textAlign: "left", padding: "7px 10px", background: "var(--ps-surface-alt)",
-              border: "1px solid var(--ps-border)", borderRadius: 8, fontSize: 11,
-              color: "var(--ps-text-secondary)", cursor: "pointer", lineHeight: 1.4,
-            }}>{q}</button>
-          ))}
+          {/* Transcript feed */}
+          <div style={{ flex: 1, overflowY: 'auto', width: '100%', marginTop: 24, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {voiceTranscript.map((entry, i) => (
+              <div key={i} style={{
+                padding: '8px 12px',
+                borderRadius: 8,
+                fontSize: 13,
+                background: entry.type === 'write' ? 'rgba(34,197,94,0.1)' : 'var(--ps-surface-alt)',
+                color: entry.type === 'write' ? '#22c55e' : 'var(--ps-text)',
+                alignSelf: entry.type === 'write' ? 'flex-start' : 'flex-end',
+              }}>
+                {entry.text}
+              </div>
+            ))}
+          </div>
+
+          {/* Stop button */}
+          <button onClick={stopVoiceSession} style={{
+            marginTop: 16, padding: '10px 24px',
+            background: '#ef4444', border: 'none', borderRadius: 10,
+            color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: 14,
+          }}>Stop listening</button>
         </div>
-      )}
+      ) : (
+        <>
+          {/* Chat messages */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+            {messages.map((m, i) => (
+              <div key={i} style={{
+                display: "flex", flexDirection: "column",
+                alignItems: m.role === "user" ? "flex-end" : "flex-start",
+              }}>
+                <div style={{
+                  maxWidth: "88%", padding: "10px 14px",
+                  borderRadius: m.role === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+                  background: m.role === "user" ? "#4F46E5" : "var(--ps-surface-alt)",
+                  color: m.role === "user" ? "#fff" : "var(--ps-text-primary)",
+                  border: m.role === "user" ? "none" : "1px solid var(--ps-border)",
+                  fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap",
+                }}>{m.content}</div>
+              </div>
+            ))}
+            {loading && (
+              <div style={{
+                alignSelf: "flex-start", padding: "10px 14px",
+                background: "var(--ps-surface-alt)", borderRadius: "14px 14px 14px 4px",
+                border: "1px solid var(--ps-border)",
+                fontSize: 13, color: "var(--ps-text-muted)",
+              }}>
+                {"\u2726"} Thinking...
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
 
-      {/* Input bar */}
-      <div style={{
-        padding: "10px 12px", borderTop: "1px solid var(--ps-border)",
-        display: "flex", gap: 8, background: "var(--ps-surface-alt)",
-      }}>
-        <textarea
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-          placeholder="Tell the co-pilot what to add..."
-          rows={2}
-          style={{
-            flex: 1, padding: "8px 12px", border: "1.5px solid var(--ps-border-mid)",
-            borderRadius: 10, fontSize: 13, resize: "none", fontFamily: "inherit",
-            outline: "none", background: "var(--ps-surface-input)",
-            color: "var(--ps-text-primary)",
-          }}
-        />
-        <button
-          onClick={() => sendMessage()}
-          disabled={loading || !input.trim()}
-          style={{
-            padding: "10px 16px",
-            background: loading || !input.trim() ? "var(--ps-border)" : "#4F46E5",
-            color: loading || !input.trim() ? "var(--ps-text-subtle)" : "#fff",
-            border: "none", borderRadius: 10, fontWeight: 700, fontSize: 13,
-            cursor: loading || !input.trim() ? "default" : "pointer",
-            alignSelf: "flex-end", flexShrink: 0,
-          }}
-        >{loading ? "..." : "Send"}</button>
-        <button
-          onClick={() => voiceConnected ? stopVoiceSession() : startVoiceSession()}
-          disabled={voiceConnecting}
-          title={voiceConnected ? 'Stop voice session' : 'Start voice session (LiveKit)'}
-          style={{
-            padding: "10px 12px",
-            background: voiceConnected ? '#ef4444' : voiceConnecting ? '#f59e0b' : "var(--ps-surface-alt)",
-            border: "none", borderRadius: 10,
-            color: "var(--ps-text-muted)", cursor: "pointer", fontSize: 16,
-            flexShrink: 0, alignSelf: "flex-end",
-          }}
-        >{"\uD83C\uDFA4"}</button>
-      </div>
+          {/* Quick prompts */}
+          {messages.length <= 1 && (
+            <div style={{ padding: "0 14px 8px", display: "flex", flexDirection: "column", gap: 4 }}>
+              <div style={{ fontSize: 10, color: "var(--ps-text-subtle)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 2 }}>QUICK START</div>
+              {COPILOT_QUICK_PROMPTS.map((q, i) => (
+                <button key={i} onClick={() => sendMessage(q)} style={{
+                  textAlign: "left", padding: "7px 10px", background: "var(--ps-surface-alt)",
+                  border: "1px solid var(--ps-border)", borderRadius: 8, fontSize: 11,
+                  color: "var(--ps-text-secondary)", cursor: "pointer", lineHeight: 1.4,
+                }}>{q}</button>
+              ))}
+            </div>
+          )}
+
+          {/* Input bar */}
+          <div style={{
+            padding: "10px 12px", borderTop: "1px solid var(--ps-border)",
+            display: "flex", gap: 8, background: "var(--ps-surface-alt)",
+          }}>
+            <textarea
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+              placeholder="Tell the co-pilot what to add..."
+              rows={2}
+              style={{
+                flex: 1, padding: "8px 12px", border: "1.5px solid var(--ps-border-mid)",
+                borderRadius: 10, fontSize: 13, resize: "none", fontFamily: "inherit",
+                outline: "none", background: "var(--ps-surface-input)",
+                color: "var(--ps-text-primary)",
+              }}
+            />
+            <button
+              onClick={() => sendMessage()}
+              disabled={loading || !input.trim()}
+              style={{
+                padding: "10px 16px",
+                background: loading || !input.trim() ? "var(--ps-border)" : "#4F46E5",
+                color: loading || !input.trim() ? "var(--ps-text-subtle)" : "#fff",
+                border: "none", borderRadius: 10, fontWeight: 700, fontSize: 13,
+                cursor: loading || !input.trim() ? "default" : "pointer",
+                alignSelf: "flex-end", flexShrink: 0,
+              }}
+            >{loading ? "..." : "Send"}</button>
+            <button
+              onClick={() => voiceConnected ? stopVoiceSession() : startVoiceSession()}
+              disabled={voiceConnecting}
+              title={voiceConnected ? 'Stop voice session' : 'Start voice session (LiveKit)'}
+              style={{
+                padding: "10px 12px",
+                background: voiceConnected ? '#ef4444' : voiceConnecting ? '#f59e0b' : "var(--ps-surface-alt)",
+                border: "none", borderRadius: 10,
+                color: "var(--ps-text-muted)", cursor: "pointer", fontSize: 16,
+                flexShrink: 0, alignSelf: "flex-end",
+              }}
+            >{"\uD83C\uDFA4"}</button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
