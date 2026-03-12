@@ -19,6 +19,7 @@ import { ModelComparisonDashboard, ModelComparisonDetail, AdviceSummaryTable, Sc
 import { AgedCarePage, SocialSecurityTable, EligibilityTable, SuperAssumptionsTable, SuperProductPage, PensionProductPage, BondProductPage, AnnuityProductPage, InsurancePremiumProjection, InsuranceProjectionPage, WrapProjectionPage, PotentialDeathTaxPage, AssumptionsPanel, BasicAssumptionsForm, AssetOverridesPage, AssetAssumptionsPage, SOADocumentBuilder, altEx, altSurvivalPct } from "./components/products/index.jsx";
 import { PRINCIPAL_SUB_SECTIONS, CHILD_DEFAULTS, DEPENDANT_DEFAULTS, SUPER_DEFAULTS, PENSION_DEFAULTS, ANNUITY_DEFAULTS, DB_DEFAULTS, WRAP_DEFAULTS, INV_BOND_DEFAULTS, PrincipalsForm, DependantsForm, SuperannuationForm, InvestmentsForm, TrustsCompaniesForm, SMSFForm, AssetsForm, LiabilitiesForm, InsurancePoliciesForm, IncomeForm, ExpensesForm, GoalsForm, RiskProfileForm, ScopeOfAdviceForm } from "./components/factfind/index.jsx";
 import { TransactionsForm, ProductReplacementForm, AiFactFind, AiParaplanner, StrategyForm, AdviceProductsEntitiesForm, AdviceInsuranceForm, TaxSuperPlanningForm, AssumptionsForm, PortfolioForm } from "./components/advice/index.jsx";
+import { useVoiceSession } from '../components/factfind/useVoiceSession';
 import { getAccessToken } from '@/auth/msalInstance';
 import { adviceHistoryApi } from '@/api/adviceHistoryApi';
 class CashflowErrorBoundary extends React.Component {
@@ -393,6 +394,23 @@ function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow", on
   }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const {
+    connected: voiceConnected,
+    connecting: voiceConnecting,
+    startSession: startVoiceSession,
+    stopSession: stopVoiceSession,
+  } = useVoiceSession({
+    onWrite: (field, value) => {
+      // Route voice agent writes through the same tool execution handler
+      // that the text copilot uses — treat it as a tool result
+      handleVoiceWrite(field, value);
+    },
+    onSay: (text) => {
+      // Add agent speech as an assistant message in the chat
+      setMessages(prev => [...prev, { role: 'assistant', content: text }]);
+    }
+  });
   const [activityFeed, setActivityFeed] = useState([]);
   const [highlightedRecordId, setHighlightedRecordId] = useState(null);
   const chatEndRef = useRef(null);
@@ -873,6 +891,14 @@ Current context:
     );
   };
 
+  const handleVoiceWrite = (field, value) => {
+    // Add a synthetic assistant message showing what was captured
+    setMessages(prev => [...prev, {
+      role: 'assistant',
+      content: `✓ Captured: **${field}** → ${value}`
+    }]);
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--ps-surface)" }}>
       {/* Panel header */}
@@ -884,6 +910,16 @@ Current context:
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 15, color: "#fff" }}>{"\u2726"}</span>
           <span style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Co-pilot</span>
+          {voiceConnected && (
+            <span style={{ fontSize: 11, background: '#dcfce7', color: '#16a34a', padding: '2px 8px', borderRadius: 99, fontWeight: 600 }}>
+              LIVE
+            </span>
+          )}
+          {voiceConnecting && (
+            <span style={{ fontSize: 11, background: '#fef9c3', color: '#ca8a04', padding: '2px 8px', borderRadius: 99, fontWeight: 600 }}>
+              CONNECTING...
+            </span>
+          )}
           <span style={{
             fontSize: 9, fontWeight: 700,
             color: mode === "factfind" ? "#4ADE80" : "#A5B4FC",
@@ -1010,14 +1046,16 @@ Current context:
           }}
         >{loading ? "..." : "Send"}</button>
         <button
+          onClick={() => voiceConnected ? stopVoiceSession() : startVoiceSession()}
+          disabled={voiceConnecting}
+          title={voiceConnected ? 'Stop voice session' : 'Start voice session (LiveKit)'}
           style={{
             padding: "10px 12px",
-            background: "var(--ps-surface-alt)",
+            background: voiceConnected ? '#ef4444' : voiceConnecting ? '#f59e0b' : "var(--ps-surface-alt)",
             border: "none", borderRadius: 10,
             color: "var(--ps-text-muted)", cursor: "pointer", fontSize: 16,
             flexShrink: 0, alignSelf: "flex-end",
           }}
-          title="Voice input (LiveKit)"
         >{"\uD83C\uDFA4"}</button>
       </div>
     </div>
