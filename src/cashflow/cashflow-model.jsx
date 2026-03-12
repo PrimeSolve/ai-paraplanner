@@ -355,6 +355,24 @@ const COPILOT_TOOL_DEFINITIONS = [
       required: ["client", "specified_profile"],
     },
   },
+  {
+    name: "navigate_to",
+    description: "Navigate the fact find UI to a specific section so the adviser and client can see it on screen. Use this whenever the adviser says 'let's look at X', 'show me X', 'go to X', or 'jump to X'.",
+    input_schema: {
+      type: "object",
+      properties: {
+        section: {
+          type: "string",
+          description: "The section to navigate to. Must be one of the exact tab/section keys used in the app. Examples: 'superannuation', 'assets', 'liabilities', 'income', 'expenses', 'insurance-policies', 'goals', 'risk-profile', 'principals', 'dependants'.",
+        },
+        highlight_id: {
+          type: "string",
+          description: "Optional. The ID of a specific record to highlight after navigating (e.g. a specific super fund ID).",
+        },
+      },
+      required: ["section"],
+    },
+  },
 ];
 
 const COPILOT_QUICK_PROMPTS = [
@@ -368,7 +386,7 @@ const COPILOT_QUICK_PROMPTS = [
   "We have a car loan of about $22k",
 ];
 
-function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow" }) {
+function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow", onNavigate }) {
   const [messages, setMessages] = useState([{
     role: "assistant",
     content: "Welcome \u2014 this is your financial fact find. Work through each section at your own pace, filling in as much as you can. I\u2019ll handle the data entry.",
@@ -376,6 +394,7 @@ function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow" }) 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [activityFeed, setActivityFeed] = useState([]);
+  const [highlightedRecordId, setHighlightedRecordId] = useState(null);
   const chatEndRef = useRef(null);
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
@@ -711,6 +730,14 @@ Current context:
         return { success: true, summary: null, clarificationQuestion: toolInput.question };
       case "summariseChanges":
         return { success: true, summary: `\u2713 ${toolInput.count} change${toolInput.count !== 1 ? "s" : ""} made \u2014 ${toolInput.summary}`, isFinal: true };
+      case "navigate_to": {
+        const { section, highlight_id } = toolInput;
+        if (onNavigate) onNavigate(section);
+        if (highlight_id) setHighlightedRecordId(highlight_id);
+        let result = `Navigated to ${section}`;
+        if (highlight_id) result += `, highlighted record ${highlight_id}`;
+        return { success: true, summary: result };
+      }
       default:
         return { success: false, summary: `Unknown tool: ${toolName}` };
     }
@@ -3032,7 +3059,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           background: "var(--ps-surface)", overflow: "hidden",
           minWidth: 320,
         }}>
-          <CashflowAssistant factFind={factFind} updateFF={updateFF} darkMode={darkMode} mode={mode || "cashflow"} />
+          <CashflowAssistant factFind={factFind} updateFF={updateFF} darkMode={darkMode} mode={mode || "cashflow"} onNavigate={(section) => { setFactFindOpen(true); setFactFindSection(section); }} />
         </div>
       )}
       </div>
