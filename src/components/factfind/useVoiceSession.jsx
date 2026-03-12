@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 const BRIDGE_ENDPOINT = 'https://solver-cors-proxy.tim-hall.workers.dev/livekit/start';
 
-export function useVoiceSession({ factFind, updateSection, activeTabId, clientId }) {
+export function useVoiceSession({ factFind, updateSection, activeTabId, clientId, onWrite, onSay } = {}) {
   const [status, setStatus] = useState('idle');
   const [writeCount, setWriteCount] = useState(0);
   const roomRef = useRef(null);
@@ -86,7 +86,13 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
       if (msg.type === 'WRITE') {
         if (processedIds.current.has(msg.write_id)) return;
         processedIds.current.add(msg.write_id);
-        applyWrite(msg);
+        if (updateSection) applyWrite(msg);
+        if (onWrite) {
+          const { tab, fields } = msg;
+          Object.entries(fields || {}).forEach(([field, value]) => {
+            onWrite(`${tab}.${field}`, value);
+          });
+        }
       }
 
       if (msg.type === 'TAB_COMPLETE') {
@@ -95,11 +101,12 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
 
       if (msg.type === 'SAY') {
         console.log('[Voice] Agent says:', msg.text);
+        if (onSay) onSay(msg.text);
       }
     } catch (e) {
       console.error('[Voice] Parse error:', e);
     }
-  }, [applyWrite]);
+  }, [applyWrite, onWrite, onSay, updateSection]);
 
   // ---- START VOICE SESSION ----
   const startVoice = useCallback(async () => {
@@ -217,5 +224,15 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
     };
   }, []);
 
-  return { status, writeCount, startVoice, stopVoice };
+  return {
+    status,
+    writeCount,
+    startVoice,
+    stopVoice,
+    // Aliases expected by CashflowAssistant consumer
+    connected: status === 'connected',
+    connecting: status === 'connecting',
+    startSession: startVoice,
+    stopSession: stopVoice,
+  };
 }
