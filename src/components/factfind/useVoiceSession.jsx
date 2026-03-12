@@ -162,6 +162,23 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
         handleData(payload);
       });
 
+      // ---- PLAY REMOTE AUDIO TRACKS (agent voice) ----
+      room.on(window.LivekitClient.RoomEvent.TrackSubscribed, (track, publication, participant) => {
+        if (track.kind === 'audio') {
+          console.log('[Voice] Remote audio track subscribed from', participant.identity);
+          const el = track.attach();
+          el.id = `lk-audio-${participant.identity}-${track.sid}`;
+          document.body.appendChild(el);
+        }
+      });
+
+      room.on(window.LivekitClient.RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
+        if (track.kind === 'audio') {
+          console.log('[Voice] Remote audio track unsubscribed from', participant.identity);
+          track.detach().forEach(el => el.remove());
+        }
+      });
+
       room.on(window.LivekitClient.RoomEvent.Connected, () => {
         statusRef.current = 'connected';
         setStatus('connected');
@@ -220,6 +237,12 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
   // ---- STOP SESSION ----
   const stopVoice = useCallback(() => {
     if (roomRef.current) {
+      // Detach all remote audio elements before disconnecting
+      roomRef.current.remoteParticipants.forEach(p => {
+        p.audioTrackPublications.forEach(pub => {
+          if (pub.track) pub.track.detach().forEach(el => el.remove());
+        });
+      });
       roomRef.current.disconnect();
       roomRef.current = null;
     }
