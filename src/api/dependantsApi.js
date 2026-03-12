@@ -9,8 +9,8 @@ function camelToSnake(str) {
   return s.replace(/([A-Z])/g, '_$1').toLowerCase();
 }
 
-function snakeToPascal(str) {
-  return str.split('_').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('');
+function snakeToCamel(str) {
+  return str.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
 }
 
 function camelToSnakeKeys(obj) {
@@ -25,14 +25,14 @@ function camelToSnakeKeys(obj) {
   return result;
 }
 
-function snakeToPascalKeys(obj) {
+function snakeToCamelKeys(obj) {
   if (obj === null || obj === undefined) return obj;
-  if (Array.isArray(obj)) return obj.map(snakeToPascalKeys);
+  if (Array.isArray(obj)) return obj.map(snakeToCamelKeys);
   if (typeof obj !== 'object') return obj;
   if (obj instanceof Date) return obj;
   const result = {};
   for (const [key, value] of Object.entries(obj)) {
-    result[snakeToPascal(key)] = snakeToPascalKeys(value);
+    result[snakeToCamel(key)] = snakeToCamelKeys(value);
   }
   return result;
 }
@@ -58,7 +58,8 @@ export const dependantsApi = {
    * @returns {Promise<object>} Created dependant (snake_case)
    */
   async create(data) {
-    const apiData = snakeToPascalKeys(data);
+    const apiData = snakeToCamelKeys(data);
+    if (apiData.dateOfBirth === '') apiData.dateOfBirth = null;
     const response = await axiosInstance.post('/dependants', apiData);
     return camelToSnakeKeys(response.data);
   },
@@ -70,7 +71,8 @@ export const dependantsApi = {
    * @returns {Promise<object>} Updated dependant (snake_case)
    */
   async update(id, data) {
-    const apiData = snakeToPascalKeys(data);
+    const apiData = snakeToCamelKeys(data);
+    if (apiData.dateOfBirth === '') apiData.dateOfBirth = null;
     const response = await axiosInstance.put(`/dependants/${id}`, apiData);
     return camelToSnakeKeys(response.data);
   },
