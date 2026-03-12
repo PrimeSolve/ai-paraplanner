@@ -387,7 +387,7 @@ const COPILOT_QUICK_PROMPTS = [
   "We have a car loan of about $22k",
 ];
 
-function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow", onNavigate }) {
+function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow", onNavigate, factFindSection }) {
   const [messages, setMessages] = useState([{
     role: "assistant",
     content: "Welcome \u2014 this is your financial fact find. Work through each section at your own pace, filling in as much as you can. I\u2019ll handle the data entry.",
@@ -402,6 +402,9 @@ function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow", on
     stopSession: stopVoiceSession,
   } = useVoiceSession({
     clientId: new URLSearchParams(window.location.search).get('clientId') || '',
+    factFind,
+    updateSection: updateFF,
+    activeTabId: factFindSection,
     onWrite: (field, value) => {
       // Route voice agent writes through the same tool execution handler
       // that the text copilot uses — treat it as a tool result
@@ -3152,7 +3155,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           background: "var(--ps-surface)", overflow: "hidden",
           minWidth: 320,
         }}>
-          <CashflowAssistant factFind={factFind} updateFF={updateFF} darkMode={darkMode} mode={mode || "cashflow"} onNavigate={(section) => { setFactFindOpen(true); setFactFindSection(section); }} />
+          <CashflowAssistant factFind={factFind} updateFF={updateFF} darkMode={darkMode} mode={mode || "cashflow"} onNavigate={(section) => { setFactFindOpen(true); setFactFindSection(section); }} factFindSection={factFindSection} />
         </div>
       )}
       </div>
