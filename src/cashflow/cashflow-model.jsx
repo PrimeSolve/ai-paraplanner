@@ -401,7 +401,7 @@ function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow", on
     startSession: startVoiceSession,
     stopSession: stopVoiceSession,
   } = useVoiceSession({
-    clientId: urlClientId,
+    clientId: new URLSearchParams(window.location.search).get('clientId') || '',
     onWrite: (field, value) => {
       // Route voice agent writes through the same tool execution handler
       // that the text copilot uses — treat it as a tool result
