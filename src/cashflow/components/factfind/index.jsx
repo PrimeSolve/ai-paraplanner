@@ -442,7 +442,7 @@ export function DependantsForm({ factFind, updateFF, clientId }) {
       updated[idx] = { ...updated[idx], [field]: value };
       const record = updated[idx];
       if (record.id) {
-        const { id, dep_type, client_id, ...fields } = record;
+        const { id, client_id, ...fields } = record;
         debouncedUpdate(id, fields);
       }
       return updated;
@@ -479,7 +479,7 @@ export function DependantsForm({ factFind, updateFF, clientId }) {
       updated[idx] = { ...updated[idx], [field]: value };
       const record = updated[idx];
       if (record.id) {
-        const { id, dep_type, client_id, ...fields } = record;
+        const { id, client_id, ...fields } = record;
         debouncedUpdate(id, fields);
       }
       return updated;
