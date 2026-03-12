@@ -174,7 +174,8 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
         console.log('[Voice] Disconnected');
       });
 
-      await room.connect(url, token);
+      const serverUrl = url || 'wss://primesolve-0l2qm4rm.livekit.cloud';
+      await room.connect(serverUrl, token);
       await room.localParticipant.setMicrophoneEnabled(true);
 
     } catch (err) {
