@@ -103,6 +103,17 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
         console.log('[Voice] Agent says:', msg.text);
         if (onSay) onSay(msg.text);
       }
+
+      if (msg.type === 'TOOL_CALL') {
+        console.log('[Voice] Tool call:', msg.tool, msg.input);
+        if (onWrite) {
+          const tool = msg.tool;
+          const input = msg.input || {};
+          Object.entries(input).forEach(([field, value]) => {
+            onWrite(`${tool}.${field}`, value);
+          });
+        }
+      }
     } catch (e) {
       console.error('[Voice] Parse error:', e);
     }
@@ -133,9 +144,10 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
       });
 
       if (!res.ok) throw new Error('Failed to create room');
-      const { url, token, room_name } = await res.json();
+      const { url, token, roomName, room_name } = await res.json();
+      const resolvedRoomName = roomName || room_name;
 
-      console.log('[Voice] Room created:', room_name);
+      console.log('[Voice] Room created:', resolvedRoomName);
 
       // Decode and log token grants
       const parts = token.split('.');
