@@ -42,7 +42,7 @@ function snakeToCamelKeys(obj) {
 // ──────────────────────────────────────────────────────────────
 
 const FRONTEND_ONLY_FIELDS = [
-  'co_purpose', 'co_type', 'co_losses', 'shareholders',
+  'co_purpose', 'co_type', 'co_losses',
   'pnl', 'share_capital', 'retained_earnings',
   'uploaded_pnl', 'uploaded_bs',
   'uploaded_pnl_name', 'uploaded_bs_name',
@@ -133,5 +133,17 @@ export const companiesApi = {
    */
   async remove(id) {
     await axiosInstance.delete(`/companies/${id}`);
+  },
+
+  // ── Shareholders sub-resource ──────────────────────────────
+
+  async addShareholder(companyId, data) {
+    const apiData = snakeToCamelKeys(data);
+    const response = await axiosInstance.post(`/companies/${companyId}/shareholders`, apiData);
+    return normaliseRecord(camelToSnakeKeys(response.data));
+  },
+
+  async removeShareholder(companyId, shareholderId) {
+    await axiosInstance.delete(`/companies/${companyId}/shareholders/${shareholderId}`);
   },
 };
