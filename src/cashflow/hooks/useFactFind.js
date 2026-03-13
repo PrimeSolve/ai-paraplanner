@@ -8,6 +8,7 @@ import { companiesApi } from "../../api/companiesApi.js";
 import { smsfApi } from "../../api/smsfApi.js";
 import { pensionsApi } from "../../api/pensionsApi.js";
 import { annuitiesApi } from "../../api/annuitiesApi.js";
+import { definedBenefitsApi } from "../../api/definedBenefitsApi.js";
 import { useRole } from "../../components/RoleContext.jsx";
 
 export function useFactFind(initialData) {
@@ -631,6 +632,72 @@ export function useFactFind(initialData) {
     }
   }, [factFind]);
 
+  // ── Defined Benefits API integration ──────────────────────────
+
+  /**
+   * Load defined benefits from GET /defined-benefits?clientId={id} and populate
+   * factFind.definedBenefits.
+   * @param {string} clientId - The client ID (GUID)
+   */
+  const loadDefinedBenefits = useCallback(async (clientId) => {
+    try {
+      const records = await definedBenefitsApi.getAll(clientId);
+      const arr = Array.isArray(records) ? records : [];
+
+      setFactFind(prev => {
+        const next = JSON.parse(JSON.stringify(prev));
+        next.definedBenefits = arr;
+        return next;
+      });
+      setAdviceModel1(prev => {
+        if (!prev) return prev;
+        const next = JSON.parse(JSON.stringify(prev));
+        next.definedBenefits = arr;
+        return next;
+      });
+    } catch (err) {
+      console.error('[useFactFind] Failed to load defined benefits from API:', err);
+    }
+  }, []);
+
+  /**
+   * Save defined benefits by syncing the full list via create/update/delete.
+   * Compares local state against the API and reconciles differences by id.
+   * @param {string} clientId - The client ID (GUID)
+   * @param {object} clientGuidMap - Map of owner keys to client GUIDs
+   */
+  const saveDefinedBenefits = useCallback(async (clientId, clientGuidMap) => {
+    try {
+      const ff = factFind;
+      const localAll = ff.definedBenefits || [];
+
+      // Fetch current server state to diff against
+      const serverAll = await definedBenefitsApi.getAll(clientId);
+      const serverById = new Map((serverAll || []).filter(r => r.id).map(r => [r.id, r]));
+
+      // Determine which local records have IDs (existing) vs new
+      const localById = new Map(localAll.filter(r => r.id).map(r => [r.id, r]));
+
+      // Delete server records not present locally
+      for (const serverId of serverById.keys()) {
+        if (!localById.has(serverId)) {
+          await definedBenefitsApi.remove(serverId);
+        }
+      }
+
+      // Create or update local records
+      for (const rec of localAll) {
+        if (rec.id && serverById.has(rec.id)) {
+          await definedBenefitsApi.update(rec.id, rec);
+        } else {
+          await definedBenefitsApi.create(rec, clientGuidMap);
+        }
+      }
+    } catch (err) {
+      console.error('[useFactFind] Failed to save defined benefits to API:', err);
+    }
+  }, [factFind]);
+
   return {
     factFind, setFactFind, adviceModel1, setAdviceModel1,
     updateFF, updateAdvice, resetAdviceModel,
@@ -642,6 +709,7 @@ export function useFactFind(initialData) {
     loadSmsfs, saveSmsfs,
     loadPensions, savePensions,
     loadAnnuities, saveAnnuities,
+    loadDefinedBenefits, saveDefinedBenefits,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
