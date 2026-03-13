@@ -12,6 +12,8 @@ namespace PrimeSolve.Api.Data
         public DbSet<Client> Clients { get; set; }
         public DbSet<Tenant> Tenants { get; set; }
         public DbSet<AdviceRecord> AdviceRecords { get; set; }
+        public DbSet<Company> Companies { get; set; }
+        public DbSet<CompanyShareholder> CompanyShareholders { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -46,6 +48,26 @@ namespace PrimeSolve.Api.Data
                 entity.Property(e => e.FactFindSnapshot).HasColumnType("nvarchar(max)");
                 entity.Property(e => e.AdviceModelSnapshot).HasColumnType("nvarchar(max)");
                 entity.Property(e => e.ProjectionSnapshot).HasColumnType("nvarchar(max)");
+            });
+
+            modelBuilder.Entity<Company>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.TenantId, e.ClientId });
+                entity.Property(e => e.CompanyName).HasMaxLength(255);
+                entity.Property(e => e.TaxRate).HasColumnType("decimal(18,4)");
+                entity.Property(e => e.FrankingBalance).HasColumnType("decimal(18,2)");
+                entity.HasMany(e => e.Shareholders)
+                      .WithOne(s => s.Company)
+                      .HasForeignKey(s => s.CompanyId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<CompanyShareholder>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.TenantId, e.CompanyId });
+                entity.Property(e => e.SharePercentage).HasColumnType("decimal(18,4)");
             });
         }
     }
