@@ -49,7 +49,9 @@ export const dependantsApi = {
    */
   async getAll(clientId) {
     const response = await axiosInstance.get(`/dependants?clientId=${clientId}`);
-    return camelToSnakeKeys(response.data);
+    const raw = response.data;
+    const arr = Array.isArray(raw) ? raw : (raw.items || raw.data || raw.value || []);
+    return camelToSnakeKeys(arr);
   },
 
   /**
