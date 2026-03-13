@@ -4,6 +4,7 @@ import { _psInitialDark, injectThemeCSS } from "../constants/theme.jsx";
 import { principalsApi } from "../../api/principalsApi.js";
 import { dependantsApi } from "../../api/dependantsApi.js";
 import { trustsApi } from "../../api/trustsApi.js";
+import { companiesApi } from "../../api/companiesApi.js";
 import { useRole } from "../../components/RoleContext.jsx";
 
 export function useFactFind(initialData) {
@@ -361,6 +362,71 @@ export function useFactFind(initialData) {
     }
   }, [factFind]);
 
+  // ── Companies API integration ──────────────────────────────
+
+  /**
+   * Load companies from GET /companies?clientId={id} and populate
+   * factFind.companies.
+   * @param {string} clientId - The client ID (GUID)
+   */
+  const loadCompanies = useCallback(async (clientId) => {
+    try {
+      const records = await companiesApi.getAll(clientId);
+      const arr = Array.isArray(records) ? records : [];
+
+      setFactFind(prev => {
+        const next = JSON.parse(JSON.stringify(prev));
+        next.companies = arr;
+        return next;
+      });
+      setAdviceModel1(prev => {
+        if (!prev) return prev;
+        const next = JSON.parse(JSON.stringify(prev));
+        next.companies = arr;
+        return next;
+      });
+    } catch (err) {
+      console.error('[useFactFind] Failed to load companies from API:', err);
+    }
+  }, []);
+
+  /**
+   * Save companies by syncing the full list via create/update/delete.
+   * Compares local state against the API and reconciles differences.
+   * @param {string} clientId - The client ID (GUID)
+   */
+  const saveCompanies = useCallback(async (clientId) => {
+    try {
+      const ff = factFind;
+      const localAll = (ff.companies || []).map(c => ({ ...c, client_id: clientId }));
+
+      // Fetch current server state to diff against
+      const serverAll = await companiesApi.getAll(clientId);
+      const serverById = new Map((serverAll || []).filter(r => r.id).map(r => [r.id, r]));
+
+      // Determine which local records have IDs (existing) vs new
+      const localById = new Map(localAll.filter(r => r.id).map(r => [r.id, r]));
+
+      // Delete server records not present locally
+      for (const serverId of serverById.keys()) {
+        if (!localById.has(serverId)) {
+          await companiesApi.remove(serverId);
+        }
+      }
+
+      // Create or update local records
+      for (const rec of localAll) {
+        if (rec.id && serverById.has(rec.id)) {
+          await companiesApi.update(rec.id, rec);
+        } else {
+          await companiesApi.create(clientId, rec);
+        }
+      }
+    } catch (err) {
+      console.error('[useFactFind] Failed to save companies to API:', err);
+    }
+  }, [factFind]);
+
   return {
     factFind, setFactFind, adviceModel1, setAdviceModel1,
     updateFF, updateAdvice, resetAdviceModel,
@@ -368,6 +434,7 @@ export function useFactFind(initialData) {
     loadPrincipals, savePrincipals,
     loadDependants, saveDependants,
     loadTrusts, saveTrusts,
+    loadCompanies, saveCompanies,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,

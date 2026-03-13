@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { ffRowStyle, FFInput, FFSelect, FFToggle, FFRadioRow } from "../common/FormFields.jsx";
 import { dependantsApi } from "@/api/dependantsApi";
 import { trustsApi } from "@/api/trustsApi";
+import { companiesApi } from "@/api/companiesApi";
 
 // ===========================================================================
 // FACT FIND — Principals Form (aligned to Base44 FactFindPersonal)
@@ -2001,10 +2002,73 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId }) {
     updateFF("trusts", updated);
   };
 
+  // Load companies from API on mount
+  useEffect(() => {
+    if (!clientId) return;
+    let cancelled = false;
+    async function load() {
+      try {
+        const all = await companiesApi.getAll(clientId);
+        if (cancelled) return;
+        updateFF("companies", all);
+      } catch (error) {
+        console.error("Failed to load companies:", error);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [clientId]);
+
+  // Debounced company update to API (for API-mapped fields only)
+  const API_SYNCED_COMPANY_FIELDS = ['company_name', 'co_tax_rate', 'franking_account_balance', 'co_acn', 'co_abn'];
+  const debouncedCompanyUpdate = useCallback((id, data) => {
+    const key = `company_${id}`;
+    if (debounceTimers.current[key]) {
+      clearTimeout(debounceTimers.current[key]);
+    }
+    debounceTimers.current[key] = setTimeout(async () => {
+      try {
+        await companiesApi.update(id, data);
+      } catch (error) {
+        console.error("Failed to update company:", error);
+      }
+    }, 500);
+  }, []);
+
   // Company CRUD
-  const addCompany = () => updateFF("companies", [...companies, { ...COMPANY_DEFAULTS, shareholders: [] }]);
-  const removeCompany = (idx) => updateFF("companies", companies.filter((_, i) => i !== idx));
-  const updateCompany = (idx, field, value) => updateFF("companies", companies.map((item, i) => i === idx ? { ...item, [field]: value } : item));
+  const addCompany = useCallback(async () => {
+    if (!clientId) return;
+    try {
+      const created = await companiesApi.create(clientId, { ...COMPANY_DEFAULTS });
+      const merged = { ...COMPANY_DEFAULTS, shareholders: [], ...created };
+      updateFF("companies", [...companies, merged]);
+    } catch (error) {
+      console.error("Failed to create company:", error);
+    }
+  }, [clientId, companies, updateFF]);
+
+  const removeCompany = useCallback(async (idx) => {
+    const company = companies[idx];
+    if (company?.id) {
+      try {
+        await companiesApi.remove(company.id);
+      } catch (error) {
+        console.error("Failed to remove company:", error);
+        return;
+      }
+    }
+    updateFF("companies", companies.filter((_, i) => i !== idx));
+  }, [companies, updateFF]);
+
+  const updateCompany = useCallback((idx, field, value) => {
+    const updated = companies.map((item, i) => i === idx ? { ...item, [field]: value } : item);
+    updateFF("companies", updated);
+    // Debounce API sync for API-mapped fields
+    const record = updated[idx];
+    if (record?.id && API_SYNCED_COMPANY_FIELDS.includes(field)) {
+      debouncedCompanyUpdate(record.id, record);
+    }
+  }, [companies, updateFF, debouncedCompanyUpdate]);
 
   // Company shareholder helpers
   const addShareholder = (idx) => {
