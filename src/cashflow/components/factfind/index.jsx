@@ -6,6 +6,8 @@ import { companiesApi } from "@/api/companiesApi";
 import { smsfApi } from "@/api/smsfApi";
 import { pensionsApi } from "@/api/pensionsApi";
 import { definedBenefitsApi } from "@/api/definedBenefitsApi";
+import { assetsApi } from "@/api/assetsApi";
+import { debtsApi } from "@/api/debtsApi";
 
 // ===========================================================================
 // FACT FIND — Principals Form (aligned to Base44 FactFindPersonal)
@@ -3203,12 +3205,37 @@ export function AssetsForm({ factFind, updateFF, entityOwnerOptions, clientId })
 // FACT FIND — Liabilities Form (aligned to Base44)
 // ===========================================================================
 
-export function LiabilitiesForm({ factFind, updateFF, entityOwnerOptions }) {
+export function LiabilitiesForm({ factFind, updateFF, entityOwnerOptions, clientId }) {
   const [detailIdx, setDetailIdx] = useState(null);
+  const debounceTimers = useRef({});
 
   const assets = factFind.assets || [];
   const liabilities = factFind.liabilities || [];
   const clientOptions = entityOwnerOptions || [];
+
+  // Load debts from API on mount
+  useEffect(() => {
+    if (!clientId) return;
+    let cancelled = false;
+    async function load() {
+      try {
+        const all = await debtsApi.getAll(clientId);
+        if (cancelled) return;
+        updateFF("liabilities", all);
+      } catch (error) {
+        console.error("Failed to load debts:", error);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [clientId]);
+
+  // Cleanup debounce timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach(clearTimeout);
+    };
+  }, []);
 
   const clientName = (id) => {
     if (id?.startsWith("trust_")) {
@@ -3232,9 +3259,60 @@ export function LiabilitiesForm({ factFind, updateFF, entityOwnerOptions }) {
     return map[v] || "";
   };
 
-  const addLiability = () => updateFF("liabilities", [...liabilities, { d_name: "", d_ownType: "", d_owner: "", d_type: "", d_rate: "", d_freq: "", d_repayments: "", d_term: "", d_balance: "", d_io: "", d_fixed: "", d_has_redraw: "", d_redraw: "", d_redraw_limit: "", d_security: [], d_offset: [] }]);
-  const removeLiability = (idx) => { updateFF("liabilities", liabilities.filter((_, i) => i !== idx)); setDetailIdx(null); };
-  const updateLiability = (idx, field, value) => updateFF("liabilities", liabilities.map((item, i) => i === idx ? { ...item, [field]: value } : item));
+  // Debounced update to API
+  const debouncedUpdate = useCallback((id, data) => {
+    const key = `debt_${id}`;
+    if (debounceTimers.current[key]) {
+      clearTimeout(debounceTimers.current[key]);
+    }
+    debounceTimers.current[key] = setTimeout(async () => {
+      try {
+        await debtsApi.update(id, data);
+      } catch (error) {
+        console.error("Failed to update debt:", error);
+      }
+    }, 500);
+  }, []);
+
+  const addLiability = useCallback(async () => {
+    const defaultName = `Debt ${liabilities.length + 1}`;
+    const newDebt = { d_name: "", d_ownType: "", d_owner: "", d_type: "", d_rate: "", d_freq: "", d_repayments: "", d_term: "", d_balance: "", d_io: "", d_fixed: "", d_has_redraw: "", d_redraw: "", d_redraw_limit: "", d_security: [], d_offset: [] };
+    if (clientId) {
+      try {
+        const clientGuidMap = { client1: clientId };
+        const created = await debtsApi.create(newDebt, clientGuidMap, defaultName);
+        const merged = { ...newDebt, ...created };
+        updateFF("liabilities", [...liabilities, merged]);
+      } catch (error) {
+        console.error("Failed to create debt:", error);
+      }
+    } else {
+      updateFF("liabilities", [...liabilities, newDebt]);
+    }
+  }, [clientId, liabilities, updateFF]);
+
+  const removeLiability = useCallback(async (idx) => {
+    const debt = liabilities[idx];
+    if (debt?.id) {
+      try {
+        await debtsApi.remove(debt.id);
+      } catch (error) {
+        console.error("Failed to remove debt:", error);
+        return;
+      }
+    }
+    updateFF("liabilities", liabilities.filter((_, i) => i !== idx));
+    setDetailIdx(null);
+  }, [liabilities, updateFF]);
+
+  const updateLiability = useCallback((idx, field, value) => {
+    const updated = liabilities.map((item, i) => i === idx ? { ...item, [field]: value } : item);
+    updateFF("liabilities", updated);
+    const record = updated[idx];
+    if (record?.id) {
+      debouncedUpdate(record.id, record);
+    }
+  }, [liabilities, updateFF, debouncedUpdate]);
 
   return (
     <div>
