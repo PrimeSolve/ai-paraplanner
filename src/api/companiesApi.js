@@ -149,15 +149,28 @@ export const companiesApi = {
    *   e.g. { trust_0: "guid-...", company_0: "guid-..." }
    */
   async addShareholder(companyId, data, clientGuidMap = {}, entityGuidMap = {}) {
-    const { sh_entity, sh_pct } = data;
+    const shEntity = data.sh_entity;
 
-    const isClient = sh_entity === 'client' || sh_entity === 'partner';
-    const isEntity = /^(trust|company|smsf|child|dependant|dependent)_\d+$/.test(sh_entity);
+    let shareholderClientId = null;
+    let shareholderEntityId = null;
+    let shareholderType = 3; // Other
+
+    if (shEntity === 'client1' || shEntity === 'client2') {
+      shareholderClientId = clientGuidMap?.[shEntity] || null;
+      shareholderType = 0; // Individual
+    } else if (shEntity?.startsWith('trust_')) {
+      shareholderEntityId = entityGuidMap?.[shEntity] || null;
+      shareholderType = 2; // Trust
+    } else if (shEntity?.startsWith('company_')) {
+      shareholderEntityId = entityGuidMap?.[shEntity] || null;
+      shareholderType = 1; // Company
+    }
 
     const apiData = {
-      shareholderClientId: isClient ? (clientGuidMap[sh_entity] || null) : null,
-      shareholderEntityId: isEntity ? (entityGuidMap[sh_entity] || null) : null,
-      sharePercentage: parseFloat(sh_pct) || null,
+      ShareholderClientId: shareholderClientId,
+      ShareholderEntityId: shareholderEntityId,
+      ShareholderType: shareholderType,
+      SharePercentage: parseFloat(data.sh_pct) || null,
     };
 
     const response = await axiosInstance.post(`/companies/${companyId}/shareholders`, apiData);
