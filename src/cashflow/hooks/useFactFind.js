@@ -7,6 +7,7 @@ import { trustsApi } from "../../api/trustsApi.js";
 import { companiesApi } from "../../api/companiesApi.js";
 import { smsfApi } from "../../api/smsfApi.js";
 import { pensionsApi } from "../../api/pensionsApi.js";
+import { annuitiesApi } from "../../api/annuitiesApi.js";
 import { useRole } from "../../components/RoleContext.jsx";
 
 export function useFactFind(initialData) {
@@ -562,6 +563,74 @@ export function useFactFind(initialData) {
     }
   }, [factFind]);
 
+  // ── Annuities API integration ──────────────────────────────────
+
+  /**
+   * Load annuities from GET /annuities?clientId={id} and populate
+   * factFind.annuities.
+   * @param {string} clientId - The client ID (GUID)
+   */
+  const loadAnnuities = useCallback(async (clientId) => {
+    try {
+      const records = await annuitiesApi.getAll(clientId);
+      const arr = Array.isArray(records) ? records : [];
+
+      setFactFind(prev => {
+        const next = JSON.parse(JSON.stringify(prev));
+        next.annuities = arr;
+        return next;
+      });
+      setAdviceModel1(prev => {
+        if (!prev) return prev;
+        const next = JSON.parse(JSON.stringify(prev));
+        next.annuities = arr;
+        return next;
+      });
+    } catch (err) {
+      console.error('[useFactFind] Failed to load annuities from API:', err);
+    }
+  }, []);
+
+  /**
+   * Save annuities by syncing the full list via create/update/delete.
+   * Compares local state against the API and reconciles differences.
+   * @param {string} clientId - The client ID (GUID)
+   * @param {object} clientGuidMap - Map of owner keys to client GUIDs
+   */
+  const saveAnnuities = useCallback(async (clientId, clientGuidMap) => {
+    try {
+      const ff = factFind;
+      const localAll = ff.annuities || [];
+
+      // Fetch current server state to diff against
+      const serverAll = await annuitiesApi.getAll(clientId);
+      const serverById = new Map((serverAll || []).filter(r => r.id).map(r => [r.id, r]));
+
+      // Determine which local records have IDs (existing) vs new
+      const localById = new Map(localAll.filter(r => r.id).map(r => [r.id, r]));
+
+      // Delete server records not present locally
+      for (const serverId of serverById.keys()) {
+        if (!localById.has(serverId)) {
+          await annuitiesApi.remove(serverId);
+        }
+      }
+
+      // Create or update local records
+      for (let i = 0; i < localAll.length; i++) {
+        const rec = localAll[i];
+        const defaultName = `Annuity ${i + 1}`;
+        if (rec.id && serverById.has(rec.id)) {
+          await annuitiesApi.update(rec.id, rec, clientGuidMap);
+        } else {
+          await annuitiesApi.create(rec, clientGuidMap, defaultName);
+        }
+      }
+    } catch (err) {
+      console.error('[useFactFind] Failed to save annuities to API:', err);
+    }
+  }, [factFind]);
+
   return {
     factFind, setFactFind, adviceModel1, setAdviceModel1,
     updateFF, updateAdvice, resetAdviceModel,
@@ -572,6 +641,7 @@ export function useFactFind(initialData) {
     loadCompanies, saveCompanies,
     loadSmsfs, saveSmsfs,
     loadPensions, savePensions,
+    loadAnnuities, saveAnnuities,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
