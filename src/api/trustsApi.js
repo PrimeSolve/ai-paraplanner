@@ -60,6 +60,20 @@ function convertTrustType(apiData) {
 }
 
 // ──────────────────────────────────────────────────────────────
+// Normalise _id → id
+// ──────────────────────────────────────────────────────────────
+
+function normaliseRecord(record) {
+  if (!record) return record;
+  if (Array.isArray(record)) return record.map(normaliseRecord);
+  if (record._id && !record.id) {
+    const { _id, ...rest } = record;
+    return { id: _id, ...rest };
+  }
+  return record;
+}
+
+// ──────────────────────────────────────────────────────────────
 // Trusts API
 // ──────────────────────────────────────────────────────────────
 
@@ -73,7 +87,7 @@ export const trustsApi = {
     const response = await axiosInstance.get(`/trusts?clientId=${clientId}`);
     const raw = response.data;
     const arr = Array.isArray(raw) ? raw : (raw.items || raw.data || raw.value || []);
-    return camelToSnakeKeys(arr);
+    return normaliseRecord(camelToSnakeKeys(arr));
   },
 
   /**
@@ -87,7 +101,7 @@ export const trustsApi = {
     const apiData = snakeToCamelKeys({ ...rest, client_id: clientId });
     convertTrustType(apiData);
     const response = await axiosInstance.post('/trusts', apiData);
-    return camelToSnakeKeys(response.data);
+    return normaliseRecord(camelToSnakeKeys(response.data));
   },
 
   /**
@@ -101,7 +115,7 @@ export const trustsApi = {
     const apiData = snakeToCamelKeys(rest);
     convertTrustType(apiData);
     const response = await axiosInstance.put(`/trusts/${id}`, apiData);
-    return camelToSnakeKeys(response.data);
+    return normaliseRecord(camelToSnakeKeys(response.data));
   },
 
   /**
