@@ -1951,11 +1951,24 @@ const COMPANY_DEFAULTS = {
   uploaded_bs: null,             // parsed balance sheet from uploaded file
 };
 
-export function TrustsCompaniesForm({ factFind, updateFF, clientId }) {
+export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid, client2Guid }) {
   const [subTab, setSubTab] = useState("trusts");
   const [trusts, setTrusts] = useState([]);
   const companies = factFind.companies || [];
   const debounceTimers = useRef({});
+
+  // Build clientOptions for shareholder dropdown (same pattern as trust beneficiary)
+  const shareholderOptions = [{ value: "", label: "Select..." }];
+  if (factFind.client1) shareholderOptions.push({ value: "client1", label: ((factFind.client1?.first_name || "") + " " + (factFind.client1?.last_name || "")).trim() || "Client 1" });
+  if (factFind.client2) shareholderOptions.push({ value: "client2", label: ((factFind.client2?.first_name || "") + " " + (factFind.client2?.last_name || "")).trim() || "Client 2" });
+  trusts.forEach((t, i) => { if (t.trust_name) shareholderOptions.push({ value: `trust_${i}`, label: t.trust_name }); });
+  companies.forEach((c, i) => { if (c.company_name) shareholderOptions.push({ value: `company_${i}`, label: c.company_name }); });
+
+  // GUID maps for shareholder API calls
+  const clientGuidMap = { client1: client1Guid, client2: client2Guid };
+  const entityGuidMap = {};
+  trusts.forEach((t, i) => { if (t.id) entityGuidMap[`trust_${i}`] = t.id; });
+  companies.forEach((c, i) => { if (c.id) entityGuidMap[`company_${i}`] = c.id; });
 
   // Load trusts from API on mount
   useEffect(() => {
@@ -2134,11 +2147,30 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId }) {
   }, [companies, updateFF, debouncedCompanyUpdate]);
 
   // Company shareholder helpers
-  const addShareholder = (idx) => {
-    const updated = companies.map((item, i) => i === idx ? { ...item, shareholders: [...(item.shareholders || []), { sh_entity: "", sh_pct: "" }] } : item);
+  const addShareholder = async (idx) => {
+    const newSh = { sh_entity: "", sh_pct: "" };
+    const company = companies[idx];
+    if (company && company.id) {
+      try {
+        const created = await companiesApi.addShareholder(company.id, newSh, clientGuidMap, entityGuidMap);
+        newSh._serverId = created.id || created._id || null;
+      } catch (error) {
+        console.error("Failed to create shareholder:", error);
+      }
+    }
+    const updated = companies.map((item, i) => i === idx ? { ...item, shareholders: [...(item.shareholders || []), newSh] } : item);
     updateFF("companies", updated);
   };
-  const removeShareholder = (compIdx, shIdx) => {
+  const removeShareholder = async (compIdx, shIdx) => {
+    const company = companies[compIdx];
+    const shareholder = company && company.shareholders ? company.shareholders[shIdx] : null;
+    if (company && company.id && shareholder && shareholder._serverId) {
+      try {
+        await companiesApi.removeShareholder(company.id, shareholder._serverId);
+      } catch (error) {
+        console.error("Failed to delete shareholder:", error);
+      }
+    }
     const updated = companies.map((item, i) => i === compIdx ? { ...item, shareholders: item.shareholders.filter((_, si) => si !== shIdx) } : item);
     updateFF("companies", updated);
   };
@@ -2463,7 +2495,7 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId }) {
                       <tbody>
                         {(data.shareholders || []).map((s, si) => (
                           <tr key={si}>
-                            <td style={miniTdStyle}><FFInput value={s.sh_entity} onChange={v => updateShareholder(idx, si, "sh_entity", v)} placeholder="Entity name" /></td>
+                            <td style={miniTdStyle}><FFSelect value={s.sh_entity} onChange={v => updateShareholder(idx, si, "sh_entity", v)} options={shareholderOptions} /></td>
                             <td style={miniTdStyle}><FFInput value={s.sh_pct} onChange={v => updateShareholder(idx, si, "sh_pct", v)} placeholder="e.g. 25%" /></td>
                             <td style={miniTdStyle}><button onClick={() => removeShareholder(idx, si)} style={{ fontSize: 10, color: "var(--ps-red)", cursor: "pointer", background: "none", border: "none", fontWeight: 500 }}>Remove</button></td>
                           </tr>
