@@ -1956,12 +1956,12 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId }) {
   const addTrust = useCallback(async () => {
     if (!clientId) return;
     try {
-      const created = await trustsApi.create(clientId, { ...TRUST_DEFAULTS });
+      const created = await trustsApi.create(clientId, { ...TRUST_DEFAULTS, default_name: `Trust ${trusts.length + 1}` });
       setTrusts(prev => [...prev, created]);
     } catch (error) {
       console.error("Failed to create trust:", error);
     }
-  }, [clientId]);
+  }, [clientId, trusts]);
 
   const removeTrust = useCallback(async (idx) => {
     const trust = trusts[idx];
@@ -2040,7 +2040,7 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId }) {
   const addCompany = useCallback(async () => {
     if (!clientId) return;
     try {
-      const created = await companiesApi.create(clientId, { ...COMPANY_DEFAULTS });
+      const created = await companiesApi.create(clientId, { ...COMPANY_DEFAULTS, default_name: `Company ${companies.length + 1}` });
       const merged = { ...COMPANY_DEFAULTS, shareholders: [], ...created };
       updateFF("companies", [...companies, merged]);
     } catch (error) {
