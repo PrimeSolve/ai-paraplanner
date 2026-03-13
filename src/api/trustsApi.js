@@ -127,4 +127,43 @@ export const trustsApi = {
   async remove(id) {
     await axiosInstance.delete(`/trusts/${id}`);
   },
+
+  /**
+   * POST a new beneficiary to a trust.
+   * @param {string} trustId - The trust ID (GUID)
+   * @param {object} benefData - Frontend beneficiary shape { benef_entity, benef_entitlement }
+   * @param {object} [clientGuidMap] - Optional map of display values → real GUIDs
+   * @returns {Promise<object>} Created beneficiary (snake_case)
+   */
+  async addBeneficiary(trustId, benefData, clientGuidMap = {}) {
+    const entityValue = benefData.benef_entity || '';
+    const resolvedGuid = clientGuidMap[entityValue] || entityValue;
+
+    const apiData = {
+      BeneficiaryClientId: resolvedGuid || null,
+      BeneficiaryEntityId: null,
+      BeneficiaryType: 0,
+      DefaultPercentage: benefData.benef_entitlement
+        ? parseFloat(benefData.benef_entitlement)
+        : null,
+    };
+
+    const response = await axiosInstance.post(
+      `/trusts/${trustId}/beneficiaries`,
+      apiData,
+    );
+    return normaliseRecord(camelToSnakeKeys(response.data));
+  },
+
+  /**
+   * DELETE a beneficiary from a trust.
+   * @param {string} trustId - The trust ID (GUID)
+   * @param {string} beneficiaryId - The beneficiary ID (GUID)
+   * @returns {Promise<void>}
+   */
+  async removeBeneficiary(trustId, beneficiaryId) {
+    await axiosInstance.delete(
+      `/trusts/${trustId}/beneficiaries/${beneficiaryId}`,
+    );
+  },
 };

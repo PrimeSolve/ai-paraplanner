@@ -1990,13 +1990,32 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId }) {
   }, [debouncedUpdate]);
 
   // Trust beneficiary helpers
-  const addBenef = (idx) => {
-    const updated = trusts.map((item, i) => i === idx ? { ...item, beneficiaries: [...(item.beneficiaries || []), { benef_entity: "", benef_entitlement: "" }] } : item);
-    updateFF("trusts", updated);
+  const addBenef = async (idx) => {
+    const newBenef = { benef_entity: "", benef_entitlement: "" };
+    const trust = trusts[idx];
+    if (trust && trust.id) {
+      try {
+        const created = await trustsApi.addBeneficiary(trust.id, newBenef);
+        newBenef._serverId = created.id || created._id || null;
+      } catch (error) {
+        console.error("Failed to create beneficiary:", error);
+      }
+    }
+    const updated = trusts.map((item, i) => i === idx ? { ...item, beneficiaries: [...(item.beneficiaries || []), newBenef] } : item);
+    setTrusts(updated);
   };
-  const removeBenef = (trustIdx, benefIdx) => {
+  const removeBenef = async (trustIdx, benefIdx) => {
+    const trust = trusts[trustIdx];
+    const benef = trust && trust.beneficiaries ? trust.beneficiaries[benefIdx] : null;
+    if (trust && trust.id && benef && benef._serverId) {
+      try {
+        await trustsApi.removeBeneficiary(trust.id, benef._serverId);
+      } catch (error) {
+        console.error("Failed to delete beneficiary:", error);
+      }
+    }
     const updated = trusts.map((item, i) => i === trustIdx ? { ...item, beneficiaries: item.beneficiaries.filter((_, bi) => bi !== benefIdx) } : item);
-    updateFF("trusts", updated);
+    setTrusts(updated);
   };
   const updateBenef = (trustIdx, benefIdx, field, value) => {
     const updated = trusts.map((item, i) => i === trustIdx ? { ...item, beneficiaries: item.beneficiaries.map((b, bi) => bi === benefIdx ? { ...b, [field]: value } : b) } : item);
