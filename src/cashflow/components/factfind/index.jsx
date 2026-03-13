@@ -820,10 +820,40 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
   const updatePensionArray = (idx, arrName, arrIdx, field, value) => {
     updateFF("pensions", pensions.map((item, i) => i === idx ? { ...item, [arrName]: item[arrName].map((a, ai) => ai === arrIdx ? { ...a, [field]: value } : a) } : item));
   };
-  const addPensionArrayItem = (idx, arrName, template) => {
-    updateFF("pensions", pensions.map((item, i) => i === idx ? { ...item, [arrName]: [...(item[arrName] || []), template] } : item));
+  const addPensionArrayItem = async (idx, arrName, template) => {
+    const pension = pensions[idx];
+    let created = template;
+    try {
+      if (pension?.id && arrName === "beneficiaries") {
+        created = await pensionsApi.addBeneficiary(pension.id, {
+          beneficiaryClientId: null,
+          beneficiaryType: template.benef_type,
+          entitlement: parseFloat(template.benef_entitlement) || null,
+        });
+      } else if (pension?.id && arrName === "portfolio") {
+        created = await pensionsApi.addPortfolioItem(pension.id, {
+          assetName: template.asset_name,
+          allocationPct: parseFloat(template.allocation_pct) || null,
+          amount: parseFloat(template.amount) || null,
+        });
+      }
+    } catch (err) {
+      console.error(`Failed to add ${arrName} item via API`, err);
+    }
+    updateFF("pensions", pensions.map((item, i) => i === idx ? { ...item, [arrName]: [...(item[arrName] || []), created] } : item));
   };
-  const removePensionArrayItem = (idx, arrName, arrIdx) => {
+  const removePensionArrayItem = async (idx, arrName, arrIdx) => {
+    const pension = pensions[idx];
+    const item = pension?.[arrName]?.[arrIdx];
+    try {
+      if (pension?.id && item?.id && arrName === "beneficiaries") {
+        await pensionsApi.removeBeneficiary(pension.id, item.id);
+      } else if (pension?.id && item?.id && arrName === "portfolio") {
+        await pensionsApi.removePortfolioItem(pension.id, item.id);
+      }
+    } catch (err) {
+      console.error(`Failed to remove ${arrName} item via API`, err);
+    }
     updateFF("pensions", pensions.map((item, i) => i === idx ? { ...item, [arrName]: item[arrName].filter((_, ai) => ai !== arrIdx) } : item));
   };
 
