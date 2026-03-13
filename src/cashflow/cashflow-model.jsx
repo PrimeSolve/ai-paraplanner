@@ -1823,6 +1823,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               <TrustsCompaniesForm
                 factFind={factFind}
                 updateFF={updateFF}
+                clientId={urlClientId}
               />
             ) : factFindSection === "smsf" ? (
               <SMSFForm
