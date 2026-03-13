@@ -2148,30 +2148,39 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid,
 
   // Company shareholder helpers
   const addShareholder = async (idx) => {
-    const newSh = { sh_entity: "", sh_pct: "" };
     const company = companies[idx];
-    if (company && company.id) {
-      try {
-        const created = await companiesApi.addShareholder(company.id, newSh, clientGuidMap, entityGuidMap);
-        newSh._serverId = created.id || created._id || null;
-      } catch (error) {
-        console.error("Failed to create shareholder:", error);
-      }
+    if (!company?.id) return;
+    try {
+      const created = await companiesApi.addShareholder(
+        company.id,
+        { sh_entity: "", sh_pct: "" },
+        clientGuidMap,
+        entityGuidMap
+      );
+      const updated = companies.map((item, i) =>
+        i === idx ? { ...item, shareholders: [...(item.shareholders || []), created] } : item
+      );
+      updateFF("companies", updated);
+    } catch (error) {
+      console.error("Failed to add shareholder:", error);
     }
-    const updated = companies.map((item, i) => i === idx ? { ...item, shareholders: [...(item.shareholders || []), newSh] } : item);
-    updateFF("companies", updated);
   };
   const removeShareholder = async (compIdx, shIdx) => {
     const company = companies[compIdx];
-    const shareholder = company && company.shareholders ? company.shareholders[shIdx] : null;
-    if (company && company.id && shareholder && shareholder._serverId) {
+    const shareholder = company?.shareholders?.[shIdx];
+    if (company?.id && shareholder?.id) {
       try {
-        await companiesApi.removeShareholder(company.id, shareholder._serverId);
+        await companiesApi.removeShareholder(company.id, shareholder.id);
       } catch (error) {
-        console.error("Failed to delete shareholder:", error);
+        console.error("Failed to remove shareholder:", error);
+        return;
       }
     }
-    const updated = companies.map((item, i) => i === compIdx ? { ...item, shareholders: item.shareholders.filter((_, si) => si !== shIdx) } : item);
+    const updated = companies.map((item, i) =>
+      i === compIdx
+        ? { ...item, shareholders: item.shareholders.filter((_, si) => si !== shIdx) }
+        : item
+    );
     updateFF("companies", updated);
   };
   const updateShareholder = (compIdx, shIdx, field, value) => {
