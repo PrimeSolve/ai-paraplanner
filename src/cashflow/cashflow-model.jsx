@@ -1829,6 +1829,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               <SMSFForm
                 factFind={factFind}
                 updateFF={updateFF}
+                clientId={urlClientId}
               />
             ) : factFindSection === "assets" ? (
               <AssetsForm
