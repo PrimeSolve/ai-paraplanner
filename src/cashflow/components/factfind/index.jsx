@@ -3,6 +3,7 @@ import { ffRowStyle, FFInput, FFSelect, FFToggle, FFRadioRow } from "../common/F
 import { dependantsApi } from "@/api/dependantsApi";
 import { trustsApi } from "@/api/trustsApi";
 import { companiesApi } from "@/api/companiesApi";
+import { smsfApi } from "@/api/smsfApi";
 
 // ===========================================================================
 // FACT FIND — Principals Form (aligned to Base44 FactFindPersonal)
@@ -2460,13 +2461,84 @@ const SMSF_BENEF_DEFAULTS = {
   benef_entitlement: "",
 };
 
-export function SMSFForm({ factFind, updateFF }) {
+export function SMSFForm({ factFind, updateFF, clientId }) {
   const items = factFind.smsfs || [];
+  const debounceTimers = useRef({});
+
+  // Load SMSFs from API on mount
+  useEffect(() => {
+    if (!clientId) return;
+    let cancelled = false;
+    async function load() {
+      try {
+        const all = await smsfApi.getAll(clientId);
+        if (cancelled) return;
+        updateFF("smsfs", all);
+      } catch (error) {
+        console.error("Failed to load SMSFs:", error);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [clientId]);
+
+  // Cleanup debounce timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach(clearTimeout);
+    };
+  }, []);
+
+  // Debounced update to API (only for smsf_name, trustee_type, smsf_abn)
+  const API_SYNCED_FIELDS = ['smsf_name', 'trustee_type', 'smsf_abn'];
+  const debouncedUpdate = useCallback((id, data) => {
+    const key = `smsf_${id}`;
+    if (debounceTimers.current[key]) {
+      clearTimeout(debounceTimers.current[key]);
+    }
+    debounceTimers.current[key] = setTimeout(async () => {
+      try {
+        await smsfApi.update(id, data);
+      } catch (error) {
+        console.error("Failed to update SMSF:", error);
+      }
+    }, 500);
+  }, []);
 
   // Fund CRUD
-  const add = () => updateFF("smsfs", [...items, { ...SMSF_DEFAULTS, accounts: [] }]);
-  const remove = (idx) => updateFF("smsfs", items.filter((_, i) => i !== idx));
-  const update = (idx, field, value) => updateFF("smsfs", items.map((item, i) => i === idx ? { ...item, [field]: value } : item));
+  const add = useCallback(async () => {
+    if (!clientId) return;
+    try {
+      const created = await smsfApi.create({ ...SMSF_DEFAULTS, client_id: clientId });
+      const merged = { ...SMSF_DEFAULTS, accounts: [], ...created };
+      updateFF("smsfs", [...items, merged]);
+    } catch (error) {
+      console.error("Failed to create SMSF:", error);
+    }
+  }, [clientId, items, updateFF]);
+
+  const remove = useCallback(async (idx) => {
+    const smsf = items[idx];
+    if (smsf?.id) {
+      try {
+        await smsfApi.remove(smsf.id);
+      } catch (error) {
+        console.error("Failed to remove SMSF:", error);
+        return;
+      }
+    }
+    updateFF("smsfs", items.filter((_, i) => i !== idx));
+  }, [items, updateFF]);
+
+  const update = useCallback((idx, field, value) => {
+    const updated = items.map((item, i) => i === idx ? { ...item, [field]: value } : item);
+    updateFF("smsfs", updated);
+    // Debounce API sync for API-mapped fields
+    const record = updated[idx];
+    if (record?.id && API_SYNCED_FIELDS.includes(field)) {
+      debouncedUpdate(record.id, record);
+    }
+  }, [items, updateFF, debouncedUpdate]);
 
   // Account CRUD
   const addAccount = (smsfIdx) => {
