@@ -2897,11 +2897,36 @@ export function SMSFForm({ factFind, updateFF, clientId }) {
 // FACT FIND — Assets Form (aligned to Base44)
 // ===========================================================================
 
-export function AssetsForm({ factFind, updateFF, entityOwnerOptions }) {
+export function AssetsForm({ factFind, updateFF, entityOwnerOptions, clientId }) {
   const [detailIdx, setDetailIdx] = useState(null);
+  const debounceTimers = useRef({});
 
   const assets = factFind.assets || [];
   const clientOptions = entityOwnerOptions || [];
+
+  // Load assets from API on mount
+  useEffect(() => {
+    if (!clientId) return;
+    let cancelled = false;
+    async function load() {
+      try {
+        const all = await assetsApi.getAll(clientId);
+        if (cancelled) return;
+        updateFF("assets", all);
+      } catch (error) {
+        console.error("Failed to load assets:", error);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [clientId]);
+
+  // Cleanup debounce timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach(clearTimeout);
+    };
+  }, []);
 
   const clientName = (id) => {
     if (id?.startsWith("trust_")) {
@@ -2921,9 +2946,60 @@ export function AssetsForm({ factFind, updateFF, entityOwnerOptions }) {
     return map[v] || v || "—";
   };
 
-  const addAsset = () => updateFF("assets", [...assets, { a_name: "", a_ownType: "", a_owner: "", a_type: "", a_value: "", a_purchase_price: "", a_purchase_date: "", a_rental_income: "", a_rental_freq: "" }]);
-  const removeAsset = (idx) => { updateFF("assets", assets.filter((_, i) => i !== idx)); setDetailIdx(null); };
-  const updateAsset = (idx, field, value) => updateFF("assets", assets.map((item, i) => i === idx ? { ...item, [field]: value } : item));
+  // Debounced update to API
+  const debouncedUpdate = useCallback((id, data) => {
+    const key = `asset_${id}`;
+    if (debounceTimers.current[key]) {
+      clearTimeout(debounceTimers.current[key]);
+    }
+    debounceTimers.current[key] = setTimeout(async () => {
+      try {
+        await assetsApi.update(id, data);
+      } catch (error) {
+        console.error("Failed to update asset:", error);
+      }
+    }, 500);
+  }, []);
+
+  const addAsset = useCallback(async () => {
+    const defaultName = `Asset ${assets.length + 1}`;
+    const newAsset = { a_name: "", a_ownType: "", a_owner: "", a_type: "", a_value: "", a_purchase_price: "", a_purchase_date: "", a_rental_income: "", a_rental_freq: "" };
+    if (clientId) {
+      try {
+        const clientGuidMap = { client1: clientId };
+        const created = await assetsApi.create(newAsset, clientGuidMap, defaultName);
+        const merged = { ...newAsset, ...created };
+        updateFF("assets", [...assets, merged]);
+      } catch (error) {
+        console.error("Failed to create asset:", error);
+      }
+    } else {
+      updateFF("assets", [...assets, newAsset]);
+    }
+  }, [clientId, assets, updateFF]);
+
+  const removeAsset = useCallback(async (idx) => {
+    const asset = assets[idx];
+    if (asset?.id) {
+      try {
+        await assetsApi.remove(asset.id);
+      } catch (error) {
+        console.error("Failed to remove asset:", error);
+        return;
+      }
+    }
+    updateFF("assets", assets.filter((_, i) => i !== idx));
+    setDetailIdx(null);
+  }, [assets, updateFF]);
+
+  const updateAsset = useCallback((idx, field, value) => {
+    const updated = assets.map((item, i) => i === idx ? { ...item, [field]: value } : item);
+    updateFF("assets", updated);
+    const record = updated[idx];
+    if (record?.id) {
+      debouncedUpdate(record.id, record);
+    }
+  }, [assets, updateFF, debouncedUpdate]);
 
   return (
     <div>
