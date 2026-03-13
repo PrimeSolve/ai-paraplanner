@@ -6,6 +6,7 @@ import { dependantsApi } from "../../api/dependantsApi.js";
 import { trustsApi } from "../../api/trustsApi.js";
 import { companiesApi } from "../../api/companiesApi.js";
 import { smsfApi } from "../../api/smsfApi.js";
+import { pensionsApi } from "../../api/pensionsApi.js";
 import { useRole } from "../../components/RoleContext.jsx";
 
 export function useFactFind(initialData) {
@@ -493,6 +494,74 @@ export function useFactFind(initialData) {
     }
   }, [factFind]);
 
+  // ── Pensions API integration ──────────────────────────────────
+
+  /**
+   * Load pensions from GET /pensions?clientId={id} and populate
+   * factFind.pensions.
+   * @param {string} clientId - The client ID (GUID)
+   */
+  const loadPensions = useCallback(async (clientId) => {
+    try {
+      const records = await pensionsApi.getAll(clientId);
+      const arr = Array.isArray(records) ? records : [];
+
+      setFactFind(prev => {
+        const next = JSON.parse(JSON.stringify(prev));
+        next.pensions = arr;
+        return next;
+      });
+      setAdviceModel1(prev => {
+        if (!prev) return prev;
+        const next = JSON.parse(JSON.stringify(prev));
+        next.pensions = arr;
+        return next;
+      });
+    } catch (err) {
+      console.error('[useFactFind] Failed to load pensions from API:', err);
+    }
+  }, []);
+
+  /**
+   * Save pensions by syncing the full list via create/update/delete.
+   * Compares local state against the API and reconciles differences.
+   * @param {string} clientId - The client ID (GUID)
+   * @param {object} clientGuidMap - Map of owner keys to client GUIDs
+   */
+  const savePensions = useCallback(async (clientId, clientGuidMap) => {
+    try {
+      const ff = factFind;
+      const localAll = ff.pensions || [];
+
+      // Fetch current server state to diff against
+      const serverAll = await pensionsApi.getAll(clientId);
+      const serverById = new Map((serverAll || []).filter(r => r.id).map(r => [r.id, r]));
+
+      // Determine which local records have IDs (existing) vs new
+      const localById = new Map(localAll.filter(r => r.id).map(r => [r.id, r]));
+
+      // Delete server records not present locally
+      for (const serverId of serverById.keys()) {
+        if (!localById.has(serverId)) {
+          await pensionsApi.remove(serverId);
+        }
+      }
+
+      // Create or update local records
+      for (let i = 0; i < localAll.length; i++) {
+        const rec = localAll[i];
+        const defaultName = `Pension ${i + 1}`;
+        if (rec.id && serverById.has(rec.id)) {
+          await pensionsApi.update(rec.id, rec, clientGuidMap);
+        } else {
+          await pensionsApi.create(rec, clientGuidMap, defaultName);
+        }
+      }
+    } catch (err) {
+      console.error('[useFactFind] Failed to save pensions to API:', err);
+    }
+  }, [factFind]);
+
   return {
     factFind, setFactFind, adviceModel1, setAdviceModel1,
     updateFF, updateAdvice, resetAdviceModel,
@@ -502,6 +571,7 @@ export function useFactFind(initialData) {
     loadTrusts, saveTrusts,
     loadCompanies, saveCompanies,
     loadSmsfs, saveSmsfs,
+    loadPensions, savePensions,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,

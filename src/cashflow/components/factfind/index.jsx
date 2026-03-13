@@ -4,6 +4,7 @@ import { dependantsApi } from "@/api/dependantsApi";
 import { trustsApi } from "@/api/trustsApi";
 import { companiesApi } from "@/api/companiesApi";
 import { smsfApi } from "@/api/smsfApi";
+import { pensionsApi } from "@/api/pensionsApi";
 
 // ===========================================================================
 // FACT FIND — Principals Form (aligned to Base44 FactFindPersonal)
@@ -714,7 +715,7 @@ export const DB_DEFAULTS = {
   notes: "",
 };
 
-export function SuperannuationForm({ factFind, updateFF }) {
+export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, client2Guid }) {
   const [subTab, setSubTab] = useState("super");
   const [detailIdx, setDetailIdx] = useState(null);
   const [activeDetailTab, setActiveDetailTab] = useState("fund_details");
@@ -723,6 +724,23 @@ export function SuperannuationForm({ factFind, updateFF }) {
   const pensions = factFind.pensions || [];
   const annuities = factFind.annuities || [];
   const definedBenefits = factFind.definedBenefits || [];
+
+  // Client GUID map for pension API calls
+  const clientGuidMap = { client1: client1Guid, client2: client2Guid };
+
+  // Load pensions from API on mount
+  const pensionsLoadedRef = useRef(false);
+  useEffect(() => {
+    if (clientId && !pensionsLoadedRef.current) {
+      pensionsLoadedRef.current = true;
+      pensionsApi.getAll(clientId).then(records => {
+        const arr = Array.isArray(records) ? records : [];
+        updateFF("pensions", arr);
+      }).catch(err => {
+        console.error('[SuperannuationForm] Failed to load pensions:', err);
+      });
+    }
+  }, [clientId, updateFF]);
 
   const hasClients = factFind.client1 !== null || factFind.client2 !== null;
   const clientOptions = [];
@@ -769,9 +787,34 @@ export function SuperannuationForm({ factFind, updateFF }) {
     updateFF("superProducts", superFunds.map((item, i) => i === idx ? { ...item, [arrName]: item[arrName].filter((_, ai) => ai !== arrIdx) } : item));
   };
 
-  // Pension CRUD
-  const addPension = () => updateFF("pensions", [...pensions, { ...PENSION_DEFAULTS, income: { ...PENSION_DEFAULTS.income }, tax_components: { ...PENSION_DEFAULTS.tax_components }, beneficiaries: [], portfolio: [] }]);
-  const removePension = (idx) => { updateFF("pensions", pensions.filter((_, i) => i !== idx)); setDetailIdx(null); };
+  // Pension CRUD (API-backed)
+  const addPension = async () => {
+    const newPension = { ...PENSION_DEFAULTS, income: { ...PENSION_DEFAULTS.income }, tax_components: { ...PENSION_DEFAULTS.tax_components }, beneficiaries: [], portfolio: [] };
+    if (clientId) {
+      try {
+        const defaultName = `Pension ${pensions.length + 1}`;
+        const created = await pensionsApi.create(newPension, clientGuidMap, defaultName);
+        updateFF("pensions", [...pensions, created]);
+      } catch (err) {
+        console.error('[SuperannuationForm] Failed to create pension:', err);
+        updateFF("pensions", [...pensions, newPension]);
+      }
+    } else {
+      updateFF("pensions", [...pensions, newPension]);
+    }
+  };
+  const removePension = async (idx) => {
+    const pension = pensions[idx];
+    if (clientId && pension?.id) {
+      try {
+        await pensionsApi.remove(pension.id);
+      } catch (err) {
+        console.error('[SuperannuationForm] Failed to remove pension:', err);
+      }
+    }
+    updateFF("pensions", pensions.filter((_, i) => i !== idx));
+    setDetailIdx(null);
+  };
   const updatePension = (idx, field, value) => updateFF("pensions", pensions.map((item, i) => i === idx ? { ...item, [field]: value } : item));
   const updatePensionNested = (idx, parent, field, value) => updateFF("pensions", pensions.map((item, i) => i === idx ? { ...item, [parent]: { ...item[parent], [field]: value } } : item));
   const updatePensionArray = (idx, arrName, arrIdx, field, value) => {
