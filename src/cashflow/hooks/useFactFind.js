@@ -8,7 +8,7 @@ import { companiesApi } from "../../api/companiesApi.js";
 import { smsfApi } from "../../api/smsfApi.js";
 import { pensionsApi } from "../../api/pensionsApi.js";
 import { annuitiesApi } from "../../api/annuitiesApi.js";
-import { assetsApi } from "../../api/assetsApi.js";
+import { definedBenefitsApi } from "../../api/definedBenefitsApi.js";
 import { useRole } from "../../components/RoleContext.jsx";
 
 export function useFactFind(initialData) {
@@ -632,47 +632,47 @@ export function useFactFind(initialData) {
     }
   }, [factFind]);
 
-  // ── Assets API integration ──────────────────────────────────
+  // ── Defined Benefits API integration ──────────────────────────
 
   /**
-   * Load assets from GET /assets?clientId={id} and populate
-   * factFind.assets.
+   * Load defined benefits from GET /defined-benefits?clientId={id} and populate
+   * factFind.definedBenefits.
    * @param {string} clientId - The client ID (GUID)
    */
-  const loadAssets = useCallback(async (clientId) => {
+  const loadDefinedBenefits = useCallback(async (clientId) => {
     try {
-      const records = await assetsApi.getAll(clientId);
+      const records = await definedBenefitsApi.getAll(clientId);
       const arr = Array.isArray(records) ? records : [];
 
       setFactFind(prev => {
         const next = JSON.parse(JSON.stringify(prev));
-        next.assets = arr;
+        next.definedBenefits = arr;
         return next;
       });
       setAdviceModel1(prev => {
         if (!prev) return prev;
         const next = JSON.parse(JSON.stringify(prev));
-        next.assets = arr;
+        next.definedBenefits = arr;
         return next;
       });
     } catch (err) {
-      console.error('[useFactFind] Failed to load assets from API:', err);
+      console.error('[useFactFind] Failed to load defined benefits from API:', err);
     }
   }, []);
 
   /**
-   * Save assets by syncing the full list via create/update/delete.
-   * Compares local state against the API and reconciles by id.
+   * Save defined benefits by syncing the full list via create/update/delete.
+   * Compares local state against the API and reconciles differences by id.
    * @param {string} clientId - The client ID (GUID)
    * @param {object} clientGuidMap - Map of owner keys to client GUIDs
    */
-  const saveAssets = useCallback(async (clientId, clientGuidMap) => {
+  const saveDefinedBenefits = useCallback(async (clientId, clientGuidMap) => {
     try {
       const ff = factFind;
-      const localAll = ff.assets || [];
+      const localAll = ff.definedBenefits || [];
 
       // Fetch current server state to diff against
-      const serverAll = await assetsApi.getAll(clientId);
+      const serverAll = await definedBenefitsApi.getAll(clientId);
       const serverById = new Map((serverAll || []).filter(r => r.id).map(r => [r.id, r]));
 
       // Determine which local records have IDs (existing) vs new
@@ -681,22 +681,20 @@ export function useFactFind(initialData) {
       // Delete server records not present locally
       for (const serverId of serverById.keys()) {
         if (!localById.has(serverId)) {
-          await assetsApi.remove(serverId);
+          await definedBenefitsApi.remove(serverId);
         }
       }
 
       // Create or update local records
-      for (let i = 0; i < localAll.length; i++) {
-        const rec = localAll[i];
-        const defaultName = `Asset ${i + 1}`;
+      for (const rec of localAll) {
         if (rec.id && serverById.has(rec.id)) {
-          await assetsApi.update(rec.id, rec);
+          await definedBenefitsApi.update(rec.id, rec);
         } else {
-          await assetsApi.create(rec, clientGuidMap, defaultName);
+          await definedBenefitsApi.create(rec, clientGuidMap);
         }
       }
     } catch (err) {
-      console.error('[useFactFind] Failed to save assets to API:', err);
+      console.error('[useFactFind] Failed to save defined benefits to API:', err);
     }
   }, [factFind]);
 
@@ -711,7 +709,7 @@ export function useFactFind(initialData) {
     loadSmsfs, saveSmsfs,
     loadPensions, savePensions,
     loadAnnuities, saveAnnuities,
-    loadAssets, saveAssets,
+    loadDefinedBenefits, saveDefinedBenefits,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,

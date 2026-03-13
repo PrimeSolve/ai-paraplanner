@@ -5,7 +5,7 @@ import { trustsApi } from "@/api/trustsApi";
 import { companiesApi } from "@/api/companiesApi";
 import { smsfApi } from "@/api/smsfApi";
 import { pensionsApi } from "@/api/pensionsApi";
-import { assetsApi } from "@/api/assetsApi";
+import { definedBenefitsApi } from "@/api/definedBenefitsApi";
 
 // ===========================================================================
 // FACT FIND — Principals Form (aligned to Base44 FactFindPersonal)
@@ -743,6 +743,31 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
     }
   }, [clientId, updateFF]);
 
+  // Load defined benefits from API on mount
+  const dbLoadedRef = useRef(false);
+  useEffect(() => {
+    if (clientId && !dbLoadedRef.current) {
+      dbLoadedRef.current = true;
+      definedBenefitsApi.getAll(clientId).then(records => {
+        const arr = Array.isArray(records) ? records : [];
+        updateFF("definedBenefits", arr);
+      }).catch(err => {
+        console.error('[SuperannuationForm] Failed to load defined benefits:', err);
+      });
+    }
+  }, [clientId, updateFF]);
+
+  // Debounced update for defined benefits
+  const dbUpdateTimerRef = useRef(null);
+  const debouncedUpdateDB = useCallback((id, data) => {
+    if (dbUpdateTimerRef.current) clearTimeout(dbUpdateTimerRef.current);
+    dbUpdateTimerRef.current = setTimeout(() => {
+      definedBenefitsApi.update(id, data).catch(err => {
+        console.error('[SuperannuationForm] Failed to update defined benefit:', err);
+      });
+    }, 500);
+  }, []);
+
   const hasClients = factFind.client1 !== null || factFind.client2 !== null;
   const clientOptions = [];
   if (factFind.client1) clientOptions.push({ value: "client1", label: ((factFind.client1?.first_name || "") + " " + (factFind.client1?.last_name || "")).trim() || "Client 1" });
@@ -1294,8 +1319,21 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
 
       {/* ── Defined Benefit Panel — List ── */}
       {subTab === "defined_benefit" && detailIdx === null && (() => {
-        const addDB = () => { updateFF("definedBenefits", [...definedBenefits, { ...DB_DEFAULTS }]); setDetailIdx(definedBenefits.length); };
-        const removeDB = (idx) => { updateFF("definedBenefits", definedBenefits.filter((_, i) => i !== idx)); setDetailIdx(null); };
+        const addDB = () => {
+          const newRecord = { ...DB_DEFAULTS };
+          definedBenefitsApi.create(newRecord, clientGuidMap).then(created => {
+            updateFF("definedBenefits", [...definedBenefits, created]);
+            setDetailIdx(definedBenefits.length);
+          }).catch(err => console.error('[SuperannuationForm] Failed to create defined benefit:', err));
+        };
+        const removeDB = (idx) => {
+          const db = definedBenefits[idx];
+          if (db?.id) {
+            definedBenefitsApi.remove(db.id).catch(err => console.error('[SuperannuationForm] Failed to remove defined benefit:', err));
+          }
+          updateFF("definedBenefits", definedBenefits.filter((_, i) => i !== idx));
+          setDetailIdx(null);
+        };
         const schemeLabel = (s) => s === "pss" ? "PSS" : s === "css" ? "CSS" : s === "other" ? "Other DB" : "Defined Benefit";
         const statusLabel = (s) => s === "contributing" ? "Contributing" : s === "preserved" ? "Preserved" : s === "pension" ? "Receiving pension" : "";
         return (
@@ -1340,10 +1378,20 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
         const db = definedBenefits[detailIdx];
         const idx = detailIdx;
         const updateDB = (field, value) => {
-          const updated = definedBenefits.map((d, i) => i === idx ? { ...d, [field]: value } : d);
+          const updatedRecord = { ...db, [field]: value };
+          const updated = definedBenefits.map((d, i) => i === idx ? updatedRecord : d);
           updateFF("definedBenefits", updated);
+          if (updatedRecord.id) {
+            debouncedUpdateDB(updatedRecord.id, updatedRecord);
+          }
         };
-        const removeDB = () => { updateFF("definedBenefits", definedBenefits.filter((_, i) => i !== idx)); setDetailIdx(null); };
+        const removeDB = () => {
+          if (db?.id) {
+            definedBenefitsApi.remove(db.id).catch(err => console.error('[SuperannuationForm] Failed to remove defined benefit:', err));
+          }
+          updateFF("definedBenefits", definedBenefits.filter((_, i) => i !== idx));
+          setDetailIdx(null);
+        };
 
         const scheme = db.scheme || "";
         const isPSS = scheme === "pss";
