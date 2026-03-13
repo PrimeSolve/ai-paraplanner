@@ -137,8 +137,29 @@ export const companiesApi = {
 
   // ── Shareholders sub-resource ──────────────────────────────
 
-  async addShareholder(companyId, data) {
-    const apiData = snakeToCamelKeys(data);
+  /**
+   * POST a shareholder to a company.
+   * Maps frontend { sh_entity, sh_pct } to API fields.
+   *
+   * @param {string} companyId - Company GUID
+   * @param {object} data - { sh_entity: string, sh_pct: string }
+   * @param {object} clientGuidMap - Maps frontend principal keys to GUIDs
+   *   e.g. { client: "guid-...", partner: "guid-..." }
+   * @param {object} entityGuidMap - Maps frontend entity keys to GUIDs
+   *   e.g. { trust_0: "guid-...", company_0: "guid-..." }
+   */
+  async addShareholder(companyId, data, clientGuidMap = {}, entityGuidMap = {}) {
+    const { sh_entity, sh_pct } = data;
+
+    const isClient = sh_entity === 'client' || sh_entity === 'partner';
+    const isEntity = /^(trust|company|smsf|child|dependant|dependent)_\d+$/.test(sh_entity);
+
+    const apiData = {
+      shareholderClientId: isClient ? (clientGuidMap[sh_entity] || null) : null,
+      shareholderEntityId: isEntity ? (entityGuidMap[sh_entity] || null) : null,
+      sharePercentage: parseFloat(sh_pct) || null,
+    };
+
     const response = await axiosInstance.post(`/companies/${companyId}/shareholders`, apiData);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
