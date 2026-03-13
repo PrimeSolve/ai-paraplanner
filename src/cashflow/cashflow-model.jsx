@@ -19,7 +19,6 @@ import { ModelComparisonDashboard, ModelComparisonDetail, AdviceSummaryTable, Sc
 import { AgedCarePage, SocialSecurityTable, EligibilityTable, SuperAssumptionsTable, SuperProductPage, PensionProductPage, BondProductPage, AnnuityProductPage, InsurancePremiumProjection, InsuranceProjectionPage, WrapProjectionPage, PotentialDeathTaxPage, AssumptionsPanel, BasicAssumptionsForm, AssetOverridesPage, AssetAssumptionsPage, SOADocumentBuilder, altEx, altSurvivalPct } from "./components/products/index.jsx";
 import { PRINCIPAL_SUB_SECTIONS, CHILD_DEFAULTS, DEPENDANT_DEFAULTS, SUPER_DEFAULTS, PENSION_DEFAULTS, ANNUITY_DEFAULTS, DB_DEFAULTS, WRAP_DEFAULTS, INV_BOND_DEFAULTS, PrincipalsForm, DependantsForm, SuperannuationForm, InvestmentsForm, TrustsCompaniesForm, SMSFForm, AssetsForm, LiabilitiesForm, InsurancePoliciesForm, IncomeForm, ExpensesForm, GoalsForm, RiskProfileForm, ScopeOfAdviceForm } from "./components/factfind/index.jsx";
 import { TransactionsForm, ProductReplacementForm, AiFactFind, AiParaplanner, StrategyForm, AdviceProductsEntitiesForm, AdviceInsuranceForm, TaxSuperPlanningForm, AssumptionsForm, PortfolioForm } from "./components/advice/index.jsx";
-import { useVoiceSession } from '../components/factfind/useVoiceSession';
 import { getAccessToken } from '@/auth/msalInstance';
 import { adviceHistoryApi } from '@/api/adviceHistoryApi';
 class CashflowErrorBoundary extends React.Component {
@@ -395,28 +394,6 @@ function CashflowAssistant({ factFind, updateFF, darkMode, mode = "cashflow", on
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const {
-    connected: voiceConnected,
-    connecting: voiceConnecting,
-    startSession: startVoiceSession,
-    stopSession: stopVoiceSession,
-  } = useVoiceSession({
-    clientId: new URLSearchParams(window.location.search).get('clientId') || '',
-    factFind,
-    updateSection: updateFF,
-    activeTabId: factFindSection,
-    onWrite: (field, value) => {
-      // Route voice agent writes through the same tool execution handler
-      // that the text copilot uses — treat it as a tool result
-      handleVoiceWrite(field, value);
-    },
-    onSay: (text) => {
-      // Add agent speech as an assistant message in the chat
-      setMessages(prev => [...prev, { role: 'assistant', content: text }]);
-      setVoiceTranscript(prev => [...prev, { type: 'agent', text }]);
-    }
-  });
-  const [voiceTranscript, setVoiceTranscript] = useState([]);
   const [activityFeed, setActivityFeed] = useState([]);
   const [highlightedRecordId, setHighlightedRecordId] = useState(null);
   const chatEndRef = useRef(null);
@@ -897,15 +874,6 @@ Current context:
     );
   };
 
-  const handleVoiceWrite = (field, value) => {
-    // Add a synthetic assistant message showing what was captured
-    setMessages(prev => [...prev, {
-      role: 'assistant',
-      content: `✓ Captured: **${field}** → ${value}`
-    }]);
-    setVoiceTranscript(prev => [...prev, { type: 'write', text: `✓ ${field}: ${value}` }]);
-  };
-
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--ps-surface)" }}>
       <style>{`
@@ -924,16 +892,6 @@ Current context:
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 15, color: "#fff" }}>{"\u2726"}</span>
           <span style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Co-pilot</span>
-          {voiceConnected && (
-            <span style={{ fontSize: 11, background: '#dcfce7', color: '#16a34a', padding: '2px 8px', borderRadius: 99, fontWeight: 600 }}>
-              LIVE
-            </span>
-          )}
-          {voiceConnecting && (
-            <span style={{ fontSize: 11, background: '#fef9c3', color: '#ca8a04', padding: '2px 8px', borderRadius: 99, fontWeight: 600 }}>
-              CONNECTING...
-            </span>
-          )}
           <span style={{
             fontSize: 9, fontWeight: 700,
             color: mode === "factfind" ? "#4ADE80" : "#A5B4FC",
@@ -985,48 +943,6 @@ Current context:
         ))}
       </div>
 
-      {(voiceConnected || voiceConnecting) ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', height: '100%', padding: '24px 16px' }}>
-          {/* Pulsing mic */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 24 }}>
-            <div style={{
-              width: 72, height: 72, borderRadius: '50%',
-              background: voiceConnected ? '#ef4444' : '#f59e0b',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 32,
-              boxShadow: voiceConnected ? '0 0 0 16px rgba(239,68,68,0.15)' : '0 0 0 16px rgba(245,158,11,0.15)',
-              animation: voiceConnected ? 'pulse 1.5s infinite' : 'none',
-            }}>{"\uD83C\uDFA4"}</div>
-            <span style={{ color: 'var(--ps-text-muted)', fontSize: 13 }}>
-              {voiceConnecting ? 'Connecting...' : 'Listening...'}
-            </span>
-          </div>
-
-          {/* Transcript feed */}
-          <div style={{ flex: 1, overflowY: 'auto', width: '100%', marginTop: 24, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {voiceTranscript.map((entry, i) => (
-              <div key={i} style={{
-                padding: '8px 12px',
-                borderRadius: 8,
-                fontSize: 13,
-                background: entry.type === 'write' ? 'rgba(34,197,94,0.1)' : 'var(--ps-surface-alt)',
-                color: entry.type === 'write' ? '#22c55e' : 'var(--ps-text)',
-                alignSelf: entry.type === 'write' ? 'flex-start' : 'flex-end',
-              }}>
-                {entry.text}
-              </div>
-            ))}
-          </div>
-
-          {/* Stop button */}
-          <button onClick={stopVoiceSession} style={{
-            marginTop: 16, padding: '10px 24px',
-            background: '#ef4444', border: 'none', borderRadius: 10,
-            color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: 14,
-          }}>Stop listening</button>
-        </div>
-      ) : (
-        <>
           {/* Chat messages */}
           <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
             {messages.map((m, i) => (
@@ -1101,21 +1017,7 @@ Current context:
                 alignSelf: "flex-end", flexShrink: 0,
               }}
             >{loading ? "..." : "Send"}</button>
-            <button
-              onClick={() => voiceConnected ? stopVoiceSession() : startVoiceSession()}
-              disabled={voiceConnecting}
-              title={voiceConnected ? 'Stop voice session' : 'Start voice session (LiveKit)'}
-              style={{
-                padding: "10px 12px",
-                background: voiceConnected ? '#ef4444' : voiceConnecting ? '#f59e0b' : "var(--ps-surface-alt)",
-                border: "none", borderRadius: 10,
-                color: "var(--ps-text-muted)", cursor: "pointer", fontSize: 16,
-                flexShrink: 0, alignSelf: "flex-end",
-              }}
-            >{"\uD83C\uDFA4"}</button>
           </div>
-        </>
-      )}
     </div>
   );
 }

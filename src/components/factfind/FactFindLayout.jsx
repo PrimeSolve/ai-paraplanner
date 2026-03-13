@@ -3,6 +3,8 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { cn } from '@/lib/utils';
 import { useRole } from '../RoleContext';
+import { useFactFind } from './useFactFind';
+import { useVoiceSession } from './useVoiceSession';
 
 const sectionGroups = [
   {
@@ -81,6 +83,21 @@ export default function FactFindLayout({ children, currentSection, factFindId, c
       setActiveTabId(currentSection);
     }
   }, [currentSection]);
+
+  // Voice session — shares the same useFactFind state as the form pages
+  const { factFind, updateSection, clientId: ffClientId } = useFactFind();
+  const resolvedClientId = ffClientId || clientId;
+
+  const {
+    status: voiceStatus,
+    startVoice,
+    stopVoice,
+  } = useVoiceSession({
+    factFind,
+    updateSection,
+    activeTabId,
+    clientId: resolvedClientId,
+  });
 
   const handleNavClick = (e, targetPath) => {
     e.preventDefault();
@@ -196,12 +213,52 @@ export default function FactFindLayout({ children, currentSection, factFindId, c
              ))}
            </div>
 
-         {/* Save & Close Button */}
+         {/* Sage Voice & Save/Close */}
          <div style={{
            padding: '16px',
            borderTop: '1px solid rgba(255,255,255,0.1)',
-           marginTop: 'auto'
+           marginTop: 'auto',
+           display: 'flex',
+           flexDirection: 'column',
+           gap: '10px',
          }}>
+           <button
+             onClick={voiceStatus === 'connected' ? stopVoice : startVoice}
+             disabled={voiceStatus === 'connecting'}
+             style={{
+               width: '100%',
+               padding: '12px 16px',
+               borderRadius: '10px',
+               border: voiceStatus === 'connected' ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(255,255,255,0.15)',
+               background: voiceStatus === 'connected'
+                 ? 'rgba(239,68,68,0.15)'
+                 : 'rgba(255,255,255,0.05)',
+               color: voiceStatus === 'connected' ? '#fca5a5' : '#cbd5e1',
+               fontSize: '13px',
+               fontWeight: 500,
+               cursor: voiceStatus === 'connecting' ? 'wait' : 'pointer',
+               textAlign: 'center',
+               transition: 'all 0.2s',
+               display: 'flex',
+               alignItems: 'center',
+               justifyContent: 'center',
+               gap: '8px',
+             }}
+           >
+             <span style={{
+               width: '8px',
+               height: '8px',
+               borderRadius: '50%',
+               background: voiceStatus === 'connected' ? '#ef4444'
+                 : voiceStatus === 'connecting' ? '#f59e0b'
+                 : '#64748b',
+               display: 'inline-block',
+               animation: voiceStatus === 'connecting' ? 'pulse 1.5s infinite' : 'none',
+             }} />
+             {voiceStatus === 'connected' ? 'Disconnect Sage'
+               : voiceStatus === 'connecting' ? 'Connecting...'
+               : 'Connect Sage'}
+           </button>
            <button
              onClick={() => navigate(createPageUrl('ClientDashboard'))}
              style={{
