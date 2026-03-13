@@ -96,6 +96,7 @@ export const companiesApi = {
   async create(clientId, data) {
     const stripped = stripFrontendFields(data);
     const apiData = snakeToCamelKeys({ ...stripped, client_id: clientId });
+    if (!apiData.companyName || apiData.companyName === '') apiData.companyName = data.default_name || 'Company 1';
     // taxRate fixup: "25" → 0.25
     if (typeof apiData.taxRate === 'string') {
       apiData.taxRate = parseFloat(apiData.taxRate) / 100;

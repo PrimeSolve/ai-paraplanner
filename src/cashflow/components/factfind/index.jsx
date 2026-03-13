@@ -1955,12 +1955,12 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId }) {
   const addTrust = useCallback(async () => {
     if (!clientId) return;
     try {
-      const created = await trustsApi.create(clientId, { ...TRUST_DEFAULTS });
+      const created = await trustsApi.create(clientId, { ...TRUST_DEFAULTS, default_name: `Trust ${trusts.length + 1}` });
       setTrusts(prev => [...prev, created]);
     } catch (error) {
       console.error("Failed to create trust:", error);
     }
-  }, [clientId]);
+  }, [clientId, trusts]);
 
   const removeTrust = useCallback(async (idx) => {
     const trust = trusts[idx];
@@ -2039,7 +2039,7 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId }) {
   const addCompany = useCallback(async () => {
     if (!clientId) return;
     try {
-      const created = await companiesApi.create(clientId, { ...COMPANY_DEFAULTS });
+      const created = await companiesApi.create(clientId, { ...COMPANY_DEFAULTS, default_name: `Company ${companies.length + 1}` });
       const merged = { ...COMPANY_DEFAULTS, shareholders: [], ...created };
       updateFF("companies", [...companies, merged]);
     } catch (error) {
@@ -2464,7 +2464,7 @@ export function SMSFForm({ factFind, updateFF }) {
   const items = factFind.smsfs || [];
 
   // Fund CRUD
-  const add = () => updateFF("smsfs", [...items, { ...SMSF_DEFAULTS, accounts: [] }]);
+  const add = () => updateFF("smsfs", [...items, { ...SMSF_DEFAULTS, smsf_name: `SMSF ${items.length + 1}`, accounts: [] }]);
   const remove = (idx) => updateFF("smsfs", items.filter((_, i) => i !== idx));
   const update = (idx, field, value) => updateFF("smsfs", items.map((item, i) => i === idx ? { ...item, [field]: value } : item));
 

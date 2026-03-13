@@ -99,6 +99,7 @@ export const trustsApi = {
   async create(clientId, data) {
     const { beneficiaries, ...rest } = data;
     const apiData = snakeToCamelKeys({ ...rest, client_id: clientId });
+    if (!apiData.trustName || apiData.trustName === '') apiData.trustName = data.default_name || 'Trust 1';
     convertTrustType(apiData);
     const response = await axiosInstance.post('/trusts', apiData);
     return normaliseRecord(camelToSnakeKeys(response.data));
