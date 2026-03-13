@@ -2091,12 +2091,33 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId }) {
   }, [companies, updateFF, debouncedCompanyUpdate]);
 
   // Company shareholder helpers
-  const addShareholder = (idx) => {
-    const updated = companies.map((item, i) => i === idx ? { ...item, shareholders: [...(item.shareholders || []), { sh_entity: "", sh_pct: "" }] } : item);
-    updateFF("companies", updated);
+  const addShareholder = async (idx) => {
+    const company = companies[idx];
+    if (!company?.id) return;
+    try {
+      const created = await companiesApi.addShareholder(company.id, { sh_entity: "", sh_pct: "" });
+      const updated = companies.map((item, i) => i === idx
+        ? { ...item, shareholders: [...(item.shareholders || []), created] }
+        : item);
+      updateFF("companies", updated);
+    } catch (error) {
+      console.error("Failed to add shareholder:", error);
+    }
   };
-  const removeShareholder = (compIdx, shIdx) => {
-    const updated = companies.map((item, i) => i === compIdx ? { ...item, shareholders: item.shareholders.filter((_, si) => si !== shIdx) } : item);
+  const removeShareholder = async (compIdx, shIdx) => {
+    const company = companies[compIdx];
+    const shareholder = company?.shareholders?.[shIdx];
+    if (company?.id && shareholder?.id) {
+      try {
+        await companiesApi.removeShareholder(company.id, shareholder.id);
+      } catch (error) {
+        console.error("Failed to remove shareholder:", error);
+        return;
+      }
+    }
+    const updated = companies.map((item, i) => i === compIdx
+      ? { ...item, shareholders: item.shareholders.filter((_, si) => si !== shIdx) }
+      : item);
     updateFF("companies", updated);
   };
   const updateShareholder = (compIdx, shIdx, field, value) => {
