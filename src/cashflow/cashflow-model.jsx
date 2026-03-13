@@ -1036,6 +1036,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
     addPrincipal, removePrincipal,
     loadPrincipals, savePrincipals,
     loadDependants, saveDependants,
+    loadIncome, saveIncome,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
@@ -1859,6 +1860,8 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               <IncomeForm
                 factFind={factFind}
                 updateFF={updateFF}
+                clientId={urlClientId}
+                loadIncome={loadIncome}
               />
             ) : factFindSection === "expenses" ? (
               <ExpensesForm

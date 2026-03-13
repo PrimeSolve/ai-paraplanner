@@ -8,6 +8,7 @@ import { pensionsApi } from "@/api/pensionsApi";
 import { definedBenefitsApi } from "@/api/definedBenefitsApi";
 import { assetsApi } from "@/api/assetsApi";
 import { debtsApi } from "@/api/debtsApi";
+import { incomesApi } from "@/api/incomesApi";
 
 // ===========================================================================
 // FACT FIND — Principals Form (aligned to Base44 FactFindPersonal)
@@ -3754,9 +3755,19 @@ export function InsurancePoliciesForm({ factFind, updateFF }) {
 // FACT FIND — Income Form (aligned to Base44)
 // ===========================================================================
 
-export function IncomeForm({ factFind, updateFF }) {
+export function IncomeForm({ factFind, updateFF, clientId, loadIncome }) {
   const [activePerson, setActivePerson] = useState("client1");
   const [adjDetailIdx, setAdjDetailIdx] = useState(null);
+
+  // Load income from API on mount
+  const incomeLoadedRef = useRef(false);
+  useEffect(() => {
+    if (clientId && loadIncome && !incomeLoadedRef.current) {
+      incomeLoadedRef.current = true;
+      const client2Id = factFind.client2?.id || null;
+      loadIncome(clientId, client2Id);
+    }
+  }, [clientId, loadIncome]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasClients = factFind.client1 !== null || factFind.client2 !== null;
   const clientOptions = [];
@@ -3772,10 +3783,38 @@ export function IncomeForm({ factFind, updateFF }) {
   const personIncome = incomeData[activePerson] || {};
   const personAdjustments = personIncome.adjustments || [];
 
+  // Resolve the API clientId for the active person
+  const getPersonClientId = useCallback(() => {
+    if (activePerson === "client1") return clientId;
+    return factFind.client2?.id || null;
+  }, [activePerson, clientId, factFind.client2]);
+
+  // Debounced auto-save for income field changes
+  const incomeSaveTimerRef = useRef(null);
+  const incomeInitialised = useRef(false);
+
   const updatePersonIncome = (field, value) => {
     const current = factFind.income || {};
     const personData = current[activePerson] || {};
-    updateFF("income", { ...current, [activePerson]: { ...personData, [field]: value } });
+    const updated = { ...personData, [field]: value };
+    updateFF("income", { ...current, [activePerson]: updated });
+
+    // Debounce API upsert
+    if (incomeSaveTimerRef.current) clearTimeout(incomeSaveTimerRef.current);
+    incomeSaveTimerRef.current = setTimeout(async () => {
+      const personCid = activePerson === "client1" ? clientId : (factFind.client2?.id || null);
+      if (!personCid) return;
+      try {
+        const result = await incomesApi.upsert(personCid, updated);
+        // Store returned id if it was a create
+        if (result?.id && !updated.id) {
+          const cur = factFind.income || {};
+          updateFF("income", { ...cur, [activePerson]: { ...cur[activePerson], id: result.id } });
+        }
+      } catch (err) {
+        console.error('[IncomeForm] Failed to save income:', err);
+      }
+    }, 2000);
   };
 
   const updatePersonAdjustments = (newAdjs) => {
@@ -3784,13 +3823,63 @@ export function IncomeForm({ factFind, updateFF }) {
     updateFF("income", { ...current, [activePerson]: { ...personData, adjustments: newAdjs } });
   };
 
-  const addIncomeAdj = () => {
-    updatePersonAdjustments([...personAdjustments, { adj_type: "", adj_amount: "", adj_start: "", adj_end: "", adj_notes: "" }]);
+  const addIncomeAdj = async () => {
+    const newAdj = { adj_type: "", adj_amount: "", adj_start: "", adj_end: "", adj_notes: "" };
+    const incomeId = personIncome.id;
+    if (incomeId) {
+      try {
+        const saved = await incomesApi.addAdjustment(incomeId, newAdj);
+        updatePersonAdjustments([...personAdjustments, saved]);
+        setAdjDetailIdx(personAdjustments.length);
+        return;
+      } catch (err) {
+        console.error('[IncomeForm] Failed to add adjustment:', err);
+      }
+    }
+    // Fallback: local only if no income id yet
+    updatePersonAdjustments([...personAdjustments, newAdj]);
     setAdjDetailIdx(personAdjustments.length);
   };
-  const removeIncomeAdj = (idx) => { updatePersonAdjustments(personAdjustments.filter((_, i) => i !== idx)); setAdjDetailIdx(null); };
+
+  const removeIncomeAdj = async (idx) => {
+    const adj = personAdjustments[idx];
+    const incomeId = personIncome.id;
+    if (incomeId && adj?.id) {
+      try {
+        await incomesApi.removeAdjustment(incomeId, adj.id);
+      } catch (err) {
+        console.error('[IncomeForm] Failed to remove adjustment:', err);
+      }
+    }
+    updatePersonAdjustments(personAdjustments.filter((_, i) => i !== idx));
+    setAdjDetailIdx(null);
+  };
+
+  // Debounced adjustment update: remove old + add new (no PUT endpoint)
+  const adjUpdateTimerRef = useRef(null);
   const updateIncomeAdj = (idx, field, value) => {
-    updatePersonAdjustments(personAdjustments.map((a, i) => i === idx ? { ...a, [field]: value } : a));
+    const updatedAdjs = personAdjustments.map((a, i) => i === idx ? { ...a, [field]: value } : a);
+    updatePersonAdjustments(updatedAdjs);
+
+    const incomeId = personIncome.id;
+    const adj = updatedAdjs[idx];
+    if (incomeId && adj?.id) {
+      if (adjUpdateTimerRef.current) clearTimeout(adjUpdateTimerRef.current);
+      adjUpdateTimerRef.current = setTimeout(async () => {
+        try {
+          await incomesApi.removeAdjustment(incomeId, adj.id);
+          const saved = await incomesApi.addAdjustment(incomeId, adj);
+          // Update the id in local state
+          const current = factFind.income || {};
+          const pd = current[activePerson] || {};
+          const currentAdjs = pd.adjustments || [];
+          const newAdjs = currentAdjs.map((a, i) => i === idx ? { ...a, ...saved } : a);
+          updateFF("income", { ...current, [activePerson]: { ...pd, adjustments: newAdjs } });
+        } catch (err) {
+          console.error('[IncomeForm] Failed to update adjustment:', err);
+        }
+      }, 2000);
+    }
   };
 
   const adjTypeLabel = (v) => {

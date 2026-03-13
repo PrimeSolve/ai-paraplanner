@@ -10,6 +10,7 @@ import { pensionsApi } from "../../api/pensionsApi.js";
 import { annuitiesApi } from "../../api/annuitiesApi.js";
 import { definedBenefitsApi } from "../../api/definedBenefitsApi.js";
 import { debtsApi } from "../../api/debtsApi.js";
+import { incomesApi } from "../../api/incomesApi.js";
 import { useRole } from "../../components/RoleContext.jsx";
 
 export function useFactFind(initialData) {
@@ -767,6 +768,86 @@ export function useFactFind(initialData) {
     }
   }, [factFind]);
 
+  // ── Income API integration ──────────────────────────────────
+
+  /**
+   * Load income records from GET /incomes?clientId= for client1 and client2
+   * and populate factFind.income.client1 / client2.
+   * @param {string} clientId - The primary client's ID
+   * @param {string} [client2Id] - Optional partner/spouse client ID
+   */
+  const loadIncome = useCallback(async (clientId, client2Id) => {
+    try {
+      const data1 = await incomesApi.getByClientId(clientId);
+      if (data1) {
+        setFactFind(prev => {
+          const next = JSON.parse(JSON.stringify(prev));
+          next.income = { ...next.income, client1: { ...next.income.client1, ...data1 } };
+          return next;
+        });
+        setAdviceModel1(prev => {
+          if (!prev) return prev;
+          const next = JSON.parse(JSON.stringify(prev));
+          next.income = { ...next.income, client1: { ...next.income.client1, ...data1 } };
+          return next;
+        });
+      }
+
+      if (client2Id) {
+        const data2 = await incomesApi.getByClientId(client2Id);
+        if (data2) {
+          setFactFind(prev => {
+            const next = JSON.parse(JSON.stringify(prev));
+            next.income = { ...next.income, client2: { ...next.income.client2, ...data2 } };
+            return next;
+          });
+          setAdviceModel1(prev => {
+            if (!prev) return prev;
+            const next = JSON.parse(JSON.stringify(prev));
+            next.income = { ...next.income, client2: { ...next.income.client2, ...data2 } };
+            return next;
+          });
+        }
+      }
+    } catch (err) {
+      console.error('[useFactFind] Failed to load income from API:', err);
+    }
+  }, []);
+
+  /**
+   * Save income for a specific person via upsert.
+   * @param {string} clientId - The client GUID for this person
+   * @param {string} personKey - "client1" or "client2"
+   */
+  const saveIncome = useCallback(async (clientId, personKey) => {
+    try {
+      const ff = factFind;
+      const personData = ff.income?.[personKey];
+      if (!personData) return;
+      const result = await incomesApi.upsert(clientId, personData);
+      // Store the returned id back into state
+      if (result?.id && !personData.id) {
+        setFactFind(prev => {
+          const next = JSON.parse(JSON.stringify(prev));
+          if (next.income?.[personKey]) {
+            next.income[personKey].id = result.id;
+          }
+          return next;
+        });
+        setAdviceModel1(prev => {
+          if (!prev) return prev;
+          const next = JSON.parse(JSON.stringify(prev));
+          if (next.income?.[personKey]) {
+            next.income[personKey].id = result.id;
+          }
+          return next;
+        });
+      }
+    } catch (err) {
+      console.error('[useFactFind] Failed to save income to API:', err);
+    }
+  }, [factFind]);
+
   return {
     factFind, setFactFind, adviceModel1, setAdviceModel1,
     updateFF, updateAdvice, resetAdviceModel,
@@ -780,6 +861,7 @@ export function useFactFind(initialData) {
     loadAnnuities, saveAnnuities,
     loadDefinedBenefits, saveDefinedBenefits,
     loadDebts, saveDebts,
+    loadIncome, saveIncome,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
