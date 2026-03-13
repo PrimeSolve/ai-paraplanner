@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { ffRowStyle, FFInput, FFSelect, FFToggle, FFRadioRow } from "../common/FormFields.jsx";
 import { dependantsApi } from "@/api/dependantsApi";
+import { trustsApi } from "@/api/trustsApi";
 
 // ===========================================================================
 // FACT FIND — Principals Form (aligned to Base44 FactFindPersonal)
@@ -1905,15 +1906,86 @@ const COMPANY_DEFAULTS = {
   uploaded_bs: null,             // parsed balance sheet from uploaded file
 };
 
-export function TrustsCompaniesForm({ factFind, updateFF }) {
+export function TrustsCompaniesForm({ factFind, updateFF, clientId }) {
   const [subTab, setSubTab] = useState("trusts");
-  const trusts = factFind.trusts || [];
+  const [trusts, setTrusts] = useState([]);
   const companies = factFind.companies || [];
+  const debounceTimers = useRef({});
+
+  // Load trusts from API on mount
+  useEffect(() => {
+    if (!clientId) return;
+    let cancelled = false;
+    async function load() {
+      try {
+        const all = await trustsApi.getAll(clientId);
+        if (cancelled) return;
+        setTrusts(all);
+      } catch (error) {
+        console.error("Failed to load trusts:", error);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [clientId]);
+
+  // Cleanup debounce timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach(clearTimeout);
+    };
+  }, []);
+
+  // Debounced update to API
+  const debouncedUpdate = useCallback((id, data) => {
+    if (debounceTimers.current[id]) {
+      clearTimeout(debounceTimers.current[id]);
+    }
+    debounceTimers.current[id] = setTimeout(async () => {
+      try {
+        await trustsApi.update(id, data);
+      } catch (error) {
+        console.error("Failed to update trust:", error);
+      }
+    }, 500);
+  }, []);
 
   // Trust CRUD
-  const addTrust = () => updateFF("trusts", [...trusts, { ...TRUST_DEFAULTS, beneficiaries: [] }]);
-  const removeTrust = (idx) => updateFF("trusts", trusts.filter((_, i) => i !== idx));
-  const updateTrust = (idx, field, value) => updateFF("trusts", trusts.map((item, i) => i === idx ? { ...item, [field]: value } : item));
+  const addTrust = useCallback(async () => {
+    if (!clientId) return;
+    try {
+      const created = await trustsApi.create(clientId, { ...TRUST_DEFAULTS });
+      setTrusts(prev => [...prev, created]);
+    } catch (error) {
+      console.error("Failed to create trust:", error);
+    }
+  }, [clientId]);
+
+  const removeTrust = useCallback(async (idx) => {
+    const trust = trusts[idx];
+    if (trust?.id) {
+      try {
+        await trustsApi.remove(trust.id);
+      } catch (error) {
+        console.error("Failed to remove trust:", error);
+        return;
+      }
+    }
+    setTrusts(prev => prev.filter((_, i) => i !== idx));
+  }, [trusts]);
+
+  const updateTrust = useCallback((idx, field, value) => {
+    setTrusts(prev => {
+      const updated = [...prev];
+      updated[idx] = { ...updated[idx], [field]: value };
+      const record = updated[idx];
+      if (record.id) {
+        const { id, client_id, ...fields } = record;
+        debouncedUpdate(id, fields);
+      }
+      return updated;
+    });
+  }, [debouncedUpdate]);
 
   // Trust beneficiary helpers
   const addBenef = (idx) => {
