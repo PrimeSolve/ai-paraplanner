@@ -1841,6 +1841,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
                 factFind={factFind}
                 updateFF={updateFF}
                 entityOwnerOptions={entityOwnerOptions}
+                clientId={urlClientId}
               />
             ) : factFindSection === "liabilities" ? (
               <LiabilitiesForm
