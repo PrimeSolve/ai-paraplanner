@@ -8,6 +8,11 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
   const roomRef = useRef(null);
   const processedIds = useRef(new Set());
   const statusRef = useRef('idle');
+  const factFindRef = useRef(factFind);
+
+  useEffect(() => {
+    factFindRef.current = factFind;
+  }, [factFind]);
 
   // ---- TAB TO SECTION MAPPING ----
   const sectionMap = {
@@ -56,7 +61,7 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
     const sectionKey = sectionMap[tab];
     if (!sectionKey || !fields) return;
 
-    const currentSection = factFind?.[sectionKey] || {};
+    const currentSection = factFindRef.current?.[sectionKey] || {};
 
     if (entity_index === undefined || entity_index === null) {
       // Simple tab — merge fields
@@ -76,7 +81,7 @@ export function useVoiceSession({ factFind, updateSection, activeTabId, clientId
 
     setWriteCount(prev => prev + 1);
     console.log('[Voice] Applied WRITE:', tab, Object.keys(fields));
-  }, [factFind, updateSection]);
+  }, [updateSection]);
 
   // ---- HANDLE DATA FROM AGENT ----
   const handleData = useCallback((payload) => {
