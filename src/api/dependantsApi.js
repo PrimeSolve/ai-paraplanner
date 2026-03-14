@@ -81,8 +81,13 @@ export const dependantsApi = {
     if (apiData.financialDependenceAge === '') apiData.financialDependenceAge = null;
     if (apiData.dependantUntilAge === '') apiData.dependantUntilAge = null;
     if (apiData.age === '') apiData.age = null;
-    console.log('[dependantsApi.update] PUT /dependants/' + id, JSON.stringify(apiData, null, 2));
-    const response = await axiosInstance.put(`/dependants/${id}`, apiData);
+    if (apiData.healthIssues === '') apiData.healthIssues = null;
+
+    // Strip read-only fields the API rejects on PUT
+    const { id: _id, clientId: _clientId, createdAt: _createdAt, client_id: _client_id, created_at: _created_at, ...payload } = apiData;
+
+    console.log('[dependantsApi.update] PUT /dependants/' + id, JSON.stringify(payload, null, 2));
+    const response = await axiosInstance.put(`/dependants/${id}`, payload);
     return camelToSnakeKeys(response.data);
   },
 
