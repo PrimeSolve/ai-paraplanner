@@ -1036,6 +1036,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
     addPrincipal, removePrincipal,
     loadPrincipals, savePrincipals,
     loadDependants, saveDependants,
+    loadRiskAndScope,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
@@ -1879,6 +1880,8 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               <RiskProfileForm
                 factFind={factFind}
                 updateFF={updateFF}
+                clientId={urlClientId}
+                loadRiskAndScope={loadRiskAndScope}
               />
             ) : factFindSection === "assumptions" ? (
               <AssumptionsPanel factFind={factFind} updateFF={updateFF} />
@@ -2173,7 +2176,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
 
             <div style={{ padding: 16, overflowX: "auto" }}>
               {adviceSection === "scope" ? (
-                <ScopeOfAdviceForm factFind={factFind} updateFF={updateFF} />
+                <ScopeOfAdviceForm factFind={factFind} updateFF={updateFF} clientId={urlClientId} />
               ) : adviceSection === "advice-models" ? (
                 <StrategyForm factFind={adviceModel1 || factFind} baseFf={factFind} updateFF={updateAdvice} tab="models" />
               ) : adviceSection === "strategies" ? (

@@ -12,6 +12,8 @@ import { expensesApi } from "@/api/expensesApi";
 import { insuranceApi } from "@/api/insuranceApi";
 import { investmentWrapsApi } from "@/api/investmentWrapsApi";
 import { investmentBondsApi } from "@/api/investmentBondsApi";
+import { clientRiskProfilesApi } from "@/api/clientRiskProfilesApi";
+import { scopeOfAdviceApi } from "@/api/scopeOfAdviceApi";
 
 // ===========================================================================
 // FACT FIND — Principals Form (aligned to Base44 FactFindPersonal)
@@ -4875,13 +4877,42 @@ export function GoalsForm({ factFind, updateFF }) {
 // FACT FIND — Risk Profile Form (Base44-aligned)
 // ===========================================================================
 
-export function RiskProfileForm({ factFind, updateFF }) {
+export function RiskProfileForm({ factFind, updateFF, clientId, loadRiskAndScope }) {
   const riskData = factFind.risk_profile || { client1: { answers: {}, score: 0, profile: "", specifiedProfile: "", adviserComments: "", clientComments: "", adjustedProfile: "", adjustmentReason: "" }, client2: { answers: {}, score: 0, profile: "", specifiedProfile: "", adviserComments: "", clientComments: "", adjustedProfile: "", adjustmentReason: "" }, mode: "", adjustRisk: "no" };
   const [riskPerson, setRiskPerson] = useState("client1");
   const [riskMode, setRiskMode] = useState(riskData.mode || "");
   const [adjustRisk, setAdjustRisk] = useState(riskData.adjustRisk || "no");
 
   const personData = riskData[riskPerson] || { answers: {}, score: 0, profile: "", specifiedProfile: "", adviserComments: "", clientComments: "", adjustedProfile: "", adjustmentReason: "" };
+
+  // Load risk profiles + scope on mount
+  const loadedRef = useRef(false);
+  useEffect(() => {
+    if (clientId && loadRiskAndScope && !loadedRef.current) {
+      loadedRef.current = true;
+      loadRiskAndScope(clientId);
+    }
+  }, [clientId, loadRiskAndScope]);
+
+  // Debounced upsert for risk profile
+  const riskDebounceRef = useRef(null);
+  const debouncedRiskUpsert = useCallback((person, fullData) => {
+    if (!clientId) return;
+    if (riskDebounceRef.current) clearTimeout(riskDebounceRef.current);
+    riskDebounceRef.current = setTimeout(async () => {
+      try {
+        const result = await clientRiskProfilesApi.upsert(clientId, person, fullData, fullData.id);
+        if (result && result.id && !fullData.id) {
+          updateFF("risk_profile", prev => {
+            const rd = typeof prev === 'object' ? prev : (factFind.risk_profile || {});
+            return { ...rd, [person]: { ...rd[person], id: result.id } };
+          });
+        }
+      } catch (err) {
+        console.error('[RiskProfileForm] Failed to upsert risk profile:', err);
+      }
+    }, 1500);
+  }, [clientId, updateFF, factFind.risk_profile]);
 
   const hasPartner = factFind.client2 !== null;
   const clientName = (id) => {
@@ -4893,7 +4924,9 @@ export function RiskProfileForm({ factFind, updateFF }) {
   const saveAll = (newData) => updateFF("risk_profile", newData);
 
   const updatePersonField = (field, value) => {
-    saveAll({ ...riskData, [riskPerson]: { ...personData, [field]: value }, mode: riskMode, adjustRisk });
+    const updated = { ...riskData, [riskPerson]: { ...personData, [field]: value }, mode: riskMode, adjustRisk };
+    saveAll(updated);
+    debouncedRiskUpsert(riskPerson, { ...personData, [field]: value, mode: riskMode, adjustRisk });
   };
   const updateAnswer = (qId, value) => {
     updatePersonField("answers", { ...personData.answers, [qId]: value });
@@ -4902,13 +4935,28 @@ export function RiskProfileForm({ factFind, updateFF }) {
     let total = 0;
     RISK_QUESTIONS.forEach(q => { const a = personData.answers[q.id]; if (a) total += parseInt(a); });
     const profile = scoreToProfile(total);
-    saveAll({ ...riskData, [riskPerson]: { ...personData, score: total, profile }, mode: riskMode, adjustRisk });
+    const updated = { ...riskData, [riskPerson]: { ...personData, score: total, profile }, mode: riskMode, adjustRisk };
+    saveAll(updated);
+    debouncedRiskUpsert(riskPerson, { ...personData, score: total, profile, mode: riskMode, adjustRisk });
   };
   const doReset = () => {
-    saveAll({ ...riskData, [riskPerson]: { ...personData, answers: {}, score: 0, profile: "" }, mode: riskMode, adjustRisk });
+    const resetPerson = { ...personData, answers: {}, score: 0, profile: "" };
+    const updated = { ...riskData, [riskPerson]: resetPerson, mode: riskMode, adjustRisk };
+    saveAll(updated);
+    debouncedRiskUpsert(riskPerson, { ...resetPerson, mode: riskMode, adjustRisk });
   };
-  const doSetMode = (m) => { setRiskMode(m); saveAll({ ...riskData, mode: m, adjustRisk }); };
-  const doSetAdjust = (v) => { setAdjustRisk(v); saveAll({ ...riskData, mode: riskMode, adjustRisk: v }); };
+  const doSetMode = (m) => {
+    setRiskMode(m);
+    const updated = { ...riskData, mode: m, adjustRisk };
+    saveAll(updated);
+    debouncedRiskUpsert(riskPerson, { ...personData, mode: m, adjustRisk });
+  };
+  const doSetAdjust = (v) => {
+    setAdjustRisk(v);
+    const updated = { ...riskData, mode: riskMode, adjustRisk: v };
+    saveAll(updated);
+    debouncedRiskUpsert(riskPerson, { ...personData, mode: riskMode, adjustRisk: v });
+  };
 
   const pillStyle = (active) => ({
     padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none",
@@ -5082,11 +5130,33 @@ const SOA_TYPE_OPTIONS = [
   { value: "scaled", label: "Scaled" },
 ];
 
-export function ScopeOfAdviceForm({ factFind, updateFF }) {
+export function ScopeOfAdviceForm({ factFind, updateFF, clientId }) {
   const scope = factFind.advice_request?.scope || {};
 
+  // Debounced upsert for scope of advice
+  const scopeDebounceRef = useRef(null);
+  const debouncedScopeUpsert = useCallback((fullData) => {
+    if (!clientId) return;
+    if (scopeDebounceRef.current) clearTimeout(scopeDebounceRef.current);
+    scopeDebounceRef.current = setTimeout(async () => {
+      try {
+        const result = await scopeOfAdviceApi.upsert(clientId, fullData, fullData.id);
+        if (result && result.id && !fullData.id) {
+          updateFF("advice_request.scope", prev => {
+            const s = typeof prev === 'object' ? prev : (factFind.advice_request?.scope || {});
+            return { ...s, id: result.id };
+          });
+        }
+      } catch (err) {
+        console.error('[ScopeOfAdviceForm] Failed to upsert scope:', err);
+      }
+    }, 1500);
+  }, [clientId, updateFF, factFind.advice_request?.scope]);
+
   const update = (field, value) => {
-    updateFF("advice_request.scope", { ...scope, [field]: value });
+    const updated = { ...scope, [field]: value };
+    updateFF("advice_request.scope", updated);
+    debouncedScopeUpsert(updated);
   };
 
   const toggleArea = (areaId) => {

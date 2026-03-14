@@ -14,6 +14,8 @@ import { expensesApi } from "../../api/expensesApi.js";
 import { insuranceApi } from "../../api/insuranceApi.js";
 import { investmentWrapsApi } from "../../api/investmentWrapsApi.js";
 import { investmentBondsApi } from "../../api/investmentBondsApi.js";
+import { clientRiskProfilesApi } from "../../api/clientRiskProfilesApi.js";
+import { scopeOfAdviceApi } from "../../api/scopeOfAdviceApi.js";
 import { useRole } from "../../components/RoleContext.jsx";
 
 export function useFactFind(initialData) {
@@ -897,6 +899,91 @@ export function useFactFind(initialData) {
     }
   }, []);
 
+  // ── Risk Profiles + Scope of Advice API integration ─────────
+
+  /**
+   * Load risk profiles and scope of advice in parallel from their
+   * respective APIs and merge into factFind state.
+   * @param {string} clientId - The client ID (GUID)
+   */
+  const loadRiskAndScope = useCallback(async (clientId) => {
+    try {
+      const [riskRecords, scopeRecord] = await Promise.all([
+        clientRiskProfilesApi.getAll(clientId),
+        scopeOfAdviceApi.getByClientId(clientId),
+      ]);
+
+      setFactFind(prev => {
+        const next = JSON.parse(JSON.stringify(prev));
+
+        // Map risk profile records by owner
+        const riskArr = Array.isArray(riskRecords) ? riskRecords : [];
+        const c1 = riskArr.find(r => r.owner === 'client1');
+        const c2 = riskArr.find(r => r.owner === 'client2');
+
+        if (!next.risk_profile) {
+          next.risk_profile = { client1: {}, client2: {}, mode: '', adjustRisk: 'no' };
+        }
+
+        if (c1) {
+          next.risk_profile.client1 = { ...next.risk_profile.client1, ...c1 };
+          next.risk_profile.mode = c1.mode || next.risk_profile.mode;
+          next.risk_profile.adjustRisk = c1.adjustRisk || next.risk_profile.adjustRisk;
+        }
+        if (c2) {
+          next.risk_profile.client2 = { ...next.risk_profile.client2, ...c2 };
+          if (!c1) {
+            next.risk_profile.mode = c2.mode || next.risk_profile.mode;
+            next.risk_profile.adjustRisk = c2.adjustRisk || next.risk_profile.adjustRisk;
+          }
+        }
+
+        // Map scope of advice
+        if (scopeRecord) {
+          next.advice_request = next.advice_request || {};
+          next.advice_request.scope = { ...scopeRecord };
+        }
+
+        return next;
+      });
+
+      setAdviceModel1(prev => {
+        if (!prev) return prev;
+        const next = JSON.parse(JSON.stringify(prev));
+
+        const riskArr = Array.isArray(riskRecords) ? riskRecords : [];
+        const c1 = riskArr.find(r => r.owner === 'client1');
+        const c2 = riskArr.find(r => r.owner === 'client2');
+
+        if (!next.risk_profile) {
+          next.risk_profile = { client1: {}, client2: {}, mode: '', adjustRisk: 'no' };
+        }
+
+        if (c1) {
+          next.risk_profile.client1 = { ...next.risk_profile.client1, ...c1 };
+          next.risk_profile.mode = c1.mode || next.risk_profile.mode;
+          next.risk_profile.adjustRisk = c1.adjustRisk || next.risk_profile.adjustRisk;
+        }
+        if (c2) {
+          next.risk_profile.client2 = { ...next.risk_profile.client2, ...c2 };
+          if (!c1) {
+            next.risk_profile.mode = c2.mode || next.risk_profile.mode;
+            next.risk_profile.adjustRisk = c2.adjustRisk || next.risk_profile.adjustRisk;
+          }
+        }
+
+        if (scopeRecord) {
+          next.advice_request = next.advice_request || {};
+          next.advice_request.scope = { ...scopeRecord };
+        }
+
+        return next;
+      });
+    } catch (err) {
+      console.error('[useFactFind] Failed to load risk profiles / scope of advice from API:', err);
+    }
+  }, []);
+
   return {
     factFind, setFactFind, adviceModel1, setAdviceModel1,
     updateFF, updateAdvice, resetAdviceModel,
@@ -913,6 +1000,7 @@ export function useFactFind(initialData) {
     loadExpenses, saveExpenses,
     loadInsurance,
     loadInvestments,
+    loadRiskAndScope,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
