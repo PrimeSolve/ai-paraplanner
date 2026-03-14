@@ -924,6 +924,7 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
         { id: "pension", label: "Pension", icon: "🏦", count: pensions.length, color: "#7C3AED" },
         { id: "annuity", label: "Annuity", icon: "📄", count: annuities.length, color: "#D97706" },
         { id: "defined_benefit", label: "Defined Benefit", icon: "🏛️", count: definedBenefits.length, color: "#059669" },
+        { id: "super_planning", label: "Super Planning", icon: "📊", color: "#4F46E5" },
       ].map(s => {
         const isActive = subTab === s.id;
         return (
@@ -1382,6 +1383,157 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
       })()}
 
       {/* ── Defined Benefit Panel — Detail ── */}
+      {/* ── SUPER PLANNING ── */}
+      {subTab === "super_planning" && (() => {
+        const TBC_CAP = 1900000;
+        const LRT_CAP = 235000;
+        const planningData = factFind.tax_super_planning || {};
+        const updatePlanningClient = (clientKey, field, value) => {
+          const d = factFind.tax_super_planning || {};
+          updateFF("tax_super_planning", { ...d, [clientKey]: { ...(d[clientKey] || {}), [field]: value } });
+        };
+        const fmtCurrency = (v) => { const n = parseFloat(v); return isNaN(n) ? "$0" : "$" + Math.round(n).toLocaleString("en-AU"); };
+        const remaining = (cap, used) => Math.max(0, cap - (parseFloat(used) || 0));
+
+        return (
+          <div>
+            {clientOptions.map(c => {
+              const cd = planningData[c.value] || {};
+              const corMet = cd.condition_of_release === true;
+              const bfTriggered = cd.bring_forward_triggered === true;
+              const bfUsed = parseFloat(cd.bring_forward_used) || 0;
+              const tbcUsed = parseFloat(cd.tbc_used) || 0;
+              const lrtUsed = parseFloat(cd.low_rate_used) || 0;
+
+              return (
+                <div key={c.value} style={{ marginBottom: 20 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#4F46E5", marginBottom: 12, paddingBottom: 8, borderBottom: "2px solid var(--ps-surface-indigo)" }}>
+                    {c.label}
+                  </div>
+
+                  {/* Condition of Release */}
+                  <div style={{ border: "1px solid var(--ps-border)", borderRadius: 12, background: "var(--ps-surface)", overflow: "hidden", marginBottom: 12 }}>
+                    <div style={{ padding: "10px 16px", background: "#4F46E508", borderBottom: "1px solid var(--ps-border)", display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 13 }}>🔓</span>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ps-text-primary)" }}>Condition of Release</div>
+                    </div>
+                    <div style={{ padding: 16 }}>
+                      <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+                        {[{ value: "yes", label: "✓ Met" }, { value: "no", label: "✗ Not yet met" }].map(o => (
+                          <button key={o.value} onClick={() => updatePlanningClient(c.value, "condition_of_release", o.value === "yes")}
+                            style={{ padding: "4px 12px", borderRadius: 6, border: (cd.condition_of_release === true ? "yes" : cd.condition_of_release === false ? "no" : "") === o.value ? "2px solid #4F46E5" : "1px solid var(--ps-border)", background: (cd.condition_of_release === true ? "yes" : cd.condition_of_release === false ? "no" : "") === o.value ? "var(--ps-surface-indigo)" : "var(--ps-surface)", color: (cd.condition_of_release === true ? "yes" : cd.condition_of_release === false ? "no" : "") === o.value ? "#4F46E5" : "var(--ps-text-muted)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                            {o.label}
+                          </button>
+                        ))}
+                      </div>
+                      {corMet && (
+                        <FFInput label="Date met" value={cd.condition_of_release_date || ""} onChange={v => updatePlanningClient(c.value, "condition_of_release_date", v)} placeholder="e.g. 01/07/2024" />
+                      )}
+                      {!corMet && cd.condition_of_release === false && (
+                        <div style={{ fontSize: 11, color: "var(--ps-red)", marginTop: 6 }}>Preservation age restrictions apply. Lump sum tax rates will be applied to withdrawals.</div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Bring-Forward NCC Rule */}
+                  <div style={{ border: "1px solid var(--ps-border)", borderRadius: 12, background: "var(--ps-surface)", overflow: "hidden", marginBottom: 12 }}>
+                    <div style={{ padding: "10px 16px", background: "#4F46E508", borderBottom: "1px solid var(--ps-border)", display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 13 }}>📥</span>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ps-text-primary)" }}>Bring-Forward NCC Rule</div>
+                    </div>
+                    <div style={{ padding: 16 }}>
+                      <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+                        {[{ value: "yes", label: "✓ Triggered" }, { value: "no", label: "Not triggered" }].map(o => (
+                          <button key={o.value} onClick={() => updatePlanningClient(c.value, "bring_forward_triggered", o.value === "yes")}
+                            style={{ padding: "4px 12px", borderRadius: 6, border: (bfTriggered ? "yes" : "no") === o.value ? "2px solid #4F46E5" : "1px solid var(--ps-border)", background: (bfTriggered ? "yes" : "no") === o.value ? "var(--ps-surface-indigo)" : "var(--ps-surface)", color: (bfTriggered ? "yes" : "no") === o.value ? "#4F46E5" : "var(--ps-text-muted)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                            {o.label}
+                          </button>
+                        ))}
+                      </div>
+                      {bfTriggered && (
+                        <div>
+                          <div style={ffRowStyle}>
+                            <FFInput label="Year triggered" value={cd.bring_forward_year || ""} onChange={v => updatePlanningClient(c.value, "bring_forward_year", v)} placeholder="e.g. 2023" />
+                            <FFInput label="Amount used" value={cd.bring_forward_used || ""} onChange={v => updatePlanningClient(c.value, "bring_forward_used", v)} type="number" prefix="$" placeholder="0" />
+                          </div>
+                          <div style={{ padding: "10px 14px", background: "var(--ps-surface-green)", borderRadius: 8, border: "1px solid var(--ps-ring-emerald)", marginTop: 8 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid var(--ps-border-light)" }}>
+                              <span style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>Total 3-year cap</span>
+                              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ps-text-primary)" }}>{fmtCurrency(360000)}</span>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid var(--ps-border-light)" }}>
+                              <span style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>Used</span>
+                              <span style={{ fontSize: 13, fontWeight: 700, color: bfUsed > 0 ? "#DC2626" : "var(--ps-text-muted)" }}>{fmtCurrency(bfUsed)}</span>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0" }}>
+                              <span style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>Remaining</span>
+                              <span style={{ fontSize: 13, fontWeight: 700, color: remaining(360000, bfUsed) > 0 ? "var(--ps-green)" : "var(--ps-red)" }}>{fmtCurrency(remaining(360000, bfUsed))}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Transfer Balance Cap */}
+                  <div style={{ border: "1px solid var(--ps-border)", borderRadius: 12, background: "var(--ps-surface)", overflow: "hidden", marginBottom: 12 }}>
+                    <div style={{ padding: "10px 16px", background: "#4F46E508", borderBottom: "1px solid var(--ps-border)", display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 13 }}>🏦</span>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ps-text-primary)" }}>Transfer Balance Cap</div>
+                    </div>
+                    <div style={{ padding: 16 }}>
+                      <FFInput label="TBC used" value={cd.tbc_used || ""} onChange={v => updatePlanningClient(c.value, "tbc_used", v)} type="number" prefix="$" placeholder="0" />
+                      <div style={{ padding: "10px 14px", background: "var(--ps-surface-green)", borderRadius: 8, border: "1px solid var(--ps-ring-emerald)", marginTop: 8 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid var(--ps-border-light)" }}>
+                          <span style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>Cap</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ps-text-primary)" }}>{fmtCurrency(TBC_CAP)}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid var(--ps-border-light)" }}>
+                          <span style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>Used</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: tbcUsed > 0 ? "#DC2626" : "var(--ps-text-muted)" }}>{fmtCurrency(tbcUsed)}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0" }}>
+                          <span style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>Remaining</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: remaining(TBC_CAP, tbcUsed) > 0 ? "var(--ps-green)" : "var(--ps-red)" }}>{fmtCurrency(remaining(TBC_CAP, tbcUsed))}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Low Rate Threshold */}
+                  <div style={{ border: "1px solid var(--ps-border)", borderRadius: 12, background: "var(--ps-surface)", overflow: "hidden", marginBottom: 12 }}>
+                    <div style={{ padding: "10px 16px", background: "#4F46E508", borderBottom: "1px solid var(--ps-border)", display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 13 }}>📉</span>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ps-text-primary)" }}>Low Rate Threshold</div>
+                    </div>
+                    <div style={{ padding: 16 }}>
+                      <FFInput label="Amount used to date" value={cd.low_rate_used || ""} onChange={v => updatePlanningClient(c.value, "low_rate_used", v)} type="number" prefix="$" placeholder="0" />
+                      <div style={{ padding: "10px 14px", background: "var(--ps-surface-green)", borderRadius: 8, border: "1px solid var(--ps-ring-emerald)", marginTop: 8 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid var(--ps-border-light)" }}>
+                          <span style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>Cap</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ps-text-primary)" }}>{fmtCurrency(LRT_CAP)}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid var(--ps-border-light)" }}>
+                          <span style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>Used</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: lrtUsed > 0 ? "#DC2626" : "var(--ps-text-muted)" }}>{fmtCurrency(lrtUsed)}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0" }}>
+                          <span style={{ fontSize: 12, color: "var(--ps-text-muted)" }}>Remaining</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: remaining(LRT_CAP, lrtUsed) > 0 ? "var(--ps-green)" : "var(--ps-red)" }}>{fmtCurrency(remaining(LRT_CAP, lrtUsed))}</span>
+                        </div>
+                      </div>
+                      {lrtUsed >= LRT_CAP && (
+                        <div style={{ fontSize: 11, color: "var(--ps-red)", fontWeight: 600, marginTop: 8 }}>Low rate cap fully exhausted — 15% + Medicare applies to taxable component withdrawals</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
+
       {subTab === "defined_benefit" && detailIdx !== null && definedBenefits[detailIdx] && (() => {
         const db = definedBenefits[detailIdx];
         const idx = detailIdx;
@@ -4155,6 +4307,20 @@ export function IncomeForm({ factFind, updateFF }) {
           </div>
         );
       })()}
+
+      {/* Tax Losses */}
+      <div style={{ border: "1px solid var(--ps-border)", borderRadius: 12, background: "var(--ps-surface)", overflow: "hidden", marginBottom: 16 }}>
+        <div style={{ padding: "12px 18px", background: "#DC262608", borderBottom: "1px solid var(--ps-border)", display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 30, height: 30, borderRadius: "50%", background: "#DC2626", color: "var(--ps-surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>📉</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ps-text-primary)" }}>Tax Losses — {clientName(activePerson)}</div>
+        </div>
+        <div style={{ padding: 18 }}>
+          <div style={ffRowStyle}>
+            <FFInput label="Existing CGT Losses" value={personIncome.i_cgt_losses || ""} onChange={v => updatePersonIncome("i_cgt_losses", v)} type="number" prefix="$" placeholder="Prior year net capital losses" />
+            <FFInput label="Carry-Forward Revenue Losses" value={personIncome.i_revenue_losses || ""} onChange={v => updatePersonIncome("i_revenue_losses", v)} type="number" prefix="$" placeholder="Prior year revenue losses" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
