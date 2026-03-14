@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Case conversion utilities (same as trustsApi.js)
@@ -148,8 +149,8 @@ export const smsfApi = {
    * @returns {Promise<object>} Created SMSF (snake_case)
    */
   async create(data) {
-    const apiData = buildSmsfPayload(data);
-    const response = await axiosInstance.post('/smsfs', apiData);
+    const payload = sanitisePayload(buildSmsfPayload(data));
+    const response = await axiosInstance.post('/smsfs', { ...payload, clientId: data.client_id || null });
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
 
@@ -160,8 +161,8 @@ export const smsfApi = {
    * @returns {Promise<object>} Updated SMSF (snake_case)
    */
   async update(id, data) {
-    const apiData = buildSmsfPayload(data);
-    const response = await axiosInstance.put(`/smsfs/${id}`, apiData);
+    const payload = sanitisePayload(buildSmsfPayload(data));
+    const response = await axiosInstance.put(`/smsfs/${id}`, payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
 

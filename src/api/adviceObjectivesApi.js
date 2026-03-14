@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Normalise _id → id
@@ -87,8 +88,8 @@ export const adviceObjectivesApi = {
    * @returns {Promise<object>} Created objective in frontend shape
    */
   async create(clientId, data) {
-    const payload = buildObjectivePayload(data, clientId);
-    const response = await axiosInstance.post('/advice-objectives', payload);
+    const payload = sanitisePayload(buildObjectivePayload(data, clientId));
+    const response = await axiosInstance.post('/advice-objectives', { ...payload, clientId });
     return mapObjectiveFromApi(normaliseRecord(response.data));
   },
 
@@ -99,7 +100,7 @@ export const adviceObjectivesApi = {
    * @returns {Promise<object>} Updated objective in frontend shape
    */
   async update(id, data) {
-    const payload = buildObjectivePayload(data);
+    const payload = sanitisePayload(buildObjectivePayload(data));
     const response = await axiosInstance.put(`/advice-objectives/${id}`, payload);
     return mapObjectiveFromApi(normaliseRecord(response.data));
   },

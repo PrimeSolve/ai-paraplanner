@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 import { loginRedirect, logoutRedirect, getActiveAccount } from '@/auth/msalInstance';
 
 // ──────────────────────────────────────────────────────────────
@@ -176,7 +177,9 @@ function createEntityProxy(endpoint, options = {}) {
      */
     async create(data) {
       const apiData = snakeToCamelKeys(data);
-      const response = await axiosInstance.post(`/${endpoint}`, apiData);
+      const clientId = apiData.clientId || data.client_id;
+      const payload = sanitisePayload(apiData);
+      const response = await axiosInstance.post(`/${endpoint}`, clientId ? { ...payload, clientId } : payload);
       return camelToSnakeKeys(response.data);
     },
 
@@ -194,7 +197,7 @@ function createEntityProxy(endpoint, options = {}) {
       const current = await axiosInstance.get(`/${endpoint}/${id}`);
       const { id: _id, ...currentFields } = current.data;
       console.log('[proxy.update] currentFields keys (from API GET):', Object.keys(currentFields));
-      const merged = { ...currentFields, ...apiData };
+      const merged = sanitisePayload({ ...currentFields, ...apiData });
       console.log('[proxy.update] merged keys:', Object.keys(merged));
       console.log('[proxy.update] merged.client1Profile?.incomes:', JSON.stringify(merged.client1Profile?.incomes));
       console.log('[proxy.update] merged.incomeExpenses:', JSON.stringify(merged.incomeExpenses));

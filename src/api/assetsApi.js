@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Case conversion utilities
@@ -93,8 +94,8 @@ export const assetsApi = {
    * @returns {Promise<object>} Created asset (snake_case)
    */
   async create(data, clientGuidMap, defaultName) {
-    const apiData = buildAssetPayload(data, clientGuidMap, defaultName);
-    const response = await axiosInstance.post('/assets', apiData);
+    const payload = sanitisePayload(buildAssetPayload(data, clientGuidMap, defaultName));
+    const response = await axiosInstance.post('/assets', { ...payload, clientId: clientGuidMap?.client1 || null });
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
 
@@ -105,8 +106,8 @@ export const assetsApi = {
    * @returns {Promise<object>} Updated asset (snake_case)
    */
   async update(id, data) {
-    const apiData = buildAssetPayload(data);
-    const response = await axiosInstance.put(`/assets/${id}`, apiData);
+    const payload = sanitisePayload(buildAssetPayload(data));
+    const response = await axiosInstance.put(`/assets/${id}`, payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
 

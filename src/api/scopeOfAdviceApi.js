@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Normalise _id → id
@@ -88,12 +89,12 @@ export const scopeOfAdviceApi = {
    * @returns {Promise<object>} Saved record in frontend shape
    */
   async upsert(clientId, data, existingId) {
-    const payload = buildScopePayload(data, clientId);
+    const payload = sanitisePayload(buildScopePayload(data, clientId));
     let response;
     if (existingId) {
       response = await axiosInstance.put(`/scope-of-advice/${existingId}`, payload);
     } else {
-      response = await axiosInstance.post('/scope-of-advice', payload);
+      response = await axiosInstance.post('/scope-of-advice', { ...payload, clientId });
     }
     return mapScopeFromApi(normaliseRecord(response.data));
   },

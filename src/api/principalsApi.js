@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Case conversion utilities (same as primeSolveClient.js)
@@ -111,8 +112,9 @@ export const principalsApi = {
 
     // Merge principal fields onto the existing record
     const merged = { ...currentFields, ...apiData };
+    const payload = sanitisePayload(merged);
 
-    const response = await axiosInstance.put(`/clients/${clientId}`, merged);
+    const response = await axiosInstance.put(`/clients/${clientId}`, payload);
     return camelToSnakeKeys(response.data);
   },
 };

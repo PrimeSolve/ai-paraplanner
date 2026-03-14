@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Normalise _id → id
@@ -94,12 +95,12 @@ export const clientRiskProfilesApi = {
    * @returns {Promise<object>} Saved record in frontend shape
    */
   async upsert(clientId, owner, data, existingId) {
-    const payload = buildRiskProfilePayload(data, clientId, owner);
+    const payload = sanitisePayload(buildRiskProfilePayload(data, clientId, owner));
     let response;
     if (existingId) {
       response = await axiosInstance.put(`/client-risk-profiles/${existingId}`, payload);
     } else {
-      response = await axiosInstance.post('/client-risk-profiles', payload);
+      response = await axiosInstance.post('/client-risk-profiles', { ...payload, clientId });
     }
     return mapRiskProfileFromApi(normaliseRecord(response.data));
   },

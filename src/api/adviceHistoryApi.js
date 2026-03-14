@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 /**
  * Client-scoped Advice History API.
@@ -17,9 +18,10 @@ export const adviceHistoryApi = {
    * @returns {Promise<object>} The created record (without snapshots)
    */
   async create(clientId, { recordType, title, factFindSnapshot, adviceModelSnapshot, projectionSnapshot }) {
+    const payload = sanitisePayload({ recordType, title, factFindSnapshot, adviceModelSnapshot, projectionSnapshot });
     const response = await axiosInstance.post(
       `/clients/${clientId}/advice-history`,
-      { recordType, title, factFindSnapshot, adviceModelSnapshot, projectionSnapshot }
+      payload
     );
     return response.data;
   },

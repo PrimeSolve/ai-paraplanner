@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Normalise _id → id
@@ -106,14 +107,14 @@ export const investmentWrapsApi = {
   },
 
   async create(data, clientGuidMap) {
-    const apiData = buildWrapPayload(data, clientGuidMap);
-    const response = await axiosInstance.post('/investment-wraps', apiData);
+    const payload = sanitisePayload(buildWrapPayload(data, clientGuidMap));
+    const response = await axiosInstance.post('/investment-wraps', { ...payload, clientId: clientGuidMap?.client1 || null });
     return mapWrapFromApi(response.data);
   },
 
   async update(id, data) {
-    const apiData = buildWrapPayload(data);
-    const response = await axiosInstance.put(`/investment-wraps/${id}`, apiData);
+    const payload = sanitisePayload(buildWrapPayload(data));
+    const response = await axiosInstance.put(`/investment-wraps/${id}`, payload);
     return mapWrapFromApi(response.data);
   },
 

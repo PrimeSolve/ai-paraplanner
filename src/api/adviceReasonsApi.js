@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Normalise _id → id
@@ -54,15 +55,16 @@ export const adviceReasonsApi = {
    * @returns {Promise<object>} Saved record in frontend shape
    */
   async upsert(clientId, reasonsArray, existingId) {
-    const payload = {
+    const rawPayload = {
       clientId,
       reasons: JSON.stringify(reasonsArray),
     };
+    const payload = sanitisePayload(rawPayload);
     let response;
     if (existingId) {
       response = await axiosInstance.put(`/advice-reasons/${existingId}`, payload);
     } else {
-      response = await axiosInstance.post('/advice-reasons', payload);
+      response = await axiosInstance.post('/advice-reasons', { ...payload, clientId });
     }
     return mapFromApi(normaliseRecord(response.data));
   },

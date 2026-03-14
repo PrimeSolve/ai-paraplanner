@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Normalise _id → id
@@ -112,8 +113,8 @@ export const insuranceApi = {
    * @returns {Promise<object>} Created policy in frontend shape
    */
   async create(data, clientGuidMap) {
-    const apiData = buildInsurancePayload(data, clientGuidMap);
-    const response = await axiosInstance.post('/insurance', apiData);
+    const payload = sanitisePayload(buildInsurancePayload(data, clientGuidMap));
+    const response = await axiosInstance.post('/insurance', { ...payload, clientId: clientGuidMap?.client1 || null });
     return mapInsuranceFromApi(response.data);
   },
 
@@ -124,8 +125,8 @@ export const insuranceApi = {
    * @returns {Promise<object>} Updated policy in frontend shape
    */
   async update(id, data) {
-    const apiData = buildInsurancePayload(data);
-    const response = await axiosInstance.put(`/insurance/${id}`, apiData);
+    const payload = sanitisePayload(buildInsurancePayload(data));
+    const response = await axiosInstance.put(`/insurance/${id}`, payload);
     return mapInsuranceFromApi(response.data);
   },
 

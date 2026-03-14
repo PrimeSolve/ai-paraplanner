@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Case conversion utilities
@@ -118,11 +119,12 @@ export const annuitiesApi = {
    */
   async create(data, clientGuidMap, defaultName) {
     const apiData = buildAnnuityPayload(data, clientGuidMap, defaultName);
-    // Annuities require ClientId on create — use clientGuidMap.client1 as default
+    // Annuities require ownerClientId on create — use clientGuidMap.client1 as default
     if (!apiData.ownerClientId) {
       apiData.ownerClientId = clientGuidMap?.client1 || null;
     }
-    const response = await axiosInstance.post('/annuities', apiData);
+    const payload = sanitisePayload(apiData);
+    const response = await axiosInstance.post('/annuities', payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
 
@@ -134,8 +136,8 @@ export const annuitiesApi = {
    * @returns {Promise<object>} Updated annuity (snake_case)
    */
   async update(id, data, clientGuidMap) {
-    const apiData = buildAnnuityPayload(data, clientGuidMap);
-    const response = await axiosInstance.put(`/annuities/${id}`, apiData);
+    const payload = sanitisePayload(buildAnnuityPayload(data, clientGuidMap));
+    const response = await axiosInstance.put(`/annuities/${id}`, payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
 

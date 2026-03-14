@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Normalise _id → id
@@ -96,14 +97,14 @@ export const investmentBondsApi = {
   },
 
   async create(data, clientGuidMap) {
-    const apiData = buildBondPayload(data, clientGuidMap);
-    const response = await axiosInstance.post('/investment-bonds', apiData);
+    const payload = sanitisePayload(buildBondPayload(data, clientGuidMap));
+    const response = await axiosInstance.post('/investment-bonds', { ...payload, clientId: clientGuidMap?.client1 || null });
     return mapBondFromApi(response.data);
   },
 
   async update(id, data) {
-    const apiData = buildBondPayload(data);
-    const response = await axiosInstance.put(`/investment-bonds/${id}`, apiData);
+    const payload = sanitisePayload(buildBondPayload(data));
+    const response = await axiosInstance.put(`/investment-bonds/${id}`, payload);
     return mapBondFromApi(response.data);
   },
 
