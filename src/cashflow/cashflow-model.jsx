@@ -1640,13 +1640,11 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
     { id: "investments", icon: "📊", label: "Investments", desc: "Wraps, master trusts, investment bonds", color: "var(--ps-green)" },
     { id: "assets", icon: "🏠", label: "Assets", desc: "Property, vehicles, investments, cash", color: "#0891B2" },
     { id: "liabilities", icon: "💳", label: "Liabilities", desc: "Loans, mortgages, credit cards", color: "var(--ps-red)" },
-    { id: "income", icon: "💵", label: "Income", desc: "Salary, benefits, bonuses, adjustments", color: "var(--ps-green)" },
+    { id: "income", icon: "💵", label: "Income", desc: "Salary, benefits, tax losses", color: "var(--ps-green)" },
     { id: "expenses", icon: "🧾", label: "Expenses", desc: "Spending, savings, expense adjustments", color: "var(--ps-red)" },
     { id: "goals", icon: "🎯", label: "Goals", desc: "Advice reasons, objectives & retirement planning", color: "#DB2777" },
     { id: "risk-profile", icon: "📋", label: "Risk Profile", desc: "Risk questionnaire, attitude to investing", color: "#9333EA" },
     { id: "insurance-policies", icon: "🛡️", label: "Insurance Policies", desc: "Life, TPD, Trauma, IP policies", color: "#7C3AED" },
-    { id: "assumptions", icon: "⚙️", label: "Modelling", desc: "Growth rates, inflation, modelling parameters", color: "var(--ps-text-muted)" },
-    { id: "tax-super-planning", icon: "📊", label: "Tax & Super Planning", desc: "Low rate threshold, bring forward, transfer balance cap", color: "#0891B2" },
   ];
 
   const FACT_FIND_GROUPS = [
@@ -1657,7 +1655,6 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
     { label: "Cashflow", ids: ["income", "expenses"] },
     { label: "Goals & Risk Profile", ids: ["goals", "risk-profile"] },
     { label: "Wealth Protection", ids: ["insurance-policies"] },
-    { label: "Assumptions", ids: ["assumptions", "tax-super-planning"] },
   ];
 
   const factFindPanelJSX = (
