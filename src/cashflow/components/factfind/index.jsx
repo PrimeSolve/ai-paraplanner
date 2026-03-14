@@ -9,6 +9,7 @@ import { definedBenefitsApi } from "@/api/definedBenefitsApi";
 import { assetsApi } from "@/api/assetsApi";
 import { debtsApi } from "@/api/debtsApi";
 import { expensesApi } from "@/api/expensesApi";
+import { insuranceApi } from "@/api/insuranceApi";
 
 // ===========================================================================
 // FACT FIND — Principals Form (aligned to Base44 FactFindPersonal)
@@ -3547,11 +3548,31 @@ const EMPTY_INSURANCE_POLICY = {
   pol_freq: "", pol_structure: "",
 };
 
-export function InsurancePoliciesForm({ factFind, updateFF }) {
+export function InsurancePoliciesForm({ factFind, updateFF, clientId, clientGuidMap }) {
   const [activeIdx, setActiveIdx] = useState(0);
 
   const policies = factFind.insurance?.policies || [];
   const setPolicies = (newPols) => updateFF("insurance", { ...(factFind.insurance || {}), policies: newPols });
+
+  // ── Load policies from API on mount ──
+  useEffect(() => {
+    if (!clientId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const records = await insuranceApi.getAll(clientId);
+        if (!cancelled) {
+          updateFF("insurance", { ...(factFind.insurance || {}), policies: records });
+        }
+      } catch (err) {
+        console.error('[InsurancePoliciesForm] Failed to load insurance policies:', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [clientId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Debounced update timer ref ──
+  const updateTimerRef = useRef(null);
 
   // Owner options from principals
   const ownerOptions = [];
@@ -3581,16 +3602,32 @@ export function InsurancePoliciesForm({ factFind, updateFF }) {
     return funds;
   };
 
-  const addPolicy = () => {
-    const newPols = [...policies, { ...EMPTY_INSURANCE_POLICY }];
-    setPolicies(newPols);
-    setActiveIdx(newPols.length - 1);
+  const addPolicy = async () => {
+    try {
+      const result = await insuranceApi.create({ ...EMPTY_INSURANCE_POLICY }, clientGuidMap);
+      const newPols = [...policies, result];
+      setPolicies(newPols);
+      setActiveIdx(newPols.length - 1);
+    } catch (err) {
+      console.error('[InsurancePoliciesForm] Failed to create policy:', err);
+      const newPols = [...policies, { ...EMPTY_INSURANCE_POLICY }];
+      setPolicies(newPols);
+      setActiveIdx(newPols.length - 1);
+    }
   };
-  const removePolicy = () => {
+  const removePolicy = async () => {
     if (policies.length === 0) return;
+    const polToRemove = policies[activeIdx];
     const newPols = policies.filter((_, i) => i !== activeIdx);
     setPolicies(newPols);
     if (activeIdx >= newPols.length && activeIdx > 0) setActiveIdx(activeIdx - 1);
+    if (polToRemove?.id) {
+      try {
+        await insuranceApi.remove(polToRemove.id);
+      } catch (err) {
+        console.error('[InsurancePoliciesForm] Failed to remove policy:', err);
+      }
+    }
   };
   const updatePolicy = (field, value) => {
     const updated = [...policies];
@@ -3598,6 +3635,19 @@ export function InsurancePoliciesForm({ factFind, updateFF }) {
     // Reset linked fund when owner or tax env changes
     if (field === "pol_owner" || field === "pol_tax_env") updated[activeIdx].linked_fund_id = "";
     setPolicies(updated);
+
+    // Debounced API update
+    const policyData = updated[activeIdx];
+    if (policyData.id) {
+      if (updateTimerRef.current) clearTimeout(updateTimerRef.current);
+      updateTimerRef.current = setTimeout(async () => {
+        try {
+          await insuranceApi.update(policyData.id, policyData);
+        } catch (err) {
+          console.error('[InsurancePoliciesForm] Failed to update policy:', err);
+        }
+      }, 1500);
+    }
   };
 
   const pol = policies[activeIdx] || {};
