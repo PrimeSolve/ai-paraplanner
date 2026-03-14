@@ -1,135 +1,97 @@
-import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRole } from '../components/RoleContext';
-import { User, Mail, Phone, Lock, Bell, Shield, Camera } from 'lucide-react';
+import { clientSettingsApi } from '@/api/clientSettings';
+import { User, Mail, Phone, Shield, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ClientSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [clientUser, setClientUser] = useState(null);
-  const [client, setClient] = useState(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploading_photo, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef(null);
   const { navigationChain } = useRole();
-  
+
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
-    phone: '',
-    profile_image_url: ''
+    phone_number: '',
+    profile_photo_url: ''
   });
-  const [notifications, setNotifications] = useState({
-    email_updates: true,
-    soa_ready: true,
-    fact_find_reminders: true
-  });
+
+  const getClientId = () => {
+    const currentLevel = navigationChain.length > 0
+      ? navigationChain[navigationChain.length - 1]
+      : null;
+    const chainId = currentLevel?.type === 'client' ? currentLevel.id : null;
+    return chainId || new URLSearchParams(window.location.search).get('clientId');
+  };
 
   useEffect(() => {
-    loadClientData();
+    loadSettings();
   }, [navigationChain]);
 
-  const loadClientData = async () => {
+  const loadSettings = async () => {
+    const clientId = getClientId();
+    if (!clientId) {
+      console.error('No clientId available');
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Get the client being viewed from navigation chain
-      const currentLevel = navigationChain.length > 0 
-        ? navigationChain[navigationChain.length - 1] 
-        : null;
-      
-      if (!currentLevel || currentLevel.type !== 'client') {
-        console.error('Not viewing a client');
-        setLoading(false);
-        return;
-      }
-
-      // currentLevel.id now contains the Client record ID
-      const clientRecordId = currentLevel.id;
-
-      // Load the Client entity by its record ID
-      const clients = await base44.entities.Client.filter({ id: clientRecordId });
-      const clientData = clients[0];
-      setClient(clientData);
-
-      // Load the User entity for this client (may not exist)
-      let clientUserData = null;
-      if (clientData?.email) {
-        const users = await base44.entities.User.filter({ email: clientData.email });
-        clientUserData = users[0] || null;
-        setClientUser(clientUserData);
-      }
-
-      // Populate form with Client entity data (not User entity)
-      const fullName = `${clientData?.first_name || ''} ${clientData?.last_name || ''}`.trim();
+      const data = await clientSettingsApi.getClientSettings(clientId);
       setFormData({
-        full_name: fullName || clientUserData?.full_name || '',
-        email: clientData?.email || '',
-        phone: clientData?.phone || clientUserData?.phone || '',
-        profile_image_url: clientUserData?.profile_image_url || ''
-      });
-
-      setNotifications({
-        email_updates: clientUserData?.email_updates ?? true,
-        soa_ready: clientUserData?.soa_ready ?? true,
-        fact_find_reminders: clientUserData?.fact_find_reminders ?? true
+        full_name: data.full_name || '',
+        email: data.email || '',
+        phone_number: data.phone_number || '',
+        profile_photo_url: data.profile_photo_url || ''
       });
     } catch (error) {
-      console.error('Failed to load client:', error);
+      console.error('Failed to load client settings:', error);
+      toast.error('Failed to load settings');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploadingImage(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      
-      if (clientUser?.id) {
-        await base44.entities.User.update(clientUser.id, { profile_image_url: file_url });
-      }
-      
-      setFormData({ ...formData, profile_image_url: file_url });
-      toast.success('Profile image updated');
-      loadClientData();
-    } catch (error) {
-      toast.error('Failed to upload image');
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
-  const handleRemoveImage = async () => {
-    try {
-      if (clientUser?.id) {
-        await base44.entities.User.update(clientUser.id, { profile_image_url: '' });
-      }
-      
-      setFormData({ ...formData, profile_image_url: '' });
-      toast.success('Profile image removed');
-      loadClientData();
-    } catch (error) {
-      toast.error('Failed to remove image');
-    }
-  };
-
   const handleSave = async () => {
+    const clientId = getClientId();
+    if (!clientId) return;
+
     setSaving(true);
     try {
-      if (clientUser?.id) {
-        await base44.entities.User.update(clientUser.id, {
-          full_name: formData.full_name,
-          phone: formData.phone,
-          ...notifications
-        });
-      }
+      await clientSettingsApi.updateClientSettings(clientId, {
+        full_name: formData.full_name,
+        phone_number: formData.phone_number
+      });
       toast.success('Settings saved successfully');
-      loadClientData();
     } catch (error) {
+      console.error('Failed to save settings:', error);
       toast.error('Failed to save settings');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const clientId = getClientId();
+    if (!clientId) return;
+
+    setUploadingPhoto(true);
+    try {
+      const data = await clientSettingsApi.uploadProfilePhoto(clientId, file);
+      setFormData((prev) => ({ ...prev, profile_photo_url: data.profile_photo_url || '' }));
+      toast.success('Profile photo updated');
+    } catch (error) {
+      console.error('Failed to upload photo:', error);
+      toast.error('Failed to upload photo');
+    } finally {
+      setUploadingPhoto(false);
+      // Reset file input so the same file can be re-selected
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -162,9 +124,9 @@ export default function ClientSettings() {
         {/* Main Content */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Personal Information */}
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '16px', 
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
             border: '1px solid #e5e7eb',
             boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
           }}>
@@ -225,8 +187,8 @@ export default function ClientSettings() {
                   </label>
                   <input
                     type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    value={formData.phone_number}
+                    onChange={(e) => setFormData({...formData, phone_number: e.target.value})}
                     placeholder="+61 4XX XXX XXX"
                     style={{
                       width: '100%',
@@ -242,65 +204,10 @@ export default function ClientSettings() {
             </div>
           </div>
 
-          {/* Notification Preferences */}
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '16px', 
-            border: '1px solid #e5e7eb',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-          }}>
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f5f9' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Bell className="w-4 h-4" />
-                Notification Preferences
-              </h3>
-            </div>
-            <div style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {[
-                  { key: 'email_updates', label: 'Email Updates', desc: 'Receive updates about your financial plan' },
-                  { key: 'soa_ready', label: 'SOA Ready Notifications', desc: 'Get notified when your Statement of Advice is ready' },
-                  { key: 'fact_find_reminders', label: 'Fact Find Reminders', desc: 'Reminders to complete your fact find' }
-                ].map(item => (
-                  <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#1e293b' }}>{item.label}</div>
-                      <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>{item.desc}</div>
-                    </div>
-                    <button
-                      onClick={() => setNotifications({...notifications, [item.key]: !notifications[item.key]})}
-                      style={{
-                        position: 'relative',
-                        width: '44px',
-                        height: '24px',
-                        borderRadius: '12px',
-                        background: notifications[item.key] ? '#0f4c5c' : '#cbd5e1',
-                        border: 'none',
-                        cursor: 'pointer',
-                        transition: 'background 0.2s'
-                      }}
-                    >
-                      <div style={{
-                        position: 'absolute',
-                        top: '2px',
-                        left: notifications[item.key] ? '22px' : '2px',
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
-                        background: 'white',
-                        transition: 'left 0.2s'
-                      }} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
           {/* Action Buttons */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
             <button
-              onClick={loadClientData}
+              onClick={loadSettings}
               style={{
                 padding: '10px 20px',
                 border: '1px solid #e2e8f0',
@@ -336,10 +243,10 @@ export default function ClientSettings() {
 
         {/* Sidebar */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Profile Image */}
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '16px', 
+          {/* Profile Photo */}
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
             border: '1px solid #e5e7eb',
             padding: '24px',
             boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
@@ -349,10 +256,23 @@ export default function ClientSettings() {
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
               <div style={{ position: 'relative' }}>
-                {formData.profile_image_url ? (
-                  <img 
-                    src={formData.profile_image_url} 
-                    alt="Profile" 
+                {uploading_photo ? (
+                  <div style={{
+                    width: '120px',
+                    height: '120px',
+                    borderRadius: '60px',
+                    background: '#f1f5f9',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '4px solid #f1f5f9'
+                  }}>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-600"></div>
+                  </div>
+                ) : formData.profile_photo_url ? (
+                  <img
+                    src={formData.profile_photo_url}
+                    alt="Profile"
                     style={{
                       width: '120px',
                       height: '120px',
@@ -380,14 +300,17 @@ export default function ClientSettings() {
                 )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-                <label style={{ cursor: 'pointer' }}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    style={{ display: 'none' }}
-                  />
-                  <div style={{
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  onChange={handlePhotoUpload}
+                  style={{ display: 'none' }}
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading_photo}
+                  style={{
                     padding: '8px 16px',
                     background: '#f8fafc',
                     border: '1px solid #e2e8f0',
@@ -396,36 +319,20 @@ export default function ClientSettings() {
                     fontSize: '13px',
                     fontWeight: '500',
                     color: '#475569',
-                    cursor: 'pointer'
-                  }}>
-                    {uploadingImage ? 'Uploading...' : 'Upload Photo'}
-                  </div>
-                </label>
-                {formData.profile_image_url && (
-                  <button
-                    onClick={handleRemoveImage}
-                    style={{
-                      padding: '8px 16px',
-                      background: 'white',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '13px',
-                      fontWeight: '500',
-                      color: '#dc2626',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Remove Photo
-                  </button>
-                )}
+                    cursor: uploading_photo ? 'not-allowed' : 'pointer',
+                    opacity: uploading_photo ? 0.5 : 1
+                  }}
+                >
+                  {uploading_photo ? 'Uploading...' : 'Upload Photo'}
+                </button>
               </div>
             </div>
           </div>
 
           {/* Security Info */}
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '16px', 
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
             border: '1px solid #e5e7eb',
             padding: '20px',
             boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
@@ -434,27 +341,9 @@ export default function ClientSettings() {
               <Shield className="w-4 h-4" />
               Security
             </h3>
-            <p style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.5', marginBottom: '12px' }}>
-              Your account is protected with industry-standard security measures.
+            <p style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.5' }}>
+              Security is managed via your Microsoft account.
             </p>
-            <button style={{
-              width: '100%',
-              padding: '10px 16px',
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '8px',
-              fontSize: '13px',
-              fontWeight: '500',
-              color: '#475569',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px'
-            }}>
-              <Lock className="w-4 h-4" />
-              Change Password
-            </button>
           </div>
         </div>
       </div>
