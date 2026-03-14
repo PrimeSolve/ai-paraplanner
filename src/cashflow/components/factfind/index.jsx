@@ -10,6 +10,8 @@ import { assetsApi } from "@/api/assetsApi";
 import { debtsApi } from "@/api/debtsApi";
 import { expensesApi } from "@/api/expensesApi";
 import { insuranceApi } from "@/api/insuranceApi";
+import { investmentWrapsApi } from "@/api/investmentWrapsApi";
+import { investmentBondsApi } from "@/api/investmentBondsApi";
 
 // ===========================================================================
 // FACT FIND — Principals Form (aligned to Base44 FactFindPersonal)
@@ -1691,13 +1693,68 @@ export const INV_BOND_DEFAULTS = {
   portfolio: [],
 };
 
-export function InvestmentsForm({ factFind, updateFF }) {
+export function InvestmentsForm({ factFind, updateFF, clientId, clientGuidMap }) {
   const [subTab, setSubTab] = useState("wraps");
   const [detailIdx, setDetailIdx] = useState(null);
   const [activeDetailTab, setActiveDetailTab] = useState("platform_details");
+  const debounceTimers = useRef({});
 
   const wraps = factFind.wraps || [];
   const bonds = factFind.investmentBonds || [];
+
+  // Load investments from API on mount
+  useEffect(() => {
+    if (!clientId) return;
+    let cancelled = false;
+    async function load() {
+      try {
+        const [wrapsData, bondsData] = await Promise.all([
+          investmentWrapsApi.getAll(clientId),
+          investmentBondsApi.getAll(clientId),
+        ]);
+        if (cancelled) return;
+        updateFF("wraps", Array.isArray(wrapsData) ? wrapsData : []);
+        updateFF("investmentBonds", Array.isArray(bondsData) ? bondsData : []);
+      } catch (error) {
+        console.error("Failed to load investments:", error);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [clientId]);
+
+  // Cleanup debounce timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach(clearTimeout);
+    };
+  }, []);
+
+  // Debounced wrap update to API
+  const debouncedWrapUpdate = useCallback((id, data) => {
+    const key = `wrap_${id}`;
+    if (debounceTimers.current[key]) clearTimeout(debounceTimers.current[key]);
+    debounceTimers.current[key] = setTimeout(async () => {
+      try {
+        await investmentWrapsApi.update(id, data);
+      } catch (error) {
+        console.error("Failed to update wrap:", error);
+      }
+    }, 1500);
+  }, []);
+
+  // Debounced bond update to API
+  const debouncedBondUpdate = useCallback((id, data) => {
+    const key = `bond_${id}`;
+    if (debounceTimers.current[key]) clearTimeout(debounceTimers.current[key]);
+    debounceTimers.current[key] = setTimeout(async () => {
+      try {
+        await investmentBondsApi.update(id, data);
+      } catch (error) {
+        console.error("Failed to update bond:", error);
+      }
+    }, 1500);
+  }, []);
 
   const hasClients = factFind.client1 !== null || factFind.client2 !== null;
   const clientOptions = [];
@@ -1714,33 +1771,149 @@ export function InvestmentsForm({ factFind, updateFF }) {
   };
 
   // Wrap CRUD
-  const addWrap = () => updateFF("wraps", [...wraps, { ...WRAP_DEFAULTS, fees: { ...WRAP_DEFAULTS.fees }, portfolio: [] }]);
-  const removeWrap = (idx) => { updateFF("wraps", wraps.filter((_, i) => i !== idx)); setDetailIdx(null); };
-  const updateWrap = (idx, field, value) => updateFF("wraps", wraps.map((item, i) => i === idx ? { ...item, [field]: value } : item));
-  const updateWrapNested = (idx, parent, field, value) => updateFF("wraps", wraps.map((item, i) => i === idx ? { ...item, [parent]: { ...item[parent], [field]: value } } : item));
-  const updateWrapArray = (idx, arrName, arrIdx, field, value) => {
-    updateFF("wraps", wraps.map((item, i) => i === idx ? { ...item, [arrName]: item[arrName].map((a, ai) => ai === arrIdx ? { ...a, [field]: value } : a) } : item));
-  };
-  const addWrapArrayItem = (idx, arrName, template) => {
+  const addWrap = useCallback(async () => {
+    const newWrap = { ...WRAP_DEFAULTS, fees: { ...WRAP_DEFAULTS.fees }, portfolio: [] };
+    try {
+      const created = await investmentWrapsApi.create(newWrap, clientGuidMap);
+      updateFF("wraps", [...wraps, { ...newWrap, ...created }]);
+    } catch (error) {
+      console.error("Failed to create wrap:", error);
+      updateFF("wraps", [...wraps, newWrap]);
+    }
+  }, [wraps, clientGuidMap, updateFF]);
+
+  const removeWrap = useCallback(async (idx) => {
+    const wrap = wraps[idx];
+    if (wrap?.id) {
+      try {
+        await investmentWrapsApi.remove(wrap.id);
+      } catch (error) {
+        console.error("Failed to remove wrap:", error);
+        return;
+      }
+    }
+    updateFF("wraps", wraps.filter((_, i) => i !== idx));
+    setDetailIdx(null);
+  }, [wraps, updateFF]);
+
+  const updateWrap = useCallback((idx, field, value) => {
+    const updated = wraps.map((item, i) => i === idx ? { ...item, [field]: value } : item);
+    updateFF("wraps", updated);
+    const record = updated[idx];
+    if (record?.id) debouncedWrapUpdate(record.id, record);
+  }, [wraps, updateFF, debouncedWrapUpdate]);
+
+  const updateWrapNested = useCallback((idx, parent, field, value) => {
+    const updated = wraps.map((item, i) => i === idx ? { ...item, [parent]: { ...item[parent], [field]: value } } : item);
+    updateFF("wraps", updated);
+    const record = updated[idx];
+    if (record?.id) debouncedWrapUpdate(record.id, record);
+  }, [wraps, updateFF, debouncedWrapUpdate]);
+
+  const updateWrapArray = useCallback((idx, arrName, arrIdx, field, value) => {
+    const updated = wraps.map((item, i) => i === idx ? { ...item, [arrName]: item[arrName].map((a, ai) => ai === arrIdx ? { ...a, [field]: value } : a) } : item);
+    updateFF("wraps", updated);
+    const record = updated[idx];
+    if (record?.id) debouncedWrapUpdate(record.id, record);
+  }, [wraps, updateFF, debouncedWrapUpdate]);
+
+  const addWrapArrayItem = useCallback(async (idx, arrName, template) => {
+    const wrap = wraps[idx];
+    if (wrap?.id && arrName === 'portfolio') {
+      try {
+        const created = await investmentWrapsApi.addPortfolioItem(wrap.id, template);
+        const updated = wraps.map((item, i) => i === idx ? { ...item, [arrName]: [...(item[arrName] || []), { ...template, ...created }] } : item);
+        updateFF("wraps", updated);
+        return;
+      } catch (error) {
+        console.error("Failed to add portfolio item:", error);
+      }
+    }
     updateFF("wraps", wraps.map((item, i) => i === idx ? { ...item, [arrName]: [...(item[arrName] || []), template] } : item));
-  };
-  const removeWrapArrayItem = (idx, arrName, arrIdx) => {
-    updateFF("wraps", wraps.map((item, i) => i === idx ? { ...item, [arrName]: item[arrName].filter((_, ai) => ai !== arrIdx) } : item));
-  };
+  }, [wraps, updateFF]);
+
+  const removeWrapArrayItem = useCallback(async (idx, arrName, arrIdx) => {
+    const wrap = wraps[idx];
+    const item = wrap?.[arrName]?.[arrIdx];
+    if (wrap?.id && arrName === 'portfolio' && item?.id) {
+      try {
+        await investmentWrapsApi.removePortfolioItem(wrap.id, item.id);
+      } catch (error) {
+        console.error("Failed to remove portfolio item:", error);
+        return;
+      }
+    }
+    updateFF("wraps", wraps.map((w, i) => i === idx ? { ...w, [arrName]: w[arrName].filter((_, ai) => ai !== arrIdx) } : w));
+  }, [wraps, updateFF]);
 
   // Bond CRUD
-  const addBond = () => updateFF("investmentBonds", [...bonds, { ...INV_BOND_DEFAULTS, portfolio: [] }]);
-  const removeBond = (idx) => { updateFF("investmentBonds", bonds.filter((_, i) => i !== idx)); setDetailIdx(null); };
-  const updateBond = (idx, field, value) => updateFF("investmentBonds", bonds.map((item, i) => i === idx ? { ...item, [field]: value } : item));
-  const updateBondArray = (idx, arrName, arrIdx, field, value) => {
-    updateFF("investmentBonds", bonds.map((item, i) => i === idx ? { ...item, [arrName]: item[arrName].map((a, ai) => ai === arrIdx ? { ...a, [field]: value } : a) } : item));
-  };
-  const addBondArrayItem = (idx, arrName, template) => {
+  const addBond = useCallback(async () => {
+    const newBond = { ...INV_BOND_DEFAULTS, portfolio: [] };
+    try {
+      const created = await investmentBondsApi.create(newBond, clientGuidMap);
+      updateFF("investmentBonds", [...bonds, { ...newBond, ...created }]);
+    } catch (error) {
+      console.error("Failed to create bond:", error);
+      updateFF("investmentBonds", [...bonds, newBond]);
+    }
+  }, [bonds, clientGuidMap, updateFF]);
+
+  const removeBond = useCallback(async (idx) => {
+    const bond = bonds[idx];
+    if (bond?.id) {
+      try {
+        await investmentBondsApi.remove(bond.id);
+      } catch (error) {
+        console.error("Failed to remove bond:", error);
+        return;
+      }
+    }
+    updateFF("investmentBonds", bonds.filter((_, i) => i !== idx));
+    setDetailIdx(null);
+  }, [bonds, updateFF]);
+
+  const updateBond = useCallback((idx, field, value) => {
+    const updated = bonds.map((item, i) => i === idx ? { ...item, [field]: value } : item);
+    updateFF("investmentBonds", updated);
+    const record = updated[idx];
+    if (record?.id) debouncedBondUpdate(record.id, record);
+  }, [bonds, updateFF, debouncedBondUpdate]);
+
+  const updateBondArray = useCallback((idx, arrName, arrIdx, field, value) => {
+    const updated = bonds.map((item, i) => i === idx ? { ...item, [arrName]: item[arrName].map((a, ai) => ai === arrIdx ? { ...a, [field]: value } : a) } : item);
+    updateFF("investmentBonds", updated);
+    const record = updated[idx];
+    if (record?.id) debouncedBondUpdate(record.id, record);
+  }, [bonds, updateFF, debouncedBondUpdate]);
+
+  const addBondArrayItem = useCallback(async (idx, arrName, template) => {
+    const bond = bonds[idx];
+    if (bond?.id && arrName === 'portfolio') {
+      try {
+        const created = await investmentBondsApi.addPortfolioItem(bond.id, template);
+        const updated = bonds.map((item, i) => i === idx ? { ...item, [arrName]: [...(item[arrName] || []), { ...template, ...created }] } : item);
+        updateFF("investmentBonds", updated);
+        return;
+      } catch (error) {
+        console.error("Failed to add portfolio item:", error);
+      }
+    }
     updateFF("investmentBonds", bonds.map((item, i) => i === idx ? { ...item, [arrName]: [...(item[arrName] || []), template] } : item));
-  };
-  const removeBondArrayItem = (idx, arrName, arrIdx) => {
-    updateFF("investmentBonds", bonds.map((item, i) => i === idx ? { ...item, [arrName]: item[arrName].filter((_, ai) => ai !== arrIdx) } : item));
-  };
+  }, [bonds, updateFF]);
+
+  const removeBondArrayItem = useCallback(async (idx, arrName, arrIdx) => {
+    const bond = bonds[idx];
+    const item = bond?.[arrName]?.[arrIdx];
+    if (bond?.id && arrName === 'portfolio' && item?.id) {
+      try {
+        await investmentBondsApi.removePortfolioItem(bond.id, item.id);
+      } catch (error) {
+        console.error("Failed to remove portfolio item:", error);
+        return;
+      }
+    }
+    updateFF("investmentBonds", bonds.map((b, i) => i === idx ? { ...b, [arrName]: b[arrName].filter((_, ai) => ai !== arrIdx) } : b));
+  }, [bonds, updateFF]);
 
   if (!hasClients) {
     return (
