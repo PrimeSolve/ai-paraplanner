@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Case conversion utilities (same as principalsApi.js)
@@ -61,11 +62,9 @@ export const dependantsApi = {
    */
   async create(data) {
     const apiData = snakeToCamelKeys(data);
-    if (apiData.dateOfBirth === '') apiData.dateOfBirth = null;
-    if (apiData.financialDependenceAge === '') apiData.financialDependenceAge = null;
-    if (apiData.dependantUntilAge === '') apiData.dependantUntilAge = null;
-    if (apiData.age === '') apiData.age = null;
-    const response = await axiosInstance.post('/dependants', apiData);
+    const clientId = apiData.clientId;
+    const payload = sanitisePayload(apiData);
+    const response = await axiosInstance.post('/dependants', { ...payload, clientId });
     return camelToSnakeKeys(response.data);
   },
 
@@ -77,14 +76,7 @@ export const dependantsApi = {
    */
   async update(id, data) {
     const apiData = snakeToCamelKeys(data);
-    if (apiData.dateOfBirth === '') apiData.dateOfBirth = null;
-    if (apiData.financialDependenceAge === '') apiData.financialDependenceAge = null;
-    if (apiData.dependantUntilAge === '') apiData.dependantUntilAge = null;
-    if (apiData.age === '') apiData.age = null;
-    if (apiData.healthIssues === '') apiData.healthIssues = null;
-
-    // Strip read-only fields the API rejects on PUT
-    const { id: _id, clientId: _clientId, createdAt: _createdAt, client_id: _client_id, created_at: _created_at, ...payload } = apiData;
+    const payload = sanitisePayload(apiData);
 
     console.log('[dependantsApi.update] PUT /dependants/' + id, JSON.stringify(payload, null, 2));
     const response = await axiosInstance.put(`/dependants/${id}`, payload);

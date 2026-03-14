@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Case conversion utilities (same as trustsApi.js)
@@ -101,9 +102,8 @@ export const companiesApi = {
     if (typeof apiData.taxRate === 'string') {
       apiData.taxRate = parseFloat(apiData.taxRate) / 100;
     }
-    // frankingBalance fixup: "" → null
-    if (apiData.frankingBalance === '') apiData.frankingBalance = null;
-    const response = await axiosInstance.post('/companies', apiData);
+    const payload = sanitisePayload(apiData);
+    const response = await axiosInstance.post('/companies', { ...payload, clientId });
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
 
@@ -120,9 +120,8 @@ export const companiesApi = {
     if (typeof apiData.taxRate === 'string') {
       apiData.taxRate = parseFloat(apiData.taxRate) / 100;
     }
-    // frankingBalance fixup: "" → null
-    if (apiData.frankingBalance === '') apiData.frankingBalance = null;
-    const response = await axiosInstance.put(`/companies/${id}`, apiData);
+    const payload = sanitisePayload(apiData);
+    const response = await axiosInstance.put(`/companies/${id}`, payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
 

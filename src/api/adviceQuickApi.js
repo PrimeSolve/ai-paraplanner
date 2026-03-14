@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Normalise _id → id
@@ -139,12 +140,12 @@ export const adviceQuickApi = {
    * @returns {Promise<object>} Saved record in frontend shape
    */
   async upsert(clientId, person, personData, existingId) {
-    const payload = buildQuickPayload(personData, clientId, person);
+    const payload = sanitisePayload(buildQuickPayload(personData, clientId, person));
     let response;
     if (existingId) {
       response = await axiosInstance.put(`/advice-quick/${existingId}`, payload);
     } else {
-      response = await axiosInstance.post('/advice-quick', payload);
+      response = await axiosInstance.post('/advice-quick', { ...payload, clientId });
     }
     return mapQuickFromApi(normaliseRecord(response.data));
   },

@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Case conversion utilities (same as dependantsApi.js)
@@ -101,7 +102,8 @@ export const trustsApi = {
     const apiData = snakeToCamelKeys({ ...rest, client_id: clientId });
     if (!apiData.trustName || apiData.trustName === '') apiData.trustName = data.default_name || 'Trust 1';
     convertTrustType(apiData);
-    const response = await axiosInstance.post('/trusts', apiData);
+    const payload = sanitisePayload(apiData);
+    const response = await axiosInstance.post('/trusts', { ...payload, clientId });
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
 
@@ -115,7 +117,8 @@ export const trustsApi = {
     const { beneficiaries, ...rest } = data;
     const apiData = snakeToCamelKeys(rest);
     convertTrustType(apiData);
-    const response = await axiosInstance.put(`/trusts/${id}`, apiData);
+    const payload = sanitisePayload(apiData);
+    const response = await axiosInstance.put(`/trusts/${id}`, payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
 

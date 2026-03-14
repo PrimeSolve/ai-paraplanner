@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Case conversion utilities
@@ -119,8 +120,8 @@ export const pensionsApi = {
    * @returns {Promise<object>} Created pension (snake_case)
    */
   async create(data, clientGuidMap, defaultName) {
-    const apiData = buildPensionPayload(data, clientGuidMap, defaultName);
-    const response = await axiosInstance.post('/pensions', apiData);
+    const payload = sanitisePayload(buildPensionPayload(data, clientGuidMap, defaultName));
+    const response = await axiosInstance.post('/pensions', { ...payload, clientId: clientGuidMap?.[data.owner] || clientGuidMap?.client1 });
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
 
@@ -132,8 +133,8 @@ export const pensionsApi = {
    * @returns {Promise<object>} Updated pension (snake_case)
    */
   async update(id, data, clientGuidMap) {
-    const apiData = buildPensionPayload(data, clientGuidMap);
-    const response = await axiosInstance.put(`/pensions/${id}`, apiData);
+    const payload = sanitisePayload(buildPensionPayload(data, clientGuidMap));
+    const response = await axiosInstance.put(`/pensions/${id}`, payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
 

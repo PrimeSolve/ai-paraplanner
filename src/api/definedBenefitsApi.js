@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Case conversion utilities
@@ -114,11 +115,8 @@ export const definedBenefitsApi = {
    * @returns {Promise<object>} Created record (snake_case)
    */
   async create(data, clientGuidMap) {
-    const apiData = buildDefinedBenefitPayload(data, clientGuidMap);
-    if (!apiData.clientId) {
-      apiData.clientId = clientGuidMap?.client1 || null;
-    }
-    const response = await axiosInstance.post('/defined-benefits', apiData);
+    const payload = sanitisePayload(buildDefinedBenefitPayload(data, clientGuidMap));
+    const response = await axiosInstance.post('/defined-benefits', { ...payload, clientId: clientGuidMap?.client1 || null });
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
 
@@ -129,8 +127,8 @@ export const definedBenefitsApi = {
    * @returns {Promise<object>} Updated record (snake_case)
    */
   async update(id, data) {
-    const apiData = buildDefinedBenefitPayload(data, {});
-    const response = await axiosInstance.put(`/defined-benefits/${id}`, apiData);
+    const payload = sanitisePayload(buildDefinedBenefitPayload(data, {}));
+    const response = await axiosInstance.put(`/defined-benefits/${id}`, payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
 

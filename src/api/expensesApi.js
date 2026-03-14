@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { sanitisePayload } from './apiUtils';
 
 // ──────────────────────────────────────────────────────────────
 // Normalise _id → id
@@ -127,12 +128,12 @@ export const expensesApi = {
    * @returns {Promise<object>} Saved expense record in frontend shape
    */
   async upsert(clientId, data) {
-    const payload = buildExpensePayload(data, clientId);
+    const payload = sanitisePayload(buildExpensePayload(data, clientId));
     let response;
     if (data.id) {
       response = await axiosInstance.put(`/expenses/${data.id}`, payload);
     } else {
-      response = await axiosInstance.post('/expenses', payload);
+      response = await axiosInstance.post('/expenses', { ...payload, clientId });
     }
     return mapExpenseFromApi(normaliseRecord(response.data));
   },
