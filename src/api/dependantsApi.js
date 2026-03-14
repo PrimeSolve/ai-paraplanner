@@ -65,6 +65,8 @@ export const dependantsApi = {
     if (apiData.financialDependenceAge === '') apiData.financialDependenceAge = null;
     if (apiData.dependantUntilAge === '') apiData.dependantUntilAge = null;
     if (apiData.age === '') apiData.age = null;
+    if (apiData.financialDependenceAge !== null) apiData.financialDependenceAge = String(apiData.financialDependenceAge);
+    if (apiData.dependantUntilAge !== null) apiData.dependantUntilAge = String(apiData.dependantUntilAge);
     const response = await axiosInstance.post('/dependants', apiData);
     return camelToSnakeKeys(response.data);
   },
@@ -82,6 +84,8 @@ export const dependantsApi = {
     if (apiData.dependantUntilAge === '') apiData.dependantUntilAge = null;
     if (apiData.age === '') apiData.age = null;
     if (apiData.healthIssues === '') apiData.healthIssues = null;
+    if (apiData.financialDependenceAge !== null) apiData.financialDependenceAge = String(apiData.financialDependenceAge);
+    if (apiData.dependantUntilAge !== null) apiData.dependantUntilAge = String(apiData.dependantUntilAge);
 
     // Strip read-only fields the API rejects on PUT
     const { id: _id, clientId: _clientId, createdAt: _createdAt, client_id: _client_id, created_at: _created_at, ...payload } = apiData;
