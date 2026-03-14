@@ -8,6 +8,7 @@ import { pensionsApi } from "@/api/pensionsApi";
 import { definedBenefitsApi } from "@/api/definedBenefitsApi";
 import { assetsApi } from "@/api/assetsApi";
 import { debtsApi } from "@/api/debtsApi";
+import { expensesApi } from "@/api/expensesApi";
 
 // ===========================================================================
 // FACT FIND — Principals Form (aligned to Base44 FactFindPersonal)
@@ -3938,15 +3939,43 @@ export function IncomeForm({ factFind, updateFF }) {
 // FACT FIND — Expenses Form (aligned to Base44)
 // ===========================================================================
 
-export function ExpensesForm({ factFind, updateFF }) {
+export function ExpensesForm({ factFind, updateFF, clientId }) {
   const [expAdjDetailIdx, setExpAdjDetailIdx] = useState(null);
+  const expensesLoadedRef = useRef(false);
+  const upsertTimerRef = useRef(null);
+  const adjUpdateTimerRef = useRef(null);
 
   const expenseData = factFind.expenses || {};
   const expenseAdjustments = expenseData.adjustments || [];
 
+  // Load expenses from API on mount
+  useEffect(() => {
+    if (clientId && !expensesLoadedRef.current) {
+      expensesLoadedRef.current = true;
+      expensesApi.getByClientId(clientId).then(record => {
+        if (record) {
+          updateFF("expenses", record);
+        }
+      }).catch(err => console.error('[ExpensesForm] Failed to load expenses:', err));
+    }
+  }, [clientId, updateFF]);
+
   const updateExpenseField = (field, value) => {
     const current = factFind.expenses || {};
-    updateFF("expenses", { ...current, [field]: value });
+    const updated = { ...current, [field]: value };
+    updateFF("expenses", updated);
+
+    // Debounced upsert to API
+    if (clientId) {
+      if (upsertTimerRef.current) clearTimeout(upsertTimerRef.current);
+      upsertTimerRef.current = setTimeout(() => {
+        expensesApi.upsert(clientId, updated).then(result => {
+          if (result && result.id && !updated.id) {
+            updateFF("expenses", { ...updated, id: result.id });
+          }
+        }).catch(err => console.error('[ExpensesForm] Failed to upsert expense:', err));
+      }, 1500);
+    }
   };
 
   const updateExpenseAdjustments = (newAdjs) => {
@@ -3955,12 +3984,49 @@ export function ExpensesForm({ factFind, updateFF }) {
   };
 
   const addExpenseAdj = () => {
-    updateExpenseAdjustments([...expenseAdjustments, { e_adj_type: "", e_adj_amount: "", e_adj_start: "", e_adj_end: "", e_adj_notes: "" }]);
-    setExpAdjDetailIdx(expenseAdjustments.length);
+    const newAdj = { e_adj_type: "", e_adj_amount: "", e_adj_start: "", e_adj_end: "", e_adj_notes: "" };
+    const expId = expenseData.id;
+    if (expId && clientId) {
+      expensesApi.addAdjustment(expId, newAdj).then(savedAdj => {
+        const current = factFind.expenses || {};
+        const currentAdjs = current.adjustments || [];
+        updateFF("expenses", { ...current, adjustments: [...currentAdjs, savedAdj] });
+        setExpAdjDetailIdx(currentAdjs.length);
+      }).catch(err => console.error('[ExpensesForm] Failed to add adjustment:', err));
+    } else {
+      updateExpenseAdjustments([...expenseAdjustments, newAdj]);
+      setExpAdjDetailIdx(expenseAdjustments.length);
+    }
   };
-  const removeExpenseAdj = (idx) => { updateExpenseAdjustments(expenseAdjustments.filter((_, i) => i !== idx)); setExpAdjDetailIdx(null); };
+
+  const removeExpenseAdj = (idx) => {
+    const adj = expenseAdjustments[idx];
+    const expId = expenseData.id;
+    if (expId && adj && adj.id && clientId) {
+      expensesApi.removeAdjustment(expId, adj.id).then(() => {
+        updateExpenseAdjustments(expenseAdjustments.filter((_, i) => i !== idx));
+        setExpAdjDetailIdx(null);
+      }).catch(err => console.error('[ExpensesForm] Failed to remove adjustment:', err));
+    } else {
+      updateExpenseAdjustments(expenseAdjustments.filter((_, i) => i !== idx));
+      setExpAdjDetailIdx(null);
+    }
+  };
+
   const updateExpenseAdj = (idx, field, value) => {
-    updateExpenseAdjustments(expenseAdjustments.map((a, i) => i === idx ? { ...a, [field]: value } : a));
+    const updated = expenseAdjustments.map((a, i) => i === idx ? { ...a, [field]: value } : a);
+    updateExpenseAdjustments(updated);
+
+    // Debounced API update for the specific adjustment
+    const adj = updated[idx];
+    const expId = expenseData.id;
+    if (expId && adj && adj.id && clientId) {
+      if (adjUpdateTimerRef.current) clearTimeout(adjUpdateTimerRef.current);
+      adjUpdateTimerRef.current = setTimeout(() => {
+        expensesApi.updateAdjustment(expId, adj.id, adj)
+          .catch(err => console.error('[ExpensesForm] Failed to update adjustment:', err));
+      }, 1500);
+    }
   };
 
   const expAdjTypeLabel = (v) => {

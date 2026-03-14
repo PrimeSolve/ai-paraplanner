@@ -10,6 +10,7 @@ import { pensionsApi } from "../../api/pensionsApi.js";
 import { annuitiesApi } from "../../api/annuitiesApi.js";
 import { definedBenefitsApi } from "../../api/definedBenefitsApi.js";
 import { debtsApi } from "../../api/debtsApi.js";
+import { expensesApi } from "../../api/expensesApi.js";
 import { useRole } from "../../components/RoleContext.jsx";
 
 export function useFactFind(initialData) {
@@ -767,6 +768,72 @@ export function useFactFind(initialData) {
     }
   }, [factFind]);
 
+  // ── Expenses API integration ─────────────────────────────────
+
+  /**
+   * Load expense record from GET /expenses?clientId={id} and populate
+   * factFind.expenses with inbound-mapped data.
+   * @param {string} clientId - The client ID (GUID)
+   */
+  const loadExpenses = useCallback(async (clientId) => {
+    try {
+      const record = await expensesApi.getByClientId(clientId);
+      if (!record) return;
+
+      const expenseData = {
+        id: record.id,
+        e_disc: record.e_disc,
+        e_save: record.e_save,
+        e_freq: record.e_freq,
+        rental_cost: record.rental_cost,
+        rental_freq: record.rental_freq,
+        adjustments: record.adjustments || [],
+      };
+
+      setFactFind(prev => {
+        const next = JSON.parse(JSON.stringify(prev));
+        next.expenses = expenseData;
+        return next;
+      });
+      setAdviceModel1(prev => {
+        if (!prev) return prev;
+        const next = JSON.parse(JSON.stringify(prev));
+        next.expenses = expenseData;
+        return next;
+      });
+    } catch (err) {
+      console.error('[useFactFind] Failed to load expenses from API:', err);
+    }
+  }, []);
+
+  /**
+   * Save expense record via upsert (POST or PUT).
+   * @param {string} clientId - The client ID (GUID)
+   */
+  const saveExpenses = useCallback(async (clientId) => {
+    try {
+      const ff = factFind;
+      const data = ff.expenses || {};
+      const result = await expensesApi.upsert(clientId, data);
+      // Store the returned id back into state if it was a new record
+      if (result && result.id && !data.id) {
+        setFactFind(prev => {
+          const next = JSON.parse(JSON.stringify(prev));
+          next.expenses = { ...next.expenses, id: result.id };
+          return next;
+        });
+        setAdviceModel1(prev => {
+          if (!prev) return prev;
+          const next = JSON.parse(JSON.stringify(prev));
+          next.expenses = { ...next.expenses, id: result.id };
+          return next;
+        });
+      }
+    } catch (err) {
+      console.error('[useFactFind] Failed to save expenses to API:', err);
+    }
+  }, [factFind]);
+
   return {
     factFind, setFactFind, adviceModel1, setAdviceModel1,
     updateFF, updateAdvice, resetAdviceModel,
@@ -780,6 +847,7 @@ export function useFactFind(initialData) {
     loadAnnuities, saveAnnuities,
     loadDefinedBenefits, saveDefinedBenefits,
     loadDebts, saveDebts,
+    loadExpenses, saveExpenses,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
