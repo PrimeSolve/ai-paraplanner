@@ -12,13 +12,30 @@ namespace PrimeSolve.Api.Services
     public class BlobStorageService
     {
         private readonly BlobContainerClient _container;
+        private readonly BlobServiceClient _serviceClient;
 
         public BlobStorageService(IConfiguration configuration)
         {
             var connectionString = configuration["AzureBlobStorage:ConnectionString"];
             var containerName = configuration["AzureBlobStorage:ContainerName"] ?? "documents";
-            var serviceClient = new BlobServiceClient(connectionString);
-            _container = serviceClient.GetBlobContainerClient(containerName);
+            _serviceClient = new BlobServiceClient(connectionString);
+            _container = _serviceClient.GetBlobContainerClient(containerName);
+        }
+
+        public async Task<string> UploadProfilePhotoAsync(string tenantId, string clientId, Stream fileStream, string contentType)
+        {
+            var profileContainer = _serviceClient.GetBlobContainerClient("profile-photos");
+            await profileContainer.CreateIfNotExistsAsync(PublicAccessType.None);
+
+            var blobPath = $"{tenantId}/{clientId}/profile.jpg";
+            var blobClient = profileContainer.GetBlobClient(blobPath);
+
+            await blobClient.UploadAsync(fileStream, new BlobHttpHeaders
+            {
+                ContentType = contentType
+            });
+
+            return blobClient.Uri.ToString();
         }
 
         public async Task<string> UploadAsync(string blobPath, IFormFile file)
