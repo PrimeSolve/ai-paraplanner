@@ -45,6 +45,9 @@ namespace PrimeSolve.Api.Models
 
         public int Soas { get; set; } = 0;
 
+        [MaxLength(500)]
+        public string? ProfilePhotoUrl { get; set; }
+
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     }
 }
