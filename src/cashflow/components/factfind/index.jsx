@@ -456,7 +456,7 @@ export function DependantsForm({ factFind, updateFF, clientId }) {
       const record = updated[idx];
       if (record.id) {
         const { id, client_id, ...fields } = record;
-        debouncedUpdate(id, fields);
+        debouncedUpdate(id, { ...fields, dep_type: "child" });
       }
       return updated;
     });
@@ -493,7 +493,7 @@ export function DependantsForm({ factFind, updateFF, clientId }) {
       const record = updated[idx];
       if (record.id) {
         const { id, client_id, ...fields } = record;
-        debouncedUpdate(id, fields);
+        debouncedUpdate(id, { ...fields, dep_type: "dependant" });
       }
       return updated;
     });

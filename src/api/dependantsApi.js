@@ -62,6 +62,9 @@ export const dependantsApi = {
   async create(data) {
     const apiData = snakeToCamelKeys(data);
     if (apiData.dateOfBirth === '') apiData.dateOfBirth = null;
+    if (apiData.financialDependenceAge === '') apiData.financialDependenceAge = null;
+    if (apiData.dependantUntilAge === '') apiData.dependantUntilAge = null;
+    if (apiData.age === '') apiData.age = null;
     const response = await axiosInstance.post('/dependants', apiData);
     return camelToSnakeKeys(response.data);
   },
@@ -75,6 +78,10 @@ export const dependantsApi = {
   async update(id, data) {
     const apiData = snakeToCamelKeys(data);
     if (apiData.dateOfBirth === '') apiData.dateOfBirth = null;
+    if (apiData.financialDependenceAge === '') apiData.financialDependenceAge = null;
+    if (apiData.dependantUntilAge === '') apiData.dependantUntilAge = null;
+    if (apiData.age === '') apiData.age = null;
+    console.log('[dependantsApi.update] PUT /dependants/' + id, JSON.stringify(apiData, null, 2));
     const response = await axiosInstance.put(`/dependants/${id}`, apiData);
     return camelToSnakeKeys(response.data);
   },
