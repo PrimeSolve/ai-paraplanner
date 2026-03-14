@@ -12,6 +12,9 @@ import { definedBenefitsApi } from "../../api/definedBenefitsApi.js";
 import { debtsApi } from "../../api/debtsApi.js";
 import { expensesApi } from "../../api/expensesApi.js";
 import { insuranceApi } from "../../api/insuranceApi.js";
+import { adviceReasonsApi } from "../../api/adviceReasonsApi.js";
+import { adviceQuickApi } from "../../api/adviceQuickApi.js";
+import { adviceObjectivesApi } from "../../api/adviceObjectivesApi.js";
 import { useRole } from "../../components/RoleContext.jsx";
 
 export function useFactFind(initialData) {
@@ -863,6 +866,48 @@ export function useFactFind(initialData) {
     }
   }, []);
 
+  // ── Goals (Advice Reasons / Quick / Objectives) API integration ──
+
+  const loadGoals = useCallback(async (clientId) => {
+    try {
+      const [reasonsResult, quickRecords, objectivesRecords] = await Promise.all([
+        adviceReasonsApi.getByClientId(clientId),
+        adviceQuickApi.getAll(clientId),
+        adviceObjectivesApi.getAll(clientId),
+      ]);
+
+      const reasons = reasonsResult ? reasonsResult.reasons : [];
+      const reasonsId = reasonsResult ? reasonsResult.id : null;
+
+      const client1Quick = quickRecords.find(r => r.owner === 'client1') || null;
+      const client2Quick = quickRecords.find(r => r.owner === 'client2') || null;
+
+      const adviceReason = {
+        reasons,
+        reasonsId,
+        quick: {
+          client1: client1Quick || { ret_age: '65' },
+          client2: client2Quick || { ret_age: '67' },
+        },
+        objectives: objectivesRecords || [],
+      };
+
+      setFactFind(prev => {
+        const next = JSON.parse(JSON.stringify(prev));
+        next.advice_reason = adviceReason;
+        return next;
+      });
+      setAdviceModel1(prev => {
+        if (!prev) return prev;
+        const next = JSON.parse(JSON.stringify(prev));
+        next.advice_reason = adviceReason;
+        return next;
+      });
+    } catch (err) {
+      console.error('[useFactFind] Failed to load goals from API:', err);
+    }
+  }, []);
+
   return {
     factFind, setFactFind, adviceModel1, setAdviceModel1,
     updateFF, updateAdvice, resetAdviceModel,
@@ -878,6 +923,7 @@ export function useFactFind(initialData) {
     loadDebts, saveDebts,
     loadExpenses, saveExpenses,
     loadInsurance,
+    loadGoals,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,

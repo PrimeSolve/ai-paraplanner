@@ -1872,6 +1872,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               <GoalsForm
                 factFind={factFind}
                 updateFF={updateFF}
+                clientId={urlClientId}
               />
             ) : factFindSection === "risk-profile" ? (
               <RiskProfileForm

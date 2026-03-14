@@ -10,6 +10,9 @@ import { assetsApi } from "@/api/assetsApi";
 import { debtsApi } from "@/api/debtsApi";
 import { expensesApi } from "@/api/expensesApi";
 import { insuranceApi } from "@/api/insuranceApi";
+import { adviceReasonsApi } from "@/api/adviceReasonsApi";
+import { adviceQuickApi } from "@/api/adviceQuickApi";
+import { adviceObjectivesApi } from "@/api/adviceObjectivesApi";
 
 // ===========================================================================
 // FACT FIND — Principals Form (aligned to Base44 FactFindPersonal)
@@ -4376,7 +4379,7 @@ export function scoreToProfile(score) {
   return "High Growth";
 }
 
-export function GoalsForm({ factFind, updateFF }) {
+export function GoalsForm({ factFind, updateFF, clientId }) {
   const [mainTab, setMainTab] = useState("reasons");
   const [objSubTab, setObjSubTab] = useState("retirement");
   const [activePerson, setActivePerson] = useState({ retirement: "client1", estate: "client1", protection: "client1", products: "client1" });
@@ -4387,6 +4390,42 @@ export function GoalsForm({ factFind, updateFF }) {
   const quick = goalsData.quick || { client1: { ...EMPTY_QUICK_PERSON }, client2: { ...EMPTY_QUICK_PERSON } };
   const objectives = goalsData.objectives || [];
 
+  // Debounce refs
+  const reasonsTimerRef = useRef(null);
+  const quickTimerRef = useRef(null);
+  const objectiveTimerRef = useRef(null);
+
+  // Load goals on mount
+  useEffect(() => {
+    if (clientId) {
+      (async () => {
+        try {
+          const [reasonsResult, quickRecords, objectivesRecords] = await Promise.all([
+            adviceReasonsApi.getByClientId(clientId),
+            adviceQuickApi.getAll(clientId),
+            adviceObjectivesApi.getAll(clientId),
+          ]);
+          const loadedReasons = reasonsResult ? reasonsResult.reasons : [];
+          const reasonsId = reasonsResult ? reasonsResult.id : null;
+          const client1Quick = quickRecords.find(r => r.owner === 'client1') || null;
+          const client2Quick = quickRecords.find(r => r.owner === 'client2') || null;
+          const adviceReason = {
+            reasons: loadedReasons,
+            reasonsId,
+            quick: {
+              client1: client1Quick || { ret_age: '65' },
+              client2: client2Quick || { ret_age: '67' },
+            },
+            objectives: objectivesRecords || [],
+          };
+          updateFF("advice_reason", adviceReason);
+        } catch (err) {
+          console.error('[GoalsForm] Failed to load goals:', err);
+        }
+      })();
+    }
+  }, [clientId]);
+
   const hasPartner = factFind.client2 !== null;
   const clientName = (id) => {
     if (id === "client1") return ((factFind.client1?.first_name || "") + " " + (factFind.client1?.last_name || "")).trim() || "Client 1";
@@ -4394,7 +4433,20 @@ export function GoalsForm({ factFind, updateFF }) {
     return id;
   };
 
-  const setReasons = (newReasons) => updateFF("advice_reason", { ...goalsData, reasons: newReasons });
+  const setReasons = (newReasons) => {
+    const updated = { ...goalsData, reasons: newReasons };
+    updateFF("advice_reason", updated);
+    if (clientId) {
+      clearTimeout(reasonsTimerRef.current);
+      reasonsTimerRef.current = setTimeout(() => {
+        adviceReasonsApi.upsert(clientId, newReasons).then(result => {
+          if (result && result.id && !goalsData.reasonsId) {
+            updateFF("advice_reason", { ...updated, reasonsId: result.id });
+          }
+        }).catch(err => console.error('[GoalsForm] Failed to save reasons:', err));
+      }, 500);
+    }
+  };
   const setQuick = (newQuick) => updateFF("advice_reason", { ...goalsData, quick: newQuick });
   const setObjectives = (newObjs) => updateFF("advice_reason", { ...goalsData, objectives: newObjs });
 
@@ -4405,20 +4457,66 @@ export function GoalsForm({ factFind, updateFF }) {
   const updateQuickField = (person, field, value) => {
     const updated = { ...quick, [person]: { ...(quick[person] || {}), [field]: value } };
     setQuick(updated);
+    if (clientId) {
+      clearTimeout(quickTimerRef.current);
+      quickTimerRef.current = setTimeout(() => {
+        const owner = person === 'client1' ? 'client1' : 'client2';
+        adviceQuickApi.upsert(clientId, owner, updated[person]).then(result => {
+          if (result && result.id && !updated[person].id) {
+            const withId = { ...updated, [person]: { ...updated[person], id: result.id } };
+            updateFF("advice_reason", { ...goalsData, quick: withId });
+          }
+        }).catch(err => console.error('[GoalsForm] Failed to save quick:', err));
+      }, 500);
+    }
   };
 
-  const addObjective = () => {
+  const addObjective = async () => {
     const newObj = { o_who: [], o_type: "", o_property: "", o_debt: "", o_asset: "", o_start: "", o_end: "", o_freq: "", o_amount: "", o_importance: "", o_why: "" };
-    const newObjs = [...objectives, newObj];
-    setObjectives(newObjs);
-    setActiveObjIdx(newObjs.length - 1);
+    if (clientId) {
+      try {
+        const created = await adviceObjectivesApi.create(clientId, newObj);
+        const newObjs = [...objectives, created];
+        setObjectives(newObjs);
+        setActiveObjIdx(newObjs.length - 1);
+      } catch (err) {
+        console.error('[GoalsForm] Failed to create objective:', err);
+        const newObjs = [...objectives, newObj];
+        setObjectives(newObjs);
+        setActiveObjIdx(newObjs.length - 1);
+      }
+    } else {
+      const newObjs = [...objectives, newObj];
+      setObjectives(newObjs);
+      setActiveObjIdx(newObjs.length - 1);
+    }
   };
-  const removeObjective = (idx) => {
+  const removeObjective = async (idx) => {
+    const obj = objectives[idx];
+    if (clientId && obj && obj.id) {
+      try {
+        await adviceObjectivesApi.remove(obj.id);
+      } catch (err) {
+        console.error('[GoalsForm] Failed to remove objective:', err);
+      }
+    }
     setObjectives(objectives.filter((_, i) => i !== idx));
     if (activeObjIdx !== null && activeObjIdx >= idx) setActiveObjIdx(activeObjIdx > 0 ? activeObjIdx - 1 : null);
   };
   const updateObjective = (idx, field, value) => {
-    setObjectives(objectives.map((o, i) => i === idx ? { ...o, [field]: value } : o));
+    const updated = objectives.map((o, i) => i === idx ? { ...o, [field]: value } : o);
+    setObjectives(updated);
+    if (clientId) {
+      clearTimeout(objectiveTimerRef.current);
+      objectiveTimerRef.current = setTimeout(() => {
+        const obj = updated[idx];
+        if (obj && obj.id) {
+          adviceObjectivesApi.update(obj.id, obj).catch(err =>
+            console.error('[GoalsForm] Failed to update objective:', err)
+          );
+        }
+      }, 500);
+    }
   };
 
   const currentPerson = activePerson[objSubTab] || "client1";
