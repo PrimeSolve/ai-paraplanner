@@ -39,10 +39,7 @@ function buildExpensePayload(data, clientId) {
   apiData.eSave = data.e_save ? parseFloat(data.e_save) : null;
   apiData.eFreq = mapFreqToApi(data.e_freq);
   apiData.eBudget = data.rental_cost ? String(data.rental_cost) : null;
-  // rental_freq stored as a note — eFreq is already used for spending frequency
-  if (data.rental_freq) {
-    apiData.rentalFreqNote = data.rental_freq;
-  }
+  // rental_freq is frontend-only — not sent to the API
 
   if (clientId) {
     apiData.clientId = clientId;
@@ -64,7 +61,7 @@ function mapExpenseFromApi(record) {
     e_save: normalised.eSave != null ? String(normalised.eSave) : '',
     e_freq: mapFreqFromApi(normalised.eFreq),
     rental_cost: normalised.eBudget != null ? String(normalised.eBudget) : '',
-    rental_freq: normalised.rentalFreqNote || '',
+    rental_freq: '',  // frontend-only; not persisted via API
   };
 }
 
