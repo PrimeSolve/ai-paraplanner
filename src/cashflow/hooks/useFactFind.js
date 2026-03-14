@@ -12,6 +12,8 @@ import { definedBenefitsApi } from "../../api/definedBenefitsApi.js";
 import { debtsApi } from "../../api/debtsApi.js";
 import { expensesApi } from "../../api/expensesApi.js";
 import { insuranceApi } from "../../api/insuranceApi.js";
+import { investmentWrapsApi } from "../../api/investmentWrapsApi.js";
+import { investmentBondsApi } from "../../api/investmentBondsApi.js";
 import { useRole } from "../../components/RoleContext.jsx";
 
 export function useFactFind(initialData) {
@@ -863,6 +865,38 @@ export function useFactFind(initialData) {
     }
   }, []);
 
+  // ── Investments API integration (wraps + bonds) ─────────────
+
+  /**
+   * Load investment wraps and bonds in parallel from their respective APIs
+   * and populate factFind.wraps and factFind.investmentBonds.
+   * @param {string} clientId - The client ID (GUID)
+   */
+  const loadInvestments = useCallback(async (clientId) => {
+    try {
+      const [wraps, bonds] = await Promise.all([
+        investmentWrapsApi.getAll(clientId),
+        investmentBondsApi.getAll(clientId),
+      ]);
+
+      setFactFind(prev => {
+        const next = JSON.parse(JSON.stringify(prev));
+        next.wraps = Array.isArray(wraps) ? wraps : [];
+        next.investmentBonds = Array.isArray(bonds) ? bonds : [];
+        return next;
+      });
+      setAdviceModel1(prev => {
+        if (!prev) return prev;
+        const next = JSON.parse(JSON.stringify(prev));
+        next.wraps = Array.isArray(wraps) ? wraps : [];
+        next.investmentBonds = Array.isArray(bonds) ? bonds : [];
+        return next;
+      });
+    } catch (err) {
+      console.error('[useFactFind] Failed to load investments from API:', err);
+    }
+  }, []);
+
   return {
     factFind, setFactFind, adviceModel1, setAdviceModel1,
     updateFF, updateAdvice, resetAdviceModel,
@@ -878,6 +912,7 @@ export function useFactFind(initialData) {
     loadDebts, saveDebts,
     loadExpenses, saveExpenses,
     loadInsurance,
+    loadInvestments,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,

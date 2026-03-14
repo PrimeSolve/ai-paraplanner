@@ -1821,6 +1821,8 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               <InvestmentsForm
                 factFind={factFind}
                 updateFF={updateFF}
+                clientId={urlClientId}
+                clientGuidMap={{ client1: urlClientId, client2: null }}
               />
             ) : factFindSection === "trusts_companies" ? (
               <TrustsCompaniesForm
