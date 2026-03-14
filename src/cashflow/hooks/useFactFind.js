@@ -11,6 +11,7 @@ import { annuitiesApi } from "../../api/annuitiesApi.js";
 import { definedBenefitsApi } from "../../api/definedBenefitsApi.js";
 import { debtsApi } from "../../api/debtsApi.js";
 import { expensesApi } from "../../api/expensesApi.js";
+import { insuranceApi } from "../../api/insuranceApi.js";
 import { useRole } from "../../components/RoleContext.jsx";
 
 export function useFactFind(initialData) {
@@ -834,6 +835,34 @@ export function useFactFind(initialData) {
     }
   }, [factFind]);
 
+  // ── Insurance API integration ─────────────────────────────────
+
+  /**
+   * Load insurance policies from GET /insurance?clientId={id} and populate
+   * factFind.insurance.policies with inbound-mapped data.
+   * @param {string} clientId - The client ID (GUID)
+   */
+  const loadInsurance = useCallback(async (clientId) => {
+    try {
+      const records = await insuranceApi.getAll(clientId);
+      const arr = Array.isArray(records) ? records : [];
+
+      setFactFind(prev => {
+        const next = JSON.parse(JSON.stringify(prev));
+        next.insurance = { ...(next.insurance || {}), policies: arr };
+        return next;
+      });
+      setAdviceModel1(prev => {
+        if (!prev) return prev;
+        const next = JSON.parse(JSON.stringify(prev));
+        next.insurance = { ...(next.insurance || {}), policies: arr };
+        return next;
+      });
+    } catch (err) {
+      console.error('[useFactFind] Failed to load insurance from API:', err);
+    }
+  }, []);
+
   return {
     factFind, setFactFind, adviceModel1, setAdviceModel1,
     updateFF, updateAdvice, resetAdviceModel,
@@ -848,6 +877,7 @@ export function useFactFind(initialData) {
     loadDefinedBenefits, saveDefinedBenefits,
     loadDebts, saveDebts,
     loadExpenses, saveExpenses,
+    loadInsurance,
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
