@@ -68,6 +68,13 @@ const SUPER_PHASE_MAP = {
   '2': 1,  // Pension
 };
 
+// Inbound: API superPhase → frontend tax_environment value
+const SUPER_PHASE_FROM_API = {
+  0: '1', 'Accumulation': '1',
+  1: '2', 'Pension': '2',
+  2: '3', 'TTR': '3',
+};
+
 // SMSFMemberRole: Trustee=0, Director=1, Member=2
 const DEFAULT_MEMBER_ROLE = 2;
 
@@ -137,6 +144,23 @@ export const smsfApi = {
     const raw = response.data;
     const arr = Array.isArray(raw) ? raw : (raw.items || raw.data || raw.value || []);
     const normalised = normaliseRecord(camelToSnakeKeys(arr));
+    // Convert superPhase integers to frontend values in nested members
+    for (const smsf of normalised) {
+      if (Array.isArray(smsf.members)) {
+        for (const member of smsf.members) {
+          if (member.super_phase !== undefined && member.super_phase !== null && member.super_phase !== '') {
+            member.super_phase = SUPER_PHASE_FROM_API[member.super_phase]
+              ?? SUPER_PHASE_FROM_API[String(member.super_phase)]
+              ?? '';
+          }
+        }
+      }
+      // Also handle trustee_type inbound: API Corporate=1, Individual=0 → frontend "1"=Corporate, "2"=Individual
+      if (smsf.trustee_type !== undefined && smsf.trustee_type !== null && smsf.trustee_type !== '') {
+        const ttMap = { 1: '1', 'Corporate': '1', 0: '2', 'Individual': '2' };
+        smsf.trustee_type = ttMap[smsf.trustee_type] ?? ttMap[String(smsf.trustee_type)] ?? '';
+      }
+    }
     if (clientId) {
       return normalised.filter(r => r.client_id === clientId);
     }

@@ -42,14 +42,30 @@ function normaliseRecord(record) {
 
 function mapDebtType(frontendType) {
   const map = {
-    '1': 0,  // HomeLoan
-    '2': 1,  // InvestmentLoan
-    '3': 2,  // PersonalLoan (margin loan maps to personal)
-    '4': 3,  // CreditCard
-    '5': 4,  // HECS
-    '6': 5,  // CarLoan
+    '1': 0,   // Home loan → HomeLoan
+    '2': 1,   // Investment loan → InvestmentLoan
+    '3': 2,   // Margin loan → PersonalLoan
+    '5': 3,   // Credit card → CreditCard
+    '7': 5,   // Car loan → CarLoan
+    '8': 7,   // Other
+    '60': 6,  // Director loan (Div 7A) → Div7A
   };
-  return map[frontendType] ?? 0; // default HomeLoan
+  return map[String(frontendType)] ?? 0; // default HomeLoan
+}
+
+// Inbound: API debtType (integer or string) → frontend select value
+function mapDebtTypeFromApi(apiType) {
+  const map = {
+    0: '1',  'HomeLoan': '1',
+    1: '2',  'InvestmentLoan': '2',
+    2: '3',  'PersonalLoan': '3',
+    3: '5',  'CreditCard': '5',
+    4: '4',  'HECS': '4',
+    5: '7',  'CarLoan': '7',
+    6: '60', 'Div7A': '60',
+    7: '8',  'Other': '8',
+  };
+  return map[apiType] ?? map[String(apiType)] ?? '';
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -64,6 +80,33 @@ function mapRepaymentFrequency(frontendFreq) {
     '4':  3,  // Quarterly
   };
   return map[frontendFreq] ?? null;
+}
+
+// Inbound: API repayment frequency (integer or string) → frontend select value
+function mapRepaymentFrequencyFromApi(apiFreq) {
+  const map = {
+    0: '52', 'Weekly': '52',
+    1: '26', 'Fortnightly': '26',
+    2: '12', 'Monthly': '12',
+    3: '4',  'Quarterly': '4',
+    4: '1',  'Annually': '1',
+  };
+  return map[apiFreq] ?? map[String(apiFreq)] ?? '';
+}
+
+// ──────────────────────────────────────────────────────────────
+// Inbound conversion: apply reverse mappings to a snake_case record
+// ──────────────────────────────────────────────────────────────
+
+function convertDebtFieldsInbound(record) {
+  if (!record) return record;
+  if (record.debt_type !== undefined && record.debt_type !== null && record.debt_type !== '') {
+    record.debt_type = mapDebtTypeFromApi(record.debt_type);
+  }
+  if (record.repayment_frequency !== undefined && record.repayment_frequency !== null && record.repayment_frequency !== '') {
+    record.repayment_frequency = mapRepaymentFrequencyFromApi(record.repayment_frequency);
+  }
+  return record;
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -118,7 +161,8 @@ export const debtsApi = {
     const response = await axiosInstance.get(`/debts?clientId=${clientId}`);
     const raw = response.data;
     const arr = Array.isArray(raw) ? raw : (raw.items || raw.data || raw.value || []);
-    return normaliseRecord(camelToSnakeKeys(arr));
+    const records = normaliseRecord(camelToSnakeKeys(arr));
+    return Array.isArray(records) ? records.map(convertDebtFieldsInbound) : records;
   },
 
   /**

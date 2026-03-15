@@ -37,6 +37,60 @@ function normaliseRecord(record) {
 }
 
 // ──────────────────────────────────────────────────────────────
+// OwnershipType enum mapping
+// Frontend: "1"=Sole, "2"=Joint, "3"=Trust, "4"=Company
+// API:      Individual=0, Joint=1, Company=2, Trust=3, SMSF=4
+// ──────────────────────────────────────────────────────────────
+
+const OWNERSHIP_TO_API = {
+  '1': 0,  // Sole / Individual
+  '2': 1,  // Joint
+  '3': 3,  // Trust
+  '4': 2,  // Company
+};
+
+const OWNERSHIP_FROM_API = {
+  0: '1', 'Individual': '1',
+  1: '2', 'Joint': '2',
+  2: '4', 'Company': '4',
+  3: '3', 'Trust': '3',
+  4: '5', 'SMSF': '5',
+};
+
+// ──────────────────────────────────────────────────────────────
+// Rental / Pay frequency mapping (same pattern as debts)
+// Frontend: "52"=Weekly, "26"=Fortnightly, "12"=Monthly, "4"=Quarterly, "1"=Annually
+// API:      Weekly=0, Fortnightly=1, Monthly=2, Quarterly=3, Annually=4
+// ──────────────────────────────────────────────────────────────
+
+const FREQ_TO_API = { '52': 0, '26': 1, '12': 2, '4': 3, '1': 4 };
+
+const FREQ_FROM_API = {
+  0: '52', 'Weekly': '52',
+  1: '26', 'Fortnightly': '26',
+  2: '12', 'Monthly': '12',
+  3: '4',  'Quarterly': '4',
+  4: '1',  'Annually': '1',
+};
+
+// ──────────────────────────────────────────────────────────────
+// Inbound conversion: apply reverse mappings to a snake_case record
+// ──────────────────────────────────────────────────────────────
+
+function convertAssetFieldsInbound(record) {
+  if (!record) return record;
+  if (record.own_type !== undefined && record.own_type !== null && record.own_type !== '') {
+    const mapped = OWNERSHIP_FROM_API[record.own_type] ?? OWNERSHIP_FROM_API[String(record.own_type)];
+    if (mapped !== undefined) record.own_type = mapped;
+  }
+  if (record.rental_frequency !== undefined && record.rental_frequency !== null && record.rental_frequency !== '') {
+    const mapped = FREQ_FROM_API[record.rental_frequency] ?? FREQ_FROM_API[String(record.rental_frequency)];
+    if (mapped !== undefined) record.rental_frequency = mapped;
+  }
+  return record;
+}
+
+// ──────────────────────────────────────────────────────────────
 // Build API payload for create/update asset
 // Frontend fields (a_*) → API camelCase
 // ──────────────────────────────────────────────────────────────
@@ -45,7 +99,7 @@ function buildAssetPayload(data, clientGuidMap, defaultName) {
   const apiData = {};
 
   apiData.name = data.a_name || defaultName || 'Asset 1';
-  apiData.ownType = data.a_ownType || '';
+  apiData.ownType = (data.a_ownType && OWNERSHIP_TO_API[data.a_ownType] !== undefined) ? OWNERSHIP_TO_API[data.a_ownType] : null;
   apiData.owner = data.a_owner || '';
   apiData.assetType = data.a_type || '';
   apiData.value = data.a_value === '' ? null : (data.a_value ? parseFloat(data.a_value) : null);
@@ -53,7 +107,7 @@ function buildAssetPayload(data, clientGuidMap, defaultName) {
   apiData.purchaseDate = data.a_purchase_date === '' ? null : (data.a_purchase_date || null);
   apiData.moveOutDate = data.a_move_out_date === '' ? null : (data.a_move_out_date || null);
   apiData.rentalIncome = data.a_rental_income === '' ? null : (data.a_rental_income ? parseFloat(data.a_rental_income) : null);
-  apiData.rentalFrequency = data.a_rental_freq || '';
+  apiData.rentalFrequency = (data.a_rental_freq && FREQ_TO_API[data.a_rental_freq] !== undefined) ? FREQ_TO_API[data.a_rental_freq] : null;
   apiData.drp = data.a_drp || '';
   apiData.hhRented = data.a_hh_rented || '';
   apiData.hhDaysAvailable = data.a_hh_days_available === '' ? null : (data.a_hh_days_available ? parseFloat(data.a_hh_days_available) : null);
@@ -83,7 +137,8 @@ export const assetsApi = {
     const response = await axiosInstance.get(`/assets?clientId=${clientId}`);
     const raw = response.data;
     const arr = Array.isArray(raw) ? raw : (raw.items || raw.data || raw.value || []);
-    return normaliseRecord(camelToSnakeKeys(arr));
+    const records = normaliseRecord(camelToSnakeKeys(arr));
+    return Array.isArray(records) ? records.map(convertAssetFieldsInbound) : records;
   },
 
   /**
