@@ -128,8 +128,9 @@ export default function ClientFactFindAI() {
       {/* ── Dashboard / Milestones Tab Toggle ── */}
       <div style={{
         display: 'flex', gap: 0,
-        padding: '0 24px', background: '#fff',
+        padding: '0 20px', background: '#fff',
         borderBottom: '1px solid #E2E8F0', flexShrink: 0,
+        marginBottom: 0,
       }}>
         {[
           { id: 'dashboard', label: 'Dashboard' },
@@ -139,7 +140,7 @@ export default function ClientFactFindAI() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
-              padding: '10px 20px', border: 'none',
+              padding: '10px 16px', border: 'none',
               borderBottom: activeTab === tab.id ? '2px solid #6366F1' : '2px solid transparent',
               background: 'transparent',
               fontSize: 13, fontWeight: 600, cursor: 'pointer',

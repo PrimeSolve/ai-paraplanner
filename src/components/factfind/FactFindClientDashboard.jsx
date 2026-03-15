@@ -114,7 +114,7 @@ function KpiCard({ label, value, gradient, subtitle, onClick }) {
     <div
       onClick={onClick}
       style={{
-        background: gradient, borderRadius: 12, padding: '20px 24px',
+        background: gradient, borderRadius: 10, padding: '16px 20px',
         color: '#fff', cursor: onClick ? 'pointer' : 'default',
         minWidth: 0,
       }}
@@ -133,12 +133,13 @@ function BreakdownTile({ icon, title, total, items, onClick }) {
     <div
       onClick={onClick}
       style={{
-        background: '#fff', borderRadius: 12,
-        border: '1px solid #E2E8F0', padding: 20,
+        background: '#fff', borderRadius: 10,
+        border: '1px solid #E2E8F0',
         cursor: onClick ? 'pointer' : 'default',
+        overflow: 'hidden',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+      <div style={{ padding: '10px 14px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
           width: 36, height: 36, borderRadius: '50%',
           background: '#EEF2FF', display: 'flex', alignItems: 'center',
@@ -148,19 +149,21 @@ function BreakdownTile({ icon, title, total, items, onClick }) {
           {title}
         </span>
       </div>
-      <div style={{ fontSize: 22, fontWeight: 800, color: '#1E293B', marginBottom: 12 }}>
-        {fmt(total)}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {items.map((item, idx) => (
-          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: idx < items.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#475569' }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
-              {item.label}
+      <div style={{ padding: '12px 14px' }}>
+        <div style={{ fontSize: 22, fontWeight: 800, color: '#1E293B', marginBottom: 8 }}>
+          {fmt(total)}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {items.map((item, idx) => (
+            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: idx < items.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#475569' }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+                {item.label}
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#1E293B' }}>{fmt(item.value)}</div>
             </div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#1E293B' }}>{fmt(item.value)}</div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -171,12 +174,13 @@ function FamilyTile({ onClick }) {
     <div
       onClick={onClick}
       style={{
-        background: '#fff', borderRadius: 12,
-        border: '1px solid #E2E8F0', padding: 20,
+        background: '#fff', borderRadius: 10,
+        border: '1px solid #E2E8F0',
         cursor: onClick ? 'pointer' : 'default',
+        overflow: 'hidden',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+      <div style={{ padding: '10px 14px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
           width: 36, height: 36, borderRadius: '50%',
           background: '#EEF2FF', display: 'flex', alignItems: 'center',
@@ -186,31 +190,33 @@ function FamilyTile({ onClick }) {
           Family & Entities
         </span>
       </div>
-      {/* Client circles */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        {[FAMILY.client1, FAMILY.client2].filter(Boolean).map((c, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%', background: c.color,
-              color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 11, fontWeight: 700,
-            }}>{c.initials}</div>
-            <span style={{ fontSize: 13, color: '#334155' }}>{c.name.split(' ')[0]}</span>
-          </div>
-        ))}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {[
-          ['Children', FAMILY.childrenCount],
-          ['Trusts', FAMILY.trustsCount],
-          ['Companies', FAMILY.companiesCount],
-          ['SMSF', FAMILY.smsfCount],
-        ].map(([lbl, val]) => (
-          <div key={lbl} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-            <span style={{ color: '#64748B' }}>{lbl}</span>
-            <span style={{ fontWeight: 600, color: '#1E293B' }}>{val}</span>
-          </div>
-        ))}
+      <div style={{ padding: '12px 14px' }}>
+        {/* Client circles */}
+        <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
+          {[FAMILY.client1, FAMILY.client2].filter(Boolean).map((c, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: '50%', background: c.color,
+                color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 11, fontWeight: 700,
+              }}>{c.initials}</div>
+              <span style={{ fontSize: 13, color: '#334155' }}>{c.name.split(' ')[0]}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {[
+            ['Children', FAMILY.childrenCount],
+            ['Trusts', FAMILY.trustsCount],
+            ['Companies', FAMILY.companiesCount],
+            ['SMSF', FAMILY.smsfCount],
+          ].map(([lbl, val]) => (
+            <div key={lbl} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+              <span style={{ color: '#64748B' }}>{lbl}</span>
+              <span style={{ fontWeight: 600, color: '#1E293B' }}>{val}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -221,12 +227,13 @@ function RiskProfileTile({ onClick }) {
     <div
       onClick={onClick}
       style={{
-        background: '#fff', borderRadius: 12,
-        border: '1px solid #E2E8F0', padding: 20,
+        background: '#fff', borderRadius: 10,
+        border: '1px solid #E2E8F0',
         cursor: onClick ? 'pointer' : 'default',
+        overflow: 'hidden',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+      <div style={{ padding: '10px 14px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
           width: 36, height: 36, borderRadius: '50%',
           background: '#EEF2FF', display: 'flex', alignItems: 'center',
@@ -236,7 +243,7 @@ function RiskProfileTile({ onClick }) {
           Risk Profile
         </span>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 14 }}>
         {RISK_PROFILES.map((rp, idx) => (
           <div key={idx}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -262,12 +269,13 @@ function InsurancePoliciesTile({ onClick }) {
     <div
       onClick={onClick}
       style={{
-        background: '#fff', borderRadius: 12,
-        border: '1px solid #E2E8F0', padding: 20,
+        background: '#fff', borderRadius: 10,
+        border: '1px solid #E2E8F0',
         cursor: onClick ? 'pointer' : 'default',
+        overflow: 'hidden',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+      <div style={{ padding: '10px 14px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
           width: 36, height: 36, borderRadius: '50%',
           background: '#EEF2FF', display: 'flex', alignItems: 'center',
@@ -277,7 +285,7 @@ function InsurancePoliciesTile({ onClick }) {
           Insurance Policies
         </span>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {INSURANCE_POLICIES.map((pol, idx) => (
           <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: idx < INSURANCE_POLICIES.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
             <div>
@@ -297,12 +305,13 @@ function GoalsTile({ onClick }) {
     <div
       onClick={onClick}
       style={{
-        background: '#fff', borderRadius: 12,
-        border: '1px solid #E2E8F0', padding: 20,
+        background: '#fff', borderRadius: 10,
+        border: '1px solid #E2E8F0',
         cursor: onClick ? 'pointer' : 'default',
+        overflow: 'hidden',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+      <div style={{ padding: '10px 14px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
           width: 36, height: 36, borderRadius: '50%',
           background: '#EEF2FF', display: 'flex', alignItems: 'center',
@@ -312,7 +321,7 @@ function GoalsTile({ onClick }) {
           Goals & Objectives
         </span>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {GOALS.map((g, idx) => (
           <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: idx < GOALS.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
             <span style={{ fontSize: 18 }}>{g.icon}</span>
@@ -334,10 +343,11 @@ function ProjectedChart() {
 
   return (
     <div style={{
-      background: '#fff', borderRadius: 12,
-      border: '1px solid #E2E8F0', padding: 20,
+      background: '#fff', borderRadius: 10,
+      border: '1px solid #E2E8F0',
+      overflow: 'hidden',
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderBottom: '1px solid #F1F5F9' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 36, height: 36, borderRadius: '50%',
@@ -366,6 +376,7 @@ function ProjectedChart() {
           ))}
         </div>
       </div>
+      <div style={{ padding: '12px 14px' }}>
       <ResponsiveContainer width="100%" height={280}>
         {mode === 'capital' ? (
           <AreaChart data={data}>
@@ -406,6 +417,7 @@ function ProjectedChart() {
           </AreaChart>
         )}
       </ResponsiveContainer>
+      </div>
     </div>
   );
 }
@@ -427,10 +439,9 @@ export default function FactFindClientDashboard({ onOpenSection }) {
   const open = (key) => onOpenSection?.(SECTION_MAP[key] || key);
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
-      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+    <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
         {/* KPI Hero Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 12 }}>
           <KpiCard
             label="Net Worth"
             value={NET_WORTH}
@@ -455,7 +466,7 @@ export default function FactFindClientDashboard({ onOpenSection }) {
         </div>
 
         {/* Dashboard Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 12 }}>
           {/* Asset Breakdown — span 2 */}
           <div style={{ gridColumn: 'span 2' }}>
             <BreakdownTile
@@ -522,7 +533,6 @@ export default function FactFindClientDashboard({ onOpenSection }) {
 
         {/* Projected Position Chart — full width */}
         <ProjectedChart />
-      </div>
     </div>
   );
 }
