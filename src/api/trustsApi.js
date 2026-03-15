@@ -42,22 +42,48 @@ function snakeToCamelKeys(obj) {
 // TrustType enum mapping: frontend string → API integer
 // ──────────────────────────────────────────────────────────────
 
-const TRUST_TYPE_MAP = {
+// Outbound: frontend select value → API integer
+const TRUST_TYPE_TO_API = {
   '1': 0,  // Discretionary Family → 0
   '2': 1,  // Unit → 1
   '3': 2,  // Hybrid → 2
-  '4': 0,  // Testamentary → 0 (map to Discretionary)
-  '5': 0,  // Other → 0 (map to Discretionary)
+  '4': 3,  // Testamentary → 3
+  '5': 4,  // Other → 4
 };
 
-function convertTrustType(apiData) {
+// Inbound: API value (integer or string) → frontend select value
+const TRUST_TYPE_FROM_API = {
+  '0':              '1',
+  'Discretionary':  '1',
+  '1':              '2',
+  'Unit':           '2',
+  '2':              '3',
+  'Hybrid':         '3',
+  '3':              '4',
+  'Testamentary':   '4',
+  'Fixed':          '5',
+  '4':              '5',
+  'Other':          '5',
+};
+
+function convertTrustTypeOutbound(apiData) {
   const raw = apiData.trustType;
   if (raw === '' || raw === null || raw === undefined) {
     apiData.trustType = 0;
   } else {
-    apiData.trustType = TRUST_TYPE_MAP[String(raw)] ?? 0;
+    apiData.trustType = TRUST_TYPE_TO_API[String(raw)] ?? 0;
   }
   return apiData;
+}
+
+function convertTrustTypeInbound(snakeRecord) {
+  const raw = snakeRecord.trust_type;
+  if (raw === '' || raw === null || raw === undefined) {
+    snakeRecord.trust_type = '';
+  } else {
+    snakeRecord.trust_type = TRUST_TYPE_FROM_API[String(raw)] ?? '';
+  }
+  return snakeRecord;
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -88,7 +114,8 @@ export const trustsApi = {
     const response = await axiosInstance.get(`/trusts?clientId=${clientId}`);
     const raw = response.data;
     const arr = Array.isArray(raw) ? raw : (raw.items || raw.data || raw.value || []);
-    return normaliseRecord(camelToSnakeKeys(arr));
+    const records = normaliseRecord(camelToSnakeKeys(arr));
+    return Array.isArray(records) ? records.map(convertTrustTypeInbound) : records;
   },
 
   /**
@@ -101,7 +128,7 @@ export const trustsApi = {
     const { beneficiaries, ...rest } = data;
     const apiData = snakeToCamelKeys({ ...rest, client_id: clientId });
     if (!apiData.trustName || apiData.trustName === '') apiData.trustName = data.default_name || 'Trust 1';
-    convertTrustType(apiData);
+    convertTrustTypeOutbound(apiData);
     const payload = sanitisePayload(apiData);
     const response = await axiosInstance.post('/trusts', { ...payload, clientId });
     return normaliseRecord(camelToSnakeKeys(response.data));
@@ -116,7 +143,7 @@ export const trustsApi = {
   async update(id, data) {
     const { beneficiaries, ...rest } = data;
     const apiData = snakeToCamelKeys(rest);
-    convertTrustType(apiData);
+    convertTrustTypeOutbound(apiData);
     const payload = sanitisePayload(apiData);
     const response = await axiosInstance.put(`/trusts/${id}`, payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
