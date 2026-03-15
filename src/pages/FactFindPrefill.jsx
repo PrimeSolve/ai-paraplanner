@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { documentsApi } from '@/api/primeSolveClient';
+import { dependantsApi } from '@/api/dependantsApi';
+import { useFactFind } from '@/components/factfind/useFactFind';
 import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
@@ -39,11 +41,16 @@ const documentTypes = [
 
 const SECTION_LABELS = {
   personal: 'Personal Details',
-  income: 'Income',
+  income: 'Income & Expenses',
   superannuation: 'Superannuation',
-  insurance: 'Insurance',
-  assets_liabilities: 'Assets & Liabilities',
+  insurance: 'Insurance Policies',
+  assets: 'Assets',
   liabilities: 'Liabilities',
+  dependants: 'Dependants',
+  trusts_companies: 'Trusts & Companies',
+  smsf: 'SMSF',
+  investments: 'Investments',
+  super_tax: 'Super & Tax',
 };
 
 const CONFIDENCE_THRESHOLD = 0.85;
@@ -102,7 +109,7 @@ function flattenExtractedData(obj) {
 
 export default function FactFindPrefill() {
   const navigate = useNavigate();
-  const [factFind, setFactFind] = useState(null);
+  const { factFind, loading: ffLoading, updateSection, clientId, setFactFind } = useFactFind();
   const [loading, setLoading] = useState(true);
   const [uploadedDocs, setUploadedDocs] = useState([]);
   const [uploadingType, setUploadingType] = useState(null);
@@ -113,25 +120,11 @@ export default function FactFindPrefill() {
   const [prefilling, setPrefilling] = useState(false);
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-
-        if (id) {
-          const finds = await base44.entities.FactFind.filter({ id });
-          if (finds[0]) {
-            setFactFind(finds[0]);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading fact find:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, []);
+    // Loading is controlled by useFactFind now; keep local loading for backward compat
+    if (!ffLoading) {
+      setLoading(false);
+    }
+  }, [ffLoading]);
 
   // Poll processing documents for completion
   const pollDocument = useCallback(async (docId) => {
@@ -167,9 +160,9 @@ export default function FactFindPrefill() {
     const files = Array.from(event.target.files);
     if (files.length === 0) return;
 
-    // Determine client ID from factFind
-    const clientId = factFind?.client_id;
-    if (!clientId) {
+    // Determine client ID from useFactFind hook or factFind record
+    const uploadClientId = clientId || factFind?.client_id;
+    if (!uploadClientId) {
       toast.error('No client ID found. Please start from a client profile.');
       return;
     }
@@ -177,7 +170,7 @@ export default function FactFindPrefill() {
     setUploadingType(docType);
     try {
       const uploadPromises = files.map(async (file) => {
-        const result = await documentsApi.upload(file, clientId, docType);
+        const result = await documentsApi.upload(file, uploadClientId, docType);
         return result;
       });
 
@@ -265,7 +258,7 @@ export default function FactFindPrefill() {
   const handleConfirmPrefill = async () => {
     setPrefilling(true);
     try {
-      // Merge extraction results into fact find sections
+      // 1. Merge extraction results across all uploaded documents
       const mergedSections = {};
       for (const result of extractionResults) {
         const flat = flattenExtractedData(result.sections);
@@ -273,7 +266,6 @@ export default function FactFindPrefill() {
           if (!mergedSections[section]) {
             mergedSections[section] = data;
           } else {
-            // Merge arrays by concatenation, objects by shallow merge
             if (Array.isArray(data) && Array.isArray(mergedSections[section])) {
               mergedSections[section] = [...mergedSections[section], ...data];
             } else if (typeof data === 'object' && typeof mergedSections[section] === 'object') {
@@ -283,20 +275,163 @@ export default function FactFindPrefill() {
         }
       }
 
-      // Save the pre-filled data along with the raw extraction for confidence highlighting
-      if (factFind?.id) {
-        await base44.entities.FactFind.update(factFind.id, {
-          ...mergedSections,
-          ai_extracted_data: extractionResults.map(r => r.sections),
-          supporting_documents: uploadedDocs.map(d => ({
-            id: d.id,
-            file_name: d.file_name,
-            file_type: d.file_type,
-            status: d.status || 'Extracted',
-            uploaded_at: d.uploaded_at,
-          })),
+      if (!factFind?.id) {
+        toast.error('No Fact Find record found');
+        return;
+      }
+
+      // 2. Apply each extracted section to the correct updateSection path
+
+      // ── Personal ──
+      if (mergedSections.personal) {
+        await updateSection('Client1Profile', mergedSections.personal);
+      }
+
+      // ── Income & Expenses ──
+      if (mergedSections.income) {
+        const incomeData = mergedSections.income;
+        const incomes = [];
+        if (incomeData.client1) {
+          incomes.push(incomeData.client1);
+        }
+        if (incomeData.client2) {
+          incomes.push(incomeData.client2);
+        }
+        // Build the payload matching FactFindIncomeExpenses format
+        const incomePayload = { Incomes: incomes };
+        if (incomeData.rental_income) {
+          // Rental income is typically part of the first income record
+          if (incomes[0]) {
+            incomes[0].i_rental = incomeData.rental_income;
+          }
+        }
+        await updateSection('Client1Profile', incomePayload);
+      }
+
+      // ── Superannuation ──
+      if (mergedSections.superannuation && Array.isArray(mergedSections.superannuation)) {
+        // Super funds are stored as a flat array under client1_profile.super_funds
+        // Each entry already has type, fund_name, balance, etc. from extraction
+        await updateSection('Client1Profile', {
+          SuperFunds: mergedSections.superannuation,
         });
       }
+
+      // ── Insurance Policies ──
+      if (mergedSections.insurance && Array.isArray(mergedSections.insurance)) {
+        // Insurance uses the wrapper format { activeIdx, policies }
+        await updateSection('Client1FactFind', {
+          InsurancePolicies: {
+            activeIdx: 0,
+            policies: mergedSections.insurance,
+          },
+        });
+      }
+
+      // ── Assets (Properties) ──
+      if (mergedSections.assets && Array.isArray(mergedSections.assets)) {
+        await updateSection('Client1FactFind', {
+          Properties: mergedSections.assets,
+        });
+      }
+
+      // ── Liabilities (Debts) ──
+      if (mergedSections.liabilities && Array.isArray(mergedSections.liabilities)) {
+        await updateSection('Client1FactFind', {
+          Debts: mergedSections.liabilities,
+        });
+      }
+
+      // ── Dependants ──
+      if (mergedSections.dependants && Array.isArray(mergedSections.dependants)) {
+        // Create each dependant via the dedicated API
+        const depClientId = clientId || factFind.client_id;
+        if (depClientId) {
+          for (const dep of mergedSections.dependants) {
+            try {
+              await dependantsApi.create({
+                client_id: depClientId,
+                ...dep,
+              });
+            } catch (depErr) {
+              console.error('Failed to create dependant:', depErr);
+            }
+          }
+        }
+      }
+
+      // ── Trusts & Companies ──
+      if (mergedSections.trusts_companies && Array.isArray(mergedSections.trusts_companies)) {
+        await updateSection('Client1FactFind', {
+          TrustsCompanies: {
+            entities: mergedSections.trusts_companies,
+          },
+        });
+      }
+
+      // ── SMSF ──
+      if (mergedSections.smsf && Array.isArray(mergedSections.smsf)) {
+        await updateSection('Client1FactFind', {
+          Smsf: {
+            smsf_details: mergedSections.smsf,
+            activeIndex: 0,
+          },
+        });
+      }
+
+      // ── Investments (Wraps & Bonds) ──
+      if (mergedSections.investments && Array.isArray(mergedSections.investments)) {
+        const wraps = mergedSections.investments.filter(i => i.inv_type !== 'bond');
+        const bonds = mergedSections.investments.filter(i => i.inv_type === 'bond');
+        await updateSection('Client1FactFind', {
+          Investments: {
+            wraps,
+            bonds,
+          },
+        });
+      }
+
+      // ── Super & Tax ──
+      if (mergedSections.super_tax) {
+        const superTaxPayload = {
+          client: {
+            super: mergedSections.super_tax.client || {},
+            tax: {},
+          },
+          partner: {
+            super: mergedSections.super_tax.partner || {},
+            tax: {},
+          },
+        };
+        // Split super vs tax fields for each person
+        for (const person of ['client', 'partner']) {
+          const src = mergedSections.super_tax[person];
+          if (!src) continue;
+          const superFields = {};
+          const taxFields = {};
+          for (const [key, val] of Object.entries(src)) {
+            if (key === 'pre_losses' || key === 'pre_cgt_losses') {
+              taxFields[key] = val;
+            } else {
+              superFields[key] = val;
+            }
+          }
+          superTaxPayload[person] = { super: superFields, tax: taxFields };
+        }
+        await updateSection('Client1FactFind', { SuperTax: superTaxPayload });
+      }
+
+      // 3. Save raw extraction data and supporting document metadata for confidence highlighting
+      await base44.entities.FactFind.update(factFind.id, {
+        ai_extracted_data: extractionResults.map(r => r.sections),
+        supporting_documents: uploadedDocs.map(d => ({
+          id: d.id,
+          file_name: d.file_name,
+          file_type: d.file_type,
+          status: d.status || 'Extracted',
+          uploaded_at: d.uploaded_at,
+        })),
+      });
 
       setShowSummary(false);
       toast.success('Fact Find pre-filled with extracted data');
