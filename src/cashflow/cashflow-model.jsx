@@ -2256,7 +2256,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               onMouseEnter={e => e.currentTarget.style.color = "#3730A3"}
               onMouseLeave={e => e.currentTarget.style.color = "#4F46E5"}
             >
-              <span style={{ fontSize: 16 }}>&larr;</span> Back to Client
+              <span style={{ fontSize: 16 }}>&larr;</span> {isFactfindMode ? "Save & Close" : "Back to Client"}
             </button>
           ) : (
             <a
@@ -2280,7 +2280,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               letterSpacing: "0.04em",
               textTransform: "uppercase",
             }}>
-              Cashflow Model
+              {isFactfindMode ? "Client Fact Find" : "Cashflow Model"}
             </span>
             {clientInfo && (
               <span style={{ fontSize: 16, fontWeight: 700, color: "var(--ps-text-primary)", letterSpacing: "-0.01em", lineHeight: 1.2 }}>
@@ -2454,14 +2454,15 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
         flexShrink: 0,
         alignItems: "stretch",
       }}>
-        {TOP_TABS.filter(tab => {
-          const config = NAV_STRUCTURE[tab];
-          if (config.adviceOnly && selectedModel === "base") return false;
-          if (isFactfindMode && tab === "Advice Detail") return false;
+        {(isFactfindMode ? ["Dashboard", "Milestones"] : TOP_TABS).filter(tab => {
+          if (!isFactfindMode) {
+            const config = NAV_STRUCTURE[tab];
+            if (config.adviceOnly && selectedModel === "base") return false;
+          }
           return true;
         }).map(tab => {
           const isActive = activeTop === tab;
-          const config = NAV_STRUCTURE[tab];
+          const config = isFactfindMode ? { icon: tab === "Dashboard" ? "⊞" : "📅" } : NAV_STRUCTURE[tab];
           return (
             <button
               key={tab}
@@ -2590,6 +2591,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
       <div style={{ flex: assistantOpen ? "0 0 70%" : "0 0 100%", overflowY: "auto", overflowX: "auto", transition: "flex 0.2s ease" }}>
       <div style={{ padding: "16px 32px" }}>
         {/* Breadcrumb + Edit on same row */}
+        {!isFactfindMode && (
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           marginBottom: 6,
@@ -2618,6 +2620,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
             </button>
           )}
         </div>
+        )}
 
         {/* Render content */}
         {isDefensiveAssets ? (
