@@ -3,7 +3,7 @@ import React from 'react';
 const SECTIONS = [
   { key: 'personal',          label: 'Personal'    },
   { key: 'dependants',        label: 'Dependants'  },
-  { key: 'trusts_companies',  label: 'Trusts'      },
+  { key: 'trusts_companies',  label: 'Entities'    },
   { key: 'smsf',              label: 'SMSF'        },
   { key: 'superannuation',    label: 'Super'       },
   { key: 'investments',       label: 'Investments' },
@@ -45,16 +45,16 @@ export default function ProgressBar({ completionData = {}, onSectionClick }) {
           </button>
         )}
       </div>
-      <div style={{ display: 'flex', gap: '4px 14px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '6px 20px', flexWrap: 'wrap', marginTop: 4 }}>
         {SECTIONS.map(s => {
           const pct = completionData[s.key] || 0;
           const col = getColor(pct);
           return (
             <div key={s.key} onClick={() => onSectionClick?.(s.key)}
               style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: onSectionClick ? 'pointer' : 'default' }}>
-              <div style={{ width: 7, height: 7, borderRadius: 2, background: col, flexShrink: 0 }}/>
-              <span style={{ fontSize: 10, color: '#475569', fontWeight: 500 }}>{s.label}</span>
-              <span style={{ fontSize: 10, color: '#94A3B8' }}>{pct}%</span>
+              <div style={{ width: 9, height: 9, borderRadius: 2, background: col, flexShrink: 0 }}/>
+              <span style={{ fontSize: 11, color: '#475569', fontWeight: 600 }}>{s.label}</span>
+              <span style={{ fontSize: 11, color: '#94A3B8' }}>{pct}%</span>
             </div>
           );
         })}
