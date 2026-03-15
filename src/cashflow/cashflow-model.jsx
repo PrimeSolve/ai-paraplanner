@@ -21,6 +21,7 @@ import { PRINCIPAL_SUB_SECTIONS, CHILD_DEFAULTS, DEPENDANT_DEFAULTS, SUPER_DEFAU
 import { TransactionsForm, ProductReplacementForm, AiFactFind, AiParaplanner, StrategyForm, AdviceProductsEntitiesForm, AdviceInsuranceForm, TaxSuperPlanningForm, AssumptionsForm, PortfolioForm } from "./components/advice/index.jsx";
 import FactFindClientDashboard from '@/components/factfind/FactFindClientDashboard';
 import FactFindProgressBar from '@/components/factfind/ProgressBar';
+import { useCompletionLogic } from '@/components/factfind/useCompletionLogic';
 import { getAccessToken } from '@/auth/msalInstance';
 import { adviceHistoryApi } from '@/api/adviceHistoryApi';
 class CashflowErrorBoundary extends React.Component {
@@ -1043,6 +1044,9 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
   } = useFactFind(initialData);
+
+  const { calculateAllSectionCompletion } = useCompletionLogic();
+  const factFindCompletion = useMemo(() => calculateAllSectionCompletion(factFind), [factFind]);
 
   // ── Principals API: load on mount, auto-save on change ──────
   const urlClientId = useMemo(() => {
@@ -2502,7 +2506,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
       {/* Progress bar — factfind mode only */}
       {isFactfindMode && (
         <FactFindProgressBar
-          factFind={factFind}
+          completionData={factFindCompletion}
           onSectionClick={(sectionId) => {
             const map = {
               personal: '/FactFindPersonal',
