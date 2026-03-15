@@ -1121,6 +1121,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
   const [selectedModel, setSelectedModel] = useState(isFactfindMode ? "base" : "advice1");
   const isAdviceModel = selectedModel === "advice1";
   const [factFindOpen, setFactFindOpen] = useState(false);
+  const [factFindMountKey, setFactFindMountKey] = useState(0);
   const [factFindSection, setFactFindSection] = useState(null);
   const [adviceOpen, setAdviceOpen] = useState(false);
   const [adviceSection, setAdviceSection] = useState(null);
@@ -1795,6 +1796,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           <div style={{ padding: "24px 28px" }}>
             {factFindSection === "principals" ? (
               <PrincipalsForm
+                key={factFindMountKey}
                 factFind={factFind}
                 updateFF={updateFF}
                 addPrincipal={addPrincipal}
@@ -1803,12 +1805,14 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               />
             ) : factFindSection === "dependants" ? (
               <DependantsForm
+                key={factFindMountKey}
                 factFind={factFind}
                 updateFF={updateFF}
                 clientId={urlClientId}
               />
             ) : factFindSection === "superannuation" ? (
               <SuperannuationForm
+                key={factFindMountKey}
                 factFind={factFind}
                 updateFF={updateFF}
                 clientId={urlClientId}
@@ -1817,6 +1821,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               />
             ) : factFindSection === "investments" ? (
               <InvestmentsForm
+                key={factFindMountKey}
                 factFind={factFind}
                 updateFF={updateFF}
                 clientId={urlClientId}
@@ -1824,6 +1829,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               />
             ) : factFindSection === "trusts_companies" ? (
               <TrustsCompaniesForm
+                key={factFindMountKey}
                 factFind={factFind}
                 updateFF={updateFF}
                 clientId={urlClientId}
@@ -1832,12 +1838,14 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               />
             ) : factFindSection === "smsf" ? (
               <SMSFForm
+                key={factFindMountKey}
                 factFind={factFind}
                 updateFF={updateFF}
                 clientId={urlClientId}
               />
             ) : factFindSection === "assets" ? (
               <AssetsForm
+                key={factFindMountKey}
                 factFind={factFind}
                 updateFF={updateFF}
                 entityOwnerOptions={entityOwnerOptions}
@@ -1845,6 +1853,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               />
             ) : factFindSection === "liabilities" ? (
               <LiabilitiesForm
+                key={factFindMountKey}
                 factFind={factFind}
                 updateFF={updateFF}
                 entityOwnerOptions={entityOwnerOptions}
@@ -1852,6 +1861,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               />
             ) : factFindSection === "insurance-policies" ? (
               <InsurancePoliciesForm
+                key={factFindMountKey}
                 factFind={factFind}
                 updateFF={updateFF}
                 clientId={urlClientId}
@@ -1859,31 +1869,35 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               />
             ) : factFindSection === "income" ? (
               <IncomeForm
+                key={factFindMountKey}
                 factFind={factFind}
                 updateFF={updateFF}
               />
             ) : factFindSection === "expenses" ? (
               <ExpensesForm
+                key={factFindMountKey}
                 factFind={factFind}
                 updateFF={updateFF}
                 clientId={urlClientId}
               />
             ) : factFindSection === "goals" ? (
               <GoalsForm
+                key={factFindMountKey}
                 factFind={factFind}
                 updateFF={updateFF}
               />
             ) : factFindSection === "risk-profile" ? (
               <RiskProfileForm
+                key={factFindMountKey}
                 factFind={factFind}
                 updateFF={updateFF}
                 clientId={urlClientId}
                 loadRiskAndScope={loadRiskAndScope}
               />
             ) : factFindSection === "assumptions" ? (
-              <AssumptionsPanel factFind={factFind} updateFF={updateFF} />
+              <AssumptionsPanel key={factFindMountKey} factFind={factFind} updateFF={updateFF} />
             ) : factFindSection === "tax-super-planning" ? (
-              <TaxSuperPlanningForm factFind={factFind} updateFF={updateFF} />
+              <TaxSuperPlanningForm key={factFindMountKey} factFind={factFind} updateFF={updateFF} />
             ) : (
               <div style={{
                 padding: "40px 24px", borderRadius: 12,
@@ -2370,7 +2384,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           </button>
           {/* ── Input tools ── */}
           <button
-            onClick={() => { setFactFindOpen(!factFindOpen); if (!factFindOpen) { setAdviceOpen(false); setAdviceSection(null); } }}
+            onClick={() => { setFactFindOpen(!factFindOpen); if (!factFindOpen) { setFactFindMountKey(k => k + 1); setAdviceOpen(false); setAdviceSection(null); } }}
             style={{
               padding: "6px 14px", borderRadius: 6,
               border: factFindOpen ? "1px solid #6366f1" : "1px solid var(--ps-border-input)",
@@ -3071,7 +3085,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           background: "var(--ps-surface)", overflow: "hidden",
           minWidth: 320,
         }}>
-          <CashflowAssistant factFind={factFind} updateFF={updateFF} darkMode={darkMode} mode={mode || "cashflow"} onNavigate={(section) => { setFactFindOpen(true); setFactFindSection(section); }} factFindSection={factFindSection} />
+          <CashflowAssistant factFind={factFind} updateFF={updateFF} darkMode={darkMode} mode={mode || "cashflow"} onNavigate={(section) => { setFactFindOpen(true); setFactFindMountKey(k => k + 1); setFactFindSection(section); }} factFindSection={factFindSection} />
         </div>
       )}
       </div>
