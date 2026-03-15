@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFactFind } from '@/components/factfind/useFactFind';
+import { AiParaplanner } from '@/cashflow/components/advice/index.jsx';
 import ProgressBar from '@/components/factfind/ProgressBar';
 import FactFindClientDashboard from '@/components/factfind/FactFindClientDashboard';
 import LifeTimeline from '@/components/factfind/LifeTimeline';
@@ -16,7 +17,7 @@ import FactFindPopup from '@/components/factfind/FactFindPopup';
 
 export default function ClientFactFindAI() {
   const navigate = useNavigate();
-  const { factFind, loading, error, clientId } = useFactFind();
+  const { factFind, loading, error, updateSection, clientId } = useFactFind();
 
   // UI state
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'milestones'
@@ -161,99 +162,23 @@ export default function ClientFactFindAI() {
           }
         </div>
 
-        {/* Right: Co-pilot Panel (placeholder for now) */}
+        {/* Right panel — existing co-pilot, embedded mode */}
         {copilotOpen && (
           <div style={{
             width: 360, flexShrink: 0,
             borderLeft: '1px solid #E2E8F0',
             background: '#F1F5F9',
             paddingTop: 20,
-            display: 'flex', flexDirection: 'column',
-            overflow: 'hidden',
           }}>
-            {/* Placeholder co-pilot — will be replaced with <AiParaplanner embedded={true} /> */}
-            <div style={{
-              margin: '0 16px 16px', padding: '16px 20px',
-              background: 'linear-gradient(135deg, #312E81, #4338CA)',
-              borderRadius: 12, color: '#fff',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <div style={{
-                  width: 32, height: 32, borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.2)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 16,
-                }}>🤖</div>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 700 }}>Sage</div>
-                  <div style={{ fontSize: 10, opacity: 0.8 }}>AI Assistant</div>
-                </div>
-              </div>
-              <span style={{
-                display: 'inline-block', padding: '2px 8px',
-                borderRadius: 4, background: 'rgba(255,255,255,0.15)',
-                fontSize: 10, fontWeight: 600, letterSpacing: 0.5,
-              }}>
-                FACT FIND
-              </span>
-            </div>
-
-            {/* Voice button placeholder */}
-            <div style={{
-              margin: '0 16px 16px', padding: 16,
-              background: '#fff', borderRadius: 12,
-              border: '1px solid #E2E8F0', textAlign: 'center',
-            }}>
-              <div style={{
-                width: 56, height: 56, borderRadius: '50%',
-                background: '#EEF2FF', margin: '0 auto 8px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 24,
-              }}>🎙️</div>
-              <div style={{ fontSize: 12, color: '#64748B' }}>Speak with your adviser assistant</div>
-            </div>
-
-            {/* Quick starts placeholder */}
-            <div style={{ margin: '0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {['Tell me about my super', 'What is my net worth?', 'Help with insurance'].map((qs, i) => (
-                <button
-                  key={i}
-                  style={{
-                    padding: '8px 12px', borderRadius: 8,
-                    background: '#fff', border: '1px solid #E2E8F0',
-                    fontSize: 12, color: '#475569', cursor: 'pointer',
-                    textAlign: 'left',
-                  }}
-                >
-                  {qs}
-                </button>
-              ))}
-            </div>
-
-            {/* Chat input placeholder */}
-            <div style={{ marginTop: 'auto', padding: 16 }}>
-              <div style={{
-                display: 'flex', gap: 8,
-                padding: '8px 12px', borderRadius: 10,
-                background: '#fff', border: '1px solid #E2E8F0',
-              }}>
-                <input
-                  type="text"
-                  placeholder="Ask Sage anything..."
-                  style={{
-                    flex: 1, border: 'none', outline: 'none',
-                    fontSize: 13, color: '#1E293B',
-                    background: 'transparent',
-                  }}
-                />
-                <button style={{
-                  background: '#6366F1', border: 'none',
-                  borderRadius: 6, padding: '4px 12px',
-                  color: '#fff', fontSize: 12, fontWeight: 600,
-                  cursor: 'pointer',
-                }}>Send</button>
-              </div>
-            </div>
+            <AiParaplanner
+              factFind={factFind}
+              engineData={null}
+              updateAdvice={() => {}}
+              summaryMeta={null}
+              isOpen={true}
+              embedded={true}
+              onClose={() => setCopilotOpen(false)}
+            />
           </div>
         )}
       </div>
