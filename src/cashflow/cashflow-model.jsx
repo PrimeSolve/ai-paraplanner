@@ -1027,7 +1027,7 @@ Current context:
 
 function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvice, clientId }) {
   const isFactfindMode = mode === "factfind";
-  const [activeTop, setActiveTop] = useState("Summary of Results");
+  const [activeTop, setActiveTop] = useState(isFactfindMode ? "Dashboard" : "Summary of Results");
 
   const [clientInfo, setClientInfo] = useState(null);
 
