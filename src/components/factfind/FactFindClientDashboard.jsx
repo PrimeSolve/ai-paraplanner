@@ -14,23 +14,23 @@ function Panel({ title, icon, total, rows, onClick }) {
       onClick={onClick}
       onMouseEnter={e => { if (onClick) e.currentTarget.style.borderColor = '#6366F1'; }}
       onMouseLeave={e => { if (onClick) e.currentTarget.style.borderColor = '#E2E8F0'; }}
-      style={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: 10, overflow: 'hidden', cursor: onClick ? 'pointer' : 'default', transition: 'border-color 0.15s' }}>
-      <div style={{ padding: '10px 14px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      style={{ background: 'var(--ps-surface)', border: '1px solid var(--ps-border)', borderRadius: 10, overflow: 'hidden', cursor: onClick ? 'pointer' : 'default', transition: 'border-color 0.15s' }}>
+      <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--ps-border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 13 }}>{icon}</span>
-          <span style={{ fontSize: 10, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--ps-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</span>
         </div>
         {onClick && <span style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600 }}>Edit →</span>}
       </div>
       <div style={{ padding: '12px 14px' }}>
-        {total != null && <div style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', marginBottom: 8, letterSpacing: '-0.02em' }}>{fC(total)}</div>}
+        {total != null && <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--ps-text-primary)', marginBottom: 8, letterSpacing: '-0.02em' }}>{fC(total)}</div>}
         {rows && rows.map((r, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#475569' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--ps-text-secondary)' }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: r.color, display: 'inline-block', flexShrink: 0 }} />
               {r.label}
             </span>
-            <span style={{ fontSize: 11, fontWeight: 600, color: '#334155' }}>{fC(r.value)}</span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ps-text-body)' }}>{fC(r.value)}</span>
           </div>
         ))}
       </div>
@@ -145,11 +145,11 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
         <div onClick={() => onTileClick?.('personal')}
           onMouseEnter={e => e.currentTarget.style.borderColor = '#6366F1'}
           onMouseLeave={e => e.currentTarget.style.borderColor = '#E2E8F0'}
-          style={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: 10, overflow: 'hidden', cursor: 'pointer', transition: 'border-color 0.15s' }}>
-          <div style={{ padding: '10px 14px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          style={{ background: 'var(--ps-surface)', border: '1px solid var(--ps-border)', borderRadius: 10, overflow: 'hidden', cursor: 'pointer', transition: 'border-color 0.15s' }}>
+          <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--ps-border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 13 }}>👨‍👩‍👧‍👦</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Family & Entities</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--ps-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Family & Entities</span>
             </div>
             <span style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600 }}>Edit →</span>
           </div>
@@ -165,8 +165,8 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
               { l: 'Companies', v: companies.length },
               { l: 'SMSF', v: smsf.length },
             ].map((s, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#475569', marginBottom: 3 }}>
-                <span>{s.l}</span><span style={{ fontWeight: 600, color: '#0F172A' }}>{s.v}</span>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--ps-text-secondary)', marginBottom: 3 }}>
+                <span>{s.l}</span><span style={{ fontWeight: 600, color: 'var(--ps-text-primary)' }}>{s.v}</span>
               </div>
             ))}
           </div>
@@ -187,11 +187,11 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
         <div onClick={() => onTileClick?.('risk_profile')}
           onMouseEnter={e => e.currentTarget.style.borderColor = '#6366F1'}
           onMouseLeave={e => e.currentTarget.style.borderColor = '#E2E8F0'}
-          style={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: 10, overflow: 'hidden', cursor: 'pointer', transition: 'border-color 0.15s' }}>
-          <div style={{ padding: '10px 14px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          style={{ background: 'var(--ps-surface)', border: '1px solid var(--ps-border)', borderRadius: 10, overflow: 'hidden', cursor: 'pointer', transition: 'border-color 0.15s' }}>
+          <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--ps-border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 13 }}>📊</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Risk Profile</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--ps-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Risk Profile</span>
             </div>
             <span style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600 }}>Edit →</span>
           </div>
@@ -202,7 +202,7 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
                   <span style={{ fontSize: 11, fontWeight: 600, color: '#1E293B' }}>{p.name}</span>
                   <span style={{ fontSize: 10, fontWeight: 700, color: p.color }}>{p.profile || '—'}</span>
                 </div>
-                <div style={{ height: 4, background: '#F1F5F9', borderRadius: 2 }}>
+                <div style={{ height: 4, background: 'var(--ps-surface-alt)', borderRadius: 2 }}>
                   <div style={{ width: p.profile ? '40%' : '0%', height: '100%', background: p.color, borderRadius: 2 }} />
                 </div>
               </div>
@@ -217,22 +217,22 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
         <div onClick={() => onTileClick?.('insurance')}
           onMouseEnter={e => e.currentTarget.style.borderColor = '#6366F1'}
           onMouseLeave={e => e.currentTarget.style.borderColor = '#E2E8F0'}
-          style={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: 10, overflow: 'hidden', cursor: 'pointer', transition: 'border-color 0.15s' }}>
-          <div style={{ padding: '10px 14px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          style={{ background: 'var(--ps-surface)', border: '1px solid var(--ps-border)', borderRadius: 10, overflow: 'hidden', cursor: 'pointer', transition: 'border-color 0.15s' }}>
+          <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--ps-border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 13 }}>🛡️</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Insurance Policies</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--ps-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Insurance Policies</span>
             </div>
             <span style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600 }}>Edit →</span>
           </div>
           <div style={{ padding: '12px 14px' }}>
             {policies.length === 0 ? (
-              <div style={{ fontSize: 11, color: '#94A3B8', fontStyle: 'italic' }}>No policies added yet</div>
+              <div style={{ fontSize: 11, color: 'var(--ps-text-subtle)', fontStyle: 'italic' }}>No policies added yet</div>
             ) : policies.slice(0, 4).map((p, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: i < Math.min(policies.length, 4) - 1 ? '1px solid #F1F5F9' : 'none' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: i < Math.min(policies.length, 4) - 1 ? '1px solid var(--ps-border-light)' : 'none' }}>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 500, color: '#1E293B' }}>{p.policy_type || p.type || 'Policy'} — {p.life_insured || p.owner || ''}</div>
-                  <div style={{ fontSize: 10, color: '#94A3B8' }}>{p.insurer || ''}</div>
+                  <div style={{ fontSize: 10, color: 'var(--ps-text-subtle)' }}>{p.insurer || ''}</div>
                 </div>
                 <div style={{ fontSize: 12, fontWeight: 600, color: '#1E293B' }}>{fC(parseFloat(p.cover_amount) || 0)}</div>
               </div>
@@ -244,23 +244,23 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
         <div onClick={() => onTileClick?.('advice_reason')}
           onMouseEnter={e => e.currentTarget.style.borderColor = '#6366F1'}
           onMouseLeave={e => e.currentTarget.style.borderColor = '#E2E8F0'}
-          style={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: 10, overflow: 'hidden', cursor: 'pointer', transition: 'border-color 0.15s' }}>
-          <div style={{ padding: '10px 14px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          style={{ background: 'var(--ps-surface)', border: '1px solid var(--ps-border)', borderRadius: 10, overflow: 'hidden', cursor: 'pointer', transition: 'border-color 0.15s' }}>
+          <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--ps-border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 13 }}>🎯</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Goals & Objectives</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--ps-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Goals & Objectives</span>
             </div>
             <span style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600 }}>Edit →</span>
           </div>
           <div style={{ padding: '12px 14px' }}>
             {goals.length === 0 ? (
-              <div style={{ fontSize: 11, color: '#94A3B8', fontStyle: 'italic' }}>No goals added yet — use the co-pilot to capture client objectives</div>
+              <div style={{ fontSize: 11, color: 'var(--ps-text-subtle)', fontStyle: 'italic' }}>No goals added yet — use the co-pilot to capture client objectives</div>
             ) : goals.slice(0, 5).map((g, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < Math.min(goals.length, 5) - 1 ? '1px solid #F1F5F9' : 'none' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < Math.min(goals.length, 5) - 1 ? '1px solid var(--ps-border-light)' : 'none' }}>
                 <span style={{ fontSize: 14 }}>{g.icon || '🎯'}</span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 12, fontWeight: 500, color: '#1E293B' }}>{g.label || g.goal || g.description || 'Goal'}</div>
-                  <div style={{ fontSize: 10, color: '#94A3B8' }}>{g.entity || g.owner || ''}</div>
+                  <div style={{ fontSize: 10, color: 'var(--ps-text-subtle)' }}>{g.entity || g.owner || ''}</div>
                 </div>
                 {g.year && <div style={{ fontSize: 12, fontWeight: 700, color: '#4F46E5' }}>{g.year}</div>}
               </div>
