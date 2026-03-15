@@ -6,7 +6,7 @@ import { useCompletionLogic } from '@/components/factfind/useCompletionLogic';
 import ProgressBar from '@/components/factfind/ProgressBar';
 import FactFindClientDashboard from '@/components/factfind/FactFindClientDashboard';
 import LifeTimeline from '@/components/factfind/LifeTimeline';
-import FactFindPopup from '@/components/factfind/FactFindPopup';
+
 import { useVoiceSession } from '../components/factfind/useVoiceSession';
 
 /**
@@ -313,8 +313,25 @@ export default function ClientFactFindAI() {
 
   // Dashboard state
   const [dashView, setDashView] = useState('dashboard');
-  const [factFindPopupOpen, setFactFindPopupOpen] = useState(false);
-  const [factFindPopupSection, setFactFindPopupSection] = useState(null);
+
+  const goToSection = (sectionId) => {
+    const map = {
+      personal: '/FactFindPersonal',
+      dependants: '/FactFindDependants',
+      trusts_companies: '/FactFindTrusts',
+      smsf: '/FactFindSMSF',
+      superannuation: '/FactFindSuperannuation',
+      investments: '/FactFindInvestment',
+      assets_liabilities: '/FactFindAssetsLiabilities',
+      income_expenses: '/FactFindIncomeExpenses',
+      advice_reason: '/FactFindAdviceReason',
+      risk_profile: '/FactFindRiskProfile',
+      insurance: '/FactFindInsurance',
+      super_tax: '/FactFindSuperTax',
+    };
+    const route = map[sectionId];
+    if (route) navigate(route + window.location.search);
+  };
 
   // Completion logic
   const { calculateAllSectionCompletion } = useCompletionLogic();
@@ -343,7 +360,7 @@ export default function ClientFactFindAI() {
   const { status: voiceStatus, startVoice, stopVoice, connected: voiceConnected, connecting: voiceConnecting } = useVoiceSession({
     factFind,
     updateSection,
-    activeTabId: factFindPopupSection || 'dashboard',
+    activeTabId: 'dashboard',
     clientId,
   });
 
@@ -384,7 +401,7 @@ export default function ClientFactFindAI() {
           <button style={{ display:'flex', alignItems:'center', gap:6, background:'#4F46E5', border:'none', borderRadius:7, padding:'7px 16px', fontSize:12, fontWeight:700, color:'white', cursor:'pointer', marginRight:8 }}>
             + Close Co-pilot
           </button>
-          <button onClick={()=>{ setFactFindPopupSection(null); setFactFindPopupOpen(true); }} style={{ display:'flex', alignItems:'center', gap:6, background:'white', border:'1px solid #E2E8F0', borderRadius:7, padding:'7px 14px', fontSize:12, fontWeight:600, color:'#475569', cursor:'pointer' }}>
+          <button onClick={()=>navigate('/FactFindDashboard' + window.location.search)} style={{ display:'flex', alignItems:'center', gap:6, background:'white', border:'1px solid #E2E8F0', borderRadius:7, padding:'7px 14px', fontSize:12, fontWeight:600, color:'#475569', cursor:'pointer' }}>
             📋 Fact Find
           </button>
         </div>
@@ -409,7 +426,7 @@ export default function ClientFactFindAI() {
             <FactFindClientDashboard
               factFind={factFind}
               completionData={completionData}
-              onTileClick={(sectionId)=>{ setFactFindPopupSection(sectionId); setFactFindPopupOpen(true); }}
+              onTileClick={goToSection}
             />
           ) : (
             <LifeTimeline factFind={factFind} />
@@ -462,13 +479,6 @@ export default function ClientFactFindAI() {
         </div>
       </div>
 
-      {/* Fact Find popup overlay */}
-      {factFindPopupOpen && (
-        <FactFindPopup
-          section={factFindPopupSection}
-          onClose={()=>setFactFindPopupOpen(false)}
-        />
-      )}
     </div>
   );
 }
