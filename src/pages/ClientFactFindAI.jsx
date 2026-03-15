@@ -444,16 +444,21 @@ export default function ClientFactFindAI() {
           </div>
         </div>
 
-        {/* Chat co-pilot — existing CashflowModel in copilot-only mode */}
-        <div style={{ flex:1, overflow:'hidden' }}>
-          <CashflowModel
-            mode="factfind"
-            copilotOnly={true}
-            initialData={initialData}
-            onDataChange={handleDataChange}
-            onBack={()=>navigate(-1)}
-            clientId={clientId}
-          />
+        {/* Chat co-pilot */}
+        <div style={{ flex:1, overflowY:'auto', padding:16, background:'#F8FAFC', display:'flex', flexDirection:'column', gap:10 }}>
+          <div style={{ background:'white', borderRadius:8, padding:'10px 12px', fontSize:13, color:'#334155', lineHeight:1.5, border:'1px solid #E2E8F0' }}>
+            Welcome — this is your financial fact find. Work through each section at your own pace, filling in as much as you can. I'll handle the data entry.
+          </div>
+          <div style={{ fontSize:10, fontWeight:700, color:'#94A3B8', textTransform:'uppercase', letterSpacing:'0.06em', marginTop:4 }}>Quick start</div>
+          {['I have 2 super funds, total balance around $230k','I own my home, worth about $550k','I earn $120k a year, my partner earns $55k','We want to retire at 60','We have 2 kids, ages 8 and 11','We have a mortgage of $410k'].map((q,i)=>(
+            <div key={i} style={{ fontSize:12, color:'#475569', padding:'7px 11px', border:'1px solid #E2E8F0', borderRadius:7, cursor:'pointer', background:'white' }}>{q}</div>
+          ))}
+        </div>
+        <div style={{ padding:'12px 16px', borderTop:'1px solid #E2E8F0', background:'white', flexShrink:0 }}>
+          <div style={{ display:'flex', gap:8, alignItems:'center', border:'1px solid #D1D5DB', borderRadius:8, padding:'8px 12px' }}>
+            <input type="text" placeholder="Tell the co-pilot what to add..." style={{ flex:1, border:'none', background:'transparent', fontSize:13, outline:'none', color:'#1E293B' }}/>
+            <button style={{ background:'#4F46E5', color:'white', border:'none', borderRadius:6, width:28, height:28, cursor:'pointer', fontSize:12, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>▶</button>
+          </div>
         </div>
       </div>
 
