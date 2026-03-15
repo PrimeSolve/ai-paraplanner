@@ -19,6 +19,7 @@ import { ModelComparisonDashboard, ModelComparisonDetail, AdviceSummaryTable, Sc
 import { AgedCarePage, SocialSecurityTable, EligibilityTable, SuperAssumptionsTable, SuperProductPage, PensionProductPage, BondProductPage, AnnuityProductPage, InsurancePremiumProjection, InsuranceProjectionPage, WrapProjectionPage, PotentialDeathTaxPage, AssumptionsPanel, BasicAssumptionsForm, AssetOverridesPage, AssetAssumptionsPage, SOADocumentBuilder, altEx, altSurvivalPct } from "./components/products/index.jsx";
 import { PRINCIPAL_SUB_SECTIONS, CHILD_DEFAULTS, DEPENDANT_DEFAULTS, SUPER_DEFAULTS, PENSION_DEFAULTS, ANNUITY_DEFAULTS, DB_DEFAULTS, WRAP_DEFAULTS, INV_BOND_DEFAULTS, PrincipalsForm, DependantsForm, SuperannuationForm, InvestmentsForm, TrustsCompaniesForm, SMSFForm, AssetsForm, LiabilitiesForm, InsurancePoliciesForm, IncomeForm, ExpensesForm, GoalsForm, RiskProfileForm, ScopeOfAdviceForm } from "./components/factfind/index.jsx";
 import { TransactionsForm, ProductReplacementForm, AiFactFind, AiParaplanner, StrategyForm, AdviceProductsEntitiesForm, AdviceInsuranceForm, TaxSuperPlanningForm, AssumptionsForm, PortfolioForm } from "./components/advice/index.jsx";
+import FactFindClientDashboard from '@/components/factfind/FactFindClientDashboard';
 import { getAccessToken } from '@/auth/msalInstance';
 import { adviceHistoryApi } from '@/api/adviceHistoryApi';
 class CashflowErrorBoundary extends React.Component {
@@ -2623,7 +2624,32 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
         )}
 
         {/* Render content */}
-        {isDefensiveAssets ? (
+        {isFactfindMode && activeTop === "Dashboard" ? (
+          <FactFindClientDashboard
+            factFind={factFind}
+            completionData={{}}
+            onTileClick={(sectionId) => {
+              const map = {
+                personal: '/FactFindPersonal',
+                dependants: '/FactFindDependants',
+                trusts_companies: '/FactFindTrusts',
+                smsf: '/FactFindSMSF',
+                superannuation: '/FactFindSuperannuation',
+                investments: '/FactFindInvestment',
+                assets_liabilities: '/FactFindAssetsLiabilities',
+                income_expenses: '/FactFindIncomeExpenses',
+                advice_reason: '/FactFindAdviceReason',
+                risk_profile: '/FactFindRiskProfile',
+                insurance: '/FactFindInsurance',
+                super_tax: '/FactFindSuperTax',
+              };
+              const route = map[sectionId];
+              if (route) window.location.href = route + window.location.search;
+            }}
+          />
+        ) : isFactfindMode && activeTop === "Milestones" ? (
+          <MilestonesDashboard dynamicMilestones={[]} />
+        ) : isDefensiveAssets ? (
           <AssetChartPage holdings={defensiveHoldings} years={PROJ_YEARS} assetTypes={DEFENSIVE_ASSET_TYPES} title="Defensive Assets — End Value by Holding" />
         ) : isGrowthAssets ? (
           <AssetChartPage holdings={growthHoldings} years={PROJ_YEARS} assetTypes={GROWTH_ASSET_TYPES} title="Growth Assets — End Value by Holding" />
