@@ -3117,7 +3117,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
           <PotentialDeathTaxPage />
         ) : activePageData ? (
           <div>
-            {isFinancialSummary && showSummaryDashboard && netWorthChartData && summaryMeta && (
+            {!isFactfindMode && isFinancialSummary && showSummaryDashboard && netWorthChartData && summaryMeta && (
               <FinancialSummaryDashboard
                 chartData={netWorthChartData}
                 cashflowData={fsCashflowChartData}
