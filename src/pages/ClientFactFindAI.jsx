@@ -435,7 +435,7 @@ export default function ClientFactFindAI() {
       </div>
 
       {/* RIGHT — co-pilot with voice */}
-      <div style={{ width:380, flexShrink:0, borderLeft:'1px solid #E2E8F0', background:'white', display:'flex', flexDirection:'column', height:'100vh' }}>
+      <div style={{ width:380, flexShrink:0, borderLeft:'1px solid #E2E8F0', background:'white', display:'flex', flexDirection:'column' }}>
         {/* Indigo header */}
         <div style={{ background:'#4F46E5', flexShrink:0 }}>
           <div style={{ padding:'12px 16px 10px', display:'flex', alignItems:'center', gap:8 }}>
