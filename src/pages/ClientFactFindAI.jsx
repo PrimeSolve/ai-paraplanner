@@ -1,13 +1,7 @@
-import React, { useMemo, useRef, useCallback, useState } from 'react';
+import React, { useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CashflowModel from '@/cashflow/cashflow-model.jsx';
 import { useFactFind } from '@/components/factfind/useFactFind';
-import { useCompletionLogic } from '@/components/factfind/useCompletionLogic';
-import ProgressBar from '@/components/factfind/ProgressBar';
-import FactFindClientDashboard from '@/components/factfind/FactFindClientDashboard';
-import LifeTimeline from '@/components/factfind/LifeTimeline';
-
-import { useVoiceSession } from '../components/factfind/useVoiceSession';
 
 /**
  * Convert the DB factFind object (as returned by the useFactFind hook)
@@ -311,36 +305,8 @@ export default function ClientFactFindAI() {
   const navigate = useNavigate();
   const { factFind, loading, error, updateSection, clientId } = useFactFind();
 
-  // Dashboard state
-  const [dashView, setDashView] = useState('dashboard');
-
-  const goToSection = (sectionId) => {
-    const map = {
-      personal: '/FactFindPersonal',
-      dependants: '/FactFindDependants',
-      trusts_companies: '/FactFindTrusts',
-      smsf: '/FactFindSMSF',
-      superannuation: '/FactFindSuperannuation',
-      investments: '/FactFindInvestment',
-      assets_liabilities: '/FactFindAssetsLiabilities',
-      income_expenses: '/FactFindIncomeExpenses',
-      advice_reason: '/FactFindAdviceReason',
-      risk_profile: '/FactFindRiskProfile',
-      insurance: '/FactFindInsurance',
-      super_tax: '/FactFindSuperTax',
-    };
-    const route = map[sectionId];
-    if (route) navigate(route + window.location.search);
-  };
-
-  // Completion logic
-  const { calculateAllSectionCompletion } = useCompletionLogic();
-
   // Transform DB data → CashflowModel format (only recompute when factFind changes)
   const initialData = useMemo(() => dbToModelFormat(factFind), [factFind]);
-
-  // Completion data derived from the DB-level factFind
-  const completionData = useMemo(() => calculateAllSectionCompletion(factFind), [factFind, calculateAllSectionCompletion]);
 
   // Debounced save: on every CashflowModel data change, save back to DB
   const saveTimerRef = useRef(null);
@@ -356,13 +322,6 @@ export default function ClientFactFindAI() {
       });
     }, 2000);
   }, [factFind?.id, updateSection]);
-
-  const { status: voiceStatus, startVoice, stopVoice, connected: voiceConnected, connecting: voiceConnecting } = useVoiceSession({
-    factFind,
-    updateSection,
-    activeTabId: 'dashboard',
-    clientId,
-  });
 
   if (loading) {
     return (
@@ -381,104 +340,15 @@ export default function ClientFactFindAI() {
   }
 
   return (
-    <div style={{ width:'100vw', height:'100vh', display:'flex', flexDirection:'row', overflow:'hidden' }}>
-
-      {/* LEFT — dashboard */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0 }}>
-
-        {/* Top nav */}
-        <div style={{ display:'flex', alignItems:'center', background:'white', borderBottom:'1px solid #E2E8F0', padding:'0 16px', height:48, flexShrink:0, gap:0 }}>
-          <button onClick={()=>navigate(-1)} style={{ display:'flex', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', color:'#475569', fontSize:12, fontWeight:500, padding:'0 16px 0 0', borderRight:'1px solid #E2E8F0', height:'100%' }}>
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            Back to Client
-          </button>
-          <div style={{ padding:'0 16px', borderRight:'1px solid #E2E8F0', height:'100%', display:'flex', flexDirection:'column', justifyContent:'center' }}>
-            <div style={{ fontSize:9, fontWeight:700, color:'#94A3B8', textTransform:'uppercase', letterSpacing:'0.1em' }}>Client Fact Find</div>
-            <div style={{ fontSize:13, fontWeight:700, color:'#0F172A' }}>{factFind?.personal_details?.first_name} {factFind?.personal_details?.last_name}</div>
-          </div>
-          <div style={{ flex:1 }}/>
-          <span style={{ fontSize:11, color:'#94A3B8', marginRight:12 }}>✓ Saved</span>
-          <button style={{ display:'flex', alignItems:'center', gap:6, background:'#4F46E5', border:'none', borderRadius:7, padding:'7px 16px', fontSize:12, fontWeight:700, color:'white', cursor:'pointer', marginRight:8 }}>
-            + Close Co-pilot
-          </button>
-          <button onClick={()=>navigate('/FactFindDashboard' + window.location.search)} style={{ display:'flex', alignItems:'center', gap:6, background:'white', border:'1px solid #E2E8F0', borderRadius:7, padding:'7px 14px', fontSize:12, fontWeight:600, color:'#475569', cursor:'pointer' }}>
-            📋 Fact Find
-          </button>
-        </div>
-
-        {/* Progress bar */}
-        <div style={{ flexShrink:0, borderBottom:'1px solid #E2E8F0' }}>
-          <ProgressBar completionData={completionData} />
-        </div>
-
-        {/* Dashboard / Milestones tabs */}
-        <div style={{ display:'flex', background:'white', borderBottom:'1px solid #E2E8F0', flexShrink:0 }}>
-          {[{id:'dashboard',label:'Dashboard'},{id:'milestones',label:'Milestones'}].map(t=>(
-            <button key={t.id} onClick={()=>setDashView(t.id)} style={{ padding:'10px 20px', fontSize:13, fontWeight:600, color:dashView===t.id?'#4F46E5':'#64748B', background:'none', border:'none', borderBottom:dashView===t.id?'2px solid #4F46E5':'2px solid transparent', cursor:'pointer' }}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Dashboard content — scrollable */}
-        <div style={{ flex:1, overflowY:'auto', background:'#F1F5F9' }}>
-          {dashView === 'dashboard' ? (
-            <FactFindClientDashboard
-              factFind={factFind}
-              completionData={completionData}
-              onTileClick={goToSection}
-            />
-          ) : (
-            <LifeTimeline factFind={factFind} />
-          )}
-        </div>
-      </div>
-
-      {/* RIGHT — co-pilot with voice */}
-      <div style={{ width:380, flexShrink:0, borderLeft:'1px solid #E2E8F0', background:'white', display:'flex', flexDirection:'column', height:'100vh' }}>
-        {/* Indigo header */}
-        <div style={{ background:'#4F46E5', flexShrink:0 }}>
-          <div style={{ padding:'12px 16px 10px', display:'flex', alignItems:'center', gap:8 }}>
-            <div style={{ width:8, height:8, borderRadius:'50%', background: voiceConnected ? '#34D399' : '#A5B4FC' }}/>
-            <span style={{ fontSize:13, fontWeight:700, color:'white' }}>Co-pilot</span>
-            <span style={{ fontSize:10, background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.25)', borderRadius:20, padding:'2px 8px', color:'white', fontWeight:600 }}>FACT FIND</span>
-            <span style={{ marginLeft:'auto', fontSize:11, color:'rgba(255,255,255,0.7)' }}>
-              {factFind?.personal_details?.first_name} {factFind?.personal_details?.last_name}
-            </span>
-          </div>
-          {/* Voice button */}
-          <div style={{ padding:'0 16px 14px' }}>
-            <button
-              onClick={voiceConnected ? stopVoice : startVoice}
-              style={{ width:'100%', padding:'11px 0', borderRadius:8, border:'none', cursor:'pointer', background: voiceConnected ? 'rgba(255,255,255,0.2)' : 'white', color: voiceConnected ? 'white' : '#4F46E5', fontSize:13, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
-              <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                <rect x="9" y="2" width="6" height="12" rx="3"/>
-                <path d="M5 10a7 7 0 0014 0"/><line x1="12" y1="19" x2="12" y2="22"/>
-                <line x1="8" y1="22" x2="16" y2="22"/>
-              </svg>
-              {voiceConnecting ? 'Connecting…' : voiceConnected ? 'Connected — tap to end' : 'Speak with your adviser assistant'}
-            </button>
-          </div>
-        </div>
-
-        {/* Chat co-pilot */}
-        <div style={{ flex:1, overflowY:'auto', padding:16, background:'#F8FAFC', display:'flex', flexDirection:'column', gap:10 }}>
-          <div style={{ background:'white', borderRadius:8, padding:'10px 12px', fontSize:13, color:'#334155', lineHeight:1.5, border:'1px solid #E2E8F0' }}>
-            Welcome — this is your financial fact find. Work through each section at your own pace, filling in as much as you can. I'll handle the data entry.
-          </div>
-          <div style={{ fontSize:10, fontWeight:700, color:'#94A3B8', textTransform:'uppercase', letterSpacing:'0.06em', marginTop:4 }}>Quick start</div>
-          {['I have 2 super funds, total balance around $230k','I own my home, worth about $550k','I earn $120k a year, my partner earns $55k','We want to retire at 60','We have 2 kids, ages 8 and 11','We have a mortgage of $410k'].map((q,i)=>(
-            <div key={i} style={{ fontSize:12, color:'#475569', padding:'7px 11px', border:'1px solid #E2E8F0', borderRadius:7, cursor:'pointer', background:'white' }}>{q}</div>
-          ))}
-        </div>
-        <div style={{ padding:'12px 16px', borderTop:'1px solid #E2E8F0', background:'white', flexShrink:0 }}>
-          <div style={{ display:'flex', gap:8, alignItems:'center', border:'1px solid #D1D5DB', borderRadius:8, padding:'8px 12px' }}>
-            <input type="text" placeholder="Tell the co-pilot what to add..." style={{ flex:1, border:'none', background:'transparent', fontSize:13, outline:'none', color:'#1E293B' }}/>
-            <button style={{ background:'#4F46E5', color:'white', border:'none', borderRadius:6, width:28, height:28, cursor:'pointer', fontSize:12, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>▶</button>
-          </div>
-        </div>
-      </div>
-
+    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
+      <CashflowModel
+        mode="factfind"
+        hideAdvice={true}
+        initialData={initialData}
+        onDataChange={handleDataChange}
+        onBack={() => navigate(-1)}
+        clientId={clientId}
+      />
     </div>
   );
 }
