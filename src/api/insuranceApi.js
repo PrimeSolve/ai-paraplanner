@@ -16,6 +16,32 @@ function normaliseRecord(record) {
 }
 
 // ──────────────────────────────────────────────────────────────
+// PremiumFrequency enum mapping
+// Frontend: "1"=Weekly, "2"=Fortnightly, "3"=Monthly,
+//           "4"=Quarterly, "5"=Half-yearly, "6"=Annual
+// API:      Weekly=0, Fortnightly=1, Monthly=2,
+//           Quarterly=3, HalfYearly=4, Annual=5
+// ──────────────────────────────────────────────────────────────
+
+const PREMIUM_FREQ_TO_API = {
+  '1': 0,  // Weekly
+  '2': 1,  // Fortnightly
+  '3': 2,  // Monthly
+  '4': 3,  // Quarterly
+  '5': 4,  // Half-yearly
+  '6': 5,  // Annual
+};
+
+const PREMIUM_FREQ_FROM_API = {
+  0: '1', 'Weekly': '1',
+  1: '2', 'Fortnightly': '2',
+  2: '3', 'Monthly': '3',
+  3: '4', 'Quarterly': '4',
+  4: '5', 'HalfYearly': '5', 'SemiAnnually': '5',
+  5: '6', 'Annual': '6', 'Annually': '6',
+};
+
+// ──────────────────────────────────────────────────────────────
 // Outbound mapping: frontend insurance policy → API payload
 // ──────────────────────────────────────────────────────────────
 
@@ -45,7 +71,7 @@ function buildInsurancePayload(data, clientGuidMap) {
   apiData.premiumIp = data.premium_ip ? parseFloat(data.premium_ip) : null;
   apiData.premiumIp2 = data.premium_ip2 ? parseFloat(data.premium_ip2) : null;
 
-  apiData.premiumFrequency = data.pol_freq || '';
+  apiData.premiumFrequency = (data.pol_freq && PREMIUM_FREQ_TO_API[data.pol_freq] !== undefined) ? PREMIUM_FREQ_TO_API[data.pol_freq] : null;
   apiData.premiumStructure = data.pol_structure || '';
 
   if (clientGuidMap) {
@@ -84,7 +110,9 @@ function mapInsuranceFromApi(record) {
     premium_trauma: n.premiumTrauma != null ? String(n.premiumTrauma) : '',
     premium_ip: n.premiumIp != null ? String(n.premiumIp) : '',
     premium_ip2: n.premiumIp2 != null ? String(n.premiumIp2) : '',
-    pol_freq: n.premiumFrequency || '',
+    pol_freq: (n.premiumFrequency !== undefined && n.premiumFrequency !== null)
+      ? (PREMIUM_FREQ_FROM_API[n.premiumFrequency] ?? PREMIUM_FREQ_FROM_API[String(n.premiumFrequency)] ?? '')
+      : '',
     pol_structure: n.premiumStructure || '',
   };
 }
