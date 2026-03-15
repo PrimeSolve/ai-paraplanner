@@ -1,7 +1,12 @@
-import React, { useMemo, useRef, useCallback } from 'react';
+import React, { useMemo, useRef, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CashflowModel from '@/cashflow/cashflow-model.jsx';
 import { useFactFind } from '@/components/factfind/useFactFind';
+import { useCompletionLogic } from '@/components/factfind/useCompletionLogic';
+import ProgressBar from '@/components/factfind/ProgressBar';
+import FactFindClientDashboard from '@/components/factfind/FactFindClientDashboard';
+import LifeTimeline from '@/components/factfind/LifeTimeline';
+import FactFindPopup from '@/components/factfind/FactFindPopup';
 
 /**
  * Convert the DB factFind object (as returned by the useFactFind hook)
@@ -305,8 +310,19 @@ export default function ClientFactFindAI() {
   const navigate = useNavigate();
   const { factFind, loading, error, updateSection, clientId } = useFactFind();
 
+  // Dashboard state
+  const [dashView, setDashView] = useState('dashboard');
+  const [factFindPopupOpen, setFactFindPopupOpen] = useState(false);
+  const [factFindPopupSection, setFactFindPopupSection] = useState(null);
+
+  // Completion logic
+  const { calculateAllSectionCompletion } = useCompletionLogic();
+
   // Transform DB data → CashflowModel format (only recompute when factFind changes)
   const initialData = useMemo(() => dbToModelFormat(factFind), [factFind]);
+
+  // Completion data derived from the DB-level factFind
+  const completionData = useMemo(() => calculateAllSectionCompletion(factFind), [factFind, calculateAllSectionCompletion]);
 
   // Debounced save: on every CashflowModel data change, save back to DB
   const saveTimerRef = useRef(null);
@@ -340,15 +356,70 @@ export default function ClientFactFindAI() {
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
-      <CashflowModel
-        mode="factfind"
-        hideAdvice={true}
-        initialData={initialData}
-        onDataChange={handleDataChange}
-        onBack={() => navigate(-1)}
-        clientId={clientId}
-      />
+    <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Dashboard panel above CashflowModel */}
+      <div style={{ flexShrink: 0, borderBottom: '1px solid #e2e8f0' }}>
+        <ProgressBar completionData={completionData} />
+
+        {/* Dashboard / Milestones tab toggle */}
+        <div style={{ display: 'flex', gap: 0, background: '#fff', borderBottom: '1px solid #e2e8f0' }}>
+          {['dashboard', 'milestones'].map(tab => (
+            <button
+              key={tab}
+              onClick={() => setDashView(tab)}
+              style={{
+                padding: '10px 24px',
+                fontSize: 13,
+                fontWeight: 600,
+                color: dashView === tab ? '#3b82f6' : '#64748b',
+                background: 'none',
+                border: 'none',
+                borderBottom: dashView === tab ? '2px solid #3b82f6' : '2px solid transparent',
+                cursor: 'pointer',
+                textTransform: 'capitalize',
+              }}
+            >
+              {tab === 'dashboard' ? 'Dashboard' : 'Milestones'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab content — scrollable, takes remaining height minus CashflowModel */}
+      <div style={{ height: 280, flexShrink: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
+        {dashView === 'dashboard' ? (
+          <FactFindClientDashboard
+            factFind={factFind}
+            completionData={completionData}
+            onTileClick={(sectionId) => {
+              setFactFindPopupSection(sectionId);
+              setFactFindPopupOpen(true);
+            }}
+          />
+        ) : (
+          <LifeTimeline factFind={factFind} />
+        )}
+      </div>
+
+      {/* Existing CashflowModel — completely unchanged */}
+      <div style={{ flex: 1, overflow: 'hidden' }}>
+        <CashflowModel
+          mode="factfind"
+          hideAdvice={true}
+          initialData={initialData}
+          onDataChange={handleDataChange}
+          onBack={() => navigate(-1)}
+          clientId={clientId}
+        />
+      </div>
+
+      {/* FactFindPopup overlay */}
+      {factFindPopupOpen && (
+        <FactFindPopup
+          section={factFindPopupSection}
+          onClose={() => setFactFindPopupOpen(false)}
+        />
+      )}
     </div>
   );
 }
