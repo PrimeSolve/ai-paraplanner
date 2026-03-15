@@ -2678,6 +2678,17 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
                 if (route) window.location.href = route + window.location.search;
               }}
             />
+          {fsCashflowChartData && summaryMeta && (
+            <div style={{ padding: '0 16px 24px' }}>
+              <FinancialSummaryDashboard
+                chartData={netWorthChartData}
+                cashflowData={fsCashflowChartData}
+                meta={summaryMeta}
+                projYears={PROJ_YEARS}
+                hideKPIs={true}
+              />
+            </div>
+          )}
           </>
         ) : isFactfindMode && activeTop === "Milestones" ? (
           <MilestonesDashboard dynamicMilestones={[]} />
