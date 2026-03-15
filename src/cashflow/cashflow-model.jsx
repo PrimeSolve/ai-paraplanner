@@ -2655,28 +2655,40 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
 
         {/* Render content */}
         {isFactfindMode && activeTop === "Dashboard" ? (
-          <FactFindClientDashboard
-            factFind={factFind}
-            completionData={{}}
-            onTileClick={(sectionId) => {
-              const map = {
-                personal: '/FactFindPersonal',
-                dependants: '/FactFindDependants',
-                trusts_companies: '/FactFindTrusts',
-                smsf: '/FactFindSMSF',
-                superannuation: '/FactFindSuperannuation',
-                investments: '/FactFindInvestment',
-                assets_liabilities: '/FactFindAssetsLiabilities',
-                income_expenses: '/FactFindIncomeExpenses',
-                advice_reason: '/FactFindAdviceReason',
-                risk_profile: '/FactFindRiskProfile',
-                insurance: '/FactFindInsurance',
-                super_tax: '/FactFindSuperTax',
-              };
-              const route = map[sectionId];
-              if (route) window.location.href = route + window.location.search;
-            }}
-          />
+          <>
+            <FactFindClientDashboard
+              factFind={factFind}
+              completionData={{}}
+              onTileClick={(sectionId) => {
+                const map = {
+                  personal: '/FactFindPersonal',
+                  dependants: '/FactFindDependants',
+                  trusts_companies: '/FactFindTrusts',
+                  smsf: '/FactFindSMSF',
+                  superannuation: '/FactFindSuperannuation',
+                  investments: '/FactFindInvestment',
+                  assets_liabilities: '/FactFindAssetsLiabilities',
+                  income_expenses: '/FactFindIncomeExpenses',
+                  advice_reason: '/FactFindAdviceReason',
+                  risk_profile: '/FactFindRiskProfile',
+                  insurance: '/FactFindInsurance',
+                  super_tax: '/FactFindSuperTax',
+                };
+                const route = map[sectionId];
+                if (route) window.location.href = route + window.location.search;
+              }}
+            />
+            {netWorthChartData && summaryMeta && (
+              <div style={{ padding: '0 16px 24px' }}>
+                <FinancialSummaryDashboard
+                  chartData={netWorthChartData}
+                  cashflowData={fsCashflowChartData}
+                  meta={summaryMeta}
+                  projYears={PROJ_YEARS}
+                />
+              </div>
+            )}
+          </>
         ) : isFactfindMode && activeTop === "Milestones" ? (
           <MilestonesDashboard dynamicMilestones={[]} />
         ) : isDefensiveAssets ? (
