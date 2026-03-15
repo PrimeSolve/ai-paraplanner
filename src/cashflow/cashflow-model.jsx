@@ -2498,7 +2498,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
       </div>
 
       {/* Second-level tabs */}
-      {subTabs.length > 0 && (
+      {subTabs.length > 0 && !isFactfindMode && (
         <div style={{
           display: "flex",
           gap: 0,
