@@ -30,10 +30,10 @@ export default function ProgressBar({ completionData = {}, onSectionClick }) {
   const next = SECTIONS.find(s => (completionData[s.key] || 0) < 100);
 
   return (
-    <div style={{ background: 'white', borderBottom: '1px solid #E2E8F0', padding: '10px 20px' }}>
+    <div style={{ background: 'var(--ps-surface)', borderBottom: '1px solid var(--ps-border)', padding: '10px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap' }}>Fact find completion</span>
-        <div style={{ flex: 1, height: 8, background: '#E2E8F0', borderRadius: 4 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ps-text-primary)', whiteSpace: 'nowrap' }}>Fact find completion</span>
+        <div style={{ flex: 1, height: 8, background: 'var(--ps-border)', borderRadius: 4 }}>
           <div style={{ width: `${overall}%`, height: '100%', background: 'linear-gradient(90deg,#4F46E5,#818CF8)', borderRadius: 4, transition: 'width 0.4s ease' }}/>
         </div>
         <span style={{ fontSize: 12, fontWeight: 800, color: '#4F46E5', whiteSpace: 'nowrap' }}>{overall}%</span>
@@ -53,8 +53,8 @@ export default function ProgressBar({ completionData = {}, onSectionClick }) {
             <div key={s.key} onClick={() => onSectionClick?.(s.key)}
               style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: onSectionClick ? 'pointer' : 'default' }}>
               <div style={{ width: 9, height: 9, borderRadius: 2, background: col, flexShrink: 0 }}/>
-              <span style={{ fontSize: 11, color: '#475569', fontWeight: 600 }}>{s.label}</span>
-              <span style={{ fontSize: 11, color: '#94A3B8' }}>{pct}%</span>
+              <span style={{ fontSize: 11, color: 'var(--ps-text-secondary)', fontWeight: 600 }}>{s.label}</span>
+              <span style={{ fontSize: 11, color: 'var(--ps-text-subtle)' }}>{pct}%</span>
             </div>
           );
         })}
