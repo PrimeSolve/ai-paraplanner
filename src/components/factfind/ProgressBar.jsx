@@ -10,7 +10,6 @@ const SECTIONS = [
   { key: 'assets_liabilities',label: 'Assets'      },
   { key: 'income_expenses',   label: 'Income'      },
   { key: 'insurance',         label: 'Insurance'   },
-  { key: 'super_tax',         label: 'Super & Tax' },
   { key: 'advice_reason',     label: 'Goals'       },
   { key: 'risk_profile',      label: 'Risk'        },
 ];
