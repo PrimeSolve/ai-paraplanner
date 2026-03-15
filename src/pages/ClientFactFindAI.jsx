@@ -7,6 +7,7 @@ import ProgressBar from '@/components/factfind/ProgressBar';
 import FactFindClientDashboard from '@/components/factfind/FactFindClientDashboard';
 import LifeTimeline from '@/components/factfind/LifeTimeline';
 import FactFindPopup from '@/components/factfind/FactFindPopup';
+import { useVoiceSession } from '../components/factfind/useVoiceSession';
 
 /**
  * Convert the DB factFind object (as returned by the useFactFind hook)
@@ -339,6 +340,13 @@ export default function ClientFactFindAI() {
     }, 2000);
   }, [factFind?.id, updateSection]);
 
+  const { status: voiceStatus, startVoice, stopVoice, connected: voiceConnected, connecting: voiceConnecting } = useVoiceSession({
+    factFind,
+    updateSection,
+    activeTabId: factFindPopupSection || 'dashboard',
+    clientId,
+  });
+
   if (loading) {
     return (
       <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -356,68 +364,104 @@ export default function ClientFactFindAI() {
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Dashboard panel above CashflowModel */}
-      <div style={{ flexShrink: 0, borderBottom: '1px solid #e2e8f0' }}>
-        <ProgressBar completionData={completionData} />
+    <div style={{ width:'100vw', height:'100vh', display:'flex', flexDirection:'row', overflow:'hidden' }}>
 
-        {/* Dashboard / Milestones tab toggle */}
-        <div style={{ display: 'flex', gap: 0, background: '#fff', borderBottom: '1px solid #e2e8f0' }}>
-          {['dashboard', 'milestones'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setDashView(tab)}
-              style={{
-                padding: '10px 24px',
-                fontSize: 13,
-                fontWeight: 600,
-                color: dashView === tab ? '#3b82f6' : '#64748b',
-                background: 'none',
-                border: 'none',
-                borderBottom: dashView === tab ? '2px solid #3b82f6' : '2px solid transparent',
-                cursor: 'pointer',
-                textTransform: 'capitalize',
-              }}
-            >
-              {tab === 'dashboard' ? 'Dashboard' : 'Milestones'}
+      {/* LEFT — dashboard */}
+      <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0 }}>
+
+        {/* Top nav */}
+        <div style={{ display:'flex', alignItems:'center', background:'white', borderBottom:'1px solid #E2E8F0', padding:'0 16px', height:48, flexShrink:0, gap:0 }}>
+          <button onClick={()=>navigate(-1)} style={{ display:'flex', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', color:'#475569', fontSize:12, fontWeight:500, padding:'0 16px 0 0', borderRight:'1px solid #E2E8F0', height:'100%' }}>
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Back to Client
+          </button>
+          <div style={{ padding:'0 16px', borderRight:'1px solid #E2E8F0', height:'100%', display:'flex', flexDirection:'column', justifyContent:'center' }}>
+            <div style={{ fontSize:9, fontWeight:700, color:'#94A3B8', textTransform:'uppercase', letterSpacing:'0.1em' }}>Client Fact Find</div>
+            <div style={{ fontSize:13, fontWeight:700, color:'#0F172A' }}>{factFind?.personal_details?.first_name} {factFind?.personal_details?.last_name}</div>
+          </div>
+          <div style={{ flex:1 }}/>
+          <span style={{ fontSize:11, color:'#94A3B8', marginRight:12 }}>✓ Saved</span>
+          <button style={{ display:'flex', alignItems:'center', gap:6, background:'#4F46E5', border:'none', borderRadius:7, padding:'7px 16px', fontSize:12, fontWeight:700, color:'white', cursor:'pointer', marginRight:8 }}>
+            + Close Co-pilot
+          </button>
+          <button onClick={()=>{ setFactFindPopupSection(null); setFactFindPopupOpen(true); }} style={{ display:'flex', alignItems:'center', gap:6, background:'white', border:'1px solid #E2E8F0', borderRadius:7, padding:'7px 14px', fontSize:12, fontWeight:600, color:'#475569', cursor:'pointer' }}>
+            📋 Fact Find
+          </button>
+        </div>
+
+        {/* Progress bar */}
+        <div style={{ flexShrink:0, borderBottom:'1px solid #E2E8F0' }}>
+          <ProgressBar completionData={completionData} />
+        </div>
+
+        {/* Dashboard / Milestones tabs */}
+        <div style={{ display:'flex', background:'white', borderBottom:'1px solid #E2E8F0', flexShrink:0 }}>
+          {[{id:'dashboard',label:'Dashboard'},{id:'milestones',label:'Milestones'}].map(t=>(
+            <button key={t.id} onClick={()=>setDashView(t.id)} style={{ padding:'10px 20px', fontSize:13, fontWeight:600, color:dashView===t.id?'#4F46E5':'#64748B', background:'none', border:'none', borderBottom:dashView===t.id?'2px solid #4F46E5':'2px solid transparent', cursor:'pointer' }}>
+              {t.label}
             </button>
           ))}
         </div>
+
+        {/* Dashboard content — scrollable */}
+        <div style={{ flex:1, overflowY:'auto', background:'#F1F5F9' }}>
+          {dashView === 'dashboard' ? (
+            <FactFindClientDashboard
+              factFind={factFind}
+              completionData={completionData}
+              onTileClick={(sectionId)=>{ setFactFindPopupSection(sectionId); setFactFindPopupOpen(true); }}
+            />
+          ) : (
+            <LifeTimeline factFind={factFind} />
+          )}
+        </div>
       </div>
 
-      {/* Tab content — scrollable, takes remaining height minus CashflowModel */}
-      <div style={{ height: 280, flexShrink: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
-        {dashView === 'dashboard' ? (
-          <FactFindClientDashboard
-            factFind={factFind}
-            completionData={completionData}
-            onTileClick={(sectionId) => {
-              setFactFindPopupSection(sectionId);
-              setFactFindPopupOpen(true);
-            }}
+      {/* RIGHT — co-pilot with voice */}
+      <div style={{ width:380, flexShrink:0, borderLeft:'1px solid #E2E8F0', background:'white', display:'flex', flexDirection:'column', height:'100vh' }}>
+        {/* Indigo header */}
+        <div style={{ background:'#4F46E5', flexShrink:0 }}>
+          <div style={{ padding:'12px 16px 10px', display:'flex', alignItems:'center', gap:8 }}>
+            <div style={{ width:8, height:8, borderRadius:'50%', background: voiceConnected ? '#34D399' : '#A5B4FC' }}/>
+            <span style={{ fontSize:13, fontWeight:700, color:'white' }}>Co-pilot</span>
+            <span style={{ fontSize:10, background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.25)', borderRadius:20, padding:'2px 8px', color:'white', fontWeight:600 }}>FACT FIND</span>
+            <span style={{ marginLeft:'auto', fontSize:11, color:'rgba(255,255,255,0.7)' }}>
+              {factFind?.personal_details?.first_name} {factFind?.personal_details?.last_name}
+            </span>
+          </div>
+          {/* Voice button */}
+          <div style={{ padding:'0 16px 14px' }}>
+            <button
+              onClick={voiceConnected ? stopVoice : startVoice}
+              style={{ width:'100%', padding:'11px 0', borderRadius:8, border:'none', cursor:'pointer', background: voiceConnected ? 'rgba(255,255,255,0.2)' : 'white', color: voiceConnected ? 'white' : '#4F46E5', fontSize:13, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+              <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="2" width="6" height="12" rx="3"/>
+                <path d="M5 10a7 7 0 0014 0"/><line x1="12" y1="19" x2="12" y2="22"/>
+                <line x1="8" y1="22" x2="16" y2="22"/>
+              </svg>
+              {voiceConnecting ? 'Connecting…' : voiceConnected ? 'Connected — tap to end' : 'Speak with your adviser assistant'}
+            </button>
+          </div>
+        </div>
+
+        {/* Chat co-pilot — existing CashflowModel in copilot-only mode */}
+        <div style={{ flex:1, overflow:'hidden' }}>
+          <CashflowModel
+            mode="factfind"
+            copilotOnly={true}
+            initialData={initialData}
+            onDataChange={handleDataChange}
+            onBack={()=>navigate(-1)}
+            clientId={clientId}
           />
-        ) : (
-          <LifeTimeline factFind={factFind} />
-        )}
+        </div>
       </div>
 
-      {/* Existing CashflowModel — completely unchanged */}
-      <div style={{ flex: 1, overflow: 'hidden' }}>
-        <CashflowModel
-          mode="factfind"
-          hideAdvice={true}
-          initialData={initialData}
-          onDataChange={handleDataChange}
-          onBack={() => navigate(-1)}
-          clientId={clientId}
-        />
-      </div>
-
-      {/* FactFindPopup overlay */}
+      {/* Fact Find popup overlay */}
       {factFindPopupOpen && (
         <FactFindPopup
           section={factFindPopupSection}
-          onClose={() => setFactFindPopupOpen(false)}
+          onClose={()=>setFactFindPopupOpen(false)}
         />
       )}
     </div>
