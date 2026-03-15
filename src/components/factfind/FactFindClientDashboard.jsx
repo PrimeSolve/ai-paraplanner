@@ -20,7 +20,7 @@ function Panel({ title, icon, total, rows, onClick }) {
           <span style={{ fontSize: 13 }}>{icon}</span>
           <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--ps-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</span>
         </div>
-        {onClick && <span style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600 }}>Edit →</span>}
+        {onClick && <span onClick={onClick} style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600, cursor: 'pointer' }}>Edit →</span>}
       </div>
       <div style={{ padding: '12px 14px' }}>
         {total != null && <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--ps-text-primary)', marginBottom: 8, letterSpacing: '-0.02em' }}>{fC(total)}</div>}
@@ -38,7 +38,25 @@ function Panel({ title, icon, total, rows, onClick }) {
   );
 }
 
+const ROUTE_MAP = {
+  personal: '/FactFindPersonal',
+  dependants: '/FactFindDependants',
+  trusts_companies: '/FactFindTrusts',
+  smsf: '/FactFindSMSF',
+  superannuation: '/FactFindSuperannuation',
+  investments: '/FactFindInvestment',
+  assets_liabilities: '/FactFindAssetsLiabilities',
+  income_expenses: '/FactFindIncomeExpenses',
+  advice_reason: '/FactFindAdviceReason',
+  risk_profile: '/FactFindRiskProfile',
+  insurance: '/FactFindInsurance',
+};
+
 export default function FactFindClientDashboard({ factFind, completionData = {}, onTileClick }) {
+  const navigate = (sectionId) => {
+    const route = ROUTE_MAP[sectionId];
+    if (route) window.location.href = route + window.location.search;
+  };
   const ff = factFind?.client1_fact_find || factFind?.client1_profile || {};
   const personal = ff.personal_details || {};
   const partner = personal.partner || {};
@@ -122,18 +140,18 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
 
       {/* Row 2 — assets, debt, retirement */}
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr', gap: 12 }}>
-        <Panel title="Asset Breakdown" icon="🏦" total={totalAssets} onClick={() => onTileClick?.('assets_liabilities')} rows={[
+        <Panel title="Asset Breakdown" icon="🏦" total={totalAssets} onClick={() => navigate('assets_liabilities')} rows={[
           { label: 'Lifestyle assets', color: '#6366F1', value: lifestyleAssets },
           { label: 'Investment assets', color: '#0891B2', value: investmentAssets },
           { label: 'Superannuation', color: '#059669', value: totalSuper },
           { label: 'Cash & savings', color: '#D97706', value: cashAssets },
         ]} />
-        <Panel title="Debt Breakdown" icon="💳" total={totalDebts} onClick={() => onTileClick?.('assets_liabilities')} rows={[
+        <Panel title="Debt Breakdown" icon="💳" total={totalDebts} onClick={() => navigate('assets_liabilities')} rows={[
           { label: 'Mortgage', color: '#EF4444', value: mortgage },
           { label: 'Investment debt', color: '#F97316', value: investDebt },
           { label: 'Lifestyle debt', color: '#DC2626', value: lifestyleDebt },
         ]} />
-        <Panel title="Retirement" icon="🌴" total={totalSuper + totalPension} onClick={() => onTileClick?.('superannuation')} rows={[
+        <Panel title="Retirement" icon="🌴" total={totalSuper + totalPension} onClick={() => navigate('superannuation')} rows={[
           { label: 'Superannuation', color: '#6366F1', value: totalSuper },
           { label: 'Pension', color: '#0891B2', value: totalPension },
         ]} />
@@ -142,7 +160,7 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
       {/* Row 3 — family, income, expenses, risk */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 2fr 1fr', gap: 12 }}>
         {/* Family */}
-        <div onClick={() => onTileClick?.('personal')}
+        <div onClick={() => navigate('personal')}
           onMouseEnter={e => e.currentTarget.style.borderColor = '#6366F1'}
           onMouseLeave={e => e.currentTarget.style.borderColor = '#E2E8F0'}
           style={{ background: 'var(--ps-surface)', border: '1px solid var(--ps-border)', borderRadius: 10, overflow: 'hidden', cursor: 'pointer', transition: 'border-color 0.15s' }}>
@@ -151,7 +169,7 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
               <span style={{ fontSize: 13 }}>👨‍👩‍👧‍👦</span>
               <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--ps-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Family & Entities</span>
             </div>
-            <span style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600 }}>Edit →</span>
+            <span onClick={() => navigate('personal')} style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600, cursor: 'pointer' }}>Edit →</span>
           </div>
           <div style={{ padding: '12px 14px' }}>
             <div style={{ display: 'flex', marginBottom: 12 }}>
@@ -172,19 +190,19 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
           </div>
         </div>
 
-        <Panel title="Income (Annual)" icon="💰" total={totalIncome} onClick={() => onTileClick?.('income_expenses')} rows={[
+        <Panel title="Income (Annual)" icon="💰" total={totalIncome} onClick={() => navigate('income_expenses')} rows={[
           { label: 'Salary & Wages', color: '#6366F1', value: salary },
           { label: 'Investment Income', color: '#0891B2', value: investIncome },
           { label: 'Pension/Annuities', color: '#059669', value: pensionIncome },
         ]} />
-        <Panel title="Expenses (Annual)" icon="📤" total={totalExpenses + debtServicing + insurancePremiums} onClick={() => onTileClick?.('income_expenses')} rows={[
+        <Panel title="Expenses (Annual)" icon="📤" total={totalExpenses + debtServicing + insurancePremiums} onClick={() => navigate('income_expenses')} rows={[
           { label: 'Living Expenses', color: '#F97316', value: living },
           { label: 'Debt Servicing', color: '#EF4444', value: debtServicing },
           { label: 'Insurance Premiums', color: '#DC2626', value: insurancePremiums },
         ]} />
 
         {/* Risk */}
-        <div onClick={() => onTileClick?.('risk_profile')}
+        <div onClick={() => navigate('risk_profile')}
           onMouseEnter={e => e.currentTarget.style.borderColor = '#6366F1'}
           onMouseLeave={e => e.currentTarget.style.borderColor = '#E2E8F0'}
           style={{ background: 'var(--ps-surface)', border: '1px solid var(--ps-border)', borderRadius: 10, overflow: 'hidden', cursor: 'pointer', transition: 'border-color 0.15s' }}>
@@ -193,7 +211,7 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
               <span style={{ fontSize: 13 }}>📊</span>
               <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--ps-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Risk Profile</span>
             </div>
-            <span style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600 }}>Edit →</span>
+            <span onClick={() => navigate('risk_profile')} style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600, cursor: 'pointer' }}>Edit →</span>
           </div>
           <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[{ name: c1Name, profile: c1Risk, color: '#4F46E5' }, ...(hasPartner ? [{ name: c2Name, profile: c2Risk, color: '#0891B2' }] : [])].map((p, i) => (
@@ -214,7 +232,7 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
       {/* Row 4 — insurance, goals */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         {/* Insurance */}
-        <div onClick={() => onTileClick?.('insurance')}
+        <div onClick={() => navigate('insurance')}
           onMouseEnter={e => e.currentTarget.style.borderColor = '#6366F1'}
           onMouseLeave={e => e.currentTarget.style.borderColor = '#E2E8F0'}
           style={{ background: 'var(--ps-surface)', border: '1px solid var(--ps-border)', borderRadius: 10, overflow: 'hidden', cursor: 'pointer', transition: 'border-color 0.15s' }}>
@@ -223,7 +241,7 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
               <span style={{ fontSize: 13 }}>🛡️</span>
               <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--ps-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Insurance Policies</span>
             </div>
-            <span style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600 }}>Edit →</span>
+            <span onClick={() => navigate('insurance')} style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600, cursor: 'pointer' }}>Edit →</span>
           </div>
           <div style={{ padding: '12px 14px' }}>
             {policies.length === 0 ? (
@@ -241,7 +259,7 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
         </div>
 
         {/* Goals */}
-        <div onClick={() => onTileClick?.('advice_reason')}
+        <div onClick={() => navigate('advice_reason')}
           onMouseEnter={e => e.currentTarget.style.borderColor = '#6366F1'}
           onMouseLeave={e => e.currentTarget.style.borderColor = '#E2E8F0'}
           style={{ background: 'var(--ps-surface)', border: '1px solid var(--ps-border)', borderRadius: 10, overflow: 'hidden', cursor: 'pointer', transition: 'border-color 0.15s' }}>
@@ -250,7 +268,7 @@ export default function FactFindClientDashboard({ factFind, completionData = {},
               <span style={{ fontSize: 13 }}>🎯</span>
               <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--ps-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Goals & Objectives</span>
             </div>
-            <span style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600 }}>Edit →</span>
+            <span onClick={() => navigate('advice_reason')} style={{ fontSize: 10, color: '#C7D2FE', fontWeight: 600, cursor: 'pointer' }}>Edit →</span>
           </div>
           <div style={{ padding: '12px 14px' }}>
             {goals.length === 0 ? (
