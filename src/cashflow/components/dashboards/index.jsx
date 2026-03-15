@@ -4223,7 +4223,7 @@ const LIFE_GOALS = [
 ];
 
 
-export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projYears }) {
+export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projYears, hideKPIs = false }) {
   const [view, setView]           = React.useState("cashflow");
   const [hidden, setHidden]       = React.useState({});
   const [hiddenMS, setHiddenMS]   = React.useState({});
@@ -4454,6 +4454,7 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
         </div>
 
             {/* KPI Cards */}
+            {!hideKPIs && (
             <div style={{ display:"flex", gap:12, marginBottom:24, flexWrap:"wrap", padding:"16px 20px" }}>
               {kpis.map((k, i) => (
                 <div key={i} style={{ background:"var(--ps-surface)", border:"1px solid var(--ps-border)", borderRadius:10, padding:"16px 20px", borderLeft:`3px solid ${k.accent}`, display:"flex", flexDirection:"column", gap:4, flex:1, minWidth:160 }}>
@@ -4464,6 +4465,7 @@ export function FinancialSummaryDashboard({ chartData, cashflowData, meta, projY
                 </div>
               ))}
             </div>
+            )}
 
             {/* Chart */}
             <div style={{ padding:"20px 24px 16px" }}>
