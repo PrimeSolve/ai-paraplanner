@@ -119,7 +119,7 @@ namespace PrimeSolve.Api.Services
             var requestBody = new
             {
                 model = Model,
-                max_tokens = 4096,
+                max_tokens = 8192,
                 messages = new[]
                 {
                     new
@@ -193,118 +193,258 @@ namespace PrimeSolve.Api.Services
   ""personal"": {
     ""first_name"": { ""value"": """", ""confidence"": 0.0 },
     ""last_name"": { ""value"": """", ""confidence"": 0.0 },
-    ""dob"": { ""value"": """", ""confidence"": 0.0 },
+    ""date_of_birth"": { ""value"": """", ""confidence"": 0.0 },
+    ""gender"": { ""value"": """", ""confidence"": 0.0 },
+    ""marital_status"": { ""value"": """", ""confidence"": 0.0 },
     ""email"": { ""value"": """", ""confidence"": 0.0 },
     ""phone"": { ""value"": """", ""confidence"": 0.0 },
-    ""address"": { ""value"": """", ""confidence"": 0.0 }
+    ""address"": { ""value"": """", ""confidence"": 0.0 },
+    ""suburb"": { ""value"": """", ""confidence"": 0.0 },
+    ""state"": { ""value"": """", ""confidence"": 0.0 },
+    ""postcode"": { ""value"": """", ""confidence"": 0.0 },
+    ""employment_status"": { ""value"": """", ""confidence"": 0.0 },
+    ""occupation"": { ""value"": """", ""confidence"": 0.0 },
+    ""employer"": { ""value"": """", ""confidence"": 0.0 },
+    ""smoker_status"": { ""value"": """", ""confidence"": 0.0 },
+    ""health_status"": { ""value"": """", ""confidence"": 0.0 },
+    ""has_will"": { ""value"": """", ""confidence"": 0.0 }
   },
   ""income"": {
     ""client1"": {
-      ""gross_salary"": { ""value"": 0, ""confidence"": 0.0 },
-      ""employer"": { ""value"": """", ""confidence"": 0.0 }
+      ""i_type"": { ""value"": """", ""confidence"": 0.0 },
+      ""i_gross"": { ""value"": """", ""confidence"": 0.0 },
+      ""employer"": { ""value"": """", ""confidence"": 0.0 },
+      ""i_bonus"": { ""value"": """", ""confidence"": 0.0 },
+      ""i_fbt"": { ""value"": """", ""confidence"": 0.0 },
+      ""i_fbt_value"": { ""value"": """", ""confidence"": 0.0 },
+      ""i_increase"": { ""value"": """", ""confidence"": 0.0 },
+      ""i_nontax"": { ""value"": """", ""confidence"": 0.0 },
+      ""i_super_inc"": { ""value"": """", ""confidence"": 0.0 }
     },
     ""rental_income"": { ""value"": 0, ""confidence"": 0.0 }
   },
   ""superannuation"": [
     {
+      ""type"": { ""value"": ""super"", ""confidence"": 0.0 },
       ""fund_name"": { ""value"": """", ""confidence"": 0.0 },
+      ""provider"": { ""value"": """", ""confidence"": 0.0 },
       ""balance"": { ""value"": 0, ""confidence"": 0.0 },
       ""member_number"": { ""value"": """", ""confidence"": 0.0 },
-      ""owner"": { ""value"": ""client1"", ""confidence"": 0.0 }
+      ""owner"": { ""value"": ""client1"", ""confidence"": 0.0 },
+      ""super_guarantee"": { ""value"": """", ""confidence"": 0.0 },
+      ""salary_sacrifice"": { ""value"": """", ""confidence"": 0.0 },
+      ""after_tax"": { ""value"": """", ""confidence"": 0.0 }
     }
   ],
   ""insurance"": [
     {
-      ""type"": { ""value"": """", ""confidence"": 0.0 },
-      ""sum_insured"": { ""value"": 0, ""confidence"": 0.0 },
-      ""premium"": { ""value"": 0, ""confidence"": 0.0 },
-      ""owner"": { ""value"": ""client1"", ""confidence"": 0.0 }
+      ""pol_name"": { ""value"": """", ""confidence"": 0.0 },
+      ""pol_type"": { ""value"": """", ""confidence"": 0.0 },
+      ""pol_tax_env"": { ""value"": """", ""confidence"": 0.0 },
+      ""pol_owner"": { ""value"": """", ""confidence"": 0.0 },
+      ""pol_insured"": { ""value"": """", ""confidence"": 0.0 },
+      ""pol_provider"": { ""value"": """", ""confidence"": 0.0 },
+      ""pol_number"": { ""value"": """", ""confidence"": 0.0 },
+      ""pol_waiting"": { ""value"": """", ""confidence"": 0.0 },
+      ""pol_benefit_period"": { ""value"": """", ""confidence"": 0.0 },
+      ""sum_insured_life"": { ""value"": """", ""confidence"": 0.0 },
+      ""sum_insured_tpd"": { ""value"": """", ""confidence"": 0.0 },
+      ""sum_insured_trauma"": { ""value"": """", ""confidence"": 0.0 },
+      ""sum_insured_ip"": { ""value"": """", ""confidence"": 0.0 },
+      ""premium_life"": { ""value"": """", ""confidence"": 0.0 },
+      ""premium_tpd"": { ""value"": """", ""confidence"": 0.0 },
+      ""premium_trauma"": { ""value"": """", ""confidence"": 0.0 },
+      ""premium_ip"": { ""value"": """", ""confidence"": 0.0 },
+      ""pol_freq"": { ""value"": """", ""confidence"": 0.0 },
+      ""pol_structure"": { ""value"": """", ""confidence"": 0.0 }
     }
   ],
-  ""assets_liabilities"": {
-    ""properties"": [],
-    ""cash"": [],
-    ""investments"": []
-  },
+  ""assets"": [
+    {
+      ""a_name"": { ""value"": """", ""confidence"": 0.0 },
+      ""a_description"": { ""value"": """", ""confidence"": 0.0 },
+      ""a_type"": { ""value"": """", ""confidence"": 0.0 },
+      ""a_value"": { ""value"": """", ""confidence"": 0.0 },
+      ""a_owner"": { ""value"": """", ""confidence"": 0.0 },
+      ""a_address"": { ""value"": """", ""confidence"": 0.0 },
+      ""a_purchase_price"": { ""value"": """", ""confidence"": 0.0 },
+      ""a_rental_income"": { ""value"": """", ""confidence"": 0.0 }
+    }
+  ],
   ""liabilities"": [
     {
+      ""d_name"": { ""value"": """", ""confidence"": 0.0 },
+      ""d_type"": { ""value"": """", ""confidence"": 0.0 },
       ""lender"": { ""value"": """", ""confidence"": 0.0 },
-      ""balance"": { ""value"": 0, ""confidence"": 0.0 },
-      ""repayment"": { ""value"": 0, ""confidence"": 0.0 },
-      ""type"": { ""value"": """", ""confidence"": 0.0 }
+      ""d_balance"": { ""value"": """", ""confidence"": 0.0 },
+      ""d_repayments"": { ""value"": """", ""confidence"": 0.0 },
+      ""d_rate"": { ""value"": """", ""confidence"": 0.0 },
+      ""d_owner"": { ""value"": """", ""confidence"": 0.0 }
     }
-  ]
+  ],
+  ""dependants"": [
+    {
+      ""name"": { ""value"": """", ""confidence"": 0.0 },
+      ""date_of_birth"": { ""value"": """", ""confidence"": 0.0 },
+      ""dep_type"": { ""value"": ""child"", ""confidence"": 0.0 },
+      ""relationship"": { ""value"": """", ""confidence"": 0.0 },
+      ""financially_dependent"": { ""value"": """", ""confidence"": 0.0 }
+    }
+  ],
+  ""trusts_companies"": [
+    {
+      ""type"": { ""value"": ""trust"", ""confidence"": 0.0 },
+      ""trust_name"": { ""value"": """", ""confidence"": 0.0 },
+      ""trust_type"": { ""value"": """", ""confidence"": 0.0 },
+      ""trust_abn"": { ""value"": """", ""confidence"": 0.0 },
+      ""company_name"": { ""value"": """", ""confidence"": 0.0 },
+      ""company_abn"": { ""value"": """", ""confidence"": 0.0 }
+    }
+  ],
+  ""smsf"": [
+    {
+      ""smsf_name"": { ""value"": """", ""confidence"": 0.0 },
+      ""smsf_abn"": { ""value"": """", ""confidence"": 0.0 },
+      ""smsf_balance"": { ""value"": """", ""confidence"": 0.0 },
+      ""fund_type"": { ""value"": """", ""confidence"": 0.0 },
+      ""trustee_type"": { ""value"": """", ""confidence"": 0.0 },
+      ""accounts"": [
+        {
+          ""owner"": { ""value"": """", ""confidence"": 0.0 },
+          ""balance"": { ""value"": """", ""confidence"": 0.0 },
+          ""tax_environment"": { ""value"": """", ""confidence"": 0.0 },
+          ""super_guarantee"": { ""value"": """", ""confidence"": 0.0 },
+          ""salary_sacrifice"": { ""value"": """", ""confidence"": 0.0 }
+        }
+      ]
+    }
+  ],
+  ""investments"": [
+    {
+      ""inv_type"": { ""value"": ""wrap"", ""confidence"": 0.0 },
+      ""platform_name"": { ""value"": """", ""confidence"": 0.0 },
+      ""product_name"": { ""value"": """", ""confidence"": 0.0 },
+      ""owner"": { ""value"": """", ""confidence"": 0.0 },
+      ""account_number"": { ""value"": """", ""confidence"": 0.0 },
+      ""balance"": { ""value"": """", ""confidence"": 0.0 }
+    }
+  ],
+  ""super_tax"": {
+    ""client"": {
+      ""tbc_used"": { ""value"": """", ""confidence"": 0.0 },
+      ""tbc_used_amt"": { ""value"": """", ""confidence"": 0.0 },
+      ""cc_used"": { ""value"": """", ""confidence"": 0.0 },
+      ""div293"": { ""value"": """", ""confidence"": 0.0 },
+      ""pre_losses"": { ""value"": """", ""confidence"": 0.0 },
+      ""pre_cgt_losses"": { ""value"": """", ""confidence"": 0.0 }
+    },
+    ""partner"": {
+      ""tbc_used"": { ""value"": """", ""confidence"": 0.0 },
+      ""tbc_used_amt"": { ""value"": """", ""confidence"": 0.0 },
+      ""cc_used"": { ""value"": """", ""confidence"": 0.0 },
+      ""div293"": { ""value"": """", ""confidence"": 0.0 },
+      ""pre_losses"": { ""value"": """", ""confidence"": 0.0 },
+      ""pre_cgt_losses"": { ""value"": """", ""confidence"": 0.0 }
+    }
+  }
 }";
 
             var typeSpecificInstructions = fileType switch
             {
                 "tax_return" => @"This is a tax return document. Focus on extracting:
-- Personal details (name, address, TFN if visible, DOB)
-- Income details (gross salary, employer name, other income sources)
-- Rental income if present
-- Investment income if present
-- Any deductions that indicate assets or liabilities",
+- Personal details (name, DOB, address, suburb, state, postcode, phone, email, occupation, employer)
+- Income details (gross salary, income type, bonus, fringe benefits, non-taxable income)
+- Rental income and investment property details (address, value, rental income)
+- Capital gains tax losses, prior year losses
+- Any dependants listed
+- Superannuation contributions (employer, salary sacrifice)",
 
                 "super_statements" => @"This is a superannuation statement. Focus on extracting:
-- Fund name and ABN
+- Fund name, provider, and ABN
 - Member number
 - Current balance
-- Insurance held within super (life, TPD, income protection)
-- Employer contributions
-- Investment option details",
+- Account type (super, pension, or annuity)
+- Insurance held within super (life cover, TPD, income protection — sum insured, premiums)
+- Employer contributions, salary sacrifice, after-tax contributions
+- SMSF details if applicable (fund name, ABN, trustee type, member accounts)
+- Transfer balance cap (TBC) usage if shown",
 
                 "income_statements" or "payslip" => @"This is a payslip or income statement. Focus on extracting:
-- Employee name and details
+- Employee name, address, and details
 - Employer name
 - Gross salary/wages (annualise if needed)
-- Super guarantee contributions
-- Tax withheld",
+- Income type (employment, business, etc.)
+- Super guarantee contributions and salary sacrifice
+- Fringe benefits and their value
+- Tax withheld
+- Bonus income",
 
                 "insurance_policies" => @"This is an insurance policy document. Focus on extracting:
-- Policy type (Life, TPD, Trauma, Income Protection)
-- Sum insured / benefit amount
-- Premium amount and frequency
-- Policy owner
-- Insurer name
-- Policy number",
+- Policy name and number
+- Policy type code: 1=Life, 2=Life+TPD, 3=Life+Trauma, 4=Life+TPD+Trauma, 5=TPD, 6=Trauma, 7=Trauma+TPD, 8=Income Protection
+- Tax environment (super or personal)
+- Policy owner and insured person
+- Provider/insurer name
+- Sum insured for each cover type (life, TPD, trauma, IP) — use separate fields
+- Premium for each cover type (life, TPD, trauma, IP) — use separate fields
+- Premium frequency: 1=Weekly, 2=Fortnightly, 3=Monthly, 4=Quarterly, 5=Half-yearly, 6=Annual
+- Premium structure: 1=Stepped, 2=Level, 3=Hybrid
+- Waiting period and benefit period (for income protection)",
 
                 "loan_statements" => @"This is a loan statement. Focus on extracting:
 - Lender name
-- Loan type (mortgage, personal, investment)
+- Loan/debt type: 1=Home loan, 2=Investment loan, 3=Margin loan, 5=Credit card, 6=Reverse mortgage, 7=Car loan, 8=Other
 - Outstanding balance
-- Regular repayment amount and frequency
+- Regular repayment amount
 - Interest rate
-- Property address if applicable",
+- Property address if applicable (populate assets section too)
+- Property value if shown
+- Borrower/owner name",
 
                 "bank_statements" => @"This is a bank statement. Focus on extracting:
-- Account holder name
+- Account holder name and address
 - Bank/institution name
-- Account balance
-- Regular income deposits (salary)
-- Regular expenses or loan repayments
+- Account balance (add as asset)
+- Regular income deposits (salary — extract gross amount and employer)
+- Regular loan repayments (extract as liabilities)
 - Any investment or rental income",
 
                 "rental_statements" => @"This is a rental statement. Focus on extracting:
-- Property address
-- Rental income amount and frequency
-- Property management fees
-- Any expenses (insurance, rates, maintenance)
-- Owner details",
+- Property address (populate assets section)
+- Property value if shown
+- Rental income amount
+- Property owner details
+- Any associated mortgage/loan details (populate liabilities)
+- Property management fees and expenses",
 
                 "portfolio_reports" => @"This is a portfolio/investment report. Focus on extracting:
 - Platform/wrap provider name
-- Total portfolio value
-- Individual holdings and values
-- Investment account type
-- Account holder details",
+- Product name
+- Total portfolio value / balance
+- Account number
+- Investment type (wrap or bond)
+- Account holder/owner details
+- Individual holdings if visible",
 
-                _ => @"This is a financial document. Extract any relevant information related to:
-- Personal details
-- Income
-- Superannuation
-- Insurance
-- Assets and liabilities
-- Investments"
+                "centrelink" => @"This is a Centrelink or social security document. Focus on extracting:
+- Recipient name and details
+- Benefit type and amount
+- Any asset or income test details
+- Dependant information
+- Any superannuation or investment balances listed",
+
+                _ => @"This is a financial document. Extract ALL relevant information into the appropriate sections:
+- Personal details (name, DOB, address, contact, employment)
+- Income (salary, business, investment, rental)
+- Superannuation (fund details, balances, contributions)
+- Insurance policies (type, cover amounts, premiums)
+- Assets (properties, cash, investments)
+- Liabilities (loans, debts, credit cards)
+- Dependants (names, DOBs, relationships)
+- Trusts & companies (names, ABNs, types)
+- SMSF details (fund name, ABN, member accounts)
+- Investment platforms (wraps, bonds, balances)
+- Super & tax details (TBC, CGT losses)"
             };
 
             return $@"You are a financial document extraction assistant for Australian financial planning.
@@ -315,15 +455,22 @@ Analyze the uploaded document and extract structured data into the JSON schema b
 
 IMPORTANT RULES:
 1. Return ONLY valid JSON matching this exact schema structure — no markdown, no explanation.
-2. Only populate sections/fields where you find data in the document. Omit sections with no data.
-3. Each extracted field MUST include a confidence score between 0 and 1:
+2. Return ALL sections where you find relevant data. A single document may populate multiple sections.
+3. Each extracted field MUST use the {{ ""value"": ..., ""confidence"": 0.0-1.0 }} wrapper:
    - 1.0 = clearly stated in the document
    - 0.8-0.99 = high confidence, minor interpretation needed
    - 0.5-0.79 = moderate confidence, some ambiguity
    - Below 0.5 = low confidence, significant interpretation
-4. For monetary values, use numbers without currency symbols.
-5. For dates, use ISO format (YYYY-MM-DD).
-6. If a field is not found in the document, do not include it.
+4. For array sections (superannuation, insurance, assets, liabilities, dependants, trusts_companies, smsf, investments), return an array of objects — one per entry found.
+5. For monetary values, use plain numbers as strings without currency symbols or commas (e.g. ""150000"" not ""$150,000"").
+6. For dates, use ISO format (YYYY-MM-DD).
+7. If a field is not found in the document, omit it entirely from the output.
+8. Do not include empty sections or empty arrays.
+9. For owner fields, use ""client1"" for the primary person and ""client2"" for partner/spouse.
+10. For insurance pol_type, use the numeric code: 1=Life, 2=Life+TPD, 3=Life+Trauma, 4=Life+TPD+Trauma, 5=TPD, 6=Trauma, 7=Trauma+TPD, 8=Income Protection.
+11. For dep_type, use ""child"" for children or ""dependant"" for other dependants.
+12. For trust/company type, use ""trust"" or ""company"".
+13. For investment inv_type, use ""wrap"" or ""bond"".
 
 JSON Schema:
 {schemaJson}
