@@ -1,8 +1,5 @@
-import React, { useState } from 'react';
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend,
-} from 'recharts';
+import React from 'react';
+import { FinancialSummaryDashboard } from '@/cashflow/components/dashboards/index.jsx';
 
 // ── Hardcoded data — will be wired to live factFind later ──
 
@@ -82,21 +79,6 @@ const GOALS = [
   { icon: '🌍', name: 'Annual travel fund', entity: 'Joint', year: '2025+' },
 ];
 
-// Hardcoded projected position chart data
-const CAPITAL_DATA = Array.from({ length: 30 }, (_, i) => ({
-  year: 2025 + i,
-  assets: 2400000 + i * 80000 + Math.sin(i) * 50000,
-  super: 780000 * Math.pow(1.06, i),
-  liabilities: Math.max(0, 650000 - i * 25000),
-  netWorth: 2400000 + i * 80000 + 780000 * Math.pow(1.06, i) - Math.max(0, 650000 - i * 25000),
-}));
-
-const CASHFLOW_DATA = Array.from({ length: 30 }, (_, i) => ({
-  year: 2025 + i,
-  income: 285000 * Math.pow(1.025, i),
-  expenses: 227160 * Math.pow(1.03, i),
-  surplus: 285000 * Math.pow(1.025, i) - 227160 * Math.pow(1.03, i),
-}));
 
 // ── Helpers ──
 
@@ -328,87 +310,6 @@ function GoalsTile({ onClick }) {
   );
 }
 
-function ProjectedChart() {
-  const [mode, setMode] = useState('capital');
-  const data = mode === 'capital' ? CAPITAL_DATA : CASHFLOW_DATA;
-
-  return (
-    <div style={{
-      background: '#fff', borderRadius: 12,
-      border: '1px solid #E2E8F0', padding: 20,
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: '50%',
-            background: '#EEF2FF', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', fontSize: 18,
-          }}>📈</div>
-          <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.8, color: '#64748B', fontWeight: 600 }}>
-            Projected Position
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: 4, background: '#F1F5F9', borderRadius: 8, padding: 2 }}>
-          {['capital', 'cashflow'].map(m => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              style={{
-                padding: '4px 14px', borderRadius: 6, border: 'none',
-                fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                background: mode === m ? '#fff' : 'transparent',
-                color: mode === m ? '#6366F1' : '#64748B',
-                boxShadow: mode === m ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-              }}
-            >
-              {m === 'capital' ? 'Capital' : 'Cashflow'}
-            </button>
-          ))}
-        </div>
-      </div>
-      <ResponsiveContainer width="100%" height={280}>
-        {mode === 'capital' ? (
-          <AreaChart data={data}>
-            <defs>
-              <linearGradient id="gAssets" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#6366F1" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#6366F1" stopOpacity={0.05} />
-              </linearGradient>
-              <linearGradient id="gSuper" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#8B5CF6" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#8B5CF6" stopOpacity={0.05} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-            <XAxis dataKey="year" tick={{ fontSize: 11 }} tickLine={false} />
-            <YAxis tick={{ fontSize: 11 }} tickLine={false} tickFormatter={v => fmt(v)} />
-            <Tooltip formatter={v => fmt(v)} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Area type="monotone" dataKey="assets" name="Assets" stroke="#6366F1" fill="url(#gAssets)" />
-            <Area type="monotone" dataKey="super" name="Super" stroke="#8B5CF6" fill="url(#gSuper)" />
-            <Area type="monotone" dataKey="liabilities" name="Liabilities" stroke="#EF4444" fill="none" strokeDasharray="4 4" />
-          </AreaChart>
-        ) : (
-          <AreaChart data={data}>
-            <defs>
-              <linearGradient id="gIncome" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10B981" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#10B981" stopOpacity={0.05} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-            <XAxis dataKey="year" tick={{ fontSize: 11 }} tickLine={false} />
-            <YAxis tick={{ fontSize: 11 }} tickLine={false} tickFormatter={v => fmt(v)} />
-            <Tooltip formatter={v => fmt(v)} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Area type="monotone" dataKey="income" name="Income" stroke="#10B981" fill="url(#gIncome)" />
-            <Area type="monotone" dataKey="expenses" name="Expenses" stroke="#EF4444" fill="none" strokeDasharray="4 4" />
-          </AreaChart>
-        )}
-      </ResponsiveContainer>
-    </div>
-  );
-}
 
 // ── Section → tile click mapping ──
 const SECTION_MAP = {
@@ -423,7 +324,7 @@ const SECTION_MAP = {
   goals: 'goals',
 };
 
-export default function FactFindClientDashboard({ onOpenSection }) {
+export default function FactFindClientDashboard({ onOpenSection, chartData, cashflowData, meta, projYears }) {
   const open = (key) => onOpenSection?.(SECTION_MAP[key] || key);
 
   return (
@@ -521,7 +422,12 @@ export default function FactFindClientDashboard({ onOpenSection }) {
         </div>
 
         {/* Projected Position Chart — full width */}
-        <ProjectedChart />
+        <FinancialSummaryDashboard
+          chartData={chartData}
+          cashflowData={cashflowData}
+          meta={meta}
+          projYears={projYears}
+        />
       </div>
     </div>
   );

@@ -157,7 +157,13 @@ export default function ClientFactFindAI() {
         {/* Left: Dashboard or Milestones */}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           {activeTab === 'dashboard'
-            ? <FactFindClientDashboard onOpenSection={openSection} />
+            ? <FactFindClientDashboard
+                onOpenSection={openSection}
+                chartData={chartData}
+                cashflowData={cashflowData}
+                meta={summaryMeta}
+                projYears={projYears}
+              />
             : <LifeTimeline />
           }
         </div>
