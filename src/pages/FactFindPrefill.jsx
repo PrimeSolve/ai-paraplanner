@@ -1,760 +1,301 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { documentsApi } from '@/api/primeSolveClient';
-import { dependantsApi } from '@/api/dependantsApi';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { documentsApi, factFindChatApi } from '@/api/primeSolveClient';
 import { useFactFind } from '@/components/factfind/useFactFind';
 import { createPageUrl } from '../utils';
 import FactFindLayout from '../components/factfind/FactFindLayout';
 import FactFindHeader from '../components/factfind/FactFindHeader';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import {
-  Upload, FileText, DollarSign, PiggyBank, Shield,
-  Home, TrendingUp, CreditCard, Landmark,
-  Gift, FolderOpen, ArrowRight, CheckCircle2,
-  AlertTriangle, Loader2, X
+  Send, Loader2, MessageCircle, FileText, CheckCircle2, AlertTriangle
 } from 'lucide-react';
 
-const documentTypes = [
-  { id: 'tax_return', icon: FileText, title: 'Tax return', description: 'Personal or business tax returns.', color: 'blue' },
-  { id: 'income_statements', icon: DollarSign, title: 'Income statements', description: 'Payslips, group certificates and income summaries.', color: 'green' },
-  { id: 'super_statements', icon: PiggyBank, title: 'Superannuation statements', description: 'Super fund statements or annual reports.', color: 'indigo' },
-  { id: 'insurance_policies', icon: Shield, title: 'Insurance policies', description: 'Life, TPD, trauma and income protection policies.', color: 'amber' },
-  { id: 'rental_statements', icon: Home, title: 'Rental statements', description: 'Property rental income statements.', color: 'purple' },
-  { id: 'portfolio_reports', icon: TrendingUp, title: 'Portfolio & investment reports', description: 'Wrap, platform or portfolio valuation statements.', color: 'emerald' },
-  { id: 'loan_statements', icon: CreditCard, title: 'Loan statements', description: 'Mortgage, investment or personal loan statements.', color: 'red' },
-  { id: 'bank_statements', icon: Landmark, title: 'Bank account statements', description: 'Everyday, savings or offset account statements.', color: 'cyan' },
-  { id: 'centrelink', icon: Gift, title: 'Centrelink / social security', description: 'Centrelink schedules or social security assessments.', color: 'pink' },
-  { id: 'other', icon: FolderOpen, title: 'Other documents', description: 'Any other financial documents you\'d like us to review.', color: 'slate' }
-];
-
-const SECTION_LABELS = {
-  personal: 'Personal Details',
-  income: 'Income & Expenses',
-  superannuation: 'Superannuation',
-  insurance: 'Insurance Policies',
-  assets: 'Assets',
-  liabilities: 'Liabilities',
-  dependants: 'Dependants',
-  trusts_companies: 'Trusts & Companies',
-  smsf: 'SMSF',
-  investments: 'Investments',
-  super_tax: 'Super & Tax',
-};
-
-const CONFIDENCE_THRESHOLD = 0.85;
-
-/**
- * Recursively collect all confidence values from the extracted JSON.
- * Returns an array of { section, field, confidence, value }.
- */
-function collectConfidenceFields(obj, section = '', path = '') {
-  const results = [];
-  if (!obj || typeof obj !== 'object') return results;
-
-  if (Array.isArray(obj)) {
-    obj.forEach((item, i) => {
-      results.push(...collectConfidenceFields(item, section, `${path}[${i}]`));
-    });
-    return results;
-  }
-
-  // If this object has { value, confidence }, it's a leaf field
-  if ('confidence' in obj && 'value' in obj) {
-    results.push({
-      section,
-      field: path,
-      confidence: obj.confidence,
-      value: obj.value,
-    });
-    return results;
-  }
-
-  for (const [key, val] of Object.entries(obj)) {
-    const nextSection = section || key;
-    const nextPath = path ? `${path}.${key}` : key;
-    results.push(...collectConfidenceFields(val, nextSection, nextPath));
-  }
-  return results;
-}
-
-/**
- * Strip confidence wrappers to produce flat values for pre-filling.
- */
-function flattenExtractedData(obj) {
-  if (!obj || typeof obj !== 'object') return obj;
-  if (Array.isArray(obj)) return obj.map(flattenExtractedData);
-
-  if ('confidence' in obj && 'value' in obj) {
-    return obj.value;
-  }
-
-  const result = {};
-  for (const [key, val] of Object.entries(obj)) {
-    result[key] = flattenExtractedData(val);
-  }
-  return result;
-}
-
 export default function FactFindPrefill() {
-  const navigate = useNavigate();
-  const { factFind, loading: ffLoading, updateSection, clientId, setFactFind } = useFactFind();
+  const { factFind, loading: ffLoading, updateSection, clientId } = useFactFind();
+
   const [loading, setLoading] = useState(true);
-  const [uploadedDocs, setUploadedDocs] = useState([]);
-  const [uploadingType, setUploadingType] = useState(null);
-  const [processingDocs, setProcessingDocs] = useState(new Map()); // docId -> status
-  const [extractionResults, setExtractionResults] = useState([]); // array of parsed extracted sections
-  const [showSummary, setShowSummary] = useState(false);
-  const [summaryData, setSummaryData] = useState(null);
-  const [prefilling, setPrefilling] = useState(false);
+  const [hasExtractedDocs, setHasExtractedDocs] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [conversationHistory, setConversationHistory] = useState([]);
+  const [inputValue, setInputValue] = useState('');
+  const [sending, setSending] = useState(false);
 
-  useEffect(() => {
-    // Loading is controlled by useFactFind now; keep local loading for backward compat
-    if (!ffLoading) {
-      setLoading(false);
-    }
-  }, [ffLoading]);
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
-  // Poll processing documents for completion
-  const pollDocument = useCallback(async (docId) => {
-    try {
-      const doc = await documentsApi.pollUntilExtracted(docId);
-      setProcessingDocs(prev => {
-        const next = new Map(prev);
-        next.set(docId, 'extracted');
-        return next;
-      });
-
-      // Parse the extracted sections
-      if (doc.extracted_sections) {
-        const parsed = typeof doc.extracted_sections === 'string'
-          ? JSON.parse(doc.extracted_sections)
-          : doc.extracted_sections;
-        setExtractionResults(prev => [...prev, { docId, sections: parsed }]);
-      }
-
-      setUploadedDocs(prev =>
-        prev.map(d => d.id === docId ? { ...d, status: 'Extracted' } : d)
-      );
-    } catch {
-      setProcessingDocs(prev => {
-        const next = new Map(prev);
-        next.set(docId, 'error');
-        return next;
-      });
-    }
+  // Scroll to bottom when messages change
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  const handleFileUpload = async (docType, event) => {
-    const files = Array.from(event.target.files);
-    if (files.length === 0) return;
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
 
-    // Determine client ID from useFactFind hook or factFind record
-    const uploadClientId = clientId || factFind?.client_id;
-    if (!uploadClientId) {
-      toast.error('No client ID found. Please start from a client profile.');
-      return;
+  // Check for extracted documents on mount
+  useEffect(() => {
+    if (ffLoading || !clientId) return;
+
+    async function checkDocuments() {
+      try {
+        const docs = await documentsApi.getByClient(clientId);
+        const extracted = docs.filter(d => d.extracted_sections);
+        setHasExtractedDocs(extracted.length > 0);
+
+        // If extracted docs exist, send initial greeting
+        if (extracted.length > 0 && factFind?.id) {
+          await sendChatMessage('', []);
+        }
+      } catch (err) {
+        console.error('Failed to check documents:', err);
+        toast.error('Failed to load documents');
+      } finally {
+        setLoading(false);
+      }
     }
 
-    setUploadingType(docType);
+    checkDocuments();
+  }, [ffLoading, clientId, factFind?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const sendChatMessage = async (message, history) => {
+    setSending(true);
+
+    // Add user message to display (skip for initial empty greeting)
+    if (message) {
+      setMessages(prev => [...prev, { role: 'user', content: message }]);
+    }
+
     try {
-      const uploadPromises = files.map(async (file) => {
-        const result = await documentsApi.upload(file, uploadClientId, docType);
-        return result;
+      const response = await factFindChatApi.sendMessage(factFind.id, {
+        message,
+        conversationHistory: history,
+        clientId,
       });
 
-      const newDocs = await Promise.all(uploadPromises);
-      setUploadedDocs(prev => [...prev, ...newDocs]);
+      const { reply, fieldUpdates } = response;
 
-      // Start polling each document for extraction
-      for (const doc of newDocs) {
-        setProcessingDocs(prev => {
-          const next = new Map(prev);
-          next.set(doc.id, 'processing');
-          return next;
-        });
-        pollDocument(doc.id);
+      // Add assistant message
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: reply,
+        fieldUpdates: fieldUpdates || [],
+      }]);
+
+      // Update conversation history for next call
+      const newHistory = [...history];
+      if (message) {
+        newHistory.push({ role: 'user', content: message });
       }
+      newHistory.push({ role: 'assistant', content: reply });
+      setConversationHistory(newHistory);
 
-      toast.success(`${files.length} file(s) uploaded — extraction started`);
-    } catch (error) {
-      toast.error('Failed to upload files');
-      console.error('Upload error:', error);
+      // Apply field updates via existing updateSection logic
+      if (fieldUpdates && fieldUpdates.length > 0) {
+        for (const update of fieldUpdates) {
+          try {
+            const data = buildUpdatePayload(update.field, update.value);
+            await updateSection(update.section, data);
+          } catch (err) {
+            console.error('Failed to apply field update:', err);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Chat error:', err);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Sorry, something went wrong. Please try again.',
+        fieldUpdates: [],
+      }]);
     } finally {
-      setUploadingType(null);
-      // Reset the file input
-      event.target.value = '';
+      setSending(false);
     }
   };
 
-  const handleRemoveDoc = (docId) => {
-    setUploadedDocs(prev => prev.filter(d => d.id !== docId));
-    setProcessingDocs(prev => {
-      const next = new Map(prev);
-      next.delete(docId);
-      return next;
-    });
-    setExtractionResults(prev => prev.filter(r => r.docId !== docId));
+  const handleSend = async () => {
+    const message = inputValue.trim();
+    if (!message || sending) return;
+
+    setInputValue('');
+    await sendChatMessage(message, conversationHistory);
+    inputRef.current?.focus();
   };
 
-  const handleSkip = () => {
-    if (factFind?.id) {
-      navigate(createPageUrl('FactFindPersonal') + `?id=${factFind.id}`);
-    }
-  };
-
-  const handleProcess = async () => {
-    if (uploadedDocs.length === 0) {
-      toast.error('Please upload at least one document');
-      return;
-    }
-
-    // Check if any docs are still processing
-    const stillProcessing = [...processingDocs.values()].some(s => s === 'processing');
-    if (stillProcessing) {
-      toast.info('Some documents are still being extracted. Please wait.');
-      return;
-    }
-
-    if (extractionResults.length === 0) {
-      toast.info('No extraction results yet. Documents may still be processing.');
-      return;
-    }
-
-    // Build summary data
-    const allFields = [];
-    const populatedSections = new Set();
-
-    for (const result of extractionResults) {
-      const fields = collectConfidenceFields(result.sections);
-      allFields.push(...fields);
-      for (const f of fields) {
-        populatedSections.add(f.section);
-      }
-    }
-
-    const lowConfidenceFields = allFields.filter(f => f.confidence < CONFIDENCE_THRESHOLD);
-
-    setSummaryData({
-      totalDocuments: extractionResults.length,
-      populatedSections: [...populatedSections],
-      totalFields: allFields.length,
-      lowConfidenceFields,
-    });
-    setShowSummary(true);
-  };
-
-  const handleConfirmPrefill = async () => {
-    setPrefilling(true);
-    try {
-      // 1. Merge extraction results across all uploaded documents
-      const mergedSections = {};
-      for (const result of extractionResults) {
-        const flat = flattenExtractedData(result.sections);
-        for (const [section, data] of Object.entries(flat)) {
-          if (!mergedSections[section]) {
-            mergedSections[section] = data;
-          } else {
-            if (Array.isArray(data) && Array.isArray(mergedSections[section])) {
-              mergedSections[section] = [...mergedSections[section], ...data];
-            } else if (typeof data === 'object' && typeof mergedSections[section] === 'object') {
-              mergedSections[section] = { ...mergedSections[section], ...data };
-            }
-          }
-        }
-      }
-
-      if (!factFind?.id) {
-        toast.error('No Fact Find record found');
-        return;
-      }
-
-      // 2. Apply each extracted section to the correct updateSection path
-
-      // ── Personal ──
-      if (mergedSections.personal) {
-        await updateSection('Client1Profile', mergedSections.personal);
-      }
-
-      // ── Income & Expenses ──
-      if (mergedSections.income) {
-        const incomeData = mergedSections.income;
-        const incomes = [];
-        if (incomeData.client1) {
-          incomes.push(incomeData.client1);
-        }
-        if (incomeData.client2) {
-          incomes.push(incomeData.client2);
-        }
-        // Build the payload matching FactFindIncomeExpenses format
-        const incomePayload = { Incomes: incomes };
-        if (incomeData.rental_income) {
-          // Rental income is typically part of the first income record
-          if (incomes[0]) {
-            incomes[0].i_rental = incomeData.rental_income;
-          }
-        }
-        await updateSection('Client1Profile', incomePayload);
-      }
-
-      // ── Superannuation ──
-      if (mergedSections.superannuation && Array.isArray(mergedSections.superannuation)) {
-        // Super funds are stored as a flat array under client1_profile.super_funds
-        // Each entry already has type, fund_name, balance, etc. from extraction
-        await updateSection('Client1Profile', {
-          SuperFunds: mergedSections.superannuation,
-        });
-      }
-
-      // ── Insurance Policies ──
-      if (mergedSections.insurance && Array.isArray(mergedSections.insurance)) {
-        // Insurance uses the wrapper format { activeIdx, policies }
-        await updateSection('Client1FactFind', {
-          InsurancePolicies: {
-            activeIdx: 0,
-            policies: mergedSections.insurance,
-          },
-        });
-      }
-
-      // ── Assets (Properties) ──
-      if (mergedSections.assets && Array.isArray(mergedSections.assets)) {
-        await updateSection('Client1FactFind', {
-          Properties: mergedSections.assets,
-        });
-      }
-
-      // ── Liabilities (Debts) ──
-      if (mergedSections.liabilities && Array.isArray(mergedSections.liabilities)) {
-        await updateSection('Client1FactFind', {
-          Debts: mergedSections.liabilities,
-        });
-      }
-
-      // ── Dependants ──
-      if (mergedSections.dependants && Array.isArray(mergedSections.dependants)) {
-        // Create each dependant via the dedicated API
-        const depClientId = clientId || factFind.client_id;
-        if (depClientId) {
-          for (const dep of mergedSections.dependants) {
-            try {
-              await dependantsApi.create({
-                client_id: depClientId,
-                ...dep,
-              });
-            } catch (depErr) {
-              console.error('Failed to create dependant:', depErr);
-            }
-          }
-        }
-      }
-
-      // ── Trusts & Companies ──
-      if (mergedSections.trusts_companies && Array.isArray(mergedSections.trusts_companies)) {
-        await updateSection('Client1FactFind', {
-          TrustsCompanies: {
-            entities: mergedSections.trusts_companies,
-          },
-        });
-      }
-
-      // ── SMSF ──
-      if (mergedSections.smsf && Array.isArray(mergedSections.smsf)) {
-        await updateSection('Client1FactFind', {
-          Smsf: {
-            smsf_details: mergedSections.smsf,
-            activeIndex: 0,
-          },
-        });
-      }
-
-      // ── Investments (Wraps & Bonds) ──
-      if (mergedSections.investments && Array.isArray(mergedSections.investments)) {
-        const wraps = mergedSections.investments.filter(i => i.inv_type !== 'bond');
-        const bonds = mergedSections.investments.filter(i => i.inv_type === 'bond');
-        await updateSection('Client1FactFind', {
-          Investments: {
-            wraps,
-            bonds,
-          },
-        });
-      }
-
-      // ── Super & Tax ──
-      if (mergedSections.super_tax) {
-        const superTaxPayload = {
-          client: {
-            super: mergedSections.super_tax.client || {},
-            tax: {},
-          },
-          partner: {
-            super: mergedSections.super_tax.partner || {},
-            tax: {},
-          },
-        };
-        // Split super vs tax fields for each person
-        for (const person of ['client', 'partner']) {
-          const src = mergedSections.super_tax[person];
-          if (!src) continue;
-          const superFields = {};
-          const taxFields = {};
-          for (const [key, val] of Object.entries(src)) {
-            if (key === 'pre_losses' || key === 'pre_cgt_losses') {
-              taxFields[key] = val;
-            } else {
-              superFields[key] = val;
-            }
-          }
-          superTaxPayload[person] = { super: superFields, tax: taxFields };
-        }
-        await updateSection('Client1FactFind', { SuperTax: superTaxPayload });
-      }
-
-      // 3. Save raw extraction data and supporting document metadata for confidence highlighting
-      await base44.entities.FactFind.update(factFind.id, {
-        ai_extracted_data: extractionResults.map(r => r.sections),
-        supporting_documents: uploadedDocs.map(d => ({
-          id: d.id,
-          file_name: d.file_name,
-          file_type: d.file_type,
-          status: d.status || 'Extracted',
-          uploaded_at: d.uploaded_at,
-        })),
-      });
-
-      setShowSummary(false);
-      toast.success('Fact Find pre-filled with extracted data');
-      navigate(createPageUrl('FactFindPersonal') + `?id=${factFind.id}`);
-    } catch (error) {
-      toast.error('Failed to pre-fill fact find');
-      console.error('Prefill error:', error);
-    } finally {
-      setPrefilling(false);
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   };
 
-  if (loading) {
+  if (loading || ffLoading) {
     return (
       <FactFindLayout currentSection="prefill" factFindId={factFind?.id}>
         <div className="flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
         </div>
       </FactFindLayout>
     );
   }
 
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
-    amber: 'bg-amber-50 text-amber-600',
-    purple: 'bg-purple-50 text-purple-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
-    red: 'bg-red-50 text-red-600',
-    cyan: 'bg-cyan-50 text-cyan-600',
-    pink: 'bg-pink-50 text-pink-600',
-    slate: 'bg-slate-50 text-slate-600'
-  };
+  // No extracted documents — show message with link
+  if (!hasExtractedDocs) {
+    return (
+      <FactFindLayout currentSection="prefill" factFindId={factFind?.id}>
+        <FactFindHeader
+          title="Pre-fill your Fact Find"
+          description="Chat with our AI assistant to review and confirm your extracted document data."
+          factFind={factFind}
+        />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center max-w-md space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-full bg-slate-100 flex items-center justify-center">
+              <FileText className="w-8 h-8 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-800">
+              No documents found
+            </h3>
+            <p className="text-sm text-slate-600">
+              Please upload documents in the Documents section first. Once your documents
+              have been processed, come back here to review the extracted data with our AI assistant.
+            </p>
+            <Link to={createPageUrl('ClientDocuments')}>
+              <Button className="mt-2 bg-blue-600 hover:bg-blue-700 text-white">
+                Go to Documents
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </FactFindLayout>
+    );
+  }
 
-  const allProcessing = [...processingDocs.values()].some(s => s === 'processing');
-  const extractedCount = [...processingDocs.values()].filter(s => s === 'extracted').length;
-
+  // Chat interface
   return (
     <FactFindLayout currentSection="prefill" factFindId={factFind?.id}>
       <FactFindHeader
-        title="Getting started — Pre-fill your Fact Find"
-        description="Save time by uploading your financial documents. Our AI will pre-fill as much of the Fact Find as possible for you to review and confirm."
+        title="Pre-fill your Fact Find"
+        description="Chat with our AI assistant to review and confirm your extracted document data."
         factFind={factFind}
       />
 
-      <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-        <div className="w-full space-y-4">
-          {/* Info Card */}
-          <Card className="border-blue-200 bg-blue-50/50">
-            <CardContent className="p-5">
-              <div className="flex gap-4">
-                <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <Upload className="w-5 h-5 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-slate-800 mb-2">AI-powered pre-fill</h3>
-                  <p className="text-sm text-slate-700 mb-3">
-                    Upload your financial documents and our AI assistants will extract key information to pre-fill your Fact Find.
-                  </p>
-                  <p className="text-sm text-slate-600 mb-3">
-                    <strong>How it works:</strong> Upload documents &rarr; AI extracts data &rarr; You review and confirm &rarr; Complete any remaining questions.
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    All information is processed securely and privately. You can upload multiple documents of each type.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Extraction Status Banner */}
-          {uploadedDocs.length > 0 && (
-            <Card className={`border ${allProcessing ? 'border-amber-200 bg-amber-50/50' : 'border-green-200 bg-green-50/50'}`}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  {allProcessing ? (
-                    <>
-                      <Loader2 className="w-5 h-5 text-amber-600 animate-spin" />
-                      <span className="text-sm font-medium text-amber-800">
-                        Extracting data from {processingDocs.size} document(s)... {extractedCount} complete
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      <span className="text-sm font-medium text-green-800">
-                        {extractedCount} document(s) extracted successfully
-                      </span>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Uploaded Documents List */}
-          {uploadedDocs.length > 0 && (
-            <Card className="border-slate-200">
-              <CardContent className="p-4">
-                <h4 className="text-sm font-semibold text-slate-700 mb-3">Uploaded Documents</h4>
-                <div className="space-y-2">
-                  {uploadedDocs.map((doc) => {
-                    const docStatus = processingDocs.get(doc.id) || 'processing';
-                    return (
-                      <div key={doc.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100">
-                        <div className="flex items-center gap-3">
-                          <FileText className="w-4 h-4 text-slate-500" />
-                          <span className="text-sm text-slate-700">{doc.file_name}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {docStatus === 'processing' && (
-                            <Badge variant="outline" className="text-amber-700 border-amber-300 bg-amber-50">
-                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                              Processing...
-                            </Badge>
-                          )}
-                          {docStatus === 'extracted' && (
-                            <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50">
-                              <CheckCircle2 className="w-3 h-3 mr-1" />
-                              Extracted
-                            </Badge>
-                          )}
-                          {docStatus === 'error' && (
-                            <Badge variant="outline" className="text-red-700 border-red-300 bg-red-50">
-                              <AlertTriangle className="w-3 h-3 mr-1" />
-                              Error
-                            </Badge>
-                          )}
-                          <button
-                            onClick={() => handleRemoveDoc(doc.id)}
-                            className="p-1 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-600"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Document Upload Grid */}
-          <div className="grid md:grid-cols-2 gap-4">
-            {documentTypes.map((docType) => {
-              const Icon = docType.icon;
-              const isUploading = uploadingType === docType.id;
-              const uploadCount = uploadedDocs.filter(d => d.file_type === docType.id).length;
-
-              return (
-                <Card key={docType.id} className="border-slate-200 hover:shadow-md transition-all">
-                  <CardContent className="p-5">
-                    <div className="flex items-start gap-4">
-                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${colorClasses[docType.color]}`}>
-                       <Icon className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-slate-800 mb-1">{docType.title}</h4>
-                        <p className="text-xs text-slate-600 mb-3">{docType.description}</p>
-
-                        <label className="cursor-pointer">
-                          <input
-                            type="file"
-                            multiple
-                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                            onChange={(e) => handleFileUpload(docType.id, e)}
-                            className="hidden"
-                            disabled={isUploading}
-                          />
-                          <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 transition-all text-sm font-medium text-slate-700">
-                            {isUploading ? (
-                              <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                Uploading...
-                              </>
-                            ) : (
-                              <>
-                                <Upload className="w-4 h-4" />
-                                Choose files
-                              </>
-                            )}
-                          </div>
-                        </label>
-
-                        {uploadCount > 0 && (
-                          <p className="text-xs text-green-600 mt-2 font-medium">
-                            {uploadCount} file{uploadCount !== 1 ? 's' : ''} uploaded
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Footer Actions */}
-          <Card className="border-slate-200 bg-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-slate-600">
-                  <strong className="text-slate-800">{uploadedDocs.length} documents</strong> uploaded so far.
-                  You can continue to the Fact Find at any time.
-                </p>
-                <div className="flex gap-3">
-                  <Button
-                    onClick={handleSkip}
-                    variant="outline"
-                    className="border-slate-300 text-slate-700 hover:bg-slate-50"
-                  >
-                    Skip & fill manually
-                  </Button>
-                  <Button
-                    onClick={handleProcess}
-                    disabled={uploadedDocs.length === 0 || allProcessing}
-                    className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30"
-                  >
-                    {allProcessing ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Extracting...
-                      </>
-                    ) : (
-                      <>
-                        Review extracted data & continue
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Extraction Summary Dialog */}
-      <Dialog open={showSummary} onOpenChange={setShowSummary}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-green-600" />
-              AI Extraction Summary
-            </DialogTitle>
-          </DialogHeader>
-
-          {summaryData && (
-            <div className="space-y-4">
-              <p className="text-sm text-slate-700">
-                AI found data in <strong>{summaryData.populatedSections.length} sections</strong> from{' '}
-                <strong>{summaryData.totalDocuments} document{summaryData.totalDocuments !== 1 ? 's' : ''}</strong>.
-              </p>
-
-              {/* Section checklist */}
-              <div className="space-y-2">
-                <h4 className="text-sm font-semibold text-slate-700">Sections populated:</h4>
-                {Object.entries(SECTION_LABELS).map(([key, label]) => {
-                  const populated = summaryData.populatedSections.includes(key);
-                  return (
-                    <div key={key} className="flex items-center gap-2 py-1">
-                      <Checkbox checked={populated} disabled className="pointer-events-none" />
-                      <span className={`text-sm ${populated ? 'text-slate-800' : 'text-slate-400'}`}>
-                        {label}
-                      </span>
-                      {populated && (
-                        <CheckCircle2 className="w-4 h-4 text-green-500 ml-auto" />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Low confidence fields */}
-              {summaryData.lowConfidenceFields.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-amber-700 flex items-center gap-1">
-                    <AlertTriangle className="w-4 h-4" />
-                    Fields needing attention ({summaryData.lowConfidenceFields.length})
-                  </h4>
-                  <div className="max-h-40 overflow-y-auto space-y-1">
-                    {summaryData.lowConfidenceFields.map((f, i) => (
-                      <div key={i} className="flex items-center justify-between p-2 rounded bg-amber-50 border border-amber-100">
-                        <span className="text-xs text-amber-800">
-                          {SECTION_LABELS[f.section] || f.section} &rarr; {f.field}
-                        </span>
-                        <Badge variant="outline" className="text-amber-700 border-amber-300 text-xs">
-                          {Math.round(f.confidence * 100)}%
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-xs text-amber-600">
-                    These fields will be highlighted in amber for you to review and confirm.
-                  </p>
-                </div>
-              )}
+      <div className="flex-1 flex flex-col overflow-hidden bg-slate-50">
+        {/* Messages area */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+          {messages.length === 0 && sending && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 text-blue-600 animate-spin mr-2" />
+              <span className="text-sm text-slate-500">Loading your document summary...</span>
             </div>
           )}
 
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShowSummary(false)}>
-              Cancel
-            </Button>
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] space-y-2`}>
+                {/* Message bubble */}
+                <div
+                  className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                    msg.role === 'user'
+                      ? 'bg-blue-600 text-white rounded-br-md'
+                      : 'bg-white border border-slate-200 text-slate-800 rounded-bl-md shadow-sm'
+                  }`}
+                >
+                  {msg.role === 'assistant' && (
+                    <div className="flex items-center gap-2 mb-1">
+                      <MessageCircle className="w-3.5 h-3.5 text-blue-600" />
+                      <span className="text-xs font-semibold text-blue-600">AI Assistant</span>
+                    </div>
+                  )}
+                  <div className="whitespace-pre-wrap">{msg.content}</div>
+                </div>
+
+                {/* Field update confirmation chips */}
+                {msg.fieldUpdates && msg.fieldUpdates.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pl-1">
+                    {msg.fieldUpdates.map((update, j) => (
+                      <span
+                        key={j}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200"
+                      >
+                        <CheckCircle2 className="w-3 h-3" />
+                        Saved: {update.field} &rarr; {String(update.value)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {/* Typing indicator */}
+          {sending && messages.length > 0 && (
+            <div className="flex justify-start">
+              <div className="bg-white border border-slate-200 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input area */}
+        <div className="border-t border-slate-200 bg-white px-4 py-3">
+          <div className="flex items-end gap-2 max-w-4xl mx-auto">
+            <textarea
+              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type your message..."
+              rows={1}
+              className="flex-1 resize-none rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-slate-400"
+              style={{ maxHeight: '120px', minHeight: '40px' }}
+              disabled={sending}
+            />
             <Button
-              onClick={handleConfirmPrefill}
-              disabled={prefilling}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={handleSend}
+              disabled={!inputValue.trim() || sending}
+              size="icon"
+              className="h-10 w-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex-shrink-0"
             >
-              {prefilling ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Pre-filling...
-                </>
+              {sending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                'Apply & continue to Fact Find'
+                <Send className="w-4 h-4" />
               )}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          <p className="text-xs text-slate-400 text-center mt-2">
+            Review the extracted data and confirm or correct any fields. Press Enter to send.
+          </p>
+        </div>
+      </div>
     </FactFindLayout>
   );
+}
+
+/**
+ * Build a nested update payload from a dot-notation field path and value.
+ * e.g. "personal.first_name" + "John" => { personal: { first_name: "John" } }
+ */
+function buildUpdatePayload(fieldPath, value) {
+  const parts = fieldPath.replace(/\[(\d+)\]/g, '.$1').split('.');
+  const result = {};
+  let current = result;
+
+  for (let i = 0; i < parts.length - 1; i++) {
+    const key = parts[i];
+    const nextKey = parts[i + 1];
+    current[key] = /^\d+$/.test(nextKey) ? [] : {};
+    current = current[key];
+  }
+
+  current[parts[parts.length - 1]] = value;
+  return result;
 }
