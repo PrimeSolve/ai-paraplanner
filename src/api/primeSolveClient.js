@@ -497,6 +497,26 @@ export const aiApi = {
 };
 
 // ──────────────────────────────────────────────────────────────
+// Fact Find Chat API helpers
+// ──────────────────────────────────────────────────────────────
+
+export const factFindChatApi = {
+  /**
+   * Send a chat message for a fact find.
+   * @param {string} factFindId
+   * @param {{ message: string, conversationHistory: Array, clientId: string }} payload
+   * @returns {{ reply: string, fieldUpdates: Array }}
+   */
+  async sendMessage(factFindId, payload) {
+    const response = await axiosInstance.post(
+      `/fact-finds/${factFindId}/chat`,
+      payload
+    );
+    return response.data;
+  },
+};
+
+// ──────────────────────────────────────────────────────────────
 // Export the adapter with the same `base44` name
 // ──────────────────────────────────────────────────────────────
 
@@ -507,4 +527,5 @@ export const base44 = {
   appLogs,
   ai,
   documentsApi,
+  factFindChatApi,
 };
