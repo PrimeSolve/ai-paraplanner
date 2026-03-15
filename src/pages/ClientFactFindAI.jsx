@@ -1,7 +1,8 @@
-import React, { useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CashflowModel from '@/cashflow/cashflow-model.jsx';
 import { useFactFind } from '@/components/factfind/useFactFind';
+import { useVoiceSession } from '@/components/factfind/useVoiceSession';
 
 /**
  * Convert the DB factFind object (as returned by the useFactFind hook)
@@ -323,6 +324,15 @@ export default function ClientFactFindAI() {
     }, 2000);
   }, [factFind?.id, updateSection]);
 
+  const { status: voiceStatus, startVoice, stopVoice } = useVoiceSession({
+    factFind,
+    updateSection,
+    activeTabId: 'dashboard',
+    clientId,
+  });
+  const voiceConnected = voiceStatus === 'connected';
+  const voiceConnecting = voiceStatus === 'connecting';
+
   if (loading) {
     return (
       <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -340,7 +350,7 @@ export default function ClientFactFindAI() {
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
+    <div style={{ width:'100vw', height:'100vh', overflow:'hidden', position:'relative' }}>
       <CashflowModel
         mode="factfind"
         hideAdvice={true}
@@ -349,6 +359,25 @@ export default function ClientFactFindAI() {
         onBack={() => navigate(-1)}
         clientId={clientId}
       />
+      {/* Voice button — fixed bottom right */}
+      <div style={{ position:'fixed', bottom:24, right:24, zIndex:9999, display:'flex', alignItems:'center', gap:10 }}>
+        {voiceConnected && (
+          <div style={{ background:'white', border:'1px solid #E2E8F0', borderRadius:8, padding:'8px 14px', fontSize:13, color:'#059669', fontWeight:500, boxShadow:'0 2px 8px rgba(0,0,0,0.1)' }}>
+            🎙️ Sage is listening...
+          </div>
+        )}
+        <button
+          onClick={voiceConnected ? stopVoice : startVoice}
+          style={{
+            width:52, height:52, borderRadius:'50%', border:'none',
+            background: voiceConnected ? '#DC2626' : voiceConnecting ? '#D97706' : '#4F46E5',
+            color:'white', fontSize:22, cursor:'pointer',
+            boxShadow:'0 4px 12px rgba(0,0,0,0.2)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+          }}>
+          {voiceConnected ? '⏹' : voiceConnecting ? '⏳' : '🎙️'}
+        </button>
+      </div>
     </div>
   );
 }
