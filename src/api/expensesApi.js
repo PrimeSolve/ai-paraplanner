@@ -36,7 +36,7 @@ function mapFreqFromApi(apiFreq) {
 function buildExpensePayload(data, clientId) {
   const apiData = {};
 
-  apiData.eDisc = data.e_disc ? parseFloat(data.e_disc) : 0;
+  apiData.eDisc = String(data.e_disc || '0');
   apiData.eSave = data.e_save ? parseFloat(data.e_save) : null;
   apiData.eFreq = mapFreqToApi(data.e_freq);
   apiData.eBudget = data.rental_cost ? String(data.rental_cost) : null;
