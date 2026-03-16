@@ -1065,15 +1065,20 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
     }
   }, [urlClientId, loadPrincipals]);
 
-  // Auto-save principals to API when client1/client2 data changes (debounced)
+  // Auto-save principals to API when client1/client2 data changes (debounced).
+  // We compare serialized snapshots so that deep-clone reference changes from
+  // updateFF (which clones the entire factFind) don't trigger spurious saves.
   const principalsSaveTimerRef = useRef(null);
-  const principalsInitialised = useRef(false);
+  const principalsSnapshotRef = useRef(null);
   useEffect(() => {
-    // Skip the first render and the initial load population
-    if (!principalsInitialised.current) {
-      principalsInitialised.current = true;
+    const snapshot = JSON.stringify([factFind.client1, factFind.client2]);
+    if (principalsSnapshotRef.current === null) {
+      // First render — just record the snapshot, don't save
+      principalsSnapshotRef.current = snapshot;
       return;
     }
+    if (snapshot === principalsSnapshotRef.current) return; // no actual change
+    principalsSnapshotRef.current = snapshot;
     if (!urlClientId) return;
 
     if (principalsSaveTimerRef.current) clearTimeout(principalsSaveTimerRef.current);
@@ -1095,15 +1100,19 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
     }
   }, [urlClientId, loadDependants]);
 
-  // Auto-save dependants to API when children/dependants_list changes (debounced)
+  // Auto-save dependants to API when children/dependants_list changes (debounced).
+  // Same serialized-snapshot comparison to prevent cross-form save spam.
   const dependantsSaveTimerRef = useRef(null);
-  const dependantsInitialised = useRef(false);
+  const dependantsSnapshotRef = useRef(null);
   useEffect(() => {
-    // Skip the first render and the initial load population
-    if (!dependantsInitialised.current) {
-      dependantsInitialised.current = true;
+    const snapshot = JSON.stringify([factFind.children, factFind.dependants_list]);
+    if (dependantsSnapshotRef.current === null) {
+      // First render — just record the snapshot, don't save
+      dependantsSnapshotRef.current = snapshot;
       return;
     }
+    if (snapshot === dependantsSnapshotRef.current) return; // no actual change
+    dependantsSnapshotRef.current = snapshot;
     if (!urlClientId) return;
 
     if (dependantsSaveTimerRef.current) clearTimeout(dependantsSaveTimerRef.current);
