@@ -414,10 +414,11 @@ export function DependantsForm({ factFind, updateFF, clientId }) {
 
   // Debounced update to API
   const debouncedUpdate = useCallback((id, data) => {
-    if (debounceTimers.current[id]) {
-      clearTimeout(debounceTimers.current[id]);
+    const key = `dep_${id}`;
+    if (debounceTimers.current[key]) {
+      clearTimeout(debounceTimers.current[key]);
     }
-    debounceTimers.current[id] = setTimeout(async () => {
+    debounceTimers.current[key] = setTimeout(async () => {
       try {
         await dependantsApi.update(id, data);
       } catch (error) {
@@ -2408,10 +2409,11 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid,
 
   // Debounced update to API
   const debouncedUpdate = useCallback((id, data) => {
-    if (debounceTimers.current[id]) {
-      clearTimeout(debounceTimers.current[id]);
+    const key = `trust_${id}`;
+    if (debounceTimers.current[key]) {
+      clearTimeout(debounceTimers.current[key]);
     }
-    debounceTimers.current[id] = setTimeout(async () => {
+    debounceTimers.current[key] = setTimeout(async () => {
       try {
         await trustsApi.update(id, data);
       } catch (error) {
