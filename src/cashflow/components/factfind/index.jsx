@@ -3193,7 +3193,7 @@ export function SMSFForm({ factFind, updateFF, clientId, client1Guid, client2Gui
               <div style={{ width: 30, height: 30, borderRadius: "50%", background: "#6366F1", color: "var(--ps-surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🔒</div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ps-text-primary)" }}>{smsf.smsf_name || `SMSF ${idx + 1}`}</div>
-                <div style={{ fontSize: 11, color: "var(--ps-text-subtle)" }}>{smsf.accounts.length} account{smsf.accounts.length !== 1 ? "s" : ""}</div>
+                <div style={{ fontSize: 11, color: "var(--ps-text-subtle)" }}>{(smsf.accounts || []).length} account{(smsf.accounts || []).length !== 1 ? "s" : ""}</div>
               </div>
             </div>
             <button onClick={() => remove(idx)} style={{ padding: "4px 10px", borderRadius: 5, border: "1px solid var(--ps-ring-red)", background: "var(--ps-surface-red)", cursor: "pointer", fontSize: 11, color: "var(--ps-red)", fontWeight: 500 }}>Remove</button>
