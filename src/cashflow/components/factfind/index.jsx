@@ -14,6 +14,7 @@ import { investmentWrapsApi } from "@/api/investmentWrapsApi";
 import { investmentBondsApi } from "@/api/investmentBondsApi";
 import { clientRiskProfilesApi } from "@/api/clientRiskProfilesApi";
 import { scopeOfAdviceApi } from "@/api/scopeOfAdviceApi";
+import { superFundsApi } from "@/api/superFundsApi";
 import { buildEntityOptions, resolveGuid } from "../../hooks/useFactFind.js";
 
 // ===========================================================================
@@ -736,8 +737,39 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
   const annuities = factFind.annuities || [];
   const definedBenefits = factFind.definedBenefits || [];
 
-  // Client GUID map for pension API calls
+  // Client GUID map for API calls
   const clientGuidMap = { client1: client1Guid, client2: client2Guid };
+
+  // Load super funds from API on mount
+  const superLoadedRef = useRef(false);
+  useEffect(() => {
+    if (clientId && !superLoadedRef.current) {
+      superLoadedRef.current = true;
+      superFundsApi.getAll(clientId).then(records => {
+        const arr = Array.isArray(records) ? records : [];
+        updateFF("superProducts", arr);
+      }).catch(err => {
+        console.error('[SuperannuationForm] Failed to load super funds:', err);
+      });
+    }
+  }, [clientId, updateFF]);
+
+  // Debounced update for super funds
+  const superTimers = useRef({});
+  useEffect(() => {
+    return () => { Object.values(superTimers.current).forEach(clearTimeout); };
+  }, []);
+  const debouncedSuperUpdate = useCallback((id, data) => {
+    const key = `super_${id}`;
+    if (superTimers.current[key]) clearTimeout(superTimers.current[key]);
+    superTimers.current[key] = setTimeout(async () => {
+      try {
+        await superFundsApi.update(id, data, clientGuidMap);
+      } catch (err) {
+        console.error('[SuperannuationForm] Failed to update super fund:', err);
+      }
+    }, 500);
+  }, [client1Guid, client2Guid]);
 
   // Load pensions from API on mount
   const pensionsLoadedRef = useRef(false);
@@ -807,11 +839,52 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
     return id || "—";
   };
 
-  // Super CRUD
-  const addSuper = () => updateFF("superProducts", [...superFunds, { ...SUPER_DEFAULTS, contributions: { ...SUPER_DEFAULTS.contributions }, tax_components: { ...SUPER_DEFAULTS.tax_components }, beneficiaries: [], portfolio: [] }]);
-  const removeSuper = (idx) => { updateFF("superProducts", superFunds.filter((_, i) => i !== idx)); setDetailIdx(null); };
-  const updateSuper = (idx, field, value) => updateFF("superProducts", superFunds.map((item, i) => i === idx ? { ...item, [field]: value } : item));
-  const updateSuperNested = (idx, parent, field, value) => updateFF("superProducts", superFunds.map((item, i) => i === idx ? { ...item, [parent]: { ...item[parent], [field]: value } } : item));
+  // Super CRUD (API-backed)
+  const addSuper = async () => {
+    if (!clientId) return;
+    try {
+      const defaults = { ...SUPER_DEFAULTS, contributions: { ...SUPER_DEFAULTS.contributions }, tax_components: { ...SUPER_DEFAULTS.tax_components }, beneficiaries: [], portfolio: [] };
+      const created = await superFundsApi.create(
+        { ...defaults, fund_name: `Super Fund ${superFunds.length + 1}` },
+        clientGuidMap,
+        `Super Fund ${superFunds.length + 1}`
+      );
+      updateFF("superProducts", [...superFunds, { ...defaults, ...created }]);
+    } catch (error) {
+      console.error("Failed to create super fund:", error);
+      // Fallback to local-only if API fails
+      updateFF("superProducts", [...superFunds, { ...SUPER_DEFAULTS, contributions: { ...SUPER_DEFAULTS.contributions }, tax_components: { ...SUPER_DEFAULTS.tax_components }, beneficiaries: [], portfolio: [] }]);
+    }
+  };
+  const removeSuper = async (idx) => {
+    const fund = superFunds[idx];
+    if (fund?.id) {
+      try {
+        await superFundsApi.remove(fund.id);
+      } catch (error) {
+        console.error("Failed to remove super fund:", error);
+        return;
+      }
+    }
+    updateFF("superProducts", superFunds.filter((_, i) => i !== idx));
+    setDetailIdx(null);
+  };
+  const updateSuper = (idx, field, value) => {
+    const updated = superFunds.map((item, i) => i === idx ? { ...item, [field]: value } : item);
+    updateFF("superProducts", updated);
+    const record = updated[idx];
+    if (record?.id) {
+      debouncedSuperUpdate(record.id, record);
+    }
+  };
+  const updateSuperNested = (idx, parent, field, value) => {
+    const updated = superFunds.map((item, i) => i === idx ? { ...item, [parent]: { ...item[parent], [field]: value } } : item);
+    updateFF("superProducts", updated);
+    const record = updated[idx];
+    if (record?.id) {
+      debouncedSuperUpdate(record.id, record);
+    }
+  };
   const updateSuperArray = (idx, arrName, arrIdx, field, value) => {
     updateFF("superProducts", superFunds.map((item, i) => i === idx ? { ...item, [arrName]: item[arrName].map((a, ai) => ai === arrIdx ? { ...a, [field]: value } : a) } : item));
   };
