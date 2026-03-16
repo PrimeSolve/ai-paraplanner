@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import React from "react";
 import { _psInitialDark, injectThemeCSS } from "../constants/theme.jsx";
 import { principalsApi } from "../../api/principalsApi.js";
@@ -984,6 +984,76 @@ export function useFactFind(initialData) {
     }
   }, []);
 
+  // ── Central Entity Registry ────────────────────────────────
+  // Rebuilt whenever any entity changes — single source of truth for all
+  // owner/entity dropdowns across the application.
+  const entityRegistry = useMemo(() => {
+    const registry = {};
+
+    // Principals — include even without an id so dropdowns always show them
+    if (factFind.client1) {
+      registry["client1"] = {
+        guid: factFind.client1.id || "client1",
+        label: `${factFind.client1.first_name || ""} ${factFind.client1.last_name || ""}`.trim() || "Client 1",
+        type: "principal"
+      };
+    }
+    if (factFind.client2) {
+      registry["client2"] = {
+        guid: factFind.client2.id || "client2",
+        label: `${factFind.client2.first_name || ""} ${factFind.client2.last_name || ""}`.trim() || "Client 2",
+        type: "principal"
+      };
+    }
+
+    // Children
+    (factFind.children || []).forEach((child, i) => {
+      registry[`child_${i}`] = {
+        guid: child.id,
+        label: child.name || `Child ${i + 1}`,
+        type: "child"
+      };
+    });
+
+    // Dependants
+    (factFind.dependants_list || []).forEach((dep, i) => {
+      registry[`dep_${i}`] = {
+        guid: dep.id,
+        label: dep.name || `Dependant ${i + 1}`,
+        type: "dependant"
+      };
+    });
+
+    // Trusts
+    (factFind.trusts || []).forEach((trust, i) => {
+      registry[`trust_${i}`] = {
+        guid: trust.id,
+        label: trust.trust_name || `Trust ${i + 1}`,
+        type: "trust"
+      };
+    });
+
+    // Companies
+    (factFind.companies || []).forEach((company, i) => {
+      registry[`company_${i}`] = {
+        guid: company.id,
+        label: company.company_name || company.co_name || `Company ${i + 1}`,
+        type: "company"
+      };
+    });
+
+    // SMSFs
+    (factFind.smsfs || []).forEach((smsf, i) => {
+      registry[`smsf_${i}`] = {
+        guid: smsf.id,
+        label: smsf.smsf_name || `SMSF ${i + 1}`,
+        type: "smsf"
+      };
+    });
+
+    return registry;
+  }, [factFind]);
+
   return {
     factFind, setFactFind, adviceModel1, setAdviceModel1,
     updateFF, updateAdvice, resetAdviceModel,
@@ -1005,5 +1075,30 @@ export function useFactFind(initialData) {
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
     clientId,
+    entityRegistry,
   };
+}
+
+/**
+ * Build a flat array of { value, label } options from the entity registry,
+ * optionally filtered by entity types. For use in FFSelect dropdowns.
+ * @param {object} registry - The entityRegistry object
+ * @param {string[]|null} types - Array of types to include, or null for all
+ * @returns {{ value: string, label: string }[]}
+ */
+export function buildEntityOptions(registry, types = null) {
+  return Object.entries(registry)
+    .filter(([key, val]) => !types || types.includes(val.type))
+    .map(([key, val]) => ({ value: key, label: val.label }));
+}
+
+/**
+ * Resolve a registry key (e.g. "client1", "trust_0") to its real GUID
+ * for use in API calls.
+ * @param {string} key - The registry key
+ * @param {object} registry - The entityRegistry object
+ * @returns {string} The GUID, or the key itself if not found
+ */
+export function resolveGuid(key, registry) {
+  return registry[key]?.guid || key;
 }

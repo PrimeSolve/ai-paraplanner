@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area, AreaChart, Cell, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, PieChart, Pie, ReferenceLine, Customized } from "recharts";
 
 import { THEME_STYLE_ID, _psInitialDark, injectThemeCSS, T } from "./constants/theme.jsx";
-import { useFactFind } from "./hooks/useFactFind.js";
+import { useFactFind, buildEntityOptions, resolveGuid } from "./hooks/useFactFind.js";
 import { buildProjectionSetup, mergeAdviceEntities, buildDynamicTabs, makeOwnerLabel, buildAssetHelpers, buildEntityOwnerOptions } from "./utils/helpers.js";
 import { runProjectionEngine } from "./engine/orchestrator.js";
 import { ENTITY_REGISTRY, ENTITY_MAP, ENTITY_LIST, ENTITY_ALIASES, resolveEntity, EntityBadge, entityColor } from "./constants/entities.jsx";
@@ -1043,6 +1043,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
     debtFreqOverrides, setDebtFreqOverrides,
     debtIOOverrides, setDebtIOOverrides,
     darkMode, setDarkMode,
+    entityRegistry,
   } = useFactFind(initialData);
 
   const { calculateAllSectionCompletion } = useCompletionLogic();
@@ -1820,6 +1821,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
                 clientId={urlClientId}
                 client1Guid={urlClientId}
                 client2Guid={null}
+                entityRegistry={entityRegistry}
               />
             ) : factFindSection === "investments" ? (
               <InvestmentsForm
@@ -1827,6 +1829,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
                 updateFF={updateFF}
                 clientId={urlClientId}
                 clientGuidMap={{ client1: urlClientId, client2: null }}
+                entityRegistry={entityRegistry}
               />
             ) : factFindSection === "trusts_companies" ? (
               <TrustsCompaniesForm
@@ -1835,6 +1838,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
                 clientId={urlClientId}
                 client1Guid={urlClientId}
                 client2Guid={null}
+                entityRegistry={entityRegistry}
               />
             ) : factFindSection === "smsf" ? (
               <SMSFForm
@@ -1843,6 +1847,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
                 clientId={urlClientId}
                 client1Guid={urlClientId}
                 client2Guid={null}
+                entityRegistry={entityRegistry}
               />
             ) : factFindSection === "assets" ? (
               <AssetsForm
@@ -1850,6 +1855,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
                 updateFF={updateFF}
                 entityOwnerOptions={entityOwnerOptions}
                 clientId={urlClientId}
+                entityRegistry={entityRegistry}
               />
             ) : factFindSection === "liabilities" ? (
               <LiabilitiesForm
@@ -1857,6 +1863,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
                 updateFF={updateFF}
                 entityOwnerOptions={entityOwnerOptions}
                 clientId={urlClientId}
+                entityRegistry={entityRegistry}
               />
             ) : factFindSection === "insurance-policies" ? (
               <InsurancePoliciesForm
@@ -1864,6 +1871,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
                 updateFF={updateFF}
                 clientId={urlClientId}
                 clientGuidMap={{ client1: urlClientId, client2: null }}
+                entityRegistry={entityRegistry}
               />
             ) : factFindSection === "income" ? (
               <IncomeForm
