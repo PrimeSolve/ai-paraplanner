@@ -2455,6 +2455,32 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid,
     });
   }, [debouncedUpdate]);
 
+  // Build beneficiary entity options from all available entities
+  const buildBenefOptions = (currentTrustIdx) => {
+    const opts = [{ value: "", label: "Select..." }];
+    if (factFind.client1) {
+      const name = ((factFind.client1.first_name || "") + " " + (factFind.client1.last_name || "")).trim() || "Client 1";
+      opts.push({ value: "client1", label: `${name} (Client 1)` });
+    }
+    if (factFind.client2) {
+      const name = ((factFind.client2.first_name || "") + " " + (factFind.client2.last_name || "")).trim() || "Client 2";
+      opts.push({ value: "client2", label: `${name} (Client 2)` });
+    }
+    (factFind.children || []).forEach((c, i) => {
+      if (c.name) opts.push({ value: `child_${i}`, label: `${c.name} (Child)` });
+    });
+    (factFind.dependants_list || []).forEach((d, i) => {
+      if (d.name) opts.push({ value: `dependant_${i}`, label: `${d.name} (Dependant)` });
+    });
+    trusts.forEach((t, i) => {
+      if (i !== currentTrustIdx && t.trust_name) opts.push({ value: `trust_${i}`, label: `${t.trust_name} (Trust)` });
+    });
+    companies.forEach((c, i) => {
+      if (c.company_name) opts.push({ value: `company_${i}`, label: `${c.company_name} (Company)` });
+    });
+    return opts;
+  };
+
   // Trust beneficiary helpers
   const addBenef = async (idx) => {
     const newBenef = { benef_entity: "", benef_entitlement: "" };
@@ -2483,9 +2509,24 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid,
     const updated = trusts.map((item, i) => i === trustIdx ? { ...item, beneficiaries: item.beneficiaries.filter((_, bi) => bi !== benefIdx) } : item);
     setTrusts(updated);
   };
-  const updateBenef = (trustIdx, benefIdx, field, value) => {
-    const updated = trusts.map((item, i) => i === trustIdx ? { ...item, beneficiaries: item.beneficiaries.map((b, bi) => bi === benefIdx ? { ...b, [field]: value } : b) } : item);
-    updateFF("trusts", updated);
+  const updateBenef = async (trustIdx, benefIdx, field, value) => {
+    const trust = trusts[trustIdx];
+    const benef = trust && trust.beneficiaries ? trust.beneficiaries[benefIdx] : null;
+    const updatedBenef = { ...benef, [field]: value };
+    // Update local state immediately
+    const updated = trusts.map((item, i) => i === trustIdx ? { ...item, beneficiaries: item.beneficiaries.map((b, bi) => bi === benefIdx ? updatedBenef : b) } : item);
+    setTrusts(updated);
+    // Sync to API: DELETE old + POST new (no PUT endpoint)
+    if (trust && trust.id && benef && benef._serverId) {
+      try {
+        await trustsApi.removeBeneficiary(trust.id, benef._serverId);
+        const created = await trustsApi.addBeneficiary(trust.id, updatedBenef, clientGuidMap);
+        const newServerId = created.id || created._id || null;
+        setTrusts(prev => prev.map((item, i) => i === trustIdx ? { ...item, beneficiaries: item.beneficiaries.map((b, bi) => bi === benefIdx ? { ...b, _serverId: newServerId } : b) } : item));
+      } catch (error) {
+        console.error("Failed to update beneficiary:", error);
+      }
+    }
   };
 
   // Load companies from API on mount
@@ -2677,7 +2718,7 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid,
                       <tbody>
                         {(data.beneficiaries || []).map((b, bi) => (
                           <tr key={bi}>
-                            <td style={miniTdStyle}><FFInput value={b.benef_entity} onChange={v => updateBenef(idx, bi, "benef_entity", v)} placeholder="Entity name" /></td>
+                            <td style={miniTdStyle}><FFSelect value={b.benef_entity} onChange={v => updateBenef(idx, bi, "benef_entity", v)} options={buildBenefOptions(idx)} /></td>
                             <td style={miniTdStyle}><FFInput value={b.benef_entitlement} onChange={v => updateBenef(idx, bi, "benef_entitlement", v)} placeholder="e.g. 25%" /></td>
                             <td style={miniTdStyle}><button onClick={() => removeBenef(idx, bi)} style={{ fontSize: 10, color: "var(--ps-red)", cursor: "pointer", background: "none", border: "none", fontWeight: 500 }}>Remove</button></td>
                           </tr>
