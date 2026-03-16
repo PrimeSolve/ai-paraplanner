@@ -1841,6 +1841,8 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
                 factFind={factFind}
                 updateFF={updateFF}
                 clientId={urlClientId}
+                client1Guid={urlClientId}
+                client2Guid={null}
               />
             ) : factFindSection === "assets" ? (
               <AssetsForm

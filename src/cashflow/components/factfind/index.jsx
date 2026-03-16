@@ -3069,7 +3069,7 @@ const SMSF_BENEF_DEFAULTS = {
   benef_entitlement: "",
 };
 
-export function SMSFForm({ factFind, updateFF, clientId }) {
+export function SMSFForm({ factFind, updateFF, clientId, client1Guid, client2Guid }) {
   const items = factFind.smsfs || [];
   const debounceTimers = useRef({});
 
@@ -3171,12 +3171,57 @@ export function SMSFForm({ factFind, updateFF, clientId }) {
       ...item, accounts: item.accounts.map((acc, j) => j === accIdx ? { ...acc, beneficiaries: acc.beneficiaries.filter((_, k) => k !== bIdx) } : acc)
     } : item));
   };
-  const updateBenef = (smsfIdx, accIdx, bIdx, field, value) => {
+  const clientGuidMap = { client1: client1Guid, client2: client2Guid };
+
+  const updateBenef = async (smsfIdx, accIdx, bIdx, field, value) => {
+    const smsf = items[smsfIdx];
+    const acc = smsf?.accounts?.[accIdx];
+    const benef = acc?.beneficiaries?.[bIdx];
+    const updatedBenef = { ...benef, [field]: value };
+    // Update local state immediately
     updateFF("smsfs", items.map((item, i) => i === smsfIdx ? {
-      ...item, accounts: item.accounts.map((acc, j) => j === accIdx ? {
-        ...acc, beneficiaries: acc.beneficiaries.map((b, k) => k === bIdx ? { ...b, [field]: value } : b)
-      } : acc)
+      ...item, accounts: item.accounts.map((a, j) => j === accIdx ? {
+        ...a, beneficiaries: a.beneficiaries.map((b, k) => k === bIdx ? updatedBenef : b)
+      } : a)
     } : item));
+    // Sync to API: DELETE old + POST new (no PUT endpoint)
+    if (smsf?.id && acc?._memberId && benef?._serverId) {
+      try {
+        await smsfApi.removeBeneficiary(smsf.id, acc._memberId, benef._serverId);
+        const created = await smsfApi.addBeneficiary(smsf.id, acc._memberId, updatedBenef, clientGuidMap);
+        const newServerId = created.id || created._id || null;
+        // Update _serverId on the beneficiary after API round-trip
+        updateFF("smsfs", items.map((item, i) => i === smsfIdx ? {
+          ...item, accounts: item.accounts.map((a, j) => j === accIdx ? {
+            ...a, beneficiaries: a.beneficiaries.map((b, k) => k === bIdx ? { ...b, ...updatedBenef, _serverId: newServerId } : b)
+          } : a)
+        } : item));
+      } catch (error) {
+        console.error("Failed to update SMSF beneficiary:", error);
+      }
+    }
+  };
+
+  // Build beneficiary dropdown options for a given account (exclude account owner)
+  const buildSmsfBenefOptions = (accOwner) => {
+    const opts = [{ value: "", label: "Select..." }];
+    if (factFind.client1 && accOwner !== "client1") {
+      const name = ((factFind.client1.first_name || "") + " " + (factFind.client1.last_name || "")).trim() || "Client 1";
+      opts.push({ value: "client1", label: `${name} (Client 1)` });
+    }
+    if (factFind.client2 && accOwner !== "client2") {
+      const name = ((factFind.client2.first_name || "") + " " + (factFind.client2.last_name || "")).trim() || "Client 2";
+      opts.push({ value: "client2", label: `${name} (Client 2)` });
+    }
+    (factFind.children || []).forEach((c, i) => {
+      if (c.name) opts.push({ value: `child_${i}`, label: `${c.name} (Child)` });
+    });
+    (factFind.dependants_list || []).forEach((d, i) => {
+      if (d.name) opts.push({ value: `dependant_${i}`, label: `${d.name} (Dependant)` });
+    });
+    opts.push({ value: "estate", label: "Estate" });
+    opts.push({ value: "lpr", label: "Legal Personal Representative" });
+    return opts;
   };
 
   // Client options for account owner
@@ -3276,7 +3321,7 @@ export function SMSFForm({ factFind, updateFF, clientId }) {
                         <tbody>
                           {(acc.beneficiaries || []).map((b, bi) => (
                             <tr key={bi}>
-                              <td style={miniTdStyle}><FFInput value={b.benef_who} onChange={v => updateBenef(idx, ai, bi, "benef_who", v)} placeholder="Entity name" /></td>
+                              <td style={miniTdStyle}><FFSelect value={b.benef_who} onChange={v => updateBenef(idx, ai, bi, "benef_who", v)} options={buildSmsfBenefOptions(acc.owner)} /></td>
                               <td style={miniTdStyle}>
                                 <FFSelect value={b.benef_type} onChange={v => updateBenef(idx, ai, bi, "benef_type", v)}
                                   options={[{ value: "", label: "Select..." }, { value: "binding", label: "Binding" }, { value: "non-binding", label: "Non-binding" }, { value: "lapsing", label: "Lapsing binding" }, { value: "non-lapsing", label: "Non-lapsing binding" }]} />
