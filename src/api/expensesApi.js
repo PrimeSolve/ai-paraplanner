@@ -129,11 +129,13 @@ export const expensesApi = {
    */
   async upsert(clientId, data) {
     const payload = sanitisePayload(buildExpensePayload(data, clientId));
+    payload.eDisc = String(payload.eDisc || '0');
+    payload.clientId = clientId;
     let response;
     if (data.id) {
       response = await axiosInstance.put(`/expenses/${data.id}`, payload);
     } else {
-      response = await axiosInstance.post('/expenses', { ...payload, clientId });
+      response = await axiosInstance.post('/expenses', payload);
     }
     return mapExpenseFromApi(normaliseRecord(response.data));
   },
