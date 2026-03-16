@@ -220,4 +220,45 @@ export const smsfApi = {
   async removeMember(smsfId, memberId) {
     await axiosInstance.delete(`/smsfs/${smsfId}/members/${memberId}`);
   },
+
+  /**
+   * POST a new beneficiary to an SMSF member.
+   * @param {string} smsfId - The SMSF ID
+   * @param {string} memberId - The member ID
+   * @param {object} benefData - { benef_who, benef_type, benef_entitlement }
+   * @param {object} [clientGuidMap] - Map of display values → real GUIDs
+   * @returns {Promise<object>} Created beneficiary (snake_case)
+   */
+  async addBeneficiary(smsfId, memberId, benefData, clientGuidMap = {}) {
+    const whoValue = benefData.benef_who || '';
+    const resolvedGuid = clientGuidMap[whoValue] || whoValue;
+
+    const apiData = {
+      BeneficiaryClientId: resolvedGuid || null,
+      BeneficiaryEntityId: null,
+      BeneficiaryType: 0,
+      DefaultPercentage: benefData.benef_entitlement
+        ? parseFloat(benefData.benef_entitlement)
+        : null,
+    };
+
+    const response = await axiosInstance.post(
+      `/smsfs/${smsfId}/members/${memberId}/beneficiaries`,
+      apiData,
+    );
+    return normaliseRecord(camelToSnakeKeys(response.data));
+  },
+
+  /**
+   * DELETE a beneficiary from an SMSF member.
+   * @param {string} smsfId - The SMSF ID
+   * @param {string} memberId - The member ID
+   * @param {string} beneficiaryId - The beneficiary ID
+   * @returns {Promise<void>}
+   */
+  async removeBeneficiary(smsfId, memberId, beneficiaryId) {
+    await axiosInstance.delete(
+      `/smsfs/${smsfId}/members/${memberId}/beneficiaries/${beneficiaryId}`,
+    );
+  },
 };
