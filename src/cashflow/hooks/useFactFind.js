@@ -109,6 +109,11 @@ export function useFactFind(initialData) {
     }
   }, [initialData]);
 
+  // Stable ref to the latest factFind — allows save callbacks to read
+  // current state without depending on the factFind object identity.
+  const factFindRef = useRef(factFind);
+  React.useEffect(() => { factFindRef.current = factFind; }, [factFind]);
+
   // Helper to update a nested factFind path
   const updateFF = (path, value) => {
     setFactFind(prev => {
@@ -225,7 +230,7 @@ export function useFactFind(initialData) {
    */
   const savePrincipals = useCallback(async (clientId, client2Id) => {
     try {
-      const ff = factFind;
+      const ff = factFindRef.current;
       if (ff.client1) {
         await principalsApi.save(clientId, ff.client1);
       }
@@ -235,7 +240,7 @@ export function useFactFind(initialData) {
     } catch (err) {
       console.error('[useFactFind] Failed to save principals to API:', err);
     }
-  }, [factFind]);
+  }, []);
 
   // ── Dependants API integration ─────────────────────────────
 
@@ -276,7 +281,7 @@ export function useFactFind(initialData) {
    */
   const saveDependants = useCallback(async (clientId) => {
     try {
-      const ff = factFind;
+      const ff = factFindRef.current;
       const localChildren = (ff.children || []).map(c => ({ ...c, dep_type: 'child' }));
       const localDeps = (ff.dependants_list || []).map(d => ({ ...d, dep_type: 'dependant' }));
       const localAll = [...localChildren, ...localDeps];
@@ -306,7 +311,7 @@ export function useFactFind(initialData) {
     } catch (err) {
       console.error('[useFactFind] Failed to save dependants to API:', err);
     }
-  }, [factFind]);
+  }, []);
 
   // ── Trusts API integration ─────────────────────────────────
 
@@ -343,7 +348,7 @@ export function useFactFind(initialData) {
    */
   const saveTrusts = useCallback(async (clientId) => {
     try {
-      const ff = factFind;
+      const ff = factFindRef.current;
       const localAll = (ff.trusts || []).map(t => ({ ...t, client_id: clientId }));
 
       // Fetch current server state to diff against
@@ -371,7 +376,7 @@ export function useFactFind(initialData) {
     } catch (err) {
       console.error('[useFactFind] Failed to save trusts to API:', err);
     }
-  }, [factFind]);
+  }, []);
 
   // ── Companies API integration ──────────────────────────────
 
@@ -408,7 +413,7 @@ export function useFactFind(initialData) {
    */
   const saveCompanies = useCallback(async (clientId) => {
     try {
-      const ff = factFind;
+      const ff = factFindRef.current;
       const localAll = (ff.companies || []).map(c => ({ ...c, client_id: clientId }));
 
       // Fetch current server state to diff against
@@ -436,7 +441,7 @@ export function useFactFind(initialData) {
     } catch (err) {
       console.error('[useFactFind] Failed to save companies to API:', err);
     }
-  }, [factFind]);
+  }, []);
 
   // ── SMSFs API integration ────────────────────────────────────
 
@@ -473,7 +478,7 @@ export function useFactFind(initialData) {
    */
   const saveSmsfs = useCallback(async (clientId) => {
     try {
-      const ff = factFind;
+      const ff = factFindRef.current;
       const localAll = (ff.smsfs || []).map(s => ({ ...s, client_id: clientId }));
 
       // Fetch current server state to diff against
@@ -501,7 +506,7 @@ export function useFactFind(initialData) {
     } catch (err) {
       console.error('[useFactFind] Failed to save SMSFs to API:', err);
     }
-  }, [factFind]);
+  }, []);
 
   // ── Pensions API integration ──────────────────────────────────
 
@@ -539,7 +544,7 @@ export function useFactFind(initialData) {
    */
   const savePensions = useCallback(async (clientId, clientGuidMap) => {
     try {
-      const ff = factFind;
+      const ff = factFindRef.current;
       const localAll = ff.pensions || [];
 
       // Fetch current server state to diff against
@@ -569,7 +574,7 @@ export function useFactFind(initialData) {
     } catch (err) {
       console.error('[useFactFind] Failed to save pensions to API:', err);
     }
-  }, [factFind]);
+  }, []);
 
   // ── Annuities API integration ──────────────────────────────────
 
@@ -607,7 +612,7 @@ export function useFactFind(initialData) {
    */
   const saveAnnuities = useCallback(async (clientId, clientGuidMap) => {
     try {
-      const ff = factFind;
+      const ff = factFindRef.current;
       const localAll = ff.annuities || [];
 
       // Fetch current server state to diff against
@@ -637,7 +642,7 @@ export function useFactFind(initialData) {
     } catch (err) {
       console.error('[useFactFind] Failed to save annuities to API:', err);
     }
-  }, [factFind]);
+  }, []);
 
   // ── Defined Benefits API integration ──────────────────────────
 
@@ -675,7 +680,7 @@ export function useFactFind(initialData) {
    */
   const saveDefinedBenefits = useCallback(async (clientId, clientGuidMap) => {
     try {
-      const ff = factFind;
+      const ff = factFindRef.current;
       const localAll = ff.definedBenefits || [];
 
       // Fetch current server state to diff against
@@ -703,7 +708,7 @@ export function useFactFind(initialData) {
     } catch (err) {
       console.error('[useFactFind] Failed to save defined benefits to API:', err);
     }
-  }, [factFind]);
+  }, []);
 
   // ── Debts API integration ─────────────────────────────────────
 
@@ -741,7 +746,7 @@ export function useFactFind(initialData) {
    */
   const saveDebts = useCallback(async (clientId, clientGuidMap) => {
     try {
-      const ff = factFind;
+      const ff = factFindRef.current;
       const localAll = ff.liabilities || [];
 
       // Fetch current server state to diff against
@@ -771,7 +776,7 @@ export function useFactFind(initialData) {
     } catch (err) {
       console.error('[useFactFind] Failed to save debts to API:', err);
     }
-  }, [factFind]);
+  }, []);
 
   // ── Expenses API integration ─────────────────────────────────
 
@@ -817,7 +822,7 @@ export function useFactFind(initialData) {
    */
   const saveExpenses = useCallback(async (clientId) => {
     try {
-      const ff = factFind;
+      const ff = factFindRef.current;
       const data = ff.expenses || {};
       const result = await expensesApi.upsert(clientId, data);
       // Store the returned id back into state if it was a new record
@@ -837,7 +842,7 @@ export function useFactFind(initialData) {
     } catch (err) {
       console.error('[useFactFind] Failed to save expenses to API:', err);
     }
-  }, [factFind]);
+  }, []);
 
   // ── Insurance API integration ─────────────────────────────────
 
