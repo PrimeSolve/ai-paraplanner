@@ -124,6 +124,7 @@ export const annuitiesApi = {
       apiData.ownerClientId = clientGuidMap?.client1 || null;
     }
     const payload = sanitisePayload(apiData);
+    payload.purchasePrice = parseFloat(payload.purchasePrice) || 0;
     const response = await axiosInstance.post('/annuities', payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
@@ -137,6 +138,7 @@ export const annuitiesApi = {
    */
   async update(id, data, clientGuidMap) {
     const payload = sanitisePayload(buildAnnuityPayload(data, clientGuidMap));
+    payload.purchasePrice = parseFloat(payload.purchasePrice) || 0;
     const response = await axiosInstance.put(`/annuities/${id}`, payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },

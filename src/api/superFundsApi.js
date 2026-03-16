@@ -132,6 +132,9 @@ export const superFundsApi = {
    */
   async update(id, data, clientGuidMap) {
     const payload = sanitisePayload(buildSuperFundPayload(data, clientGuidMap));
+    payload.balance = parseFloat(payload.balance) || 0;
+    payload.phase = payload.phase ?? 0;
+    payload.insuranceInSuper = payload.insuranceInSuper ?? false;
     const response = await axiosInstance.put(`/super-funds/${id}`, payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },

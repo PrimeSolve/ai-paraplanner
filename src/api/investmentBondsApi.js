@@ -98,12 +98,14 @@ export const investmentBondsApi = {
 
   async create(data, clientGuidMap) {
     const payload = sanitisePayload(buildBondPayload(data, clientGuidMap));
+    payload.balance = parseFloat(payload.balance) || null;
     const response = await axiosInstance.post('/investment-bonds', { ...payload, clientId: clientGuidMap?.client1 || null });
     return mapBondFromApi(response.data);
   },
 
   async update(id, data) {
     const payload = sanitisePayload(buildBondPayload(data));
+    payload.balance = parseFloat(payload.balance) || null;
     const response = await axiosInstance.put(`/investment-bonds/${id}`, payload);
     return mapBondFromApi(response.data);
   },

@@ -121,6 +121,7 @@ export const pensionsApi = {
    */
   async create(data, clientGuidMap, defaultName) {
     const payload = sanitisePayload(buildPensionPayload(data, clientGuidMap, defaultName));
+    payload.balance = parseFloat(payload.balance) || 0;
     const response = await axiosInstance.post('/pensions', { ...payload, clientId: clientGuidMap?.[data.owner] || clientGuidMap?.client1 });
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
@@ -134,6 +135,7 @@ export const pensionsApi = {
    */
   async update(id, data, clientGuidMap) {
     const payload = sanitisePayload(buildPensionPayload(data, clientGuidMap));
+    payload.balance = parseFloat(payload.balance) || 0;
     const response = await axiosInstance.put(`/pensions/${id}`, payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },

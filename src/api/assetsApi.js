@@ -150,6 +150,7 @@ export const assetsApi = {
    */
   async create(data, clientGuidMap, defaultName) {
     const payload = sanitisePayload(buildAssetPayload(data, clientGuidMap, defaultName));
+    payload.value = parseFloat(payload.value) || null;
     const response = await axiosInstance.post('/assets', { ...payload, clientId: clientGuidMap?.client1 || null });
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
@@ -162,6 +163,7 @@ export const assetsApi = {
    */
   async update(id, data) {
     const payload = sanitisePayload(buildAssetPayload(data));
+    payload.value = parseFloat(payload.value) || null;
     const response = await axiosInstance.put(`/assets/${id}`, payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },

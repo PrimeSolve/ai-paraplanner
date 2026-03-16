@@ -108,12 +108,14 @@ export const investmentWrapsApi = {
 
   async create(data, clientGuidMap) {
     const payload = sanitisePayload(buildWrapPayload(data, clientGuidMap));
+    payload.balance = parseFloat(payload.balance) || null;
     const response = await axiosInstance.post('/investment-wraps', { ...payload, clientId: clientGuidMap?.client1 || null });
     return mapWrapFromApi(response.data);
   },
 
   async update(id, data) {
     const payload = sanitisePayload(buildWrapPayload(data));
+    payload.balance = parseFloat(payload.balance) || null;
     const response = await axiosInstance.put(`/investment-wraps/${id}`, payload);
     return mapWrapFromApi(response.data);
   },
