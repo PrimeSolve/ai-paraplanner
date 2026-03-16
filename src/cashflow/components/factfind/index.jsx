@@ -822,20 +822,9 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
   };
 
   // Pension CRUD (API-backed)
-  const addPension = async () => {
-    const newPension = { ...PENSION_DEFAULTS, income: { ...PENSION_DEFAULTS.income }, tax_components: { ...PENSION_DEFAULTS.tax_components }, beneficiaries: [], portfolio: [] };
-    if (clientId) {
-      try {
-        const defaultName = `Pension ${pensions.length + 1}`;
-        const created = await pensionsApi.create(newPension, clientGuidMap, defaultName);
-        updateFF("pensions", [...pensions, created]);
-      } catch (err) {
-        console.error('[SuperannuationForm] Failed to create pension:', err);
-        updateFF("pensions", [...pensions, newPension]);
-      }
-    } else {
-      updateFF("pensions", [...pensions, newPension]);
-    }
+  const addPension = () => {
+    const newPension = { ...PENSION_DEFAULTS, income: { ...PENSION_DEFAULTS.income }, tax_components: { ...PENSION_DEFAULTS.tax_components }, beneficiaries: [], portfolio: [], _isNew: true };
+    updateFF("pensions", [...pensions, newPension]);
   };
   const removePension = async (idx) => {
     const pension = pensions[idx];
@@ -849,7 +838,18 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
     updateFF("pensions", pensions.filter((_, i) => i !== idx));
     setDetailIdx(null);
   };
-  const updatePension = (idx, field, value) => updateFF("pensions", pensions.map((item, i) => i === idx ? { ...item, [field]: value } : item));
+  const updatePension = (idx, field, value) => {
+    const updated = pensions.map((item, i) => i === idx ? { ...item, [field]: value } : item);
+    updateFF("pensions", updated);
+    const record = updated[idx];
+    if (record._isNew && field === 'fund_name' && value && clientId) {
+      pensionsApi.create(record, clientGuidMap, value).then(created => {
+        updateFF("pensions", updated.map((item, i) =>
+          i === idx ? { ...item, ...created, _isNew: undefined } : item
+        ));
+      }).catch(err => console.error('[SuperannuationForm] Failed to create pension:', err));
+    }
+  };
   const updatePensionNested = (idx, parent, field, value) => updateFF("pensions", pensions.map((item, i) => i === idx ? { ...item, [parent]: { ...item[parent], [field]: value } } : item));
   const updatePensionArray = (idx, arrName, arrIdx, field, value) => {
     updateFF("pensions", pensions.map((item, i) => i === idx ? { ...item, [arrName]: item[arrName].map((a, ai) => ai === arrIdx ? { ...a, [field]: value } : a) } : item));
@@ -1329,11 +1329,9 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
       {/* ── Defined Benefit Panel — List ── */}
       {subTab === "defined_benefit" && detailIdx === null && (() => {
         const addDB = () => {
-          const newRecord = { ...DB_DEFAULTS };
-          definedBenefitsApi.create(newRecord, clientGuidMap).then(created => {
-            updateFF("definedBenefits", [...definedBenefits, created]);
-            setDetailIdx(definedBenefits.length);
-          }).catch(err => console.error('[SuperannuationForm] Failed to create defined benefit:', err));
+          const newRecord = { ...DB_DEFAULTS, _isNew: true };
+          updateFF("definedBenefits", [...definedBenefits, newRecord]);
+          setDetailIdx(definedBenefits.length);
         };
         const removeDB = (idx) => {
           const db = definedBenefits[idx];
@@ -1541,7 +1539,13 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
           const updatedRecord = { ...db, [field]: value };
           const updated = definedBenefits.map((d, i) => i === idx ? updatedRecord : d);
           updateFF("definedBenefits", updated);
-          if (updatedRecord.id) {
+          if (updatedRecord._isNew && field === 'scheme' && value) {
+            definedBenefitsApi.create(updatedRecord, clientGuidMap).then(created => {
+              updateFF("definedBenefits", updated.map((d, i) =>
+                i === idx ? { ...d, ...created, _isNew: undefined } : d
+              ));
+            }).catch(err => console.error('[SuperannuationForm] Failed to create defined benefit:', err));
+          } else if (updatedRecord.id) {
             debouncedUpdateDB(updatedRecord.id, updatedRecord);
           }
         };
@@ -1925,16 +1929,10 @@ export function InvestmentsForm({ factFind, updateFF, clientId, clientGuidMap })
   };
 
   // Wrap CRUD
-  const addWrap = useCallback(async () => {
-    const newWrap = { ...WRAP_DEFAULTS, fees: { ...WRAP_DEFAULTS.fees }, portfolio: [] };
-    try {
-      const created = await investmentWrapsApi.create(newWrap, clientGuidMap);
-      updateFF("wraps", [...wraps, { ...newWrap, ...created }]);
-    } catch (error) {
-      console.error("Failed to create wrap:", error);
-      updateFF("wraps", [...wraps, newWrap]);
-    }
-  }, [wraps, clientGuidMap, updateFF]);
+  const addWrap = useCallback(() => {
+    const newWrap = { ...WRAP_DEFAULTS, fees: { ...WRAP_DEFAULTS.fees }, portfolio: [], _isNew: true };
+    updateFF("wraps", [...wraps, newWrap]);
+  }, [wraps, updateFF]);
 
   const removeWrap = useCallback(async (idx) => {
     const wrap = wraps[idx];
@@ -1954,8 +1952,16 @@ export function InvestmentsForm({ factFind, updateFF, clientId, clientGuidMap })
     const updated = wraps.map((item, i) => i === idx ? { ...item, [field]: value } : item);
     updateFF("wraps", updated);
     const record = updated[idx];
-    if (record?.id) debouncedWrapUpdate(record.id, record);
-  }, [wraps, updateFF, debouncedWrapUpdate]);
+    if (record._isNew && field === 'platform_name' && value) {
+      investmentWrapsApi.create(record, clientGuidMap).then(created => {
+        updateFF("wraps", updated.map((item, i) =>
+          i === idx ? { ...item, ...created, _isNew: undefined } : item
+        ));
+      }).catch(err => console.error("Failed to create wrap:", err));
+    } else if (record?.id) {
+      debouncedWrapUpdate(record.id, record);
+    }
+  }, [wraps, updateFF, debouncedWrapUpdate, clientGuidMap]);
 
   const updateWrapNested = useCallback((idx, parent, field, value) => {
     const updated = wraps.map((item, i) => i === idx ? { ...item, [parent]: { ...item[parent], [field]: value } } : item);
@@ -2001,16 +2007,10 @@ export function InvestmentsForm({ factFind, updateFF, clientId, clientGuidMap })
   }, [wraps, updateFF]);
 
   // Bond CRUD
-  const addBond = useCallback(async () => {
-    const newBond = { ...INV_BOND_DEFAULTS, portfolio: [] };
-    try {
-      const created = await investmentBondsApi.create(newBond, clientGuidMap);
-      updateFF("investmentBonds", [...bonds, { ...newBond, ...created }]);
-    } catch (error) {
-      console.error("Failed to create bond:", error);
-      updateFF("investmentBonds", [...bonds, newBond]);
-    }
-  }, [bonds, clientGuidMap, updateFF]);
+  const addBond = useCallback(() => {
+    const newBond = { ...INV_BOND_DEFAULTS, portfolio: [], _isNew: true };
+    updateFF("investmentBonds", [...bonds, newBond]);
+  }, [bonds, updateFF]);
 
   const removeBond = useCallback(async (idx) => {
     const bond = bonds[idx];
@@ -2030,8 +2030,16 @@ export function InvestmentsForm({ factFind, updateFF, clientId, clientGuidMap })
     const updated = bonds.map((item, i) => i === idx ? { ...item, [field]: value } : item);
     updateFF("investmentBonds", updated);
     const record = updated[idx];
-    if (record?.id) debouncedBondUpdate(record.id, record);
-  }, [bonds, updateFF, debouncedBondUpdate]);
+    if (record._isNew && field === 'product_name' && value) {
+      investmentBondsApi.create(record, clientGuidMap).then(created => {
+        updateFF("investmentBonds", updated.map((item, i) =>
+          i === idx ? { ...item, ...created, _isNew: undefined } : item
+        ));
+      }).catch(err => console.error("Failed to create bond:", err));
+    } else if (record?.id) {
+      debouncedBondUpdate(record.id, record);
+    }
+  }, [bonds, updateFF, debouncedBondUpdate, clientGuidMap]);
 
   const updateBondArray = useCallback((idx, arrName, arrIdx, field, value) => {
     const updated = bonds.map((item, i) => i === idx ? { ...item, [arrName]: item[arrName].map((a, ai) => ai === arrIdx ? { ...a, [field]: value } : a) } : item);
@@ -3106,16 +3114,9 @@ export function SMSFForm({ factFind, updateFF, clientId }) {
   }, []);
 
   // Fund CRUD
-  const add = useCallback(async () => {
-    if (!clientId) return;
-    try {
-      const created = await smsfApi.create({ ...SMSF_DEFAULTS, client_id: clientId });
-      const merged = { ...SMSF_DEFAULTS, accounts: [], ...created };
-      updateFF("smsfs", [...items, merged]);
-    } catch (error) {
-      console.error("Failed to create SMSF:", error);
-    }
-  }, [clientId, items, updateFF]);
+  const add = useCallback(() => {
+    updateFF("smsfs", [...items, { ...SMSF_DEFAULTS, accounts: [], _isNew: true }]);
+  }, [items, updateFF]);
 
   const remove = useCallback(async (idx) => {
     const smsf = items[idx];
@@ -3133,12 +3134,18 @@ export function SMSFForm({ factFind, updateFF, clientId }) {
   const update = useCallback((idx, field, value) => {
     const updated = items.map((item, i) => i === idx ? { ...item, [field]: value } : item);
     updateFF("smsfs", updated);
-    // Debounce API sync for API-mapped fields
     const record = updated[idx];
-    if (record?.id && API_SYNCED_FIELDS.includes(field)) {
+    // Deferred create: when smsf_name is first set on a new record, call API
+    if (record._isNew && field === 'smsf_name' && value) {
+      smsfApi.create({ ...record, client_id: clientId }).then(created => {
+        updateFF("smsfs", updated.map((item, i) =>
+          i === idx ? { ...item, ...created, _isNew: undefined } : item
+        ));
+      }).catch(err => console.error("Failed to create SMSF:", err));
+    } else if (record?.id && API_SYNCED_FIELDS.includes(field)) {
       debouncedUpdate(record.id, record);
     }
-  }, [items, updateFF, debouncedUpdate]);
+  }, [items, updateFF, debouncedUpdate, clientId]);
 
   // Account CRUD
   const addAccount = (smsfIdx) => {
@@ -3379,22 +3386,10 @@ export function AssetsForm({ factFind, updateFF, entityOwnerOptions, clientId })
     }, 500);
   }, []);
 
-  const addAsset = useCallback(async () => {
-    const defaultName = `Asset ${assets.length + 1}`;
-    const newAsset = { a_name: "", a_ownType: "", a_owner: "", a_type: "", a_value: "", a_purchase_price: "", a_purchase_date: "", a_rental_income: "", a_rental_freq: "" };
-    if (clientId) {
-      try {
-        const clientGuidMap = { client1: clientId };
-        const created = await assetsApi.create(newAsset, clientGuidMap, defaultName);
-        const merged = { ...newAsset, ...created };
-        updateFF("assets", [...assets, merged]);
-      } catch (error) {
-        console.error("Failed to create asset:", error);
-      }
-    } else {
-      updateFF("assets", [...assets, newAsset]);
-    }
-  }, [clientId, assets, updateFF]);
+  const addAsset = useCallback(() => {
+    const newAsset = { a_name: "", a_ownType: "", a_owner: "", a_type: "", a_value: "", a_purchase_price: "", a_purchase_date: "", a_rental_income: "", a_rental_freq: "", _isNew: true };
+    updateFF("assets", [...assets, newAsset]);
+  }, [assets, updateFF]);
 
   const removeAsset = useCallback(async (idx) => {
     const asset = assets[idx];
@@ -3414,10 +3409,17 @@ export function AssetsForm({ factFind, updateFF, entityOwnerOptions, clientId })
     const updated = assets.map((item, i) => i === idx ? { ...item, [field]: value } : item);
     updateFF("assets", updated);
     const record = updated[idx];
-    if (record?.id) {
+    if (record._isNew && field === 'a_name' && value && clientId) {
+      const clientGuidMap = { client1: clientId };
+      assetsApi.create(record, clientGuidMap, value).then(created => {
+        updateFF("assets", updated.map((item, i) =>
+          i === idx ? { ...item, ...created, _isNew: undefined } : item
+        ));
+      }).catch(err => console.error("Failed to create asset:", err));
+    } else if (record?.id) {
       debouncedUpdate(record.id, record);
     }
-  }, [assets, updateFF, debouncedUpdate]);
+  }, [assets, updateFF, debouncedUpdate, clientId]);
 
   return (
     <div>
@@ -3690,22 +3692,10 @@ export function LiabilitiesForm({ factFind, updateFF, entityOwnerOptions, client
     }, 500);
   }, []);
 
-  const addLiability = useCallback(async () => {
-    const defaultName = `Debt ${liabilities.length + 1}`;
-    const newDebt = { d_name: "", d_ownType: "", d_owner: "", d_type: "", d_rate: "", d_freq: "", d_repayments: "", d_term: "", d_balance: "", d_io: "", d_fixed: "", d_has_redraw: "", d_redraw: "", d_redraw_limit: "", d_security: [], d_offset: [] };
-    if (clientId) {
-      try {
-        const clientGuidMap = { client1: clientId };
-        const created = await debtsApi.create(newDebt, clientGuidMap, defaultName);
-        const merged = { ...newDebt, ...created };
-        updateFF("liabilities", [...liabilities, merged]);
-      } catch (error) {
-        console.error("Failed to create debt:", error);
-      }
-    } else {
-      updateFF("liabilities", [...liabilities, newDebt]);
-    }
-  }, [clientId, liabilities, updateFF]);
+  const addLiability = useCallback(() => {
+    const newDebt = { d_name: "", d_ownType: "", d_owner: "", d_type: "", d_rate: "", d_freq: "", d_repayments: "", d_term: "", d_balance: "", d_io: "", d_fixed: "", d_has_redraw: "", d_redraw: "", d_redraw_limit: "", d_security: [], d_offset: [], _isNew: true };
+    updateFF("liabilities", [...liabilities, newDebt]);
+  }, [liabilities, updateFF]);
 
   const removeLiability = useCallback(async (idx) => {
     const debt = liabilities[idx];
@@ -3725,10 +3715,17 @@ export function LiabilitiesForm({ factFind, updateFF, entityOwnerOptions, client
     const updated = liabilities.map((item, i) => i === idx ? { ...item, [field]: value } : item);
     updateFF("liabilities", updated);
     const record = updated[idx];
-    if (record?.id) {
+    if (record._isNew && field === 'd_name' && value && clientId) {
+      const clientGuidMap = { client1: clientId };
+      debtsApi.create(record, clientGuidMap, value).then(created => {
+        updateFF("liabilities", updated.map((item, i) =>
+          i === idx ? { ...item, ...created, _isNew: undefined } : item
+        ));
+      }).catch(err => console.error("Failed to create debt:", err));
+    } else if (record?.id) {
       debouncedUpdate(record.id, record);
     }
-  }, [liabilities, updateFF, debouncedUpdate]);
+  }, [liabilities, updateFF, debouncedUpdate, clientId]);
 
   return (
     <div>
