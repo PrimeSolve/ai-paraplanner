@@ -113,6 +113,9 @@ export const superFundsApi = {
    */
   async create(data, clientGuidMap, defaultName) {
     const payload = sanitisePayload(buildSuperFundPayload(data, clientGuidMap, defaultName));
+    payload.balance = parseFloat(payload.balance) || 0;
+    payload.phase = payload.phase ?? 0;
+    payload.insuranceInSuper = payload.insuranceInSuper ?? false;
     const response = await axiosInstance.post('/super-funds', {
       ...payload,
       clientId: clientGuidMap?.[data.owner] || clientGuidMap?.client1,
