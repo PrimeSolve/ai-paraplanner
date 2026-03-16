@@ -1886,6 +1886,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               <IncomeForm
                 factFind={factFind}
                 updateFF={updateFF}
+                clientId={urlClientId}
               />
             ) : factFindSection === "expenses" ? (
               <ExpensesForm
@@ -1897,6 +1898,7 @@ function CashflowModelInner({ initialData, onDataChange, onBack, mode, hideAdvic
               <GoalsForm
                 factFind={factFind}
                 updateFF={updateFF}
+                clientId={urlClientId}
               />
             ) : factFindSection === "risk-profile" ? (
               <RiskProfileForm
