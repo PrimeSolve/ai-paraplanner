@@ -412,7 +412,7 @@ export function DependantsForm({ factFind, updateFF, clientId }) {
   }, []);
 
   // Debounced update to API
-  const debouncedUpdate = useCallback((id, data) => {
+  const debouncedDependantUpdate = useCallback((id, data) => {
     if (debounceTimers.current[id]) {
       clearTimeout(debounceTimers.current[id]);
     }
@@ -456,11 +456,11 @@ export function DependantsForm({ factFind, updateFF, clientId }) {
       const record = updated[idx];
       if (record.id) {
         const { id, client_id, ...fields } = record;
-        debouncedUpdate(id, { ...fields, dep_type: "child" });
+        debouncedDependantUpdate(id, { ...fields, dep_type: "child" });
       }
       return updated;
     });
-  }, [debouncedUpdate]);
+  }, [debouncedDependantUpdate]);
 
   // Dependants handlers
   const addDep = useCallback(async () => {
@@ -493,11 +493,11 @@ export function DependantsForm({ factFind, updateFF, clientId }) {
       const record = updated[idx];
       if (record.id) {
         const { id, client_id, ...fields } = record;
-        debouncedUpdate(id, { ...fields, dep_type: "dependant" });
+        debouncedDependantUpdate(id, { ...fields, dep_type: "dependant" });
       }
       return updated;
     });
-  }, [debouncedUpdate]);
+  }, [debouncedDependantUpdate]);
 
   // Sub-tab bar
   const subTabBar = (
@@ -3094,7 +3094,7 @@ export function SMSFForm({ factFind, updateFF, clientId, client1Guid, client2Gui
 
   // Debounced update to API (only for smsf_name, trustee_type, smsf_abn)
   const API_SYNCED_FIELDS = ['smsf_name', 'trustee_type', 'smsf_abn'];
-  const debouncedUpdate = useCallback((id, data) => {
+  const debouncedSmsfUpdate = useCallback((id, data) => {
     const key = `smsf_${id}`;
     if (debounceTimers.current[key]) {
       clearTimeout(debounceTimers.current[key]);
@@ -3137,9 +3137,9 @@ export function SMSFForm({ factFind, updateFF, clientId, client1Guid, client2Gui
     updateFF("smsfs", updated);
     const record = updated[idx];
     if (record?.id && API_SYNCED_FIELDS.includes(field)) {
-      debouncedUpdate(record.id, record);
+      debouncedSmsfUpdate(record.id, record);
     }
-  }, [items, updateFF, debouncedUpdate]);
+  }, [items, updateFF, debouncedSmsfUpdate]);
 
   // Account CRUD
   const addAccount = (smsfIdx) => {
@@ -3411,7 +3411,7 @@ export function AssetsForm({ factFind, updateFF, entityOwnerOptions, clientId })
   };
 
   // Debounced update to API
-  const debouncedUpdate = useCallback((id, data) => {
+  const debouncedAssetUpdate = useCallback((id, data) => {
     const key = `asset_${id}`;
     if (debounceTimers.current[key]) {
       clearTimeout(debounceTimers.current[key]);
@@ -3455,9 +3455,9 @@ export function AssetsForm({ factFind, updateFF, entityOwnerOptions, clientId })
     updateFF("assets", updated);
     const record = updated[idx];
     if (record?.id) {
-      debouncedUpdate(record.id, record);
+      debouncedAssetUpdate(record.id, record);
     }
-  }, [assets, updateFF, debouncedUpdate]);
+  }, [assets, updateFF, debouncedAssetUpdate]);
 
   return (
     <div>
@@ -3716,7 +3716,7 @@ export function LiabilitiesForm({ factFind, updateFF, entityOwnerOptions, client
   };
 
   // Debounced update to API
-  const debouncedUpdate = useCallback((id, data) => {
+  const debouncedLiabilityUpdate = useCallback((id, data) => {
     const key = `debt_${id}`;
     if (debounceTimers.current[key]) {
       clearTimeout(debounceTimers.current[key]);
@@ -3760,9 +3760,9 @@ export function LiabilitiesForm({ factFind, updateFF, entityOwnerOptions, client
     updateFF("liabilities", updated);
     const record = updated[idx];
     if (record?.id) {
-      debouncedUpdate(record.id, record);
+      debouncedLiabilityUpdate(record.id, record);
     }
-  }, [liabilities, updateFF, debouncedUpdate]);
+  }, [liabilities, updateFF, debouncedLiabilityUpdate]);
 
   return (
     <div>
