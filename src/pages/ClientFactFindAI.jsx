@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CashflowModel from '@/cashflow/cashflow-model.jsx';
 import { useFactFind } from '@/components/factfind/useFactFind';
@@ -165,164 +165,12 @@ function dbToModelFormat(db) {
   };
 }
 
-/**
- * Save the CashflowModel factFind state back to the DB via updateSection().
- *
- * All manual FactFind pages save via updateSection('Client1FactFind', { SubKey: data }).
- * The useFactFind hook deep-merges sub-keys within client1_fact_find, so each sub-key
- * is preserved independently. We use a single call with all sub-keys for efficiency.
- *
- * Sub-key mapping (PascalCase → snake_case via toSnakeKeys in useFactFind):
- *   PersonalDetails  → personal_details
- *   SuperFunds       → super_funds
- *   Investments      → investments
- *   Properties       → properties        (manual pages use Properties, not assets)
- *   Debts            → debts             (manual pages use Debts, not liabilities)
- *   incomes          → incomes           (flat array, not income_sources with nested fields)
- *   expenses         → expenses          (flat array, not nested fields)
- *   InsurancePolicies→ insurance_policies
- *   Dependants       → dependants
- *   TrustsCompanies  → trusts_companies
- *   AdviceReasons    → advice_reasons
- *   RiskProfile      → risk_profile
- *   Smsf             → smsf
- */
-async function saveAllSections(modelFF, updateSection) {
-  console.log('[ClientFactFindAI] saveAllSections CALLED');
-
-  // NOTE: PersonalDetails (client1/client2 principal data) is intentionally
-  // excluded from this save.  Principal fields are persisted via
-  // principalsApi.save() which targets PUT /clients/{id} — the correct
-  // endpoint.  Including them here would send them to /advice-requests/{id}
-  // instead, overwriting the wrong resource.
-
-  // Build incomes array — flat objects with adjustments included (matches manual form)
-  const clientIncomeFields = modelFF.income?.client1 || {};
-  const incomes = [
-    { ...clientIncomeFields, adjustments: modelFF.incomeAdjustments || [] },
-  ];
-  if (modelFF.client2) {
-    const partnerIncomeFields = modelFF.income?.client2 || {};
-    incomes.push({ ...partnerIncomeFields, adjustments: [] });
-  }
-
-  // Build expenses array — flat objects with adjustments included (matches manual form)
-  const expenseFields = modelFF.expenses || {};
-  const expenses = [
-    { ...expenseFields, adjustments: modelFF.expenseAdjustments || [] },
-  ];
-
-  // Merge trusts and companies into entities array (matches FactFindTrusts)
-  const trustEntities = (modelFF.trusts || []).map(t => ({ ...t, type: 'trust' }));
-  const companyEntities = (modelFF.companies || []).map(c => ({ ...c, type: 'company' }));
-
-  // Map advice_reason — CashflowModel uses client1/client2, manual form uses client/partner.
-  // Spread raw object to preserve any extra fields, then override the person-keyed quick.
-  const adviceReason = modelFF.advice_reason || {};
-  const { client1: aqClient1, client2: aqClient2, ...aqQuickRest } = adviceReason.quick || {};
-  const mappedAdviceReasons = {
-    ...adviceReason,
-    quick: {
-      ...aqQuickRest,
-      client: aqClient1 || {},
-      partner: aqClient2 || {},
-    },
-  };
-  // Remove the CashflowModel-only keys that don't exist in the manual form
-  delete mappedAdviceReasons.quick.client1;
-  delete mappedAdviceReasons.quick.client2;
-
-  // Map risk_profile — CashflowModel uses client1/client2, manual form uses client/partner.
-  // Spread raw object to preserve otherInfo, currentPerson, currentTab, completionPct.
-  const riskProfile = modelFF.risk_profile || {};
-  const {
-    client1: rpClient1, client2: rpClient2, adjustRisk: rpAdjustRisk,
-    ...rpRest   // preserves otherInfo, currentPerson, currentTab, completionPct, mode, etc.
-  } = riskProfile;
-  const mappedRiskProfile = {
-    ...rpRest,
-    client: rpClient1 || { answers: {}, score: 0, profile: '' },
-    partner: rpClient2 || { answers: {}, score: 0, profile: '' },
-    adjustRisk: rpAdjustRisk || 'no',
-  };
-
-  // Single updateSection call with all sub-keys — deep-merge in useFactFind preserves each
-  // PersonalDetails is NOT included here — it is saved via principalsApi.save()
-  // which correctly targets PUT /api/v1/clients/{id}.
-  await updateSection('Client1FactFind', {
-    // SuperFunds (FactFindSuperannuation) — flat array for API compatibility
-    SuperFunds: [
-      ...(modelFF.superProducts || []).map(f => ({ ...f, type: 'super' })),
-      ...(modelFF.pensions || []).map(p => ({ ...p, type: 'pension' })),
-      ...(modelFF.annuities || []).map(a => ({ ...a, type: 'annuity' })),
-    ],
-
-    // Investments (FactFindInvestment)
-    Investments: {
-      wraps: modelFF.products?.wraps || [],
-      bonds: modelFF.investmentBonds || modelFF.products?.investmentBonds || [],
-    },
-
-    // Properties & Debts (FactFindAssetsLiabilities)
-    Properties: modelFF.assets || [],
-    Debts: modelFF.liabilities || [],
-
-    // incomes & expenses (FactFindIncomeExpenses) — already lowercase in manual form
-    incomes,
-    expenses,
-
-    // InsurancePolicies (FactFindInsurance)
-    InsurancePolicies: {
-      activeIdx: modelFF._insActiveIdx ?? 0,
-      policies: modelFF.insurancePolicies || modelFF.insurance?.policies || [],
-    },
-
-    // Dependants is intentionally excluded from this save — dependant
-    // fields are persisted via their own dedicated endpoint, mirroring the
-    // same pattern used for PersonalDetails / principalsApi.save().
-
-    // TrustsCompanies (FactFindTrusts)
-    TrustsCompanies: {
-      entities: [...trustEntities, ...companyEntities],
-      currentTab: modelFF._tcCurrentTab || 'trust',
-      activeIndex: modelFF._tcActiveIndex || { trust: 0, company: 0 },
-    },
-
-    // AdviceReasons (FactFindAdviceReason)
-    AdviceReasons: mappedAdviceReasons,
-
-    // RiskProfile (FactFindRiskProfile)
-    RiskProfile: mappedRiskProfile,
-
-    // Smsf (FactFindSMSF)
-    Smsf: {
-      smsf_details: modelFF.smsfs || [],
-      activeIndex: modelFF._smsfActiveIndex ?? 0,
-    },
-  });
-}
-
 export default function ClientFactFindAI() {
   const navigate = useNavigate();
   const { factFind, loading, error, updateSection, clientId } = useFactFind();
 
   // Transform DB data → CashflowModel format (only recompute when factFind changes)
   const initialData = useMemo(() => dbToModelFormat(factFind), [factFind]);
-
-  // Debounced save: on every CashflowModel data change, save back to DB
-  const saveTimerRef = useRef(null);
-
-  const handleDataChange = useCallback((modelFactFind) => {
-    if (!factFind?.id || !updateSection) return;
-
-    // Debounce saves by 2 seconds
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      saveAllSections(modelFactFind, updateSection).catch(err => {
-        console.error('ClientFactFindAI auto-save failed:', err);
-      });
-    }, 2000);
-  }, [factFind?.id, updateSection]);
 
   const { status: voiceStatus, startVoice, stopVoice } = useVoiceSession({
     factFind,
@@ -355,7 +203,6 @@ export default function ClientFactFindAI() {
         mode="factfind"
         hideAdvice={true}
         initialData={initialData}
-        onDataChange={handleDataChange}
         onBack={() => navigate(-1)}
         clientId={clientId}
       />
