@@ -1546,7 +1546,8 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
               ));
             }).catch(err => console.error('[SuperannuationForm] Failed to create defined benefit:', err));
           } else if (updatedRecord.id) {
-            debouncedUpdateDB(updatedRecord.id, updatedRecord);
+            const { id, client_id, _isNew, ...fields } = updatedRecord;
+            debouncedUpdateDB(updatedRecord.id, fields);
           }
         };
         const removeDB = () => {
@@ -1959,7 +1960,8 @@ export function InvestmentsForm({ factFind, updateFF, clientId, clientGuidMap })
         ));
       }).catch(err => console.error("Failed to create wrap:", err));
     } else if (record?.id) {
-      debouncedWrapUpdate(record.id, record);
+      const { id, client_id, _isNew, ...fields } = record;
+      debouncedWrapUpdate(record.id, fields);
     }
   }, [wraps, updateFF, debouncedWrapUpdate, clientGuidMap]);
 
@@ -1967,14 +1969,20 @@ export function InvestmentsForm({ factFind, updateFF, clientId, clientGuidMap })
     const updated = wraps.map((item, i) => i === idx ? { ...item, [parent]: { ...item[parent], [field]: value } } : item);
     updateFF("wraps", updated);
     const record = updated[idx];
-    if (record?.id) debouncedWrapUpdate(record.id, record);
+    if (record?.id) {
+      const { id, client_id, _isNew, ...fields } = record;
+      debouncedWrapUpdate(record.id, fields);
+    }
   }, [wraps, updateFF, debouncedWrapUpdate]);
 
   const updateWrapArray = useCallback((idx, arrName, arrIdx, field, value) => {
     const updated = wraps.map((item, i) => i === idx ? { ...item, [arrName]: item[arrName].map((a, ai) => ai === arrIdx ? { ...a, [field]: value } : a) } : item);
     updateFF("wraps", updated);
     const record = updated[idx];
-    if (record?.id) debouncedWrapUpdate(record.id, record);
+    if (record?.id) {
+      const { id, client_id, _isNew, ...fields } = record;
+      debouncedWrapUpdate(record.id, fields);
+    }
   }, [wraps, updateFF, debouncedWrapUpdate]);
 
   const addWrapArrayItem = useCallback(async (idx, arrName, template) => {
@@ -2037,7 +2045,8 @@ export function InvestmentsForm({ factFind, updateFF, clientId, clientGuidMap })
         ));
       }).catch(err => console.error("Failed to create bond:", err));
     } else if (record?.id) {
-      debouncedBondUpdate(record.id, record);
+      const { id, client_id, _isNew, ...fields } = record;
+      debouncedBondUpdate(record.id, fields);
     }
   }, [bonds, updateFF, debouncedBondUpdate, clientGuidMap]);
 
@@ -2045,7 +2054,10 @@ export function InvestmentsForm({ factFind, updateFF, clientId, clientGuidMap })
     const updated = bonds.map((item, i) => i === idx ? { ...item, [arrName]: item[arrName].map((a, ai) => ai === arrIdx ? { ...a, [field]: value } : a) } : item);
     updateFF("investmentBonds", updated);
     const record = updated[idx];
-    if (record?.id) debouncedBondUpdate(record.id, record);
+    if (record?.id) {
+      const { id, client_id, _isNew, ...fields } = record;
+      debouncedBondUpdate(record.id, fields);
+    }
   }, [bonds, updateFF, debouncedBondUpdate]);
 
   const addBondArrayItem = useCallback(async (idx, arrName, template) => {
@@ -2624,7 +2636,8 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid,
     // Debounce API sync for API-mapped fields
     const record = updated[idx];
     if (record?.id && API_SYNCED_COMPANY_FIELDS.includes(field)) {
-      debouncedCompanyUpdate(record.id, record);
+      const { id, client_id, _isNew, ...fields } = record;
+      debouncedCompanyUpdate(record.id, fields);
     }
   }, [companies, updateFF, debouncedCompanyUpdate]);
 
@@ -3143,7 +3156,8 @@ export function SMSFForm({ factFind, updateFF, clientId, client1Guid, client2Gui
         ));
       }).catch(err => console.error("Failed to create SMSF:", err));
     } else if (record?.id && API_SYNCED_FIELDS.includes(field)) {
-      debouncedUpdate(record.id, record);
+      const { id, client_id, _isNew, ...fields } = record;
+      debouncedUpdate(record.id, fields);
     }
   }, [items, updateFF, debouncedUpdate, clientId]);
 
@@ -3462,7 +3476,8 @@ export function AssetsForm({ factFind, updateFF, entityOwnerOptions, clientId })
         ));
       }).catch(err => console.error("Failed to create asset:", err));
     } else if (record?.id) {
-      debouncedUpdate(record.id, record);
+      const { id, client_id, _isNew, ...fields } = record;
+      debouncedUpdate(record.id, fields);
     }
   }, [assets, updateFF, debouncedUpdate, clientId]);
 
@@ -3768,7 +3783,8 @@ export function LiabilitiesForm({ factFind, updateFF, entityOwnerOptions, client
         ));
       }).catch(err => console.error("Failed to create debt:", err));
     } else if (record?.id) {
-      debouncedUpdate(record.id, record);
+      const { id, client_id, _isNew, ...fields } = record;
+      debouncedUpdate(record.id, fields);
     }
   }, [liabilities, updateFF, debouncedUpdate, clientId]);
 
