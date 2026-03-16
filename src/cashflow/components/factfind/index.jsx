@@ -14,6 +14,7 @@ import { investmentWrapsApi } from "@/api/investmentWrapsApi";
 import { investmentBondsApi } from "@/api/investmentBondsApi";
 import { clientRiskProfilesApi } from "@/api/clientRiskProfilesApi";
 import { scopeOfAdviceApi } from "@/api/scopeOfAdviceApi";
+import { buildEntityOptions, resolveGuid } from "../../hooks/useFactFind.js";
 
 // ===========================================================================
 // FACT FIND — Principals Form (aligned to Base44 FactFindPersonal)
@@ -724,7 +725,7 @@ export const DB_DEFAULTS = {
   notes: "",
 };
 
-export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, client2Guid }) {
+export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, client2Guid, entityRegistry = {} }) {
   const [subTab, setSubTab] = useState("super");
   const [detailIdx, setDetailIdx] = useState(null);
   const [activeDetailTab, setActiveDetailTab] = useState("fund_details");
@@ -777,13 +778,12 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
   }, []);
 
   const hasClients = factFind.client1 !== null || factFind.client2 !== null;
-  const clientOptions = [];
-  if (factFind.client1) clientOptions.push({ value: "client1", label: ((factFind.client1?.first_name || "") + " " + (factFind.client1?.last_name || "")).trim() || "Client 1" });
-  if (factFind.client2) clientOptions.push({ value: "client2", label: ((factFind.client2?.first_name || "") + " " + (factFind.client2?.last_name || "")).trim() || "Client 2" });
+  const clientOptions = buildEntityOptions(entityRegistry, ["principal"]);
+  const ownerOptions = buildEntityOptions(entityRegistry, ["principal", "trust", "company", "smsf"]);
+  const beneficiaryOptions = buildEntityOptions(entityRegistry, ["principal", "child", "dependant"]);
 
   const clientName = (id) => {
-    if (id === "client1") return clientOptions.find(c => c.value === "client1")?.label || "Client 1";
-    if (id === "client2") return clientOptions.find(c => c.value === "client2")?.label || "Client 2";
+    if (entityRegistry[id]) return entityRegistry[id].label;
     if (id === "joint" && clientOptions.length >= 2) return `${clientOptions[0].label} & ${clientOptions[1].label}`;
     // Entity resolution
     const trustMatch = id?.match(/^trust_(\d+)$/);
@@ -950,9 +950,8 @@ export function SuperannuationForm({ factFind, updateFF, clientId, client1Guid, 
 
   // Shared: beneficiary table renderer
   const beneficiaryTable = (items, onUpdate, onAdd, onRemove, ownerKey) => {
-    const filteredClientOptions = clientOptions.filter(c => c.value !== ownerKey);
-    const depOptions = (factFind.dependants || []).filter(d => d.name).map((d, i) => ({ value: `dep_${i}`, label: d.name }));
-    const benefOptions = [{ value: "", label: "Select..." }, ...filteredClientOptions, ...depOptions, { value: "estate", label: "Estate" }];
+    const filteredBenefOptions = beneficiaryOptions.filter(c => c.value !== ownerKey);
+    const benefOptions = [{ value: "", label: "Select..." }, ...filteredBenefOptions, { value: "estate", label: "Estate" }];
     return (
     <div>
       {items.length > 0 && (
@@ -1850,7 +1849,7 @@ export const INV_BOND_DEFAULTS = {
   portfolio: [],
 };
 
-export function InvestmentsForm({ factFind, updateFF, clientId, clientGuidMap }) {
+export function InvestmentsForm({ factFind, updateFF, clientId, clientGuidMap, entityRegistry = {} }) {
   const [subTab, setSubTab] = useState("wraps");
   const [detailIdx, setDetailIdx] = useState(null);
   const [activeDetailTab, setActiveDetailTab] = useState("platform_details");
@@ -1914,17 +1913,13 @@ export function InvestmentsForm({ factFind, updateFF, clientId, clientGuidMap })
   }, []);
 
   const hasClients = factFind.client1 !== null || factFind.client2 !== null;
-  const clientOptions = [];
-  if (factFind.client1) clientOptions.push({ value: "client1", label: ((factFind.client1?.first_name || "") + " " + (factFind.client1?.last_name || "")).trim() || "Client 1" });
-  if (factFind.client2) clientOptions.push({ value: "client2", label: ((factFind.client2?.first_name || "") + " " + (factFind.client2?.last_name || "")).trim() || "Client 2" });
-  clientOptions.push({ value: "joint", label: "Joint" });
-  (factFind.trusts || []).forEach((t, i) => { if (t.trust_name) clientOptions.push({ value: `trust_${i}`, label: t.trust_name }); });
-  (factFind.companies || []).forEach((c, i) => { if (c.company_name) clientOptions.push({ value: `company_${i}`, label: c.company_name }); });
-  (factFind.smsfs || []).forEach((s, i) => { if (s.smsf_name) clientOptions.push({ value: `smsf_${i}`, label: s.smsf_name }); });
+  const ownerOptions = buildEntityOptions(entityRegistry, ["principal", "trust", "company", "smsf"]);
+  const clientOptions = [...ownerOptions, { value: "joint", label: "Joint" }];
 
   const clientName = (id) => {
-    const found = clientOptions.find(c => c.value === id);
-    return found ? found.label : id || "—";
+    if (entityRegistry[id]) return entityRegistry[id].label;
+    if (id === "joint") return "Joint";
+    return id || "—";
   };
 
   // Wrap CRUD
@@ -2364,34 +2359,19 @@ const COMPANY_DEFAULTS = {
   uploaded_bs: null,             // parsed balance sheet from uploaded file
 };
 
-export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid, client2Guid }) {
+export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid, client2Guid, entityRegistry = {} }) {
   const [subTab, setSubTab] = useState("trusts");
   const [trusts, setTrusts] = useState([]);
   const companies = factFind.companies || [];
   const debounceTimers = useRef({});
 
-  // Build shareholder entity options from all available entities
+  // Build shareholder entity options from the central entity registry
   const buildShareholderOptions = (currentCompanyIdx) => {
     const opts = [{ value: "", label: "Select..." }];
-    if (factFind.client1) {
-      const name = ((factFind.client1.first_name || "") + " " + (factFind.client1.last_name || "")).trim() || "Client 1";
-      opts.push({ value: "client1", label: `${name} (Client 1)` });
-    }
-    if (factFind.client2) {
-      const name = ((factFind.client2.first_name || "") + " " + (factFind.client2.last_name || "")).trim() || "Client 2";
-      opts.push({ value: "client2", label: `${name} (Client 2)` });
-    }
-    (factFind.children || []).forEach((c, i) => {
-      if (c.name) opts.push({ value: `child_${i}`, label: `${c.name} (Child)` });
-    });
-    (factFind.dependants_list || []).forEach((d, i) => {
-      if (d.name) opts.push({ value: `dependant_${i}`, label: `${d.name} (Dependant)` });
-    });
-    trusts.forEach((t, i) => {
-      if (t.trust_name) opts.push({ value: `trust_${i}`, label: `${t.trust_name} (Trust)` });
-    });
-    companies.forEach((c, i) => {
-      if (i !== currentCompanyIdx && c.company_name) opts.push({ value: `company_${i}`, label: `${c.company_name} (Company)` });
+    Object.entries(entityRegistry).forEach(([key, val]) => {
+      // Exclude the current company from its own shareholder list
+      if (key === `company_${currentCompanyIdx}`) return;
+      opts.push({ value: key, label: `${val.label} (${val.type.charAt(0).toUpperCase() + val.type.slice(1)})` });
     });
     return opts;
   };
@@ -2477,28 +2457,13 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid,
     });
   }, [debouncedUpdate]);
 
-  // Build beneficiary entity options from all available entities
+  // Build beneficiary entity options from the central entity registry
   const buildBenefOptions = (currentTrustIdx) => {
     const opts = [{ value: "", label: "Select..." }];
-    if (factFind.client1) {
-      const name = ((factFind.client1.first_name || "") + " " + (factFind.client1.last_name || "")).trim() || "Client 1";
-      opts.push({ value: "client1", label: `${name} (Client 1)` });
-    }
-    if (factFind.client2) {
-      const name = ((factFind.client2.first_name || "") + " " + (factFind.client2.last_name || "")).trim() || "Client 2";
-      opts.push({ value: "client2", label: `${name} (Client 2)` });
-    }
-    (factFind.children || []).forEach((c, i) => {
-      if (c.name) opts.push({ value: `child_${i}`, label: `${c.name} (Child)` });
-    });
-    (factFind.dependants_list || []).forEach((d, i) => {
-      if (d.name) opts.push({ value: `dependant_${i}`, label: `${d.name} (Dependant)` });
-    });
-    trusts.forEach((t, i) => {
-      if (i !== currentTrustIdx && t.trust_name) opts.push({ value: `trust_${i}`, label: `${t.trust_name} (Trust)` });
-    });
-    companies.forEach((c, i) => {
-      if (c.company_name) opts.push({ value: `company_${i}`, label: `${c.company_name} (Company)` });
+    Object.entries(entityRegistry).forEach(([key, val]) => {
+      // Exclude the current trust from its own beneficiary list
+      if (key === `trust_${currentTrustIdx}`) return;
+      opts.push({ value: key, label: `${val.label} (${val.type.charAt(0).toUpperCase() + val.type.slice(1)})` });
     });
     return opts;
   };
@@ -3064,7 +3029,7 @@ const SMSF_BENEF_DEFAULTS = {
   benef_entitlement: "",
 };
 
-export function SMSFForm({ factFind, updateFF, clientId, client1Guid, client2Guid }) {
+export function SMSFForm({ factFind, updateFF, clientId, client1Guid, client2Guid, entityRegistry = {} }) {
   const items = factFind.smsfs || [];
   const debounceTimers = useRef({});
 
@@ -3199,29 +3164,19 @@ export function SMSFForm({ factFind, updateFF, clientId, client1Guid, client2Gui
   // Build beneficiary dropdown options for a given account (exclude account owner)
   const buildSmsfBenefOptions = (accOwner) => {
     const opts = [{ value: "", label: "Select..." }];
-    if (factFind.client1 && accOwner !== "client1") {
-      const name = ((factFind.client1.first_name || "") + " " + (factFind.client1.last_name || "")).trim() || "Client 1";
-      opts.push({ value: "client1", label: `${name} (Client 1)` });
-    }
-    if (factFind.client2 && accOwner !== "client2") {
-      const name = ((factFind.client2.first_name || "") + " " + (factFind.client2.last_name || "")).trim() || "Client 2";
-      opts.push({ value: "client2", label: `${name} (Client 2)` });
-    }
-    (factFind.children || []).forEach((c, i) => {
-      if (c.name) opts.push({ value: `child_${i}`, label: `${c.name} (Child)` });
-    });
-    (factFind.dependants_list || []).forEach((d, i) => {
-      if (d.name) opts.push({ value: `dependant_${i}`, label: `${d.name} (Dependant)` });
+    Object.entries(entityRegistry).forEach(([key, val]) => {
+      if (key === accOwner) return; // exclude account owner
+      if (["principal", "child", "dependant"].includes(val.type)) {
+        opts.push({ value: key, label: `${val.label} (${val.type.charAt(0).toUpperCase() + val.type.slice(1)})` });
+      }
     });
     opts.push({ value: "estate", label: "Estate" });
     opts.push({ value: "lpr", label: "Legal Personal Representative" });
     return opts;
   };
 
-  // Client options for account owner
-  const clientOptions = [{ value: "", label: "Select..." }];
-  if (factFind.client1) clientOptions.push({ value: "client1", label: ((factFind.client1?.first_name || "") + " " + (factFind.client1?.last_name || "")).trim() || "Client 1" });
-  if (factFind.client2) clientOptions.push({ value: "client2", label: ((factFind.client2?.first_name || "") + " " + (factFind.client2?.last_name || "")).trim() || "Client 2" });
+  // Client options for account owner — derived from central entity registry
+  const clientOptions = [{ value: "", label: "Select..." }, ...buildEntityOptions(entityRegistry, ["principal"])];
 
   // Mini table styles
   const miniTableStyle = { width: "100%", borderCollapse: "collapse", fontSize: 12 };
@@ -3361,7 +3316,7 @@ export function SMSFForm({ factFind, updateFF, clientId, client1Guid, client2Gui
 // FACT FIND — Assets Form (aligned to Base44)
 // ===========================================================================
 
-export function AssetsForm({ factFind, updateFF, entityOwnerOptions, clientId }) {
+export function AssetsForm({ factFind, updateFF, entityOwnerOptions, clientId, entityRegistry = {} }) {
   const [detailIdx, setDetailIdx] = useState(null);
   const debounceTimers = useRef({});
 
@@ -3661,7 +3616,7 @@ export function AssetsForm({ factFind, updateFF, entityOwnerOptions, clientId })
 // FACT FIND — Liabilities Form (aligned to Base44)
 // ===========================================================================
 
-export function LiabilitiesForm({ factFind, updateFF, entityOwnerOptions, clientId }) {
+export function LiabilitiesForm({ factFind, updateFF, entityOwnerOptions, clientId, entityRegistry = {} }) {
   const [detailIdx, setDetailIdx] = useState(null);
   const debounceTimers = useRef({});
 
@@ -3996,7 +3951,7 @@ const EMPTY_INSURANCE_POLICY = {
   pol_freq: "", pol_structure: "",
 };
 
-export function InsurancePoliciesForm({ factFind, updateFF, clientId, clientGuidMap }) {
+export function InsurancePoliciesForm({ factFind, updateFF, clientId, clientGuidMap, entityRegistry = {} }) {
   const [activeIdx, setActiveIdx] = useState(0);
 
   const policies = factFind.insurance?.policies || [];
@@ -4022,10 +3977,8 @@ export function InsurancePoliciesForm({ factFind, updateFF, clientId, clientGuid
   // ── Debounced update timer ref ──
   const updateTimerRef = useRef(null);
 
-  // Owner options from principals
-  const ownerOptions = [];
-  if (factFind.client1) ownerOptions.push({ value: "client1", label: ((factFind.client1?.first_name || "") + " " + (factFind.client1?.last_name || "")).trim() || "Client 1" });
-  if (factFind.client2) ownerOptions.push({ value: "client2", label: ((factFind.client2?.first_name || "") + " " + (factFind.client2?.last_name || "")).trim() || "Client 2" });
+  // Owner options from central entity registry
+  const ownerOptions = buildEntityOptions(entityRegistry, ["principal"]);
 
   const getOwnerName = (id) => ownerOptions.find(o => o.value === id)?.label || "this owner";
 
