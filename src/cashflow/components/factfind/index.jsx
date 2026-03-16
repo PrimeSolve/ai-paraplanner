@@ -2367,12 +2367,31 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid,
   const companies = factFind.companies || [];
   const debounceTimers = useRef({});
 
-  // Build clientOptions for shareholder dropdown (same pattern as trust beneficiary)
-  const shareholderOptions = [{ value: "", label: "Select..." }];
-  if (factFind.client1) shareholderOptions.push({ value: "client1", label: ((factFind.client1?.first_name || "") + " " + (factFind.client1?.last_name || "")).trim() || "Client 1" });
-  if (factFind.client2) shareholderOptions.push({ value: "client2", label: ((factFind.client2?.first_name || "") + " " + (factFind.client2?.last_name || "")).trim() || "Client 2" });
-  trusts.forEach((t, i) => { if (t.trust_name) shareholderOptions.push({ value: `trust_${i}`, label: t.trust_name }); });
-  companies.forEach((c, i) => { if (c.company_name) shareholderOptions.push({ value: `company_${i}`, label: c.company_name }); });
+  // Build shareholder entity options from all available entities
+  const buildShareholderOptions = (currentCompanyIdx) => {
+    const opts = [{ value: "", label: "Select..." }];
+    if (factFind.client1) {
+      const name = ((factFind.client1.first_name || "") + " " + (factFind.client1.last_name || "")).trim() || "Client 1";
+      opts.push({ value: "client1", label: `${name} (Client 1)` });
+    }
+    if (factFind.client2) {
+      const name = ((factFind.client2.first_name || "") + " " + (factFind.client2.last_name || "")).trim() || "Client 2";
+      opts.push({ value: "client2", label: `${name} (Client 2)` });
+    }
+    (factFind.children || []).forEach((c, i) => {
+      if (c.name) opts.push({ value: `child_${i}`, label: `${c.name} (Child)` });
+    });
+    (factFind.dependants_list || []).forEach((d, i) => {
+      if (d.name) opts.push({ value: `dependant_${i}`, label: `${d.name} (Dependant)` });
+    });
+    trusts.forEach((t, i) => {
+      if (t.trust_name) opts.push({ value: `trust_${i}`, label: `${t.trust_name} (Trust)` });
+    });
+    companies.forEach((c, i) => {
+      if (i !== currentCompanyIdx && c.company_name) opts.push({ value: `company_${i}`, label: `${c.company_name} (Company)` });
+    });
+    return opts;
+  };
 
   // GUID maps for shareholder API calls
   const clientGuidMap = { client1: client1Guid, client2: client2Guid };
@@ -2634,9 +2653,36 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid,
     );
     updateFF("companies", updated);
   };
+  const shareholderDebounceTimers = useRef({});
+  const companiesRef = useRef(companies);
+  companiesRef.current = companies;
+  useEffect(() => {
+    return () => { Object.values(shareholderDebounceTimers.current).forEach(clearTimeout); };
+  }, []);
   const updateShareholder = (compIdx, shIdx, field, value) => {
-    const updated = companies.map((item, i) => i === compIdx ? { ...item, shareholders: item.shareholders.map((s, si) => si === shIdx ? { ...s, [field]: value } : s) } : item);
+    const company = companies[compIdx];
+    const shareholder = company?.shareholders?.[shIdx];
+    const updatedSh = { ...shareholder, [field]: value };
+    const updated = companies.map((item, i) => i === compIdx ? { ...item, shareholders: item.shareholders.map((s, si) => si === shIdx ? updatedSh : s) } : item);
     updateFF("companies", updated);
+    // Debounced sync to API: DELETE old + POST new (no PUT endpoint)
+    if (company?.id && shareholder?.id) {
+      const timerKey = `sh_${compIdx}_${shIdx}`;
+      if (shareholderDebounceTimers.current[timerKey]) clearTimeout(shareholderDebounceTimers.current[timerKey]);
+      shareholderDebounceTimers.current[timerKey] = setTimeout(async () => {
+        try {
+          await companiesApi.removeShareholder(company.id, shareholder.id);
+          const created = await companiesApi.addShareholder(company.id, updatedSh, clientGuidMap, entityGuidMap);
+          const newId = created.id || created._id || null;
+          // Update the _serverId in current state
+          const latestCompanies = companiesRef.current;
+          const refreshed = latestCompanies.map((item, i) => i === compIdx ? { ...item, shareholders: item.shareholders.map((s, si) => si === shIdx ? { ...s, id: newId } : s) } : item);
+          updateFF("companies", refreshed);
+        } catch (error) {
+          console.error("Failed to update shareholder:", error);
+        }
+      }, 1500);
+    }
   };
 
   // Sub-tab bar
@@ -2955,7 +3001,7 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid,
                       <tbody>
                         {(data.shareholders || []).map((s, si) => (
                           <tr key={si}>
-                            <td style={miniTdStyle}><FFSelect value={s.sh_entity} onChange={v => updateShareholder(idx, si, "sh_entity", v)} options={shareholderOptions} /></td>
+                            <td style={miniTdStyle}><FFSelect value={s.sh_entity} onChange={v => updateShareholder(idx, si, "sh_entity", v)} options={buildShareholderOptions(idx)} /></td>
                             <td style={miniTdStyle}><FFInput value={s.sh_pct} onChange={v => updateShareholder(idx, si, "sh_pct", v)} placeholder="e.g. 25%" /></td>
                             <td style={miniTdStyle}><button onClick={() => removeShareholder(idx, si)} style={{ fontSize: 10, color: "var(--ps-red)", cursor: "pointer", background: "none", border: "none", fontWeight: 500 }}>Remove</button></td>
                           </tr>
