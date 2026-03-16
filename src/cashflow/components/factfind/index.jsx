@@ -2556,7 +2556,11 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid,
       try {
         const all = await companiesApi.getAll(clientId);
         if (cancelled) return;
-        updateFF("companies", all);
+        const withServerIds = all.map(c => ({
+          ...c,
+          shareholders: (c.shareholders || []).map(s => ({ ...s, _serverId: s.id || s._id || null })),
+        }));
+        updateFF("companies", withServerIds);
       } catch (error) {
         console.error("Failed to load companies:", error);
       }
@@ -2617,30 +2621,18 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid,
   }, [companies, updateFF, debouncedCompanyUpdate]);
 
   // Company shareholder helpers
-  const addShareholder = async (idx) => {
-    const company = companies[idx];
-    if (!company?.id) return;
-    try {
-      const created = await companiesApi.addShareholder(
-        company.id,
-        { sh_entity: "", sh_pct: "" },
-        clientGuidMap,
-        entityGuidMap
-      );
-      const updated = companies.map((item, i) =>
-        i === idx ? { ...item, shareholders: [...(item.shareholders || []), created] } : item
-      );
-      updateFF("companies", updated);
-    } catch (error) {
-      console.error("Failed to add shareholder:", error);
-    }
+  const addShareholder = (idx) => {
+    const updated = companies.map((item, i) =>
+      i === idx ? { ...item, shareholders: [...(item.shareholders || []), { sh_entity: "", sh_pct: "", _isNew: true }] } : item
+    );
+    updateFF("companies", updated);
   };
   const removeShareholder = async (compIdx, shIdx) => {
     const company = companies[compIdx];
     const shareholder = company?.shareholders?.[shIdx];
-    if (company?.id && shareholder?.id) {
+    if (company?.id && shareholder?._serverId) {
       try {
-        await companiesApi.removeShareholder(company.id, shareholder.id);
+        await companiesApi.removeShareholder(company.id, shareholder._serverId);
       } catch (error) {
         console.error("Failed to remove shareholder:", error);
         return;
@@ -2665,24 +2657,32 @@ export function TrustsCompaniesForm({ factFind, updateFF, clientId, client1Guid,
     const updatedSh = { ...shareholder, [field]: value };
     const updated = companies.map((item, i) => i === compIdx ? { ...item, shareholders: item.shareholders.map((s, si) => si === shIdx ? updatedSh : s) } : item);
     updateFF("companies", updated);
-    // Debounced sync to API: DELETE old + POST new (no PUT endpoint)
-    if (company?.id && shareholder?.id) {
-      const timerKey = `sh_${compIdx}_${shIdx}`;
-      if (shareholderDebounceTimers.current[timerKey]) clearTimeout(shareholderDebounceTimers.current[timerKey]);
-      shareholderDebounceTimers.current[timerKey] = setTimeout(async () => {
-        try {
-          await companiesApi.removeShareholder(company.id, shareholder.id);
-          const created = await companiesApi.addShareholder(company.id, updatedSh, clientGuidMap, entityGuidMap);
-          const newId = created.id || created._id || null;
-          // Update the _serverId in current state
-          const latestCompanies = companiesRef.current;
-          const refreshed = latestCompanies.map((item, i) => i === compIdx ? { ...item, shareholders: item.shareholders.map((s, si) => si === shIdx ? { ...s, id: newId } : s) } : item);
+    if (!company?.id) return;
+    const timerKey = `sh_${compIdx}_${shIdx}`;
+    if (shareholderDebounceTimers.current[timerKey]) clearTimeout(shareholderDebounceTimers.current[timerKey]);
+    shareholderDebounceTimers.current[timerKey] = setTimeout(async () => {
+      try {
+        const latestCompanies = companiesRef.current;
+        const latestSh = latestCompanies[compIdx]?.shareholders?.[shIdx];
+        const shToSync = { ...updatedSh, ...latestSh, [field]: value };
+        if (shareholder?._serverId) {
+          // Existing record: DELETE old + POST new
+          await companiesApi.removeShareholder(company.id, shareholder._serverId);
+          const created = await companiesApi.addShareholder(company.id, shToSync, clientGuidMap, entityGuidMap);
+          const newServerId = created.id || created._id || null;
+          const refreshed = companiesRef.current.map((item, i) => i === compIdx ? { ...item, shareholders: item.shareholders.map((s, si) => si === shIdx ? { ...s, _serverId: newServerId, _isNew: false } : s) } : item);
           updateFF("companies", refreshed);
-        } catch (error) {
-          console.error("Failed to update shareholder:", error);
+        } else if (shToSync.sh_entity) {
+          // New record with entity set: POST to create
+          const created = await companiesApi.addShareholder(company.id, shToSync, clientGuidMap, entityGuidMap);
+          const newServerId = created.id || created._id || null;
+          const refreshed = companiesRef.current.map((item, i) => i === compIdx ? { ...item, shareholders: item.shareholders.map((s, si) => si === shIdx ? { ...s, _serverId: newServerId, _isNew: false } : s) } : item);
+          updateFF("companies", refreshed);
         }
-      }, 1500);
-    }
+      } catch (error) {
+        console.error("Failed to update shareholder:", error);
+      }
+    }, 1500);
   };
 
   // Sub-tab bar
