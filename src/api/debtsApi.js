@@ -174,6 +174,8 @@ export const debtsApi = {
    */
   async create(data, clientGuidMap, defaultName) {
     const payload = sanitisePayload(buildDebtPayload(data, clientGuidMap, defaultName));
+    payload.balance = parseFloat(payload.balance) || 0;
+    payload.interestRate = parseFloat(payload.interestRate) || 0;
     const response = await axiosInstance.post('/debts', { ...payload, clientId: clientGuidMap?.client1 || null });
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
@@ -186,6 +188,8 @@ export const debtsApi = {
    */
   async update(id, data) {
     const payload = sanitisePayload(buildDebtPayload(data));
+    payload.balance = parseFloat(payload.balance) || 0;
+    payload.interestRate = parseFloat(payload.interestRate) || 0;
     const response = await axiosInstance.put(`/debts/${id}`, payload);
     return normaliseRecord(camelToSnakeKeys(response.data));
   },
