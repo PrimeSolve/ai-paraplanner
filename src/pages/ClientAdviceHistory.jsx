@@ -3,13 +3,14 @@ import ClientLayout from '../components/client/ClientLayout';
 import { base44 } from '@/api/base44Client';
 import { adviceHistoryApi } from '@/api/adviceHistoryApi';
 import { formatDate } from '../utils/dateUtils';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Eye, Download, FileText, ClipboardList, BarChart3, Search, Loader2 } from 'lucide-react';
+import { Eye, Download, FileText, ClipboardList, BarChart3, Search, Loader2, Clock, CheckCircle2 } from 'lucide-react';
 
 const TYPE_CONFIG = {
   fact_find: {
@@ -54,20 +55,14 @@ function TypeBadge({ type }) {
   const Icon = config.icon || FileText;
   return (
     <span
+      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold"
       style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        padding: '4px 10px',
-        borderRadius: 6,
-        fontSize: 12,
-        fontWeight: 600,
         background: config.bg,
         color: config.fg,
         border: `1px solid ${config.border}`,
       }}
     >
-      <Icon style={{ width: 14, height: 14 }} />
+      <Icon className="w-3.5 h-3.5" />
       {config.label}
     </span>
   );
@@ -165,11 +160,18 @@ export default function ClientAdviceHistory() {
     return true;
   });
 
+  const stats = {
+    factFinds: records.filter(r => r.recordType === 'fact_find').length,
+    soaRequests: records.filter(r => r.recordType === 'strategy_recommendations').length,
+    cashflowModels: records.filter(r => r.recordType === 'cashflow_model').length,
+    statementsOfAdvice: records.filter(r => r.recordType === 'soa_document').length,
+  };
+
   if (loading) {
     return (
       <ClientLayout currentPage="ClientAdviceHistory">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: 80 }}>
-          <Loader2 className="animate-spin" style={{ width: 32, height: 32, color: '#6366F1' }} />
+        <div className="flex items-center justify-center h-full py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
         </div>
       </ClientLayout>
     );
@@ -231,195 +233,142 @@ export default function ClientAdviceHistory() {
       </Dialog>
 
       <ClientLayout currentPage="ClientAdviceHistory">
-        <div style={{ padding: '32px 40px', maxWidth: 1200, margin: '0 auto' }}>
-          {/* Header */}
-          <div style={{ marginBottom: 24 }}>
-            <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0F172A', margin: '0 0 6px 0' }}>
-              Advice History
-            </h1>
-            <p style={{ fontSize: 14, color: '#64748B', margin: 0 }}>
-              Immutable point-in-time snapshots of your advice records. Each record is frozen at the moment of creation.
-            </p>
-          </div>
-
-          {/* Filters Bar */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            marginBottom: 20,
-            flexWrap: 'wrap',
-          }}>
-            {/* Search */}
-            <div style={{ position: 'relative', flex: '1 1 260px', maxWidth: 360 }}>
-              <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: '#94A3B8' }} />
-              <input
-                type="text"
-                placeholder="Search records..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px 8px 34px',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: 8,
-                  fontSize: 13,
-                  outline: 'none',
-                  background: '#fff',
-                }}
-              />
+        <div className="py-6 px-8">
+          {/* KPI Stats Grid */}
+          <div className="grid grid-cols-4 gap-6 mb-8">
+            <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-6 text-white">
+              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4">
+                <ClipboardList className="w-6 h-6" />
+              </div>
+              <div className="text-4xl font-bold mb-1">{stats.factFinds}</div>
+              <div className="text-sm opacity-90">Fact Finds</div>
             </div>
 
-            {/* Type Filter */}
-            <div style={{ display: 'flex', gap: 6 }}>
-              {[{ key: 'All', label: 'All' }, { key: 'fact_find', label: 'Fact Find' }, { key: 'strategy_recommendations', label: 'SOA Request' }, { key: 'cashflow_model', label: 'Cashflow Model' }, { key: 'soa_document', label: 'Statement of Advice' }].map(({ key: type, label }) => (
-                <button
-                  key={type}
-                  onClick={() => setFilterType(type)}
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: 6,
-                    border: filterType === type ? '1px solid #4F46E5' : '1px solid #E2E8F0',
-                    background: filterType === type ? '#EEF2FF' : '#fff',
-                    color: filterType === type ? '#4F46E5' : '#64748B',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                  }}
+            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4">
+                <FileText className="w-6 h-6 text-indigo-600" />
+              </div>
+              <div className="text-4xl font-bold text-slate-800 mb-1">{stats.soaRequests}</div>
+              <div className="text-sm text-slate-600">SOA Requests</div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+              <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center mb-4">
+                <BarChart3 className="w-6 h-6 text-orange-600" />
+              </div>
+              <div className="text-4xl font-bold text-slate-800 mb-1">{stats.cashflowModels}</div>
+              <div className="text-sm text-slate-600">Cashflow Models</div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="text-4xl font-bold text-slate-800 mb-1">{stats.statementsOfAdvice}</div>
+              <div className="text-sm text-slate-600">Statements of Advice</div>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="bg-white rounded-2xl border border-slate-200 mb-6">
+            <div className="p-6 flex items-end gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Input
+                  placeholder="Search records..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-11 border-slate-200"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Type</span>
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
                 >
-                  {label}
-                </button>
-              ))}
+                  <option value="All">All Types</option>
+                  <option value="fact_find">Fact Find</option>
+                  <option value="strategy_recommendations">SOA Request</option>
+                  <option value="cashflow_model">Cashflow Model</option>
+                  <option value="soa_document">Statement of Advice</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          {/* Records Table */}
-          {filteredRecords.length === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              padding: '60px 20px',
-              background: '#F8FAFC',
-              borderRadius: 12,
-              border: '1px solid #E2E8F0',
-            }}>
-              <FileText style={{ width: 40, height: 40, color: '#CBD5E1', margin: '0 auto 12px' }} />
-              <p style={{ fontSize: 15, fontWeight: 600, color: '#64748B', margin: '0 0 4px' }}>
-                No advice records found
-              </p>
-              <p style={{ fontSize: 13, color: '#94A3B8', margin: 0 }}>
-                Records are created when you submit a Fact Find, SOA Request, or build an SOA from a cashflow model.
-              </p>
-            </div>
-          ) : (
-            <div style={{
-              background: '#fff',
-              border: '1px solid #E2E8F0',
-              borderRadius: 12,
-              overflow: 'hidden',
-            }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                    <th style={thStyle}>Type</th>
-                    <th style={thStyle}>Title</th>
-                    <th style={thStyle}>Created</th>
-                    <th style={thStyle}>Created By</th>
-                    <th style={{ ...thStyle, textAlign: 'right' }}>Actions</th>
+          {/* Table */}
+          <div className="bg-white rounded-2xl border border-slate-200">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Type</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Title</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Created</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Created By</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredRecords.map((record, idx) => (
-                    <tr
-                      key={record.id}
-                      style={{
-                        borderBottom: idx < filteredRecords.length - 1 ? '1px solid #F1F5F9' : 'none',
-                        transition: 'background 0.1s',
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#F8FAFC'}
-                      onMouseLeave={e => e.currentTarget.style.background = '#fff'}
-                    >
-                      <td style={tdStyle}>
+                  {filteredRecords.length > 0 ? filteredRecords.map((record) => (
+                    <tr key={record.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4">
                         <TypeBadge type={record.recordType} />
                       </td>
-                      <td style={{ ...tdStyle, fontWeight: 600, color: '#1E293B' }}>
-                        {record.title || '—'}
+                      <td className="px-6 py-4">
+                        <span className="font-semibold text-sm text-slate-800">{record.title || '—'}</span>
                       </td>
-                      <td style={{ ...tdStyle, color: '#64748B', fontSize: 13 }}>
-                        {formatDate(record.createdAt)}
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-medium text-slate-800">{formatDate(record.createdAt)}</div>
                       </td>
-                      <td style={{ ...tdStyle, color: '#64748B', fontSize: 13 }}>
-                        {record.createdBy || '—'}
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-medium text-slate-800">{record.createdBy || '—'}</div>
                       </td>
-                      <td style={{ ...tdStyle, textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleView(record)}
                             disabled={viewLoading}
-                            style={actionBtnStyle}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
                             title="View snapshot"
                           >
-                            <Eye style={{ width: 14, height: 14 }} />
-                            View
+                            {viewLoading ? <Loader2 className="animate-spin w-4 h-4 inline" /> : 'View'}
                           </button>
                           <button
                             onClick={() => handleDownload(record)}
-                            style={actionBtnStyle}
+                            className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors"
                             title="Download as JSON"
                           >
-                            <Download style={{ width: 14, height: 14 }} />
                             Download
                           </button>
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-8 text-center text-slate-600">
+                        No advice records found
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
-          )}
 
-          {/* Record Count */}
-          {records.length > 0 && (
-            <div style={{ marginTop: 12, fontSize: 12, color: '#94A3B8' }}>
-              Showing {filteredRecords.length} of {records.length} records
-            </div>
-          )}
+            {/* Record Count */}
+            {records.length > 0 && (
+              <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+                <span className="text-sm text-slate-600">Showing {filteredRecords.length} of {records.length} records</span>
+              </div>
+            )}
+          </div>
         </div>
       </ClientLayout>
     </>
   );
 }
-
-const thStyle = {
-  padding: '10px 16px',
-  textAlign: 'left',
-  fontSize: 11,
-  fontWeight: 700,
-  color: '#64748B',
-  textTransform: 'uppercase',
-  letterSpacing: '0.04em',
-};
-
-const tdStyle = {
-  padding: '12px 16px',
-  fontSize: 14,
-};
-
-const actionBtnStyle = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 4,
-  padding: '5px 10px',
-  borderRadius: 6,
-  border: '1px solid #E2E8F0',
-  background: '#fff',
-  fontSize: 12,
-  fontWeight: 600,
-  color: '#475569',
-  cursor: 'pointer',
-  transition: 'all 0.15s ease',
-};
 
 function combineSnapshots(record) {
   const combined = {};
