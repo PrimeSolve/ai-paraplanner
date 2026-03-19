@@ -334,7 +334,7 @@ export default function TasksPage() {
       fontFamily: "'DM Sans', sans-serif",
       background: '#F8FAFC',
       minHeight: '100vh',
-      padding: '28px 32px',
+      padding: '24px 32px',
     },
     card: {
       background: '#fff',
@@ -521,7 +521,7 @@ export default function TasksPage() {
     return (
       <AdviserLayout currentPage="TasksPage">
         <div style={s.page}>
-          <div style={{ maxWidth: 1200, margin: '0 auto' }} className="flex items-center justify-center">
+          <div className="flex items-center justify-center">
             <Loader2 className="w-10 h-10 animate-spin" style={{ color: '#4F46E5' }} />
           </div>
         </div>
@@ -532,7 +532,6 @@ export default function TasksPage() {
   return (
     <AdviserLayout currentPage="TasksPage">
       <div style={s.page}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         {/* ─── Header Row ─── */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
           <div>
@@ -754,7 +753,6 @@ export default function TasksPage() {
                                   fontWeight: 500,
                                   color: '#0F172A',
                                   marginBottom: task.notes ? 2 : 0,
-                                  textDecoration: isDone ? 'line-through' : 'none',
                                 }}>
                                   {task.title}
                                 </div>
@@ -1028,7 +1026,6 @@ export default function TasksPage() {
             })}
           </div>
         )}
-      </div>
       </div>
 
       {/* ─── Add / Edit Modal ─── */}
