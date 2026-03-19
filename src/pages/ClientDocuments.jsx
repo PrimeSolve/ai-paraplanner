@@ -15,6 +15,18 @@ import {
   Loader2,
   X,
   File,
+  Search,
+  Eye,
+  Download,
+  MoreHorizontal,
+  Pencil,
+  Share2,
+  Trash2,
+  FolderOpen,
+  Users,
+  Calendar,
+  ArrowUpDown,
+  Inbox,
 } from 'lucide-react';
 
 /* ─── constants ─── */
@@ -33,25 +45,20 @@ const CATEGORIES = [
   "Other",
 ];
 
-const TYPE_BADGE = {
-  pdf: { label: "PDF", bg: "#FEE2E2", fg: "#DC2626" },
-  img: { label: "IMG", bg: "#DBEAFE", fg: "#2563EB" },
-  xls: { label: "XLS", bg: "#D1FAE5", fg: "#059669" },
-  doc: { label: "DOC", bg: "#EDE9FE", fg: "#7C3AED" },
+const FILE_TYPE_STYLES = {
+  PDF: { bg: '#FEE2E2', text: '#DC2626' },
+  IMG: { bg: '#DBEAFE', text: '#2563EB' },
+  XLS: { bg: '#D1FAE5', text: '#059669' },
+  DOC: { bg: '#E0E7FF', text: '#4F46E5' },
 };
 
-const SOURCE_BADGE = {
-  Adviser: { bg: "#EEF2FF", fg: "#4F46E5", dot: "#4F46E5" },
-  Client:  { bg: "#F0FDF4", fg: "#16A34A", dot: "#16A34A" },
-};
-
-function getFileType(fileName) {
-  if (!fileName) return "doc";
+function getFileTypeBadge(fileName) {
+  if (!fileName) return 'DOC';
   const ext = (fileName.split('.').pop() || '').toLowerCase();
-  if (ext === 'pdf') return 'pdf';
-  if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'tiff'].includes(ext)) return 'img';
-  if (['xls', 'xlsx', 'csv'].includes(ext)) return 'xls';
-  return 'doc';
+  if (ext === 'pdf') return 'PDF';
+  if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'tiff'].includes(ext)) return 'IMG';
+  if (['xls', 'xlsx', 'csv'].includes(ext)) return 'XLS';
+  return 'DOC';
 }
 
 function formatFileSize(bytes) {
@@ -61,45 +68,10 @@ function formatFileSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-/* ─── sub-components ─── */
-
-function TypeBadge({ type }) {
-  const t = TYPE_BADGE[type] || { label: "FILE", bg: "#F1F5F9", fg: "#64748B" };
-  return (
-    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 8, background: t.bg, color: t.fg, fontSize: 9, fontWeight: 800, letterSpacing: "0.04em", fontFamily: "monospace", flexShrink: 0 }}>
-      {t.label}
-    </span>
-  );
-}
-
-function SourceBadge({ source }) {
-  const s = SOURCE_BADGE[source] || { bg: "#F1F5F9", fg: "#64748B", dot: "#64748B" };
-  return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 8px", borderRadius: 20, background: s.bg, color: s.fg, fontSize: 11, fontWeight: 600 }}>
-      <span style={{ width: 5, height: 5, borderRadius: "50%", background: s.dot, display: "inline-block" }} />
-      {source}
-    </span>
-  );
-}
-
-function StatCard({ icon, label, value, sub, color }) {
-  return (
-    <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 14, padding: "18px 22px", display: "flex", flexDirection: "column", gap: 10, position: "relative", overflow: "hidden", flex: 1 }}>
-      <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: color + "15" }} />
-      <div style={{ width: 36, height: 36, borderRadius: 10, background: color + "15", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{icon}</div>
-      <div>
-        <div style={{ fontSize: 26, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</div>
-        <div style={{ fontSize: 12, color: "#64748B", marginTop: 4, fontWeight: 500 }}>{label}</div>
-        {sub && <div style={{ fontSize: 11, color: color, marginTop: 2, fontWeight: 600 }}>{sub}</div>}
-      </div>
-    </div>
-  );
-}
-
 /* ─── main component ─── */
 
 export default function ClientDocuments() {
-  /* ─── state (original + new UI state) ─── */
+  /* ─── state ─── */
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState([]);
   const [clientId, setClientId] = useState(null);
@@ -114,7 +86,9 @@ export default function ClientDocuments() {
   const [sortCol, setSortCol] = useState('date');
   const [sortDir, setSortDir] = useState('desc');
   const [menuOpen, setMenuOpen] = useState(null);
+  const [hoveredRow, setHoveredRow] = useState(null);
   const fileInputRef = useRef(null);
+  const menuRef = useRef(null);
 
   /* ─── data fetching (UNCHANGED) ─── */
 
@@ -157,14 +131,16 @@ export default function ClientDocuments() {
     init();
   }, [loadDocuments]);
 
-  /* close menu on outside click */
+  /* close menu on outside click — aligned with AdviserDocuments */
   useEffect(() => {
     const handler = (e) => {
-      if (menuOpen !== null) setMenuOpen(null);
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(null);
+      }
     };
-    document.addEventListener('click', handler);
-    return () => document.removeEventListener('click', handler);
-  }, [menuOpen]);
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   /* ─── derived data ─── */
 
@@ -215,9 +191,6 @@ export default function ClientDocuments() {
     if (!dates.length) return null;
     return new Date(Math.max(...dates.map(d => d.getTime())));
   }, [documents]);
-  const lastUploadFormatted = lastUploadDate
-    ? lastUploadDate.toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })
-    : "—";
 
   /* ─── handlers (UNCHANGED API calls) ─── */
 
@@ -261,7 +234,6 @@ export default function ClientDocuments() {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch {
-      // Fallback to blob_url if available
       if (doc.blobUrl || doc.blob_url) {
         window.open(doc.blobUrl || doc.blob_url, '_blank');
       }
@@ -357,12 +329,6 @@ export default function ClientDocuments() {
     return 'Client';
   };
 
-  const SortIcon = ({ col }) => (
-    <span style={{ fontSize: 10, opacity: sortCol === col ? 1 : 0.3, marginLeft: 4 }}>
-      {sortCol === col ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}
-    </span>
-  );
-
   const inputStyle = { width: "100%", padding: "9px 12px", border: "1.5px solid #E2E8F0", borderRadius: 8, fontSize: 13, outline: "none", fontFamily: "inherit", color: "#0F172A", background: "#fff" };
 
   /* ─── render ─── */
@@ -370,8 +336,8 @@ export default function ClientDocuments() {
   if (loading) {
     return (
       <ClientLayout currentPage="ClientDocuments">
-        <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#F8FAFC", minHeight: "100vh", padding: "28px 32px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Loader2 className="w-10 h-10 animate-spin" style={{ color: "#4F46E5" }} />
+        <div className="py-6 px-8 flex items-center justify-center h-full">
+          <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
         </div>
       </ClientLayout>
     );
@@ -379,154 +345,290 @@ export default function ClientDocuments() {
 
   return (
     <ClientLayout currentPage="ClientDocuments">
-      <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#F8FAFC", minHeight: "100vh", padding: "28px 32px", color: "#0F172A" }}>
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
-          * { box-sizing: border-box; }
-          .pill:hover { background: #EEF2FF !important; color: #4F46E5 !important; border-color: #C7D2FE !important; }
-          .doc-row:hover { background: #F8FAFC !important; }
-          .doc-row:hover .row-actions { opacity: 1 !important; }
-          .action-btn:hover { background: #EEF2FF !important; color: #4F46E5 !important; }
-          .menu-item:hover { background: #F8FAFC; }
-          .menu-item.danger:hover { background: #FEF2F2 !important; }
-        `}</style>
-
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
+      <div className="py-6 px-8">
+        {/* ─── Header ─── */}
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 style={{ fontSize: 24, fontWeight: 800, color: "#0F172A", margin: 0, letterSpacing: "-0.03em" }}>Documents</h1>
-            <p style={{ fontSize: 13, color: "#64748B", margin: "4px 0 0" }}>Client file vault</p>
+            <h1 className="text-2xl font-bold text-slate-800">Documents</h1>
+            <p className="text-sm text-slate-500 mt-1">Client file vault</p>
           </div>
-          <button onClick={() => setUploadModalOpen(true)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 10, background: "#4F46E5", color: "#fff", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 2px 12px rgba(79,70,229,0.3)", fontFamily: "inherit" }}>
-            ↑ Upload Document
+          <button
+            onClick={() => setUploadModalOpen(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors"
+          >
+            <Upload className="w-4 h-4" />
+            Upload Document
           </button>
         </div>
 
-        {/* 3 stat tiles */}
-        <div style={{ display: "flex", gap: 14, marginBottom: 24 }}>
-          <StatCard icon="📁" label="Total Documents" value={documents.length} sub={`${documents.length} files stored`} color="#4F46E5" />
-          <StatCard icon="🔗" label="Shared with Client" value={sharedCount} sub="Visible in client portal" color="#059669" />
-          <StatCard icon="🕐" label="Last Upload" value={lastUploadFormatted} color="#0891B2" />
+        {/* ─── KPI Tiles ─── */}
+        <div className="grid grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4">
+              <FolderOpen className="w-6 h-6 text-indigo-600" />
+            </div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{documents.length}</div>
+            <div className="text-sm text-slate-600">Total Documents</div>
+          </div>
+          <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
+              <Users className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{sharedCount}</div>
+            <div className="text-sm text-slate-600">Shared with Client</div>
+          </div>
+          <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="w-12 h-12 rounded-xl bg-cyan-50 flex items-center justify-center mb-4">
+              <Calendar className="w-6 h-6 text-cyan-600" />
+            </div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">
+              {lastUploadDate ? formatDate(lastUploadDate) : '—'}
+            </div>
+            <div className="text-sm text-slate-600">Last Upload</div>
+          </div>
         </div>
 
-        {/* Filters */}
-        <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 14, padding: "12px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <div style={{ position: "relative", flexShrink: 0 }}>
-            <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "#94A3B8" }}>🔍</span>
-            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search documents…" style={{ paddingLeft: 32, paddingRight: 12, paddingTop: 8, paddingBottom: 8, border: "1.5px solid #E2E8F0", borderRadius: 8, fontSize: 13, outline: "none", width: 220, background: "#F8FAFC", color: "#0F172A", fontFamily: "inherit" }} />
-          </div>
-          <div style={{ width: 1, height: 28, background: "#E2E8F0", flexShrink: 0 }} />
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", flex: 1 }}>
-            {CATEGORIES.map(cat => (
-              <button key={cat} className="pill" onClick={() => setActiveCategory(cat)} style={{ padding: "5px 12px", borderRadius: 20, border: `1.5px solid ${activeCategory === cat ? "#4F46E5" : "#E2E8F0"}`, background: activeCategory === cat ? "#EEF2FF" : "#fff", color: activeCategory === cat ? "#4F46E5" : "#64748B", fontSize: 12, fontWeight: activeCategory === cat ? 700 : 500, cursor: "pointer", transition: "all 0.12s", whiteSpace: "nowrap", fontFamily: "inherit" }}>
-                {cat}
-              </button>
-            ))}
+        {/* ─── Filter Bar ─── */}
+        <div className="bg-white rounded-2xl border border-slate-200 mb-6">
+          <div className="p-6 flex items-center gap-4">
+            <div className="flex gap-2 flex-wrap flex-1">
+              {CATEGORIES.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                    activeCategory === cat
+                      ? 'bg-indigo-50 text-indigo-600 border border-indigo-200'
+                      : 'text-slate-500 border border-transparent hover:bg-slate-50'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+            <div className="relative min-w-[260px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search documents…"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-300 transition-colors"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Table */}
-        <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 14, overflow: "hidden" }}>
+        {/* ─── Table ─── */}
+        <div className="bg-white rounded-2xl border border-slate-200">
           {documents.length === 0 && !searchQuery && activeCategory === 'All' ? (
-            /* Empty State */
-            <div style={{ padding: "64px 24px", textAlign: "center" }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>📄</div>
-              <h3 style={{ fontSize: 17, fontWeight: 700, color: "#334155", marginBottom: 6 }}>No documents yet</h3>
-              <p style={{ fontSize: 14, color: "#64748B", maxWidth: 380, margin: "0 auto 20px" }}>
+            <div className="py-16 px-6 text-center">
+              <Inbox className="w-16 h-16 mx-auto text-slate-300 mb-4" />
+              <h3 className="text-lg font-semibold text-slate-700 mb-1">No documents yet</h3>
+              <p className="text-sm text-slate-500 max-w-sm mx-auto mb-5">
                 Upload your first document to get started. Documents from fact finds, advisers, and your own uploads will appear here.
               </p>
-              <button onClick={() => setUploadModalOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 10, background: "#4F46E5", color: "#fff", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, fontFamily: "inherit" }}>
-                ↑ Upload Document
+              <button
+                onClick={() => setUploadModalOpen(true)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                Upload Document
               </button>
             </div>
           ) : (
-            <>
-              {/* Column headers */}
-              <div style={{ display: "grid", gridTemplateColumns: "44px 1fr 160px 110px 110px 80px 100px", padding: "10px 16px", borderBottom: "1.5px solid #E2E8F0", background: "#F8FAFC" }}>
-                {[
-                  { key: null,         label: ""          },
-                  { key: "name",       label: "Document"  },
-                  { key: "category",   label: "Category"  },
-                  { key: "uploadedBy", label: "Source"    },
-                  { key: "date",       label: "Date"      },
-                  { key: "size",       label: "Size"      },
-                  { key: null,         label: "Actions"   },
-                ].map(({ key, label }, i) => (
-                  <div key={i} onClick={() => key && handleSort(key)} style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", cursor: key ? "pointer" : "default", userSelect: "none" }}>
-                    {label}{key && <SortIcon col={key} />}
-                  </div>
-                ))}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="text-left px-6 py-3 w-[52px]">
+                      <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Type</span>
+                    </th>
+                    <th className="text-left px-3 py-3">
+                      <button onClick={() => handleSort('name')} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 uppercase tracking-wider bg-transparent border-none cursor-pointer">
+                        Document <ArrowUpDown className="w-3 h-3" />
+                      </button>
+                    </th>
+                    <th className="text-left px-3 py-3">
+                      <button onClick={() => handleSort('category')} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 uppercase tracking-wider bg-transparent border-none cursor-pointer">
+                        Category <ArrowUpDown className="w-3 h-3" />
+                      </button>
+                    </th>
+                    <th className="text-left px-3 py-3">
+                      <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Source</span>
+                    </th>
+                    <th className="text-left px-3 py-3">
+                      <button onClick={() => handleSort('date')} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 uppercase tracking-wider bg-transparent border-none cursor-pointer">
+                        Date <ArrowUpDown className="w-3 h-3" />
+                      </button>
+                    </th>
+                    <th className="text-left px-3 py-3">
+                      <button onClick={() => handleSort('size')} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 uppercase tracking-wider bg-transparent border-none cursor-pointer">
+                        Size <ArrowUpDown className="w-3 h-3" />
+                      </button>
+                    </th>
+                    <th className="text-right px-6 py-3 w-[130px]">
+                      <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredDocuments.length > 0 ? (
+                    filteredDocuments.map((doc) => {
+                      const displayName = doc.fileName || doc.file_name || doc.name || 'Untitled';
+                      const category = doc.category || doc.fileType || doc.file_type || 'Other';
+                      const displayDate = doc.uploadedAt || doc.uploaded_at || doc.createdDate || doc.created_date || doc.date;
+                      const fileSize = doc.fileSize || doc.file_size;
+                      const typeBadge = getFileTypeBadge(displayName);
+                      const typeStyle = FILE_TYPE_STYLES[typeBadge] || FILE_TYPE_STYLES.DOC;
+                      const source = getSource(doc);
+                      const docId = doc.id || doc.documentId;
+                      const isHovered = hoveredRow === docId;
+                      const isShared = !!doc.shared;
+
+                      return (
+                        <tr
+                          key={docId}
+                          className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                          onMouseEnter={() => setHoveredRow(docId)}
+                          onMouseLeave={() => setHoveredRow(null)}
+                        >
+                          {/* File type badge */}
+                          <td className="px-6 py-4">
+                            <div
+                              className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
+                              style={{ background: typeStyle.bg, color: typeStyle.text, fontFamily: "'DM Mono', 'SF Mono', monospace" }}
+                            >
+                              {typeBadge}
+                            </div>
+                          </td>
+
+                          {/* Name + shared subtitle */}
+                          <td className="px-3 py-4">
+                            <div>
+                              <div className="text-sm font-medium text-slate-800">{displayName}</div>
+                              {isShared && (
+                                <div className="text-xs text-green-600 flex items-center gap-1 mt-0.5">
+                                  ✓ Shared with client
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Category badge */}
+                          <td className="px-3 py-4">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                              {category}
+                            </span>
+                          </td>
+
+                          {/* Source */}
+                          <td className="px-3 py-4">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-2 h-2 rounded-full shrink-0"
+                                style={{ background: source === 'Adviser' ? '#4F46E5' : '#059669' }}
+                              />
+                              <span className="text-sm text-slate-600 font-medium">{source}</span>
+                            </div>
+                          </td>
+
+                          {/* Date */}
+                          <td className="px-3 py-4">
+                            <span className="text-sm text-slate-500">{formatDate(displayDate)}</span>
+                          </td>
+
+                          {/* Size */}
+                          <td className="px-3 py-4">
+                            <span className="text-sm text-slate-500">{formatFileSize(fileSize)}</span>
+                          </td>
+
+                          {/* Actions — visible on hover or when menu is open */}
+                          <td className="px-6 py-4">
+                            <div
+                              className="flex items-center justify-end gap-1.5 transition-opacity"
+                              style={{ opacity: isHovered || menuOpen === docId ? 1 : 0 }}
+                            >
+                              <button
+                                onClick={() => handleView(doc)}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                View
+                              </button>
+                              <div className="relative" ref={menuOpen === docId ? menuRef : undefined}>
+                                <button
+                                  onClick={() => setMenuOpen(menuOpen === docId ? null : docId)}
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+                                >
+                                  <MoreHorizontal className="w-4 h-4" />
+                                </button>
+                                {menuOpen === docId && (
+                                  <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-50 min-w-[180px] overflow-hidden">
+                                    <button
+                                      onClick={() => handleDownload(doc)}
+                                      className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors text-left border-none bg-transparent cursor-pointer"
+                                    >
+                                      <Download className="w-4 h-4 text-slate-400" />
+                                      Download
+                                    </button>
+                                    <button
+                                      onClick={() => handleRename(doc)}
+                                      className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors text-left border-none bg-transparent cursor-pointer"
+                                    >
+                                      <Pencil className="w-4 h-4 text-slate-400" />
+                                      Rename
+                                    </button>
+                                    <button
+                                      onClick={() => handleShare(doc)}
+                                      className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors text-left border-none bg-transparent cursor-pointer"
+                                    >
+                                      <Share2 className="w-4 h-4 text-slate-400" />
+                                      {isShared ? 'Unshare' : 'Share'}
+                                    </button>
+                                    <div className="h-px bg-slate-100 mx-1" />
+                                    <button
+                                      onClick={() => handleDelete(doc)}
+                                      className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors text-left border-none bg-transparent cursor-pointer"
+                                    >
+                                      <Trash2 className="w-4 h-4 text-red-500" />
+                                      Delete
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-12 text-center">
+                        <Search className="w-10 h-10 mx-auto text-slate-300 mb-3" />
+                        <p className="text-sm font-medium text-slate-600 mb-1">No documents found</p>
+                        <p className="text-xs text-slate-400">Try adjusting your search or category filter</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+
+              {/* Footer */}
+              <div className="px-6 py-3 border-t border-slate-200 flex items-center justify-between">
+                <span className="text-sm text-slate-500">
+                  {filteredDocuments.length} document{filteredDocuments.length !== 1 ? 's' : ''}
+                </span>
+                {activeCategory !== 'All' && (
+                  <span className="text-sm text-slate-500">Filtered: {activeCategory}</span>
+                )}
               </div>
-
-              {filteredDocuments.length === 0 && (
-                <div style={{ padding: "48px 24px", textAlign: "center", color: "#94A3B8", fontSize: 13 }}>No documents found</div>
-              )}
-
-              {filteredDocuments.map((doc, i) => {
-                const displayName = doc.fileName || doc.file_name || doc.name || 'Untitled';
-                const category = doc.category || doc.fileType || doc.file_type || 'Other';
-                const displayDate = doc.uploadedAt || doc.uploaded_at || doc.createdDate || doc.created_date || doc.date;
-                const fileSize = doc.fileSize || doc.file_size;
-                const fileType = getFileType(displayName);
-                const source = getSource(doc);
-                const docId = doc.id || doc.documentId;
-                const isShared = !!doc.shared;
-
-                return (
-                  <div key={docId} className="doc-row" style={{ display: "grid", gridTemplateColumns: "44px 1fr 160px 110px 110px 80px 100px", padding: "12px 16px", borderBottom: i < filteredDocuments.length - 1 ? "1px solid #F1F5F9" : "none", alignItems: "center", background: "#fff", transition: "background 0.1s" }}>
-                    <TypeBadge type={fileType} />
-
-                    <div style={{ paddingRight: 16 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", lineHeight: 1.3 }}>{displayName}</div>
-                      {isShared && <div style={{ fontSize: 11, color: "#059669", marginTop: 2, fontWeight: 500 }}>✓ Shared with client</div>}
-                    </div>
-
-                    <div><span style={{ fontSize: 11, fontWeight: 600, background: "#F1F5F9", color: "#475569", padding: "3px 8px", borderRadius: 6 }}>{category}</span></div>
-
-                    <SourceBadge source={source} />
-
-                    <div style={{ fontSize: 12, color: "#64748B", fontWeight: 500 }}>
-                      {displayDate ? new Date(displayDate).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "2-digit" }) : '—'}
-                    </div>
-
-                    <div style={{ fontSize: 12, color: "#94A3B8", fontFamily: "monospace" }}>{formatFileSize(fileSize)}</div>
-
-                    <div className="row-actions" style={{ display: "flex", gap: 4, opacity: 0, transition: "opacity 0.15s" }}>
-                      <button className="action-btn" onClick={() => handleView(doc)} style={{ padding: "5px 10px", borderRadius: 6, border: "1px solid #E2E8F0", background: "#fff", fontSize: 11, fontWeight: 600, color: "#475569", cursor: "pointer", transition: "all 0.12s", fontFamily: "inherit" }}>View</button>
-                      <div style={{ position: "relative" }}>
-                        <button className="action-btn" onClick={(e) => { e.stopPropagation(); setMenuOpen(menuOpen === docId ? null : docId); }} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #E2E8F0", background: "#fff", fontSize: 15, color: "#64748B", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.12s" }}>⋯</button>
-                        {menuOpen === docId && (
-                          <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", right: 0, top: 32, zIndex: 50, background: "#fff", border: "1px solid #E2E8F0", borderRadius: 10, padding: 4, boxShadow: "0 8px 24px rgba(0,0,0,0.08)", minWidth: 180 }}>
-                            <button className="menu-item" onClick={() => handleDownload(doc)} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", borderRadius: 6, border: "none", background: "transparent", cursor: "pointer", fontSize: 12, fontWeight: 500, color: "#374151", fontFamily: "inherit" }}>
-                              Download
-                            </button>
-                            <button className="menu-item" onClick={() => handleRename(doc)} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", borderRadius: 6, border: "none", background: "transparent", cursor: "pointer", fontSize: 12, fontWeight: 500, color: "#374151", fontFamily: "inherit" }}>
-                              Rename
-                            </button>
-                            <button className="menu-item" onClick={() => handleShare(doc)} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", borderRadius: 6, border: "none", background: "transparent", cursor: "pointer", fontSize: 12, fontWeight: 500, color: "#374151", fontFamily: "inherit" }}>
-                              {isShared ? 'Unshare with client' : 'Share with client'}
-                            </button>
-                            <button className="menu-item danger" onClick={() => handleDelete(doc)} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", borderRadius: 6, border: "none", background: "transparent", cursor: "pointer", fontSize: 12, fontWeight: 500, color: "#DC2626", fontFamily: "inherit" }}>
-                              Delete
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              <div style={{ padding: "10px 16px", borderTop: "1px solid #F1F5F9", background: "#F8FAFC", fontSize: 12, color: "#94A3B8", display: "flex", justifyContent: "space-between" }}>
-                <span>{filteredDocuments.length} document{filteredDocuments.length !== 1 ? 's' : ''}</span>
-                {activeCategory !== 'All' && <span>Filtered: {activeCategory}</span>}
-              </div>
-            </>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Upload Modal */}
+      {/* ─── Upload Modal ─── */}
       {uploadModalOpen && (
         <div onClick={() => setUploadModalOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 16, width: 480, padding: 28, boxShadow: "0 24px 64px rgba(0,0,0,0.15)", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
