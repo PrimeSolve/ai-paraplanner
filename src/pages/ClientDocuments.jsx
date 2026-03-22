@@ -345,7 +345,7 @@ export default function ClientDocuments() {
 
   return (
     <ClientLayout currentPage="ClientDocuments">
-      <div className="py-6 px-6 max-w-[1200px] mx-auto w-full">
+      <div className="py-6 px-6">
         {/* ─── Header ─── */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -362,41 +362,41 @@ export default function ClientDocuments() {
         </div>
 
         {/* ─── KPI Tiles ─── */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-xl p-4 border border-slate-200">
-            <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center mb-3">
-              <FolderOpen className="w-4.5 h-4.5 text-indigo-600" />
+        <div className="grid grid-cols-3 gap-5 mb-6">
+          <div className="bg-white rounded-xl p-5 border border-slate-200">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
+              <FolderOpen className="w-5 h-5 text-indigo-600" />
             </div>
-            <div className="text-2xl font-bold text-slate-800 mb-0.5">{documents.length}</div>
-            <div className="text-xs text-slate-500">Total Documents</div>
+            <div className="text-3xl font-bold text-slate-800 mb-1">{documents.length}</div>
+            <div className="text-sm text-slate-500">Total Documents</div>
           </div>
-          <div className="bg-white rounded-xl p-4 border border-slate-200">
-            <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center mb-3">
-              <Users className="w-4.5 h-4.5 text-indigo-600" />
+          <div className="bg-white rounded-xl p-5 border border-slate-200">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
+              <Users className="w-5 h-5 text-indigo-600" />
             </div>
-            <div className="text-2xl font-bold text-slate-800 mb-0.5">{sharedCount}</div>
-            <div className="text-xs text-slate-500">Shared with Client</div>
+            <div className="text-3xl font-bold text-slate-800 mb-1">{sharedCount}</div>
+            <div className="text-sm text-slate-500">Shared with Client</div>
           </div>
-          <div className="bg-white rounded-xl p-4 border border-slate-200">
-            <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center mb-3">
-              <Calendar className="w-4.5 h-4.5 text-indigo-600" />
+          <div className="bg-white rounded-xl p-5 border border-slate-200">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
+              <Calendar className="w-5 h-5 text-indigo-600" />
             </div>
-            <div className="text-2xl font-bold text-slate-800 mb-0.5">
+            <div className="text-3xl font-bold text-slate-800 mb-1">
               {lastUploadDate ? formatDate(lastUploadDate) : '—'}
             </div>
-            <div className="text-xs text-slate-500">Last Upload</div>
+            <div className="text-sm text-slate-500">Last Upload</div>
           </div>
         </div>
 
         {/* ─── Filter Bar ─── */}
         <div className="bg-white rounded-xl border border-slate-200 mb-6">
-          <div className="px-4 py-3 flex items-center gap-3">
-            <div className="flex gap-1.5 flex-wrap flex-1 min-w-0">
+          <div className="p-4 flex items-center gap-4">
+            <div className="flex gap-2 flex-wrap flex-1 min-w-0">
               {CATEGORIES.map(cat => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                  className={`inline-flex items-center px-3.5 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
                     activeCategory === cat
                       ? 'bg-indigo-50 text-indigo-600 border border-indigo-200'
                       : 'text-slate-500 border border-transparent hover:bg-slate-50'
@@ -406,14 +406,14 @@ export default function ClientDocuments() {
                 </button>
               ))}
             </div>
-            <div className="relative shrink-0 w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <div className="relative shrink-0 w-[220px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search documents…"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-300 transition-colors"
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-300 transition-colors"
               />
             </div>
           </div>

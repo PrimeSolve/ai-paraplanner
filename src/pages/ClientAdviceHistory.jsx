@@ -233,68 +233,65 @@ export default function ClientAdviceHistory() {
       </Dialog>
 
       <ClientLayout currentPage="ClientAdviceHistory">
-        <div className="py-6 px-6 max-w-[1200px] mx-auto w-full">
+        <div className="py-6 px-6">
           {/* KPI Stats Grid */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
-            <div className="bg-white rounded-xl p-4 border border-slate-200">
-              <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center mb-3">
-                <ClipboardList className="w-4.5 h-4.5 text-indigo-600" />
+          <div className="grid grid-cols-4 gap-5 mb-6">
+            <div className="bg-white rounded-xl p-5 border border-slate-200">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
+                <ClipboardList className="w-5 h-5 text-indigo-600" />
               </div>
-              <div className="text-2xl font-bold text-slate-800 mb-0.5">{stats.factFinds}</div>
-              <div className="text-xs text-slate-500">Fact Finds</div>
+              <div className="text-3xl font-bold text-slate-800 mb-1">{stats.factFinds}</div>
+              <div className="text-sm text-slate-500">Fact Finds</div>
             </div>
 
-            <div className="bg-white rounded-xl p-4 border border-slate-200">
-              <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center mb-3">
-                <FileText className="w-4.5 h-4.5 text-indigo-600" />
+            <div className="bg-white rounded-xl p-5 border border-slate-200">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
+                <FileText className="w-5 h-5 text-indigo-600" />
               </div>
-              <div className="text-2xl font-bold text-slate-800 mb-0.5">{stats.soaRequests}</div>
-              <div className="text-xs text-slate-500">SOA Requests</div>
+              <div className="text-3xl font-bold text-slate-800 mb-1">{stats.soaRequests}</div>
+              <div className="text-sm text-slate-500">SOA Requests</div>
             </div>
 
-            <div className="bg-white rounded-xl p-4 border border-slate-200">
-              <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center mb-3">
-                <BarChart3 className="w-4.5 h-4.5 text-indigo-600" />
+            <div className="bg-white rounded-xl p-5 border border-slate-200">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
+                <BarChart3 className="w-5 h-5 text-indigo-600" />
               </div>
-              <div className="text-2xl font-bold text-slate-800 mb-0.5">{stats.cashflowModels}</div>
-              <div className="text-xs text-slate-500">Cashflow Models</div>
+              <div className="text-3xl font-bold text-slate-800 mb-1">{stats.cashflowModels}</div>
+              <div className="text-sm text-slate-500">Cashflow Models</div>
             </div>
 
-            <div className="bg-white rounded-xl p-4 border border-slate-200">
-              <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center mb-3">
-                <CheckCircle2 className="w-4.5 h-4.5 text-indigo-600" />
+            <div className="bg-white rounded-xl p-5 border border-slate-200">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
+                <CheckCircle2 className="w-5 h-5 text-indigo-600" />
               </div>
-              <div className="text-2xl font-bold text-slate-800 mb-0.5">{stats.statementsOfAdvice}</div>
-              <div className="text-xs text-slate-500">Statements of Advice</div>
+              <div className="text-3xl font-bold text-slate-800 mb-1">{stats.statementsOfAdvice}</div>
+              <div className="text-sm text-slate-500">Statements of Advice</div>
             </div>
           </div>
 
           {/* Filters */}
           <div className="bg-white rounded-xl border border-slate-200 mb-6">
-            <div className="px-4 py-3 flex items-center gap-3">
+            <div className="p-4 flex items-center gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
-                  placeholder="Search records..."
+                  placeholder="Search by title or creator..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-8 text-xs border-slate-200"
+                  className="pl-10 h-10 border-slate-200"
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Type</span>
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="px-3 h-8 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                >
-                  <option value="All">All Types</option>
-                  <option value="fact_find">Fact Find</option>
-                  <option value="strategy_recommendations">SOA Request</option>
-                  <option value="cashflow_model">Cashflow Model</option>
-                  <option value="soa_document">Statement of Advice</option>
-                </select>
-              </div>
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="px-4 h-10 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <option value="All">All Types</option>
+                <option value="fact_find">Fact Find</option>
+                <option value="strategy_recommendations">SOA Request</option>
+                <option value="cashflow_model">Cashflow Model</option>
+                <option value="soa_document">Statement of Advice</option>
+              </select>
             </div>
           </div>
 
