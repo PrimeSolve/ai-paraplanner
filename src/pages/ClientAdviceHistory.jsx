@@ -233,60 +233,60 @@ export default function ClientAdviceHistory() {
       </Dialog>
 
       <ClientLayout currentPage="ClientAdviceHistory">
-        <div className="py-6 px-8">
+        <div className="py-6 px-6 max-w-[1200px] mx-auto w-full">
           {/* KPI Stats Grid */}
-          <div className="grid grid-cols-4 gap-6 mb-8">
-            <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-6 text-white">
-              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4">
-                <ClipboardList className="w-6 h-6" />
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="bg-white rounded-xl p-4 border border-slate-200">
+              <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center mb-3">
+                <ClipboardList className="w-4.5 h-4.5 text-indigo-600" />
               </div>
-              <div className="text-4xl font-bold mb-1">{stats.factFinds}</div>
-              <div className="text-sm opacity-90">Fact Finds</div>
+              <div className="text-2xl font-bold text-slate-800 mb-0.5">{stats.factFinds}</div>
+              <div className="text-xs text-slate-500">Fact Finds</div>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 border border-slate-200">
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4">
-                <FileText className="w-6 h-6 text-indigo-600" />
+            <div className="bg-white rounded-xl p-4 border border-slate-200">
+              <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center mb-3">
+                <FileText className="w-4.5 h-4.5 text-indigo-600" />
               </div>
-              <div className="text-4xl font-bold text-slate-800 mb-1">{stats.soaRequests}</div>
-              <div className="text-sm text-slate-600">SOA Requests</div>
+              <div className="text-2xl font-bold text-slate-800 mb-0.5">{stats.soaRequests}</div>
+              <div className="text-xs text-slate-500">SOA Requests</div>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 border border-slate-200">
-              <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center mb-4">
-                <BarChart3 className="w-6 h-6 text-orange-600" />
+            <div className="bg-white rounded-xl p-4 border border-slate-200">
+              <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center mb-3">
+                <BarChart3 className="w-4.5 h-4.5 text-indigo-600" />
               </div>
-              <div className="text-4xl font-bold text-slate-800 mb-1">{stats.cashflowModels}</div>
-              <div className="text-sm text-slate-600">Cashflow Models</div>
+              <div className="text-2xl font-bold text-slate-800 mb-0.5">{stats.cashflowModels}</div>
+              <div className="text-xs text-slate-500">Cashflow Models</div>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 border border-slate-200">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
-                <CheckCircle2 className="w-6 h-6 text-blue-600" />
+            <div className="bg-white rounded-xl p-4 border border-slate-200">
+              <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center mb-3">
+                <CheckCircle2 className="w-4.5 h-4.5 text-indigo-600" />
               </div>
-              <div className="text-4xl font-bold text-slate-800 mb-1">{stats.statementsOfAdvice}</div>
-              <div className="text-sm text-slate-600">Statements of Advice</div>
+              <div className="text-2xl font-bold text-slate-800 mb-0.5">{stats.statementsOfAdvice}</div>
+              <div className="text-xs text-slate-500">Statements of Advice</div>
             </div>
           </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-2xl border border-slate-200 mb-6">
-            <div className="p-6 flex items-end gap-4">
+          <div className="bg-white rounded-xl border border-slate-200 mb-6">
+            <div className="px-4 py-3 flex items-center gap-3">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                 <Input
                   placeholder="Search records..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-11 border-slate-200"
+                  className="pl-9 h-8 text-xs border-slate-200"
                 />
               </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Type</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Type</span>
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="px-3 h-8 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
                 >
                   <option value="All">All Types</option>
                   <option value="fact_find">Fact Find</option>
@@ -299,7 +299,7 @@ export default function ClientAdviceHistory() {
           </div>
 
           {/* Table */}
-          <div className="bg-white rounded-2xl border border-slate-200">
+          <div className="bg-white rounded-xl border border-slate-200">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-slate-50 border-b border-slate-200">

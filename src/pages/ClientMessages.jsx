@@ -68,15 +68,14 @@ function Avatar({ name, color }) {
   );
 }
 
-function StatCard({ icon, label, value, sub, color }) {
+function StatCard({ icon, label, value, sub }) {
   return (
-    <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 14, padding: "18px 22px", display: "flex", flexDirection: "column", gap: 10, position: "relative", overflow: "hidden", flex: 1 }}>
-      <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: color + "15" }} />
-      <div style={{ width: 36, height: 36, borderRadius: 10, background: color + "15", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{icon}</div>
+    <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
+      <div style={{ width: 32, height: 32, borderRadius: 8, background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>{icon}</div>
       <div>
-        <div style={{ fontSize: 26, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</div>
-        <div style={{ fontSize: 12, color: "#64748B", marginTop: 4, fontWeight: 500 }}>{label}</div>
-        {sub && <div style={{ fontSize: 11, color: color, marginTop: 2, fontWeight: 600 }}>{sub}</div>}
+        <div style={{ fontSize: 20, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</div>
+        <div style={{ fontSize: 11, color: "#64748B", marginTop: 3, fontWeight: 500 }}>{label}</div>
+        {sub && <div style={{ fontSize: 10, color: "#64748B", marginTop: 2, fontWeight: 600 }}>{sub}</div>}
       </div>
     </div>
   );
@@ -297,7 +296,7 @@ export default function ClientMessages() {
 
   return (
     <ClientLayout currentPage="ClientMessages">
-      <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#F8FAFC", minHeight: "100vh", padding: "28px 32px", color: "#0F172A" }}>
+      <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#F8FAFC", minHeight: "100vh", padding: "24px", maxWidth: 1200, margin: "0 auto", width: "100%", color: "#0F172A" }}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
           * { box-sizing: border-box; }
@@ -313,7 +312,7 @@ export default function ClientMessages() {
         `}</style>
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
           <div>
             <h1 style={{ fontSize: 24, fontWeight: 800, color: "#0F172A", margin: 0, letterSpacing: "-0.03em" }}>Tasks</h1>
             <p style={{ fontSize: 13, color: "#64748B", margin: "4px 0 0" }}>Actions, requests and compliance items</p>
@@ -334,29 +333,29 @@ export default function ClientMessages() {
         </div>
 
         {/* Stat tiles */}
-        <div style={{ display: "flex", gap: 14, marginBottom: 24 }}>
+        <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
           <StatCard icon="✅" label="Open Tasks"          value={openCount}     sub={`${tasks.length} total`}                                    color="#4F46E5" />
           <StatCard icon="⚠️" label="Overdue"             value={overdueCount}  sub={overdueCount > 0 ? "Needs attention" : "All on track"}       color="#DC2626" />
           <StatCard icon="🏁" label="Completed This Week"  value={doneThisWeek} sub="Last 7 days"                                                 color="#059669" />
         </div>
 
         {/* Filters */}
-        <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 14, padding: "12px 16px", marginBottom: 16, display: "flex", flexDirection: "column", gap: 10 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12, padding: "10px 14px", marginBottom: 14, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ position: "relative", flexShrink: 0 }}>
-              <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "#94A3B8" }}>🔍</span>
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search tasks…" style={{ paddingLeft: 32, paddingRight: 12, paddingTop: 8, paddingBottom: 8, border: "1.5px solid #E2E8F0", borderRadius: 8, fontSize: 13, outline: "none", width: 200, background: "#F8FAFC", color: "#0F172A", fontFamily: "inherit" }} />
+              <span style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: "#94A3B8" }}>🔍</span>
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search tasks…" style={{ paddingLeft: 28, paddingRight: 10, paddingTop: 5, paddingBottom: 5, border: "1.5px solid #E2E8F0", borderRadius: 8, fontSize: 12, outline: "none", width: 180, background: "#F8FAFC", color: "#0F172A", fontFamily: "inherit" }} />
             </div>
-            <div style={{ width: 1, height: 28, background: "#E2E8F0" }} />
+            <div style={{ width: 1, height: 22, background: "#E2E8F0" }} />
             {["All", ...STATUS].map(s => (
-              <button key={s} className="pill" onClick={() => setFilterStatus(s)} style={{ padding: "5px 14px", borderRadius: 20, border: `1.5px solid ${filterStatus === s ? "#4F46E5" : "#E2E8F0"}`, background: filterStatus === s ? "#EEF2FF" : "#fff", color: filterStatus === s ? "#4F46E5" : "#64748B", fontSize: 12, fontWeight: filterStatus === s ? 700 : 500, cursor: "pointer", transition: "all 0.12s", whiteSpace: "nowrap" }}>
+              <button key={s} className="pill" onClick={() => setFilterStatus(s)} style={{ padding: "3px 10px", borderRadius: 20, border: `1.5px solid ${filterStatus === s ? "#4F46E5" : "#E2E8F0"}`, background: filterStatus === s ? "#EEF2FF" : "#fff", color: filterStatus === s ? "#4F46E5" : "#64748B", fontSize: 11, fontWeight: filterStatus === s ? 700 : 500, cursor: "pointer", transition: "all 0.12s", whiteSpace: "nowrap" }}>
                 {s}
               </button>
             ))}
           </div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
             {TASK_TYPES.map(type => (
-              <button key={type} className="pill" onClick={() => setFilterType(type)} style={{ padding: "5px 12px", borderRadius: 20, border: `1.5px solid ${filterType === type ? "#4F46E5" : "#E2E8F0"}`, background: filterType === type ? "#EEF2FF" : "#fff", color: filterType === type ? "#4F46E5" : "#64748B", fontSize: 12, fontWeight: filterType === type ? 700 : 500, cursor: "pointer", transition: "all 0.12s", whiteSpace: "nowrap" }}>
+              <button key={type} className="pill" onClick={() => setFilterType(type)} style={{ padding: "3px 9px", borderRadius: 20, border: `1.5px solid ${filterType === type ? "#4F46E5" : "#E2E8F0"}`, background: filterType === type ? "#EEF2FF" : "#fff", color: filterType === type ? "#4F46E5" : "#64748B", fontSize: 11, fontWeight: filterType === type ? 700 : 500, cursor: "pointer", transition: "all 0.12s", whiteSpace: "nowrap" }}>
                 {type}
               </button>
             ))}
