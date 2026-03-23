@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
 import { formatDate } from '../utils/dateUtils';
-import ClientLayout from '../components/client/ClientLayout';
 import {
   FileText,
   Clock,
