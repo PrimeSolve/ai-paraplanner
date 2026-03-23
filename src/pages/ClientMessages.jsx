@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ClientLayout from '../components/client/ClientLayout';
+
 
 const TASK_TYPES = ["All", "Send PDS", "Authority to Proceed", "Read PDS", "Document Request", "Follow-up", "Compliance Deadline", "Internal To-Do", "Client Action"];
 
@@ -295,8 +295,7 @@ export default function ClientMessages() {
   };
 
   return (
-    <ClientLayout currentPage="ClientMessages">
-      <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#F8FAFC", minHeight: "100vh", padding: "24px 32px", color: "#0F172A" }}>
+    <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#F8FAFC", minHeight: "100vh", padding: "24px 32px", color: "#0F172A" }}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
           * { box-sizing: border-box; }
@@ -453,6 +452,6 @@ export default function ClientMessages() {
           </div>
         )}
       </div>
-    </ClientLayout>
+    </div>
   );
 }

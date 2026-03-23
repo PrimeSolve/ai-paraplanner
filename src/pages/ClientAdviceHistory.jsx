@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import ClientLayout from '../components/client/ClientLayout';
+
 import { base44 } from '@/api/base44Client';
 import { adviceHistoryApi } from '@/api/adviceHistoryApi';
 import { formatDate } from '../utils/dateUtils';
@@ -169,11 +169,9 @@ export default function ClientAdviceHistory() {
 
   if (loading) {
     return (
-      <ClientLayout currentPage="ClientAdviceHistory">
-        <div className="flex items-center justify-center h-full py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
-        </div>
-      </ClientLayout>
+      <div className="flex items-center justify-center h-full py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+      </div>
     );
   }
 
@@ -232,8 +230,7 @@ export default function ClientAdviceHistory() {
         </DialogContent>
       </Dialog>
 
-      <ClientLayout currentPage="ClientAdviceHistory">
-        <div className="py-6 px-8">
+      <div className="py-6 px-8">
           {/* KPI Stats Grid */}
           <div className="grid grid-cols-4 gap-6 mb-8">
             <div className="bg-white rounded-2xl p-6 border border-slate-200">
@@ -362,7 +359,7 @@ export default function ClientAdviceHistory() {
             )}
           </div>
         </div>
-      </ClientLayout>
+      </div>
     </>
   );
 }
