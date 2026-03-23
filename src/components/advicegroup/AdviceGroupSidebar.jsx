@@ -6,6 +6,7 @@ import {
   CheckCircle,
   Users,
   Settings,
+  CreditCard,
 } from 'lucide-react';
 
 export default function AdviceGroupSidebar({ currentPage }) {
@@ -23,6 +24,7 @@ export default function AdviceGroupSidebar({ currentPage }) {
       { label: 'Risk Profiles', path: 'AdviceGroupRiskProfiles', icon: Settings },
       { label: 'Model Portfolios', path: 'AdviceGroupModelPortfolios', icon: Settings },
       { label: 'SOA Template', path: 'AdviceGroupSOATemplate', icon: Settings },
+      { label: 'Billing', path: 'Billing', icon: CreditCard },
       { label: 'Settings', path: 'AdviceGroupSettings', icon: Settings }
     ]}
   ];

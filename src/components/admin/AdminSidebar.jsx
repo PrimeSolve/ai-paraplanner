@@ -12,7 +12,8 @@ import {
   Settings,
   UsersRound,
   MessageSquare,
-  Settings2
+  Settings2,
+  CreditCard
 } from 'lucide-react';
 
 export default function AdminSidebar({ currentPage }) {
@@ -74,6 +75,7 @@ export default function AdminSidebar({ currentPage }) {
       { label: 'Data Manager', path: 'AdminDataManager', icon: Settings2 },
       { label: 'SOA Template', path: 'AdminTemplate', icon: FileText },
       { label: 'Team', path: 'AdminTeam', icon: UsersRound },
+      { label: 'Billing', path: 'Billing', icon: CreditCard },
       { label: 'Settings', path: 'AdminSettings', icon: Settings }
     ]}
   ];
