@@ -1,11 +1,9 @@
 import React from 'react';
-import ClientLayout from '../components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
 import { HelpCircle, Mail, ExternalLink, BookOpen, MessageSquare } from 'lucide-react';
 
 export default function ClientHelp() {
   return (
-    <ClientLayout currentPage="ClientHelp">
       <div className="min-h-screen bg-[#f8fafc] p-8">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Header */}
@@ -129,6 +127,5 @@ export default function ClientHelp() {
           </div>
         </div>
       </div>
-    </ClientLayout>
   );
 }
