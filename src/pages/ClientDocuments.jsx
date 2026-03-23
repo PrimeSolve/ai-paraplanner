@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import ClientLayout from '../components/client/ClientLayout';
+
 import { base44 } from '@/api/base44Client';
 import axiosInstance from '@/api/axiosInstance';
 import { formatDate } from '../utils/dateUtils';
@@ -335,16 +335,14 @@ export default function ClientDocuments() {
 
   if (loading) {
     return (
-      <ClientLayout currentPage="ClientDocuments">
-        <div className="py-6 px-8 flex items-center justify-center h-full">
-          <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
-        </div>
-      </ClientLayout>
+      <div className="py-6 px-8 flex items-center justify-center h-full">
+        <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+      </div>
     );
   }
 
   return (
-    <ClientLayout currentPage="ClientDocuments">
+    <>
       <div className="py-6 px-8">
         {/* ─── Header ─── */}
         <div className="flex items-center justify-between mb-8">
@@ -713,6 +711,6 @@ export default function ClientDocuments() {
           </div>
         </div>
       )}
-    </ClientLayout>
+    </>
   );
 }
