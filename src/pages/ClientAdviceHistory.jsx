@@ -359,7 +359,6 @@ export default function ClientAdviceHistory() {
             )}
           </div>
         </div>
-      </div>
     </>
   );
 }
