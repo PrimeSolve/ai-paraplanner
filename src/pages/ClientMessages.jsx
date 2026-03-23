@@ -70,12 +70,12 @@ function Avatar({ name, color }) {
 
 function StatCard({ icon, label, value, sub }) {
   return (
-    <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12, padding: "20px 22px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
-      <div style={{ width: 40, height: 40, borderRadius: 12, background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{icon}</div>
+    <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 16, padding: 24, display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
+      <div style={{ width: 48, height: 48, borderRadius: 12, background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, marginBottom: 4 }}>{icon}</div>
       <div>
-        <div style={{ fontSize: 28, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</div>
-        <div style={{ fontSize: 13, color: "#64748B", marginTop: 4, fontWeight: 500 }}>{label}</div>
-        {sub && <div style={{ fontSize: 12, color: "#64748B", marginTop: 2, fontWeight: 600 }}>{sub}</div>}
+        <div style={{ fontSize: 36, fontWeight: 700, color: "#0F172A", letterSpacing: "-0.03em", lineHeight: 1, marginBottom: 4 }}>{value}</div>
+        <div style={{ fontSize: 14, color: "#475569", fontWeight: 500 }}>{label}</div>
+        {sub && <div style={{ fontSize: 12, color: "#475569", marginTop: 2, fontWeight: 600 }}>{sub}</div>}
       </div>
     </div>
   );
@@ -296,7 +296,7 @@ export default function ClientMessages() {
 
   return (
     <ClientLayout currentPage="ClientMessages">
-      <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#F8FAFC", minHeight: "100vh", padding: "24px", color: "#0F172A" }}>
+      <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#F8FAFC", minHeight: "100vh", padding: "24px 32px", color: "#0F172A" }}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
           * { box-sizing: border-box; }
@@ -333,14 +333,14 @@ export default function ClientMessages() {
         </div>
 
         {/* Stat tiles */}
-        <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+        <div style={{ display: "flex", gap: 24, marginBottom: 32 }}>
           <StatCard icon="✅" label="Open Tasks"          value={openCount}     sub={`${tasks.length} total`}                                    color="#4F46E5" />
           <StatCard icon="⚠️" label="Overdue"             value={overdueCount}  sub={overdueCount > 0 ? "Needs attention" : "All on track"}       color="#DC2626" />
           <StatCard icon="🏁" label="Completed This Week"  value={doneThisWeek} sub="Last 7 days"                                                 color="#059669" />
         </div>
 
         {/* Filters */}
-        <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12, padding: "14px 16px", marginBottom: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 16, padding: "24px", marginBottom: 24, display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ position: "relative", flexShrink: 0 }}>
               <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "#94A3B8" }}>🔍</span>
@@ -364,7 +364,7 @@ export default function ClientMessages() {
 
         {/* ── LIST VIEW ── */}
         {view === "list" && (
-          <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 14, overflow: "hidden" }}>
+          <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 16, overflow: "hidden" }}>
             {/* Column headers */}
             <div style={{ display: "grid", gridTemplateColumns: "4px 1fr 160px 90px 90px 80px", background: "#F8FAFC", borderBottom: "1.5px solid #E2E8F0" }}>
               <div />
