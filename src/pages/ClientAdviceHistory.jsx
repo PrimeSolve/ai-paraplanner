@@ -233,58 +233,58 @@ export default function ClientAdviceHistory() {
       </Dialog>
 
       <ClientLayout currentPage="ClientAdviceHistory">
-        <div className="py-6 px-6">
+        <div className="py-6 px-8">
           {/* KPI Stats Grid */}
-          <div className="grid grid-cols-4 gap-5 mb-6">
-            <div className="bg-white rounded-xl p-5 border border-slate-200">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
-                <ClipboardList className="w-5 h-5 text-indigo-600" />
+          <div className="grid grid-cols-4 gap-6 mb-8">
+            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4">
+                <ClipboardList className="w-6 h-6 text-indigo-600" />
               </div>
-              <div className="text-3xl font-bold text-slate-800 mb-1">{stats.factFinds}</div>
-              <div className="text-sm text-slate-500">Fact Finds</div>
+              <div className="text-4xl font-bold text-slate-800 mb-1">{stats.factFinds}</div>
+              <div className="text-sm text-slate-600">Fact Finds</div>
             </div>
 
-            <div className="bg-white rounded-xl p-5 border border-slate-200">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
-                <FileText className="w-5 h-5 text-indigo-600" />
+            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4">
+                <FileText className="w-6 h-6 text-indigo-600" />
               </div>
-              <div className="text-3xl font-bold text-slate-800 mb-1">{stats.soaRequests}</div>
-              <div className="text-sm text-slate-500">SOA Requests</div>
+              <div className="text-4xl font-bold text-slate-800 mb-1">{stats.soaRequests}</div>
+              <div className="text-sm text-slate-600">SOA Requests</div>
             </div>
 
-            <div className="bg-white rounded-xl p-5 border border-slate-200">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
-                <BarChart3 className="w-5 h-5 text-indigo-600" />
+            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4">
+                <BarChart3 className="w-6 h-6 text-indigo-600" />
               </div>
-              <div className="text-3xl font-bold text-slate-800 mb-1">{stats.cashflowModels}</div>
-              <div className="text-sm text-slate-500">Cashflow Models</div>
+              <div className="text-4xl font-bold text-slate-800 mb-1">{stats.cashflowModels}</div>
+              <div className="text-sm text-slate-600">Cashflow Models</div>
             </div>
 
-            <div className="bg-white rounded-xl p-5 border border-slate-200">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
-                <CheckCircle2 className="w-5 h-5 text-indigo-600" />
+            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-6 h-6 text-indigo-600" />
               </div>
-              <div className="text-3xl font-bold text-slate-800 mb-1">{stats.statementsOfAdvice}</div>
-              <div className="text-sm text-slate-500">Statements of Advice</div>
+              <div className="text-4xl font-bold text-slate-800 mb-1">{stats.statementsOfAdvice}</div>
+              <div className="text-sm text-slate-600">Statements of Advice</div>
             </div>
           </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-xl border border-slate-200 mb-6">
-            <div className="p-4 flex items-center gap-4">
+          <div className="bg-white rounded-2xl border border-slate-200 mb-6">
+            <div className="p-6 flex items-center gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <Input
-                  placeholder="Search by title or creator..."
+                  placeholder="Search by client name or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-10 border-slate-200"
+                  className="pl-10 h-11 border-slate-200"
                 />
               </div>
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="px-4 h-10 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                className="w-40 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors px-4"
               >
                 <option value="All">All Types</option>
                 <option value="fact_find">Fact Find</option>
@@ -296,7 +296,7 @@ export default function ClientAdviceHistory() {
           </div>
 
           {/* Table */}
-          <div className="bg-white rounded-xl border border-slate-200">
+          <div className="bg-white rounded-2xl border border-slate-200">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-slate-50 border-b border-slate-200">

@@ -336,7 +336,7 @@ export default function ClientDocuments() {
   if (loading) {
     return (
       <ClientLayout currentPage="ClientDocuments">
-        <div className="py-6 px-6 flex items-center justify-center h-full">
+        <div className="py-6 px-8 flex items-center justify-center h-full">
           <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
         </div>
       </ClientLayout>
@@ -345,9 +345,9 @@ export default function ClientDocuments() {
 
   return (
     <ClientLayout currentPage="ClientDocuments">
-      <div className="py-6 px-6">
+      <div className="py-6 px-8">
         {/* ─── Header ─── */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-slate-800">Documents</h1>
             <p className="text-sm text-slate-500 mt-1">Client file vault</p>
@@ -362,41 +362,41 @@ export default function ClientDocuments() {
         </div>
 
         {/* ─── KPI Tiles ─── */}
-        <div className="grid grid-cols-3 gap-5 mb-6">
-          <div className="bg-white rounded-xl p-5 border border-slate-200">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
-              <FolderOpen className="w-5 h-5 text-indigo-600" />
+        <div className="grid grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4">
+              <FolderOpen className="w-6 h-6 text-indigo-600" />
             </div>
-            <div className="text-3xl font-bold text-slate-800 mb-1">{documents.length}</div>
-            <div className="text-sm text-slate-500">Total Documents</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{documents.length}</div>
+            <div className="text-sm text-slate-600">Total Documents</div>
           </div>
-          <div className="bg-white rounded-xl p-5 border border-slate-200">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
-              <Users className="w-5 h-5 text-indigo-600" />
+          <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4">
+              <Users className="w-6 h-6 text-indigo-600" />
             </div>
-            <div className="text-3xl font-bold text-slate-800 mb-1">{sharedCount}</div>
-            <div className="text-sm text-slate-500">Shared with Client</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{sharedCount}</div>
+            <div className="text-sm text-slate-600">Shared with Client</div>
           </div>
-          <div className="bg-white rounded-xl p-5 border border-slate-200">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-3">
-              <Calendar className="w-5 h-5 text-indigo-600" />
+          <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4">
+              <Calendar className="w-6 h-6 text-indigo-600" />
             </div>
-            <div className="text-3xl font-bold text-slate-800 mb-1">
+            <div className="text-4xl font-bold text-slate-800 mb-1">
               {lastUploadDate ? formatDate(lastUploadDate) : '—'}
             </div>
-            <div className="text-sm text-slate-500">Last Upload</div>
+            <div className="text-sm text-slate-600">Last Upload</div>
           </div>
         </div>
 
         {/* ─── Filter Bar ─── */}
-        <div className="bg-white rounded-xl border border-slate-200 mb-6">
-          <div className="p-4 flex items-center gap-4">
+        <div className="bg-white rounded-2xl border border-slate-200 mb-6">
+          <div className="p-6 flex items-center gap-4">
             <div className="flex gap-2 flex-wrap flex-1 min-w-0">
               {CATEGORIES.map(cat => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`inline-flex items-center px-3.5 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                  className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
                     activeCategory === cat
                       ? 'bg-indigo-50 text-indigo-600 border border-indigo-200'
                       : 'text-slate-500 border border-transparent hover:bg-slate-50'
@@ -407,20 +407,20 @@ export default function ClientDocuments() {
               ))}
             </div>
             <div className="relative shrink-0 w-[220px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search documents…"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-300 transition-colors"
+                className="w-full pl-10 pr-4 h-11 border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-300 transition-colors"
               />
             </div>
           </div>
         </div>
 
         {/* ─── Table ─── */}
-        <div className="bg-white rounded-xl border border-slate-200">
+        <div className="bg-white rounded-2xl border border-slate-200">
           {documents.length === 0 && !searchQuery && activeCategory === 'All' ? (
             <div className="py-16 px-6 text-center">
               <Inbox className="w-16 h-16 mx-auto text-slate-300 mb-4" />
