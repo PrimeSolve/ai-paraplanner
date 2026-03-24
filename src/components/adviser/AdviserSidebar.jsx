@@ -74,6 +74,7 @@ export default function AdviserSidebar({ currentPage }) {
     return `VIEWING ${current.type.replace('_', ' ').toUpperCase()}`;
   };
 
+  // TODO: re-add "Completed SOAs" and "Models" when features are ready for launch
   const navSections = [
     { label: 'NAVIGATION', items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: 'AdviserDashboard' },
@@ -109,6 +110,7 @@ export default function AdviserSidebar({ currentPage }) {
       subtitle={getSubtitle()}
       navSections={navSections}
       helpPath="AdviserHelp"
+      helpText="Ask Henry"
       currentPage={currentPage}
     />
   );
