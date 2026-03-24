@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import axiosInstance from '@/api/axiosInstance';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -12,15 +12,47 @@ import {
   Sparkles,
   Loader2,
   ArrowRight,
+  AlertTriangle,
 } from 'lucide-react';
 
 const BLUE = '#1d4ed8';
 const BLUE_LIGHT = '#2563eb';
 
 const creditPackages = [
-  { label: '1 Credit', priceType: 'CreditX1', price: '$700', perUnit: '$700 / SOA', savings: null, highlight: false },
-  { label: '5 Credits', priceType: 'CreditX5', price: '$3,000', perUnit: '$600 / SOA', savings: 'Save $500', highlight: false },
-  { label: '10 Credits', priceType: 'CreditX10', price: '$5,500', perUnit: '$550 / SOA', savings: 'Save $1,500', highlight: true },
+  {
+    label: '1 Credit',
+    qty: 1,
+    priceType: 'CreditX1',
+    price: '$700',
+    priceNum: 700,
+    perUnit: '$700 / credit',
+    savings: null,
+    highlight: false,
+    equivalency: '1 Comprehensive SOA or 2 Limited Advice SOAs',
+  },
+  {
+    label: '5 Credits',
+    qty: 5,
+    priceType: 'CreditX5',
+    price: '$3,000',
+    priceNum: 3000,
+    perUnit: '$600 / credit',
+    savings: 'Save $500',
+    highlight: true,
+    badge: 'Best value',
+    equivalency: '5 Comprehensive SOAs or 10 Limited Advice SOAs',
+  },
+  {
+    label: '10 Credits',
+    qty: 10,
+    priceType: 'CreditX10',
+    price: '$5,500',
+    priceNum: 5500,
+    perUnit: '$550 / credit',
+    savings: 'Save $1,500',
+    highlight: false,
+    equivalency: '10 Comprehensive SOAs or 20 Limited Advice SOAs',
+  },
 ];
 
 const allPlans = [
@@ -41,7 +73,7 @@ const allPlans = [
     priceSub: '/mo',
     description: 'Unlimited SOAs, billed monthly',
     features: ['Unlimited SOA generation', 'Cancel anytime', 'Priority support'],
-    highlight: false,
+    highlight: true,
     isTransaction: false,
   },
   {
@@ -51,10 +83,41 @@ const allPlans = [
     priceSub: '/yr',
     description: 'Unlimited SOAs, billed annually — save 30%',
     features: ['Unlimited SOA generation', 'Dedicated account manager', 'Priority support'],
-    highlight: true,
+    highlight: false,
     isTransaction: false,
   },
 ];
+
+function getEquivalencyLine(credits) {
+  if (credits <= 0) return null;
+  const comp = credits;
+  const limited = credits * 2;
+  return `${comp} Comprehensive SOA${comp !== 1 ? 's' : ''} or up to ${limited} Limited Advice SOA${limited !== 1 ? 's' : ''}`;
+}
+
+function getPlanPill(planState, billing) {
+  const styles = {
+    transaction: { bg: '#eff6ff', color: '#1d4ed8', label: 'Transaction' },
+    monthly: { bg: '#f0fdf4', color: '#166534', label: 'Monthly' },
+    annual: { bg: '#f0fdf4', color: '#166534', label: 'Annual' },
+    zero: { bg: '#fef2f2', color: '#991b1b', label: 'No plan' },
+  };
+  const s = styles[planState] || styles.zero;
+  return (
+    <span style={{
+      display: 'inline-block',
+      padding: '4px 12px',
+      borderRadius: '9999px',
+      fontSize: '12px',
+      fontWeight: '700',
+      background: s.bg,
+      color: s.color,
+      letterSpacing: '0.02em',
+    }}>
+      {s.label}
+    </span>
+  );
+}
 
 export default function Billing() {
   const [billing, setBilling] = useState(null);
@@ -63,6 +126,8 @@ export default function Billing() {
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(null);
   const [portalLoading, setPortalLoading] = useState(null);
+  const [activeTab, setActiveTab] = useState('credits');
+  const tabsRef = useRef(null);
 
   useEffect(() => {
     fetchBillingStatus();
@@ -134,6 +199,15 @@ export default function Billing() {
     }
   };
 
+  const switchToCreditsTab = () => {
+    setActiveTab('credits');
+  };
+
+  const handleTabChange = (val) => {
+    setActiveTab(val);
+    if (val === 'invoices') fetchInvoices();
+  };
+
   if (loading) {
     return (
       <div style={{ padding: '24px 32px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
@@ -144,7 +218,7 @@ export default function Billing() {
 
   const hasSubscription = billing?.subscriptionActive;
   const hasCredits = billing?.soaCredits > 0;
-  const isFreeTrial = !hasSubscription && !hasCredits && billing?.planName?.toLowerCase().includes('trial');
+  const isNewUser = !hasSubscription && !hasCredits && !billing?.planName;
   const planState = hasSubscription
     ? (billing?.planName?.toLowerCase().includes('annual') ? 'annual' : 'monthly')
     : hasCredits
@@ -152,32 +226,22 @@ export default function Billing() {
       : 'zero';
 
   const creditCount = billing?.soaCredits ?? 0;
-  const planLabel = hasSubscription
-    ? (billing?.planName || 'Active Plan')
-    : hasCredits
-      ? 'Pay-per-SOA'
-      : 'No active plan';
+  const equivalency = getEquivalencyLine(creditCount);
+  const maxCredits = 10;
+  const progressPct = hasSubscription ? 100 : Math.min((creditCount / maxCredits) * 100, 100);
 
-  return (
-    <div style={{ padding: '24px 32px', maxWidth: '960px' }}>
-      {/* Page Header */}
-      <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '24px', fontWeight: '700', color: '#0f172a', margin: 0 }}>
-          Billing
-        </h1>
-        <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px' }}>
-          Manage your plan, credits, and payment details.
-        </p>
-      </div>
+  // ── 1. State Banner (conditional) ──
+  const renderBanner = () => {
+    if (hasSubscription || hasCredits) return null;
 
-      {/* Onboarding Banner (new users) or Status Card (existing users) */}
-      {planState === 'zero' && !isFreeTrial ? (
+    if (isNewUser) {
+      return (
         <div style={{
           background: '#eff6ff',
           border: '1px solid #bfdbfe',
           borderRadius: '12px',
-          padding: '20px 24px',
-          marginBottom: '28px',
+          padding: '16px 20px',
+          marginBottom: '20px',
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
@@ -192,93 +256,190 @@ export default function Billing() {
             </div>
           </div>
         </div>
-      ) : (
-        <div style={{
-          background: hasSubscription ? '#f0fdf4' : '#eff6ff',
-          border: `1px solid ${hasSubscription ? '#bbf7d0' : '#bfdbfe'}`,
-          borderRadius: '12px',
-          padding: '20px 24px',
-          marginBottom: '28px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {hasSubscription ? (
-              <Check className="w-5 h-5" style={{ color: '#16a34a' }} />
-            ) : (
-              <CreditCard className="w-5 h-5" style={{ color: BLUE_LIGHT }} />
-            )}
-            <div>
-              <div style={{ fontWeight: '600', fontSize: '15px', color: hasSubscription ? '#166534' : '#1e40af' }}>
-                {hasSubscription
-                  ? `Full Platform Access — ${billing.planName || 'Active Plan'}`
-                  : isFreeTrial
-                    ? 'Free Trial — No credits remaining'
-                    : `Pay-per-SOA — ${creditCount} credit${creditCount !== 1 ? 's' : ''} remaining`}
-              </div>
-            </div>
-          </div>
-          {hasSubscription && (
-            <button
-              onClick={() => handlePortal('manage')}
-              disabled={portalLoading === 'manage'}
-              style={{
-                background: '#16a34a',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontSize: '13px',
-                fontWeight: '600',
-                cursor: portalLoading === 'manage' ? 'not-allowed' : 'pointer',
-                opacity: portalLoading === 'manage' ? 0.7 : 1,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-            >
-              {portalLoading === 'manage' ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
-              Manage Plan
-            </button>
-          )}
-        </div>
-      )}
+      );
+    }
 
-      {/* Credit & Plan Status Card */}
+    // Zero state — had plan/credits before, now at zero
+    return (
+      <div style={{
+        background: '#fef2f2',
+        border: '1px solid #fecaca',
+        borderRadius: '12px',
+        padding: '16px 20px',
+        marginBottom: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+      }}>
+        <AlertTriangle className="w-5 h-5 flex-shrink-0" style={{ color: '#dc2626' }} />
+        <div>
+          <div style={{ fontWeight: '600', fontSize: '15px', color: '#991b1b' }}>
+            No credits remaining
+          </div>
+          <div style={{ fontSize: '13px', color: '#b91c1c', marginTop: '2px' }}>
+            Purchase credits or subscribe to a plan to continue generating SOAs.
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ── 2. Hero Status Card ──
+  const renderHeroCard = () => {
+    const creditColor = hasSubscription ? '#16a34a' : hasCredits ? BLUE : '#dc2626';
+    const creditDisplay = hasSubscription ? '\u221e' : creditCount;
+
+    return (
       <div style={{
         background: 'white',
         border: '1px solid #e2e8f0',
         borderRadius: '12px',
-        padding: '16px 24px',
+        padding: '28px 32px',
         marginBottom: '28px',
         display: 'flex',
-        alignItems: 'center',
-        gap: '24px',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        gap: '32px',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>Credits</span>
-          <span style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            {creditCount}
-          </span>
+        {/* Left column */}
+        <div style={{ flex: 1 }}>
+          <div style={{
+            fontSize: hasSubscription ? '40px' : '48px',
+            fontWeight: '800',
+            color: creditColor,
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            lineHeight: 1,
+          }}>
+            {creditDisplay}
+          </div>
+          <div style={{ fontSize: '14px', color: '#64748b', marginTop: '4px', fontWeight: '500' }}>
+            {hasSubscription ? 'Unlimited SOA credits' : `SOA credit${creditCount !== 1 ? 's' : ''} remaining`}
+          </div>
+          {equivalency && (
+            <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>
+              {equivalency}
+            </div>
+          )}
+          {/* Progress bar */}
+          <div style={{
+            marginTop: '16px',
+            height: '6px',
+            background: '#f1f5f9',
+            borderRadius: '3px',
+            overflow: 'hidden',
+            maxWidth: '280px',
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${progressPct}%`,
+              background: creditColor,
+              borderRadius: '3px',
+              transition: 'width 0.3s ease',
+            }} />
+          </div>
         </div>
-        <div style={{ width: '1px', height: '24px', background: '#e2e8f0' }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>Plan</span>
-          <span style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>
-            {planLabel}
-          </span>
+
+        {/* Right column */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', flexShrink: 0 }}>
+          {getPlanPill(planState, billing)}
+          {hasSubscription && billing?.renewalDate && (
+            <div style={{ fontSize: '13px', color: '#64748b' }}>
+              Renews {new Date(billing.renewalDate).toLocaleDateString()}
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+            {hasSubscription ? (
+              <button
+                onClick={() => handlePortal('manage')}
+                disabled={portalLoading === 'manage'}
+                style={{
+                  background: '#16a34a',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '8px 16px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: portalLoading === 'manage' ? 'not-allowed' : 'pointer',
+                  opacity: portalLoading === 'manage' ? 0.7 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                {portalLoading === 'manage' ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
+                Manage plan
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={switchToCreditsTab}
+                  style={{
+                    background: BLUE,
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  Buy credits
+                </button>
+                <button
+                  onClick={() => setActiveTab('plans')}
+                  style={{
+                    background: 'white',
+                    color: '#0f172a',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                  }}
+                >
+                  View plans
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
+    );
+  };
 
-      {/* Tabs */}
-      <Tabs defaultValue="plans" onValueChange={(val) => { if (val === 'invoices') fetchInvoices(); }}>
+  return (
+    <div style={{ padding: '24px 32px', maxWidth: '960px' }}>
+      {/* Page Header */}
+      <div style={{ marginBottom: '28px' }}>
+        <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '24px', fontWeight: '700', color: '#0f172a', margin: 0 }}>
+          Billing
+        </h1>
+        <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px' }}>
+          Manage your plan, credits, and payment details.
+        </p>
+      </div>
+
+      {/* 1. State Banner */}
+      {renderBanner()}
+
+      {/* 2. Hero Status Card */}
+      {renderHeroCard()}
+
+      {/* 3. Tabs: Buy Credits (default) · Plans · Invoice History · Payment Method */}
+      <Tabs value={activeTab} onValueChange={handleTabChange} ref={tabsRef}>
         <TabsList style={{ marginBottom: '24px' }}>
-          <TabsTrigger value="plans" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Crown className="w-4 h-4" /> Plans
-          </TabsTrigger>
           <TabsTrigger value="credits" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <ShoppingCart className="w-4 h-4" /> Buy Credits
+          </TabsTrigger>
+          <TabsTrigger value="plans" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Crown className="w-4 h-4" /> Plans
           </TabsTrigger>
           <TabsTrigger value="invoices" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Receipt className="w-4 h-4" /> Invoice History
@@ -288,7 +449,138 @@ export default function Billing() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Plans Tab — 3 columns: Transaction, Monthly, Annual */}
+        {/* ── 4. Buy Credits Tab ── */}
+        <TabsContent value="credits">
+          {/* Blue explainer bar */}
+          <div style={{
+            background: '#eff6ff',
+            border: '1px solid #bfdbfe',
+            borderRadius: '10px',
+            padding: '14px 20px',
+            marginBottom: '20px',
+            fontSize: '13px',
+            color: '#1e40af',
+            lineHeight: '1.5',
+          }}>
+            <strong>1 credit = 1 Comprehensive SOA</strong> &middot; 0.5 credits = 1 Limited Advice SOA (portfolio review, product switching, or insurance only). Credits never expire.
+          </div>
+
+          {/* Credit cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+            {creditPackages.map((pkg) => (
+              <div key={pkg.priceType} style={{
+                background: 'white',
+                border: pkg.highlight ? `2px solid ${BLUE}` : '1px solid #e2e8f0',
+                borderRadius: '12px',
+                padding: '24px',
+                textAlign: 'center',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+              }}>
+                {pkg.highlight && pkg.badge && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-10px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: BLUE,
+                    color: 'white',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    padding: '2px 10px',
+                    borderRadius: '6px',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {pkg.badge.toUpperCase()}
+                  </div>
+                )}
+                <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '18px', fontWeight: '700', margin: '0 0 4px 0', color: '#0f172a' }}>
+                  {pkg.label}
+                </h3>
+                <div style={{ margin: '8px 0 4px 0' }}>
+                  <span style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    {pkg.price}
+                  </span>
+                </div>
+                <p style={{ color: '#64748b', fontSize: '13px', margin: '0 0 4px 0' }}>
+                  {pkg.perUnit}
+                </p>
+                {pkg.savings && (
+                  <span style={{
+                    display: 'inline-block',
+                    background: '#f0fdf4',
+                    color: '#166534',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    padding: '2px 10px',
+                    borderRadius: '6px',
+                    margin: '0 auto 8px auto',
+                  }}>
+                    {pkg.savings}
+                  </span>
+                )}
+                {!pkg.savings && <div style={{ marginBottom: '8px' }} />}
+                <p style={{ color: '#94a3b8', fontSize: '12px', margin: '0 0 16px 0', lineHeight: '1.4' }}>
+                  {pkg.equivalency}
+                </p>
+                <div style={{ flex: 1 }} />
+                <button
+                  onClick={() => handleCheckout(pkg.priceType)}
+                  disabled={checkoutLoading === pkg.priceType}
+                  style={{
+                    width: '100%',
+                    background: pkg.highlight ? BLUE : 'white',
+                    color: pkg.highlight ? 'white' : '#0f172a',
+                    border: pkg.highlight ? 'none' : '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    padding: '10px 16px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: checkoutLoading === pkg.priceType ? 'not-allowed' : 'pointer',
+                    opacity: checkoutLoading === pkg.priceType ? 0.7 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  {checkoutLoading === pkg.priceType ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                  Buy Now
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Free trial link for new users */}
+          {planState === 'zero' && (
+            <div style={{ marginTop: '16px', textAlign: 'center' }}>
+              <button
+                onClick={() => handleCheckout('FreeTrial')}
+                disabled={checkoutLoading === 'FreeTrial'}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#64748b',
+                  fontSize: '13px',
+                  cursor: checkoutLoading === 'FreeTrial' ? 'not-allowed' : 'pointer',
+                  padding: '4px 0',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                {checkoutLoading === 'FreeTrial' ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : null}
+                New to the platform? <span style={{ color: BLUE_LIGHT, fontWeight: '600' }}>Start with a free SOA credit</span>
+                <ArrowRight className="w-3.5 h-3.5" style={{ color: BLUE_LIGHT }} />
+              </button>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* ── 5. Plans Tab ── */}
         <TabsContent value="plans">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
             {allPlans.map((plan) => {
@@ -358,11 +650,7 @@ export default function Billing() {
                     </div>
                   ) : plan.isTransaction ? (
                     <button
-                      onClick={() => {
-                        const tabsTrigger = document.querySelector('[data-value="credits"]') ||
-                          document.querySelector('[value="credits"]');
-                        if (tabsTrigger) tabsTrigger.click();
-                      }}
+                      onClick={switchToCreditsTab}
                       style={{
                         width: '100%',
                         background: 'white',
@@ -379,7 +667,7 @@ export default function Billing() {
                         gap: '6px',
                       }}
                     >
-                      Buy Credits
+                      Buy Credits <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   ) : (
                     <button
@@ -410,191 +698,108 @@ export default function Billing() {
               );
             })}
           </div>
-
-          {/* Free trial link for new users */}
-          {planState === 'zero' && !isFreeTrial && (
-            <div style={{ marginTop: '16px', textAlign: 'center' }}>
-              <button
-                onClick={() => handleCheckout('FreeTrial')}
-                disabled={checkoutLoading === 'FreeTrial'}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#64748b',
-                  fontSize: '13px',
-                  cursor: checkoutLoading === 'FreeTrial' ? 'not-allowed' : 'pointer',
-                  padding: '4px 0',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                {checkoutLoading === 'FreeTrial' ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : null}
-                New to the platform? <span style={{ color: BLUE_LIGHT, fontWeight: '600' }}>Start with a free SOA credit</span>
-                <ArrowRight className="w-3.5 h-3.5" style={{ color: BLUE_LIGHT }} />
-              </button>
-            </div>
-          )}
         </TabsContent>
 
-        {/* Buy Credits Tab */}
-        <TabsContent value="credits">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-            {creditPackages.map((pkg) => (
-              <div key={pkg.priceType} style={{
-                background: 'white',
-                border: pkg.highlight ? `2px solid ${BLUE}` : '1px solid #e2e8f0',
-                borderRadius: '12px',
-                padding: '24px',
-                textAlign: 'center',
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-              }}>
-                {pkg.highlight && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '-10px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: BLUE,
-                    color: 'white',
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    padding: '2px 10px',
-                    borderRadius: '6px',
-                  }}>
-                    BEST VALUE
-                  </div>
-                )}
-                <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '18px', fontWeight: '700', margin: '0 0 4px 0', color: '#0f172a' }}>
-                  {pkg.label}
-                </h3>
-                <div style={{ margin: '8px 0 4px 0' }}>
-                  <span style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    {pkg.price}
-                  </span>
-                </div>
-                <p style={{ color: '#64748b', fontSize: '13px', margin: '0 0 4px 0' }}>
-                  {pkg.perUnit}
-                </p>
-                {pkg.savings && (
-                  <span style={{
-                    display: 'inline-block',
-                    background: '#f0fdf4',
-                    color: '#166534',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    padding: '2px 10px',
-                    borderRadius: '6px',
-                    margin: '0 auto 16px auto',
-                  }}>
-                    {pkg.savings}
-                  </span>
-                )}
-                {!pkg.savings && <div style={{ marginBottom: '16px' }} />}
-                <div style={{ flex: 1 }} />
-                <button
-                  onClick={() => handleCheckout(pkg.priceType)}
-                  disabled={checkoutLoading === pkg.priceType}
-                  style={{
-                    width: '100%',
-                    background: pkg.highlight ? BLUE : 'white',
-                    color: pkg.highlight ? 'white' : '#0f172a',
-                    border: pkg.highlight ? 'none' : '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    padding: '10px 16px',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    cursor: checkoutLoading === pkg.priceType ? 'not-allowed' : 'pointer',
-                    opacity: checkoutLoading === pkg.priceType ? 0.7 : 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                  }}
-                >
-                  {checkoutLoading === pkg.priceType ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  Buy Now
-                </button>
-              </div>
-            ))}
-          </div>
-        </TabsContent>
-
-        {/* Invoice History Tab */}
+        {/* ── 6. Invoice History Tab ── */}
         <TabsContent value="invoices">
           {invoicesLoading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
               <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
             </div>
-          ) : invoices.length === 0 ? (
-            <div style={{
-              background: 'white',
-              border: '1px solid #e2e8f0',
-              borderRadius: '12px',
-              padding: '40px',
-              textAlign: 'center',
-              color: '#64748b',
-              fontSize: '14px',
-            }}>
-              No invoices found.
-            </div>
           ) : (
-            <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: '600', color: '#475569' }}>Date</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: '600', color: '#475569' }}>Description</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'right', fontWeight: '600', color: '#475569' }}>Amount</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: '600', color: '#475569' }}>Status</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'right', fontWeight: '600', color: '#475569' }}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {invoices.map((inv, idx) => (
-                    <tr key={inv.id || idx} style={{ borderBottom: idx < invoices.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                      <td style={{ padding: '12px 16px', color: '#334155' }}>
-                        {inv.date ? new Date(inv.date).toLocaleDateString() : '—'}
-                      </td>
-                      <td style={{ padding: '12px 16px', color: '#334155' }}>
-                        {inv.description || inv.lines?.data?.[0]?.description || '—'}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: '#334155', fontWeight: '500' }}>
-                        {inv.amount != null ? `$${(inv.amount / 100).toFixed(2)}` : inv.total != null ? `$${(inv.total / 100).toFixed(2)}` : '—'}
-                      </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <span style={{
-                          display: 'inline-block',
-                          padding: '2px 8px',
-                          borderRadius: '6px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          background: inv.status === 'paid' ? '#f0fdf4' : '#fef9c3',
-                          color: inv.status === 'paid' ? '#166534' : '#854d0e',
-                        }}>
-                          {inv.status || 'unknown'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                        {inv.invoiceUrl && (
-                          <a href={inv.invoiceUrl} target="_blank" rel="noopener noreferrer" style={{ color: BLUE_LIGHT, fontSize: '13px', fontWeight: '500', textDecoration: 'none' }}>
-                            View
-                          </a>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <>
+              {invoices.length === 0 ? (
+                <div style={{
+                  background: 'white',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  padding: '40px',
+                  textAlign: 'center',
+                  color: '#64748b',
+                  fontSize: '14px',
+                }}>
+                  No invoices found.
+                </div>
+              ) : (
+                <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: '600', color: '#475569' }}>Date</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: '600', color: '#475569' }}>Description</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right', fontWeight: '600', color: '#475569' }}>Amount</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: '600', color: '#475569' }}>Status</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right', fontWeight: '600', color: '#475569' }}></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {invoices.map((inv, idx) => (
+                        <tr key={inv.id || idx} style={{ borderBottom: idx < invoices.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                          <td style={{ padding: '12px 16px', color: '#334155' }}>
+                            {inv.date ? new Date(inv.date).toLocaleDateString() : '\u2014'}
+                          </td>
+                          <td style={{ padding: '12px 16px', color: '#334155' }}>
+                            {inv.description || inv.lines?.data?.[0]?.description || '\u2014'}
+                          </td>
+                          <td style={{ padding: '12px 16px', textAlign: 'right', color: '#334155', fontWeight: '500' }}>
+                            {inv.amount != null ? `$${(inv.amount / 100).toFixed(2)}` : inv.total != null ? `$${(inv.total / 100).toFixed(2)}` : '\u2014'}
+                          </td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <span style={{
+                              display: 'inline-block',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              background: inv.status === 'paid' ? '#f0fdf4' : '#fef9c3',
+                              color: inv.status === 'paid' ? '#166534' : '#854d0e',
+                            }}>
+                              {inv.status || 'unknown'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                            {inv.invoiceUrl && (
+                              <a href={inv.invoiceUrl} target="_blank" rel="noopener noreferrer" style={{ color: BLUE_LIGHT, fontSize: '13px', fontWeight: '500', textDecoration: 'none' }}>
+                                View
+                              </a>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Open Stripe portal button */}
+              <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => handlePortal('invoices')}
+                  disabled={portalLoading === 'invoices'}
+                  style={{
+                    background: '#0f172a',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: portalLoading === 'invoices' ? 'not-allowed' : 'pointer',
+                    opacity: portalLoading === 'invoices' ? 0.7 : 1,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  {portalLoading === 'invoices' ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
+                  Open Stripe portal
+                </button>
+              </div>
+            </>
           )}
         </TabsContent>
 
-        {/* Payment Method Tab */}
+        {/* ── 7. Payment Method Tab ── */}
         <TabsContent value="payment">
           <div style={{
             background: 'white',
