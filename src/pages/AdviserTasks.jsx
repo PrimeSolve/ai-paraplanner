@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import AdviserLayout from '../components/adviser/AdviserLayout';
 import axiosInstance from '@/api/axiosInstance';
+import { base44 } from '@/api/base44Client';
 import {
   Dialog,
   DialogContent,
@@ -41,14 +42,13 @@ import {
 
 const TASK_TYPES = [
   'All',
-  'Send PDS',
-  'Authority to Proceed',
-  'Read PDS',
-  'Document Request',
-  'Follow-up',
-  'Compliance Deadline',
-  'Internal To-Do',
-  'Client Action',
+  'Fact Find Sent',
+  'Fact Find Completed',
+  'SOA Completed',
+  'SOA Presented',
+  'Authority to Proceed Signed',
+  'PDS Provided',
+  'Other',
 ];
 
 const STATUSES = ['To Do', 'In Progress', 'Done'];
@@ -60,14 +60,13 @@ const STATUS_COLOURS = {
 };
 
 const TYPE_COLOURS = {
-  'Send PDS': '#4F46E5',
-  'Authority to Proceed': '#9333EA',
-  'Read PDS': '#2563EB',
-  'Document Request': '#EA580C',
-  'Follow-up': '#16A34A',
-  'Compliance Deadline': '#DC2626',
-  'Internal To-Do': '#64748B',
-  'Client Action': '#D97706',
+  'Fact Find Sent': '#4F46E5',
+  'Fact Find Completed': '#2563EB',
+  'SOA Completed': '#9333EA',
+  'SOA Presented': '#EA580C',
+  'Authority to Proceed Signed': '#16A34A',
+  'PDS Provided': '#D97706',
+  'Other': '#64748B',
 };
 
 /* Avatar colours locked in per assignee type */
@@ -143,11 +142,19 @@ export default function AdviserTasks() {
 
   // Modal form state
   const [formTitle, setFormTitle] = useState('');
-  const [formType, setFormType] = useState('Send PDS');
+  const [formType, setFormType] = useState('Fact Find Sent');
   const [formAssignedTo, setFormAssignedTo] = useState('Adviser');
   const [formStatus, setFormStatus] = useState('To Do');
   const [formDue, setFormDue] = useState('');
   const [formNotes, setFormNotes] = useState('');
+  const [formErrors, setFormErrors] = useState({});
+  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  // Adviser/client name context
+  // TODO: replace with real names from auth/client context
+  const [adviserName, setAdviserName] = useState('Adviser');
+  const [clientName, setClientName] = useState('Client');
 
   /* ─── data fetching ─── */
 
@@ -177,6 +184,22 @@ export default function AdviserTasks() {
       } catch (error) {
         console.error('Failed to initialize:', error);
         setTasks([]);
+      }
+      try {
+        const userData = await base44.auth.me();
+        const clients = await base44.entities.Client.filter({ user_email: userData.email });
+        const clientData = clients[0];
+        if (clientData) {
+          setClientName((clientData.first_name || '') + ' ' + (clientData.last_name || ''));
+          if (clientData.adviser_email) {
+            const advisers = await base44.entities.Adviser.filter({ email: clientData.adviser_email });
+            if (advisers.length > 0) {
+              setAdviserName((advisers[0].first_name || '') + ' ' + (advisers[0].last_name || ''));
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load names:', error);
       } finally {
         setLoading(false);
       }
@@ -219,33 +242,48 @@ export default function AdviserTasks() {
   const openAddModal = (presetStatus) => {
     setEditingTask(null);
     setFormTitle('');
-    setFormType('Send PDS');
+    setFormType('Fact Find Sent');
     setFormAssignedTo('Adviser');
     setFormStatus(presetStatus || 'To Do');
     setFormDue('');
     setFormNotes('');
+    setFormErrors({});
+    setSaveError('');
     setModalOpen(true);
   };
 
   const openEditModal = (task) => {
     setEditingTask(task);
     setFormTitle(task.title || '');
-    setFormType(task.type || 'Send PDS');
+    setFormType(task.type || 'Fact Find Sent');
     setFormAssignedTo(task.assignedTo || task.assigned_to || 'Adviser');
     setFormStatus(task.status || 'To Do');
     setFormDue(task.due ? new Date(task.due).toISOString().split('T')[0] : '');
     setFormNotes(task.notes || '');
+    setFormErrors({});
+    setSaveError('');
     setModalOpen(true);
   };
 
   const handleSave = async () => {
-    if (!formTitle.trim()) return;
+    // Validation
+    const errors = {};
+    if (!formTitle.trim()) errors.title = 'Title is required';
+    if (!formDue) errors.due = 'Due date is required';
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    setFormErrors({});
+    setSaveError('');
+    setSaving(true);
+
     const payload = {
       title: formTitle.trim(),
       type: formType,
       assignedTo: formAssignedTo,
       status: formStatus,
-      due: formDue || null,
+      dueDate: formDue ? new Date(formDue).toISOString() : null,
       notes: formNotes.trim() || null,
     };
     try {
@@ -253,26 +291,18 @@ export default function AdviserTasks() {
         const taskId = editingTask.id || editingTask.taskId;
         await axiosInstance.put(`/tasks/${taskId}`, payload);
       } else {
+        // TODO: confirm endpoint URL with backend
         await axiosInstance.post('/tasks', payload);
       }
       await loadTasks();
+      setModalOpen(false);
+      setEditingTask(null);
     } catch (error) {
       console.error('Save failed:', error);
-      // Fallback: update local state
-      if (editingTask) {
-        setTasks((prev) =>
-          prev.map((t) => {
-            const tid = t.id || t.taskId;
-            const eid = editingTask.id || editingTask.taskId;
-            return tid === eid ? { ...t, ...payload } : t;
-          })
-        );
-      } else {
-        setTasks((prev) => [...prev, { id: Date.now().toString(), ...payload }]);
-      }
+      setSaveError('Failed to add task. Please try again.');
+    } finally {
+      setSaving(false);
     }
-    setModalOpen(false);
-    setEditingTask(null);
   };
 
   const handleDelete = async (task) => {
@@ -1059,13 +1089,13 @@ export default function AdviserTasks() {
             <input
               type="text"
               value={formTitle}
-              onChange={(e) => setFormTitle(e.target.value)}
+              onChange={(e) => { setFormTitle(e.target.value); setFormErrors((prev) => ({ ...prev, title: '' })); }}
               placeholder="Task title"
               style={{
                 width: '100%',
                 padding: '9px 12px',
                 borderRadius: 10,
-                border: '1px solid #E2E8F0',
+                border: `1px solid ${formErrors.title ? '#DC2626' : '#E2E8F0'}`,
                 fontSize: 13,
                 outline: 'none',
                 background: '#fff',
@@ -1073,6 +1103,9 @@ export default function AdviserTasks() {
               }}
               autoFocus
             />
+            {formErrors.title && (
+              <p style={{ color: '#DC2626', fontSize: 12, marginTop: 4, fontFamily: "'DM Sans', sans-serif" }}>{formErrors.title}</p>
+            )}
           </div>
 
           {/* Two-column: Type + Assigned To */}
@@ -1118,8 +1151,8 @@ export default function AdviserTasks() {
                   fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                <option value="Adviser">Adviser</option>
-                <option value="Client">Client</option>
+                <option value="Adviser">{adviserName}</option>
+                <option value="Client">{clientName}</option>
               </select>
             </div>
           </div>
@@ -1156,18 +1189,21 @@ export default function AdviserTasks() {
               <input
                 type="date"
                 value={formDue}
-                onChange={(e) => setFormDue(e.target.value)}
+                onChange={(e) => { setFormDue(e.target.value); setFormErrors((prev) => ({ ...prev, due: '' })); }}
                 style={{
                   width: '100%',
                   padding: '9px 12px',
                   borderRadius: 10,
-                  border: '1px solid #E2E8F0',
+                  border: `1px solid ${formErrors.due ? '#DC2626' : '#E2E8F0'}`,
                   fontSize: 13,
                   outline: 'none',
                   background: '#fff',
                   fontFamily: "'DM Sans', sans-serif",
                 }}
               />
+              {formErrors.due && (
+                <p style={{ color: '#DC2626', fontSize: 12, marginTop: 4, fontFamily: "'DM Sans', sans-serif" }}>{formErrors.due}</p>
+              )}
             </div>
           </div>
 
@@ -1195,35 +1231,41 @@ export default function AdviserTasks() {
             />
           </div>
 
-          {/* Footer buttons */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingTop: 4 }}>
-            <button
-              onClick={() => { setModalOpen(false); setEditingTask(null); }}
-              style={{
-                padding: '9px 18px',
-                borderRadius: 10,
-                fontSize: 13,
-                fontWeight: 500,
-                color: '#475569',
-                background: '#fff',
-                border: '1px solid #E2E8F0',
-                cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!formTitle.trim()}
-              style={{
-                ...s.addBtn,
-                opacity: !formTitle.trim() ? 0.5 : 1,
-                cursor: !formTitle.trim() ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {editingTask ? 'Save Changes' : 'Add Task'}
-            </button>
+          {/* Footer */}
+          <div style={{ paddingTop: 4 }}>
+            {saveError && (
+              <p style={{ color: '#DC2626', fontSize: 13, marginBottom: 10, fontFamily: "'DM Sans', sans-serif" }}>{saveError}</p>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button
+                onClick={() => { setModalOpen(false); setEditingTask(null); }}
+                disabled={saving}
+                style={{
+                  padding: '9px 18px',
+                  borderRadius: 10,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: '#475569',
+                  background: '#fff',
+                  border: '1px solid #E2E8F0',
+                  cursor: saving ? 'not-allowed' : 'pointer',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                style={{
+                  ...s.addBtn,
+                  opacity: saving ? 0.6 : 1,
+                  cursor: saving ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {saving ? 'Adding...' : editingTask ? 'Save Changes' : 'Add Task'}
+              </button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

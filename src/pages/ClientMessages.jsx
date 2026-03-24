@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
+import axiosInstance from '@/api/axiosInstance';
 
 
-const TASK_TYPES = ["All", "Send PDS", "Authority to Proceed", "Read PDS", "Document Request", "Follow-up", "Compliance Deadline", "Internal To-Do", "Client Action"];
+const TASK_TYPES = ["All", "Fact Find Sent", "Fact Find Completed", "SOA Completed", "SOA Presented", "Authority to Proceed Signed", "PDS Provided", "Other"];
 
 const STATUS = ["To Do", "In Progress", "Done"];
 
@@ -18,14 +19,13 @@ const STATUS_BG = {
 };
 
 const TYPE_COLOR = {
-  "Send PDS":             "#4F46E5",
-  "Authority to Proceed": "#9333EA",
-  "Read PDS":             "#2563EB",
-  "Document Request":     "#EA580C",
-  "Follow-up":            "#16A34A",
-  "Compliance Deadline":  "#DC2626",
-  "Internal To-Do":       "#64748B",
-  "Client Action":        "#D97706",
+  "Fact Find Sent":                "#4F46E5",
+  "Fact Find Completed":           "#2563EB",
+  "SOA Completed":                 "#9333EA",
+  "SOA Presented":                 "#EA580C",
+  "Authority to Proceed Signed":   "#16A34A",
+  "PDS Provided":                  "#D97706",
+  "Other":                         "#64748B",
 };
 
 const ASSIGNED_COLOR = {
@@ -81,7 +81,7 @@ function StatCard({ icon, label, value, sub }) {
   );
 }
 
-const EMPTY_TASK = { title: "", type: "Follow-up", assignedTo: "Adviser", status: "To Do", due: "", notes: "" };
+const EMPTY_TASK = { title: "", type: "Fact Find Sent", assignedTo: "Adviser", status: "To Do", due: "", notes: "" };
 
 export default function ClientMessages() {
   const [tasks, setTasks] = useState(SAMPLE_TASKS);
@@ -95,6 +95,9 @@ export default function ClientMessages() {
   const [showModal, setShowModal] = useState(false);
   const [editTask, setEditTask] = useState(null);
   const [form, setForm] = useState(EMPTY_TASK);
+  const [formErrors, setFormErrors] = useState({});
+  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving] = useState(false);
   const [dragging, setDragging] = useState(null);
 
   const filtered = tasks
@@ -133,14 +136,55 @@ export default function ClientMessages() {
 
   const deleteTask = id => { setTasks(prev => prev.filter(t => t.id !== id)); setMenuOpen(null); };
 
-  const openNew = () => { setEditTask(null); setForm(EMPTY_TASK); setShowModal(true); };
-  const openEdit = task => { setEditTask(task.id); setForm({ title: task.title, type: task.type, assignedTo: task.assignedTo, status: task.status, due: task.due, notes: task.notes }); setShowModal(true); setMenuOpen(null); };
+  const loadTasks = useCallback(async () => {
+    try {
+      const response = await axiosInstance.get('/tasks');
+      const data = Array.isArray(response.data)
+        ? response.data
+        : response.data?.items || response.data?.data || [];
+      setTasks(data);
+    } catch (error) {
+      console.error('Failed to load tasks:', error);
+    }
+  }, []);
 
-  const saveTask = () => {
-    if (!form.title.trim()) return;
-    if (editTask) setTasks(prev => prev.map(t => t.id === editTask ? { ...t, ...form } : t));
-    else setTasks(prev => [...prev, { ...form, id: Date.now() }]);
-    setShowModal(false);
+  useEffect(() => { loadTasks(); }, [loadTasks]);
+
+  const openNew = () => { setEditTask(null); setForm(EMPTY_TASK); setFormErrors({}); setSaveError(''); setShowModal(true); };
+  const openEdit = task => { setEditTask(task.id); setForm({ title: task.title, type: task.type, assignedTo: task.assignedTo, status: task.status, due: task.due, notes: task.notes }); setFormErrors({}); setSaveError(''); setShowModal(true); setMenuOpen(null); };
+
+  const saveTask = async () => {
+    const errors = {};
+    if (!form.title.trim()) errors.title = 'Title is required';
+    if (!form.due) errors.due = 'Due date is required';
+    if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
+    setFormErrors({});
+    setSaveError('');
+    setSaving(true);
+
+    const payload = {
+      title: form.title.trim(),
+      type: form.type,
+      assignedTo: form.assignedTo,
+      status: form.status,
+      dueDate: form.due ? new Date(form.due).toISOString() : null,
+      notes: form.notes?.trim() || null,
+    };
+    try {
+      if (editTask) {
+        await axiosInstance.put(`/tasks/${editTask}`, payload);
+      } else {
+        // TODO: confirm endpoint URL with backend
+        await axiosInstance.post('/tasks', payload);
+      }
+      await loadTasks();
+      setShowModal(false);
+    } catch (error) {
+      console.error('Save failed:', error);
+      setSaveError('Failed to add task. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const moveToStatus = (taskId, status) => {
@@ -411,7 +455,8 @@ export default function ClientMessages() {
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <div>
                   <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>Title</label>
-                  <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="e.g. Send PDS to client" style={inputStyle} />
+                  <input value={form.title} onChange={e => { setForm(f => ({ ...f, title: e.target.value })); setFormErrors(prev => ({ ...prev, title: '' })); }} placeholder="e.g. Send PDS to client" style={{ ...inputStyle, borderColor: formErrors.title ? '#DC2626' : undefined }} />
+                  {formErrors.title && <p style={{ color: '#DC2626', fontSize: 11, marginTop: 4 }}>{formErrors.title}</p>}
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <div>
@@ -422,9 +467,10 @@ export default function ClientMessages() {
                   </div>
                   <div>
                     <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>Assigned To</label>
+                    {/* TODO: replace with real names from auth/client context */}
                     <select value={form.assignedTo} onChange={e => setForm(f => ({ ...f, assignedTo: e.target.value }))} style={inputStyle}>
-                      <option>Adviser</option>
-                      <option>Client</option>
+                      <option value="Adviser">Adviser</option>
+                      <option value="Client">Client</option>
                     </select>
                   </div>
                 </div>
@@ -437,7 +483,8 @@ export default function ClientMessages() {
                   </div>
                   <div>
                     <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>Due Date</label>
-                    <input type="date" value={form.due} onChange={e => setForm(f => ({ ...f, due: e.target.value }))} style={inputStyle} />
+                    <input type="date" value={form.due} onChange={e => { setForm(f => ({ ...f, due: e.target.value })); setFormErrors(prev => ({ ...prev, due: '' })); }} style={{ ...inputStyle, borderColor: formErrors.due ? '#DC2626' : undefined }} />
+                    {formErrors.due && <p style={{ color: '#DC2626', fontSize: 11, marginTop: 4 }}>{formErrors.due}</p>}
                   </div>
                 </div>
                 <div>
@@ -445,8 +492,9 @@ export default function ClientMessages() {
                   <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Any additional context…" rows={3} style={{ ...inputStyle, resize: "none" }} />
                 </div>
               </div>
-              <button onClick={saveTask} style={{ width: "100%", padding: 11, background: "#4F46E5", color: "#fff", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", marginTop: 20 }}>
-                {editTask ? "Save Changes" : "Add Task"}
+              {saveError && <p style={{ color: '#DC2626', fontSize: 12, marginTop: 12 }}>{saveError}</p>}
+              <button onClick={saveTask} disabled={saving} style={{ width: "100%", padding: 11, background: "#4F46E5", color: "#fff", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", marginTop: 20, opacity: saving ? 0.6 : 1 }}>
+                {saving ? "Adding..." : editTask ? "Save Changes" : "Add Task"}
               </button>
             </div>
           </div>
