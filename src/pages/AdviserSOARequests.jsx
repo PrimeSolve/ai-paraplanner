@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import axiosInstance from '@/api/axiosInstance';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 
 import { Input } from '@/components/ui/input';
 import { Search, MoreHorizontal, CheckCircle2, Clock, Loader2, FileText } from 'lucide-react';
@@ -11,46 +13,31 @@ import { createPageUrl } from '../utils';
 import { formatDate } from '../utils/dateUtils';
 import NewSOARequestModal from '../components/adviser/NewSOARequestModal.jsx';
 
-// TODO: ensure backend StatusEnum matches these values
+// Real status enum from backend (stored as int)
 const SOA_STATUSES = [
-  { value: 'Submitted', label: 'Submitted' },
-  { value: 'Pending', label: 'Pending' },
-  { value: 'UnderReview', label: 'Under Review' },
-  { value: 'Complete', label: 'Complete' },
+  { value: 0, label: 'Draft' },
+  { value: 1, label: 'In Progress' },
+  { value: 2, label: 'Under Review' },
+  { value: 3, label: 'Approved' },
+  { value: 4, label: 'Issued' },
 ];
 
-const STATUS_BADGE_STYLES = {
-  'Submitted': 'bg-blue-100 text-blue-700',
-  'Pending': 'bg-amber-100 text-amber-700',
-  'UnderReview': 'bg-purple-100 text-purple-700',
-  'Complete': 'bg-green-100 text-green-700',
+const getStatusDisplay = (statusInt) => {
+  const map = {
+    0: { label: 'Draft', badgeClass: 'bg-gray-100 text-gray-600', dotClass: 'bg-gray-500' },
+    1: { label: 'In Progress', badgeClass: 'bg-amber-100 text-amber-700', dotClass: 'bg-amber-500' },
+    2: { label: 'Under Review', badgeClass: 'bg-purple-100 text-purple-700', dotClass: 'bg-purple-500' },
+    3: { label: 'Approved', badgeClass: 'bg-blue-100 text-blue-700', dotClass: 'bg-blue-500' },
+    4: { label: 'Issued', badgeClass: 'bg-green-100 text-green-700', dotClass: 'bg-green-500' },
+  };
+  return map[statusInt] ?? { label: 'Unknown', badgeClass: 'bg-gray-100 text-gray-500', dotClass: 'bg-gray-400' };
 };
 
-const STATUS_DOT_COLORS = {
-  'Submitted': 'bg-blue-500',
-  'Pending': 'bg-amber-500',
-  'UnderReview': 'bg-purple-500',
-  'Complete': 'bg-green-500',
-};
-
-const PRIORITY_OPTIONS = ['High', 'Normal', 'Urgent'];
-
-// FIX 4: Client avatars always use blue; grey for unknown
 function getAvatarClasses(clientName) {
   if (!clientName || clientName === 'Unknown Client') {
     return 'bg-gray-100 text-gray-500';
   }
   return 'bg-blue-100 text-blue-700';
-}
-
-function isOverdue(req) {
-  if (req.status === 'Complete') return false;
-  if (!req.due_date) return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const due = new Date(req.due_date);
-  due.setHours(0, 0, 0, 0);
-  return due < today;
 }
 
 /* ─── Inline styles (matching TasksPage pattern) ─── */
@@ -82,20 +69,19 @@ const s = {
 };
 
 export default function AdviserSOARequests() {
+  const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [showNewModal, setShowNewModal] = useState(false);
   const [viewMode, setViewMode] = useState('list');
   const itemsPerPage = 8;
   const debounceRef = useRef(null);
 
-  // FIX 5: Debounce search 200ms
+  // Debounce search 200ms
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
@@ -106,48 +92,45 @@ export default function AdviserSOARequests() {
   }, [searchTerm]);
 
   useEffect(() => {
-    loadRequests();
+    if (user?.id) {
+      loadRequests();
+    }
 
     // Listen for custom event from header button
     const handleOpenDialog = () => setShowNewModal(true);
     window.addEventListener('openAddSOAQueueDialog', handleOpenDialog);
     return () => window.removeEventListener('openAddSOAQueueDialog', handleOpenDialog);
-  }, []);
+  }, [user]);
 
   const loadRequests = async () => {
     try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
+      const response = await axiosInstance.get('/advice-requests', {
+        params: { adviserId: user.id }
+      });
+      const data = Array.isArray(response.data) ? response.data : (response.data?.items || response.data?.data || []);
 
-      const data = await base44.entities.SOARequest.filter({
-        created_by: currentUser.email
-      }, '-created_date');
-
-      // Load client names for each SOA Request
-      const requestsWithClientNames = await Promise.all(
-        data.map(async (req) => {
-          try {
-            let clientData = null;
-            if (req.client_id) {
-              const clients = await base44.entities.Client.filter({ id: req.client_id });
-              clientData = clients[0];
-            }
-            if (!clientData && req.client_email) {
-              const clients = await base44.entities.Client.filter({ email: req.client_email });
-              clientData = clients[0];
-            }
-            const clientName = clientData
-              ? `${clientData.first_name || ''} ${clientData.last_name || ''}`.trim() || req.client_email || 'Client'
-              : req.client_email || 'Client';
-            return { ...req, client_name: clientName };
-          } catch (err) {
-            console.error(`Failed to load client for SOA ${req.id}:`, err);
-            return { ...req, client_name: req.client_email || 'Client' };
-          }
-        })
+      // TODO: ask backend to include client name in AdviceRequest response to avoid N+1 fetches
+      // Resolve client names from Client1Id
+      const clientIds = [...new Set(data.map(r => r.client1Id).filter(Boolean))];
+      const clientResponses = await Promise.all(
+        clientIds.map(id => axiosInstance.get(`/clients/${id}`).catch(() => null))
       );
+      const clientMap = {};
+      clientResponses.forEach(resp => {
+        if (resp?.data) {
+          clientMap[resp.data.id] = resp.data;
+        }
+      });
 
-      setRequests(requestsWithClientNames);
+      const enriched = data.map(req => {
+        const client = clientMap[req.client1Id];
+        const clientName = client
+          ? `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Client'
+          : 'Client';
+        return { ...req, _clientName: clientName };
+      });
+
+      setRequests(enriched);
     } catch (error) {
       console.error('Failed to load requests:', error);
     } finally {
@@ -155,32 +138,22 @@ export default function AdviserSOARequests() {
     }
   };
 
-  const getPriorityStyle = (priority) => {
-    const styles = {
-      'High': { dotClass: 'bg-orange-500', badgeClass: 'bg-orange-100 text-orange-700', label: 'High' },
-      'Normal': { dotClass: 'bg-amber-500', badgeClass: 'bg-amber-100 text-amber-700', label: 'Normal' },
-      'Urgent': { dotClass: 'bg-red-500', badgeClass: 'bg-red-100 text-red-700', label: 'Urgent' },
-    };
-    return styles[priority] || styles['Normal'];
-  };
-
-  // FIX 6: Filters work together on both views
+  // Filters work together on both views
   const filteredRequests = requests.filter(req => {
-    const matchesSearch = !debouncedSearch || req.client_name?.toLowerCase().includes(debouncedSearch.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || req.status === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || req.priority === priorityFilter;
-    return matchesSearch && matchesStatus && matchesPriority;
+    const matchesSearch = !debouncedSearch || req._clientName?.toLowerCase().includes(debouncedSearch.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || req.status === parseInt(statusFilter);
+    return matchesSearch && matchesStatus;
   });
 
   const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
   const paginatedRequests = filteredRequests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // FIX 2: Stats wired to real data with new status values
+  // Stat cards wired to real integer status values
   const stats = {
     total: requests.length,
-    ready: requests.filter(r => r.status === 'Pending').length,
-    inProgress: requests.filter(r => r.status === 'UnderReview').length,
-    complete: requests.filter(r => r.status === 'Complete').length,
+    inProgress: requests.filter(r => r.status === 1).length,
+    underReview: requests.filter(r => r.status === 2).length,
+    issued: requests.filter(r => r.status === 4).length,
   };
 
   if (loading) {
@@ -220,24 +193,24 @@ export default function AdviserSOARequests() {
           <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center mb-4">
             <Clock className="w-6 h-6 text-amber-600" />
           </div>
-          <div className="text-4xl font-bold text-slate-800 mb-1">{stats.ready}</div>
-          <div className="text-sm text-slate-600">Ready to Review</div>
+          <div className="text-4xl font-bold text-slate-800 mb-1">{stats.inProgress}</div>
+          <div className="text-sm text-slate-600">In Progress</div>
         </div>
 
         <div className="bg-white rounded-2xl p-6 border border-slate-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
           <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center mb-4">
             <Clock className="w-6 h-6 text-purple-600" />
           </div>
-          <div className="text-4xl font-bold text-slate-800 mb-1">{stats.inProgress}</div>
-          <div className="text-sm text-slate-600">In Progress</div>
+          <div className="text-4xl font-bold text-slate-800 mb-1">{stats.underReview}</div>
+          <div className="text-sm text-slate-600">Under Review</div>
         </div>
 
         <div className="bg-white rounded-2xl p-6 border border-slate-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
           <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center mb-4">
             <CheckCircle2 className="w-6 h-6 text-green-600" />
           </div>
-          <div className="text-4xl font-bold text-slate-800 mb-1">{stats.complete}</div>
-          <div className="text-sm text-slate-600">Complete</div>
+          <div className="text-4xl font-bold text-slate-800 mb-1">{stats.issued}</div>
+          <div className="text-sm text-slate-600">Issued</div>
         </div>
       </div>
 
@@ -262,16 +235,7 @@ export default function AdviserSOARequests() {
               ))}
             </select>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Priority</span>
-            <select value={priorityFilter} onChange={(e) => { setPriorityFilter(e.target.value); setCurrentPage(1); }} className="px-4 h-11 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-              <option value="all">All Priorities</option>
-              {PRIORITY_OPTIONS.map(p => (
-                <option key={p} value={p}>{p}</option>
-              ))}
-            </select>
-          </div>
-          {/* FIX 4: List / Board toggle */}
+          {/* List / Board toggle */}
           <div style={s.viewToggle}>
             <button style={s.viewBtn(viewMode === 'list')} onClick={() => setViewMode('list')}>
               ☰ List
@@ -291,9 +255,8 @@ export default function AdviserSOARequests() {
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Client</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Type</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Scope</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Status</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Priority</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Submitted</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Due</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Actions</th>
@@ -301,10 +264,8 @@ export default function AdviserSOARequests() {
               </thead>
               <tbody>
                 {paginatedRequests.length > 0 ? paginatedRequests.map((req) => {
-                  const priorityStyle = getPriorityStyle(req.priority || 'Normal');
-                  const overdue = isOverdue(req);
-                  // TODO: ensure clientName is returned in API response
-                  const displayName = req.client_name && req.client_name !== 'Client' ? req.client_name : 'Unknown Client';
+                  const statusDisplay = getStatusDisplay(req.status);
+                  const displayName = req._clientName && req._clientName !== 'Client' ? req._clientName : 'Unknown Client';
                   return (
                     <tr key={req.id} className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors duration-100">
                       <td className="px-6 py-4">
@@ -316,33 +277,26 @@ export default function AdviserSOARequests() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-slate-800 font-medium">{req.type || 'Comprehensive'}</div>
+                        <div className="text-sm text-slate-800 font-medium">{req.scopeOfAdvice || 'Comprehensive'}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <Badge className={`border-0 ${STATUS_BADGE_STYLES[req.status] || STATUS_BADGE_STYLES['Submitted']}`}>
-                          {SOA_STATUSES.find(st => st.value === req.status)?.label || req.status}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge className={`border-0 inline-flex items-center gap-1.5 ${priorityStyle.badgeClass}`}>
-                          <span className={`w-2 h-2 rounded-full ${priorityStyle.dotClass}`}></span>
-                          {priorityStyle.label}
+                        <Badge className={`border-0 ${statusDisplay.badgeClass}`}>
+                          {statusDisplay.label}
                         </Badge>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-medium text-slate-800">
-                          {formatDate(req.submitted_date)}
+                          {formatDate(req.createdAt)}
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className={`text-sm font-medium ${overdue ? 'text-red-600' : 'text-slate-800'}`}>
-                          {formatDate(req.due_date)}
-                        </div>
+                        {/* TODO: add DueDate field to AdviceRequest entity */}
+                        <div className="text-sm font-medium text-slate-800">&mdash;</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <AdviserViewButton soaRequestId={req.id} />
-                          {req.status === 'Complete' && (
+                          {req.status === 4 && (
                             <button className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
                               Download
                             </button>
@@ -368,14 +322,14 @@ export default function AdviserSOARequests() {
                   );
                 }) : (
                   <tr>
-                    <td colSpan="7" className="px-6 py-0">
+                    <td colSpan="6" className="px-6 py-0">
                       <div className="flex flex-col items-center justify-center py-20 text-center">
                         <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                           <FileText className="w-6 h-6 text-gray-400" />
                         </div>
                         <p className="text-sm font-semibold text-gray-700">No SOA requests</p>
                         <p className="text-xs text-gray-400 mt-1">
-                          {debouncedSearch || statusFilter !== 'all' || priorityFilter !== 'all'
+                          {debouncedSearch || statusFilter !== 'all'
                             ? 'Try adjusting your filters'
                             : 'New requests will appear here once submitted'}
                         </p>
@@ -427,13 +381,13 @@ export default function AdviserSOARequests() {
         <div className="flex gap-4 items-start">
           {SOA_STATUSES.map((statusObj) => {
             const colRequests = filteredRequests.filter((r) => r.status === statusObj.value);
-            const dotClass = STATUS_DOT_COLORS[statusObj.value] || 'bg-slate-400';
+            const statusDisplay = getStatusDisplay(statusObj.value);
 
             return (
               <div key={statusObj.value} className="flex-1 min-w-[260px] bg-slate-100 rounded-xl p-3">
                 {/* Column header */}
                 <div className="flex items-center gap-2 mb-3 px-1">
-                  <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotClass}`} />
+                  <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${statusDisplay.dotClass}`} />
                   <span className="text-sm font-bold text-slate-900">{statusObj.label}</span>
                   <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] rounded-full text-xs font-semibold bg-slate-200 text-slate-600 px-1.5">
                     {colRequests.length}
@@ -448,9 +402,7 @@ export default function AdviserSOARequests() {
                     </div>
                   ) : (
                     colRequests.map((req) => {
-                      const priorityStyle = getPriorityStyle(req.priority || 'Normal');
-                      const overdue = isOverdue(req);
-                      const displayName = req.client_name && req.client_name !== 'Client' ? req.client_name : 'Unknown Client';
+                      const displayName = req._clientName && req._clientName !== 'Client' ? req._clientName : 'Unknown Client';
 
                       return (
                         <div
@@ -461,25 +413,17 @@ export default function AdviserSOARequests() {
                           <div className="text-sm font-bold text-slate-900 mb-1">
                             {displayName}
                           </div>
-                          {/* Type */}
+                          {/* Scope */}
                           <div className="text-xs text-slate-500 mb-2">
-                            {req.type || 'Comprehensive'}
-                          </div>
-                          {/* Priority badge */}
-                          <div className="mb-2">
-                            <Badge className={`border-0 text-xs inline-flex items-center gap-1 ${priorityStyle.badgeClass}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${priorityStyle.dotClass}`} />
-                              {priorityStyle.label}
-                            </Badge>
+                            {req.scopeOfAdvice || 'Comprehensive'}
                           </div>
                           {/* Footer: avatar + due date */}
                           <div className="flex items-center justify-between">
                             <div className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold ${getAvatarClasses(displayName)}`}>
                               {displayName.charAt(0)}
                             </div>
-                            <span className={`text-xs font-medium ${overdue ? 'text-red-600' : 'text-slate-500'}`}>
-                              {formatDate(req.due_date)}
-                            </span>
+                            {/* TODO: add DueDate field to AdviceRequest entity */}
+                            <span className="text-xs font-medium text-slate-500">&mdash;</span>
                           </div>
                         </div>
                       );

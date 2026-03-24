@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axiosInstance from '@/api/axiosInstance';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { createPageUrl } from '@/utils';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -8,6 +10,7 @@ import { createAdviceRecord } from '@/utils/adviceRecordHelpers';
 
 export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviserEmail }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,28 +23,21 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
   }, [isOpen]);
 
   const loadClients = async () => {
-    console.log('1. loadClients called');
-    
     try {
       setClientsLoading(true);
-      console.log('1.5. setClientsLoading set to true');
-      
-      // Get current user's email
+
       const currentUser = await base44.auth.me();
-      console.log('2. currentUser:', currentUser.email);
-      
+
       const clientData = await base44.entities.Client.filter({
         adviser_email: currentUser.email
       });
-      
-      console.log('3. myClients:', clientData.length, clientData);
-      
+
       // Fetch FactFind status for each client
       const clientsWithFactFind = await Promise.all(
         clientData.map(async (client) => {
           let factFindStatus = 'No Fact Find';
           let factFindProgress = 0;
-          
+
           if (client.fact_find_id) {
             try {
               const factFinds = await base44.entities.FactFind.filter({
@@ -56,7 +52,7 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
               console.error('Failed to load FactFind:', err);
             }
           }
-          
+
           return {
             ...client,
             name: `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Unnamed Client',
@@ -65,10 +61,8 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
           };
         })
       );
-      
-      console.log('3.5. clientsWithFactFind:', clientsWithFactFind.length, clientsWithFactFind);
+
       setClients(clientsWithFactFind);
-      console.log('4. setClients called with', clientsWithFactFind.length, 'clients');
     } catch (error) {
       console.error('ERROR in loadClients:', error);
     } finally {
@@ -85,25 +79,16 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
     try {
      setLoading(true);
      const client = clients.find(c => c.id === selectedClient);
-     console.log('Creating SOA request for client:', client?.name, 'fact_find_id:', client?.fact_find_id);
 
-     const soaRequest = await base44.entities.SOARequest.create({
-       client_id: selectedClient,
-       fact_find_id: client?.fact_find_id || null,
-       status: 'Submitted', // TODO: ensure backend StatusEnum matches these values
-       completion_percentage: 0,
-       sections_completed: [],
-       scope_of_advice: {},
-       products_entities: { products: [], entities: [] },
-       transactions: { buy: [], sell: [], debts: [] },
-       portfolio: { transactions: [] },
-       strategy: { models: [], strategies: [] },
-       assumptions: {},
-       soa_details: {},
-       review_status: { sections: {}, submitted: false }
+     // POST to real advice-requests endpoint
+     const response = await axiosInstance.post('/advice-requests', {
+       adviserId: user.id,
+       tenantId: user.tenant_id,
+       client1Id: selectedClient,
+       scopeOfAdvice: 'Comprehensive',
+       status: 0, // Draft
      });
-
-     console.log('SOA Request created, ID:', soaRequest.id);
+     const soaRequest = response.data;
 
      // Create an AdviceRecord for strategy recommendations
      const currentUser = await base44.auth.me();
@@ -190,14 +175,14 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
           <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1e293b', marginBottom: '12px' }}>
             Select Client
           </label>
-          <select 
+          <select
             value={selectedClient}
             onChange={(e) => setSelectedClient(e.target.value)}
             disabled={clientsLoading}
-            style={{ 
-              width: '100%', 
-              padding: '10px 14px', 
-              fontSize: '14px', 
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              fontSize: '14px',
               borderRadius: '8px',
               border: '1px solid #e2e8f0',
               backgroundColor: 'white',

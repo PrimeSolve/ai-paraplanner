@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import axiosInstance from '@/api/axiosInstance';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,6 +10,14 @@ import { ArrowLeft, Mail, Phone, FileText, ClipboardCheck, ScrollText, TrendingU
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatDate } from '../utils/dateUtils';
+
+const SOA_STATUS_MAP = {
+  0: 'Draft',
+  1: 'In Progress',
+  2: 'Under Review',
+  3: 'Approved',
+  4: 'Issued',
+};
 
 const RECORD_TYPE_CONFIG = {
   fact_find: { label: 'Fact Find', icon: ClipboardCheck, color: 'bg-blue-100 text-blue-700' },
@@ -28,6 +38,7 @@ const STATUS_CONFIG = {
 };
 
 export default function AdviserClientDetail() {
+  const { user } = useAuth();
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [adviceRecords, setAdviceRecords] = useState([]);
@@ -64,11 +75,12 @@ export default function AdviserClientDetail() {
           setRecordsLoading(false);
         }
 
-        // Load advice requests (SOAs) for this client
+        // Load advice requests (SOAs) for this client from real endpoint
         setSOARequestsLoading(true);
         try {
-          const requests = await base44.entities.SOARequest.filter({ client_id: id });
-          setSOARequests(requests);
+          const resp = await axiosInstance.get('/advice-requests', { params: { client1Id: id } });
+          const reqData = Array.isArray(resp.data) ? resp.data : (resp.data?.items || resp.data?.data || []);
+          setSOARequests(reqData);
         } catch (err) {
           console.error('Failed to load advice requests:', err);
         } finally {
@@ -87,9 +99,14 @@ export default function AdviserClientDetail() {
     const id = urlParams.get('id');
     setCreatingSoa(true);
     try {
-      // TODO: ensure backend StatusEnum matches new SOA status values (Submitted, Pending, UnderReview, Complete)
-      const newSOARequest = await base44.entities.SOARequest.create({ client_id: id, status: 'Submitted' });
-      navigate(createPageUrl('SOARequestWelcome') + `?id=${newSOARequest.id}`);
+      const response = await axiosInstance.post('/advice-requests', {
+        adviserId: user.id,
+        tenantId: user.tenant_id,
+        client1Id: id,
+        scopeOfAdvice: 'Comprehensive',
+        status: 0, // Draft
+      });
+      navigate(createPageUrl('SOARequestWelcome') + `?id=${response.data.id}`);
     } catch (err) {
       console.error('Failed to create SOA request:', err);
     } finally {
@@ -306,9 +323,9 @@ export default function AdviserClientDetail() {
                         {adviceRequests.map((request) => (
                           <tr key={request.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                             <td className="px-6 py-4">
-                              <Badge variant="secondary" className="text-xs">{request.status}</Badge>
+                              <Badge variant="secondary" className="text-xs">{SOA_STATUS_MAP[request.status] ?? 'Unknown'}</Badge>
                             </td>
-                            <td className="px-6 py-4 text-sm text-slate-600">{formatDate(request.created_date || request.created_at)}</td>
+                            <td className="px-6 py-4 text-sm text-slate-600">{formatDate(request.createdAt)}</td>
                             <td className="px-6 py-4">
                               <Link to={createPageUrl('SOARequestWelcome') + `?id=${request.id}`}>
                                 <Button size="sm" variant="outline" className="gap-1.5">
