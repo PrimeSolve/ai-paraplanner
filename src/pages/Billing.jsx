@@ -57,34 +57,36 @@ const creditPackages = [
 
 const allPlans = [
   {
-    label: 'Transaction',
-    priceType: null,
-    price: 'From $550',
-    priceSub: 'per SOA',
-    description: 'Pay per Statement of Advice — no commitment',
-    features: ['1x credit — $700', '5x credits — $3,000', '10x credits — $5,500'],
-    highlight: false,
-    isTransaction: true,
-  },
-  {
     label: 'Monthly',
-    priceType: 'MonthlySubscription',
+    stripePriceId: 'price_1T7qfNBpUiq2TMIq2O0ihl3b',
     price: '$1,800',
     priceSub: '/mo',
     description: 'Unlimited SOAs, billed monthly',
-    features: ['Unlimited SOA generation', 'Cancel anytime', 'Priority support'],
+    features: [
+      'Unlimited SOA generation',
+      '3 credits included per month',
+      'Unused credits roll over',
+      'Cancel anytime',
+      'Priority support',
+    ],
     highlight: true,
-    isTransaction: false,
+    planKey: 'monthly',
   },
   {
     label: 'Annual',
-    priceType: 'AnnualSubscription',
+    stripePriceId: 'price_1T7qgGBpUiq2TMIqy330qO3w',
     price: '$14,999',
     priceSub: '/yr',
     description: 'Unlimited SOAs, billed annually — save 30%',
-    features: ['Unlimited SOA generation', 'Dedicated account manager', 'Priority support'],
+    features: [
+      'Unlimited SOA generation',
+      '48 credits included per year',
+      'Dedicated account manager',
+      'Human + AI compliance review',
+      'Priority support',
+    ],
     highlight: false,
-    isTransaction: false,
+    planKey: 'annual',
   },
 ];
 
@@ -164,8 +166,8 @@ export default function Billing() {
     try {
       const response = await axiosInstance.post('/billing/checkout', {
         priceType,
-        successUrl: window.location.origin + '/Billing?billing=success',
-        cancelUrl: window.location.origin + '/Billing?billing=cancelled',
+        successUrl: 'https://app.aiparaplanner.com.au/Billing?success=true',
+        cancelUrl: 'https://app.aiparaplanner.com.au/AdviserDashboard',
       });
       if (response.data?.url) {
         window.location.href = response.data.url;
@@ -294,25 +296,25 @@ export default function Billing() {
         background: 'white',
         border: '1px solid #e2e8f0',
         borderRadius: '12px',
-        padding: '28px 32px',
+        padding: '32px',
         marginBottom: '28px',
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'space-between',
-        gap: '32px',
+        gap: '48px',
       }}>
         {/* Left column */}
         <div style={{ flex: 1 }}>
           <div style={{
-            fontSize: hasSubscription ? '40px' : '48px',
-            fontWeight: '800',
+            fontSize: '60px',
+            fontWeight: '700',
             color: creditColor,
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             lineHeight: 1,
           }}>
             {creditDisplay}
           </div>
-          <div style={{ fontSize: '14px', color: '#64748b', marginTop: '4px', fontWeight: '500' }}>
+          <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '8px' }}>
             {hasSubscription ? 'Unlimited SOA credits' : `SOA credit${creditCount !== 1 ? 's' : ''} remaining`}
           </div>
           {equivalency && (
@@ -340,7 +342,7 @@ export default function Billing() {
         </div>
 
         {/* Right column */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '16px', flexShrink: 0 }}>
           {getPlanPill(planState, billing)}
           {hasSubscription && billing?.renewalDate && (
             <div style={{ fontSize: '13px', color: '#64748b' }}>
@@ -415,7 +417,7 @@ export default function Billing() {
   };
 
   return (
-    <div style={{ padding: '24px 32px', maxWidth: '960px' }}>
+    <div style={{ padding: '24px 32px', width: '100%' }}>
       {/* Page Header */}
       <div style={{ marginBottom: '28px' }}>
         <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '24px', fontWeight: '700', color: '#0f172a', margin: 0 }}>
@@ -582,16 +584,13 @@ export default function Billing() {
 
         {/* ── 5. Plans Tab ── */}
         <TabsContent value="plans">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }}>
             {allPlans.map((plan) => {
-              const isCurrentPlan = hasSubscription && (
-                (plan.priceType === 'MonthlySubscription' && planState === 'monthly') ||
-                (plan.priceType === 'AnnualSubscription' && planState === 'annual')
-              );
+              const isCurrentPlan = hasSubscription && planState === plan.planKey;
               return (
                 <div key={plan.label} style={{
                   background: 'white',
-                  border: plan.highlight ? `2px solid ${BLUE}` : '1px solid #e2e8f0',
+                  border: plan.highlight ? '2px solid #3b82f6' : '1px solid #e2e8f0',
                   borderRadius: '12px',
                   padding: '24px',
                   position: 'relative',
@@ -648,31 +647,10 @@ export default function Billing() {
                     }}>
                       Current Plan
                     </div>
-                  ) : plan.isTransaction ? (
-                    <button
-                      onClick={switchToCreditsTab}
-                      style={{
-                        width: '100%',
-                        background: 'white',
-                        color: '#0f172a',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '8px',
-                        padding: '10px 16px',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                      }}
-                    >
-                      Buy Credits <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
                   ) : (
                     <button
-                      onClick={() => handleCheckout(plan.priceType)}
-                      disabled={checkoutLoading === plan.priceType}
+                      onClick={() => handleCheckout(plan.stripePriceId)}
+                      disabled={checkoutLoading === plan.stripePriceId}
                       style={{
                         width: '100%',
                         background: plan.highlight ? BLUE : 'white',
@@ -682,16 +660,16 @@ export default function Billing() {
                         padding: '10px 16px',
                         fontSize: '13px',
                         fontWeight: '600',
-                        cursor: checkoutLoading === plan.priceType ? 'not-allowed' : 'pointer',
-                        opacity: checkoutLoading === plan.priceType ? 0.7 : 1,
+                        cursor: checkoutLoading === plan.stripePriceId ? 'not-allowed' : 'pointer',
+                        opacity: checkoutLoading === plan.stripePriceId ? 0.7 : 1,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '6px',
                       }}
                     >
-                      {checkoutLoading === plan.priceType ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                      {hasSubscription ? 'Switch Plan' : 'Subscribe'}
+                      {checkoutLoading === plan.stripePriceId ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                      Subscribe
                     </button>
                   )}
                 </div>
@@ -701,6 +679,7 @@ export default function Billing() {
         </TabsContent>
 
         {/* ── 6. Invoice History Tab ── */}
+        {/* TODO: Verify invoices endpoint is returning data — stub UI may show empty state */}
         <TabsContent value="invoices">
           {invoicesLoading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
