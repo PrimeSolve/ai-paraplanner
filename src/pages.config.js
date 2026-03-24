@@ -184,7 +184,7 @@ export const PAGES = {
     "AdviceGroupSettings": AdviceGroupSettings,
     "AdviceGroupTickets": AdviceGroupTickets,
     "Billing": Billing,
-    "AdviserAdviceRecords": AdviserAdviceRecords,
+    "AdviserAdviceHistory": AdviserAdviceRecords,
     "AdviserAdviceRecordDetail": AdviserAdviceRecordDetail,
     "AdviserAnalytics": AdviserAnalytics,
     "AdviserAvatarSetup": AdviserAvatarSetup,
