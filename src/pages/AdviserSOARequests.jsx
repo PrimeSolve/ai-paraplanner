@@ -123,6 +123,7 @@ export default function AdviserSOARequests() {
         created_by: currentUser.email
       }, '-created_date');
 
+      // TODO: confirm field names match API response
       // Load client names for each SOA Request
       const requestsWithClientNames = await Promise.all(
         data.map(async (req) => {
@@ -136,13 +137,14 @@ export default function AdviserSOARequests() {
               const clients = await base44.entities.Client.filter({ email: req.client_email });
               clientData = clients[0];
             }
+            // TODO: ensure clientName is returned in API response
             const clientName = clientData
-              ? `${clientData.first_name || ''} ${clientData.last_name || ''}`.trim() || req.client_email || 'Client'
-              : req.client_email || 'Client';
+              ? `${clientData.first_name || ''} ${clientData.last_name || ''}`.trim() || null
+              : null;
             return { ...req, client_name: clientName };
           } catch (err) {
             console.error(`Failed to load client for SOA ${req.id}:`, err);
-            return { ...req, client_name: req.client_email || 'Client' };
+            return { ...req, client_name: null };
           }
         })
       );
@@ -166,7 +168,8 @@ export default function AdviserSOARequests() {
 
   // FIX 6: Filters work together on both views
   const filteredRequests = requests.filter(req => {
-    const matchesSearch = !debouncedSearch || req.client_name?.toLowerCase().includes(debouncedSearch.toLowerCase());
+    const searchTarget = req.client_name || req.client_email || '';
+    const matchesSearch = !debouncedSearch || searchTarget.toLowerCase().includes(debouncedSearch.toLowerCase());
     const matchesStatus = statusFilter === 'all' || req.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || req.priority === priorityFilter;
     return matchesSearch && matchesStatus && matchesPriority;
@@ -304,7 +307,7 @@ export default function AdviserSOARequests() {
                   const priorityStyle = getPriorityStyle(req.priority || 'Normal');
                   const overdue = isOverdue(req);
                   // TODO: ensure clientName is returned in API response
-                  const displayName = req.client_name && req.client_name !== 'Client' ? req.client_name : 'Unknown Client';
+                  const displayName = req.client_name || 'Unknown Client';
                   return (
                     <tr key={req.id} className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors duration-100">
                       <td className="px-6 py-4">
@@ -450,7 +453,7 @@ export default function AdviserSOARequests() {
                     colRequests.map((req) => {
                       const priorityStyle = getPriorityStyle(req.priority || 'Normal');
                       const overdue = isOverdue(req);
-                      const displayName = req.client_name && req.client_name !== 'Client' ? req.client_name : 'Unknown Client';
+                      const displayName = req.client_name || 'Unknown Client';
 
                       return (
                         <div

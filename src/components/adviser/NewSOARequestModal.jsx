@@ -89,8 +89,12 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
 
      const soaRequest = await base44.entities.SOARequest.create({
        client_id: selectedClient,
+       client_email: client?.email || null,
        fact_find_id: client?.fact_find_id || null,
        status: 'Submitted', // TODO: ensure backend StatusEnum matches these values
+       type: 'Comprehensive', // TODO: wire to type selector when multiple types are supported
+       priority: 'Normal', // TODO: wire to priority selector
+       submitted_date: new Date().toISOString(),
        completion_percentage: 0,
        sections_completed: [],
        scope_of_advice: {},
