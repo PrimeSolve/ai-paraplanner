@@ -13,6 +13,7 @@ export default function SidebarLayout({
   helpPath,
   currentPage,
   accentColor = 'white',
+  helpText = 'Ask for help',
 }) {
   return (
     <div className="w-[260px] bg-[#0f172a] fixed top-0 left-0 bottom-0 flex flex-col z-50">
@@ -63,7 +64,7 @@ export default function SidebarLayout({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-white font-semibold text-sm">AI Assistant</div>
-                <div className="text-white/80 text-xs">Ask for help</div>
+                <div className="text-white/80 text-xs">{helpText}</div>
               </div>
               <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
                 <span className="text-white text-xs font-bold">?</span>

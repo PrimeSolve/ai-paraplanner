@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 
 import { Input } from '@/components/ui/input';
-import { Search, MoreHorizontal, CheckCircle2, Clock, Loader2 } from 'lucide-react';
+import { Search, MoreHorizontal, CheckCircle2, Clock, Loader2, FileText } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -17,27 +19,28 @@ const SOA_STATUSES = [
   { value: 'Complete', label: 'Complete' },
 ];
 
-const STATUS_COLOURS = {
-  'Submitted': { bg: '#dbeafe', color: '#1d4ed8', dot: '#3b82f6' },
-  'Pending': { bg: '#fef3c7', color: '#b45309', dot: '#f59e0b' },
-  'UnderReview': { bg: '#f3e8ff', color: '#7e22ce', dot: '#a855f7' },
-  'Complete': { bg: '#dcfce7', color: '#15803d', dot: '#22c55e' },
+const STATUS_BADGE_STYLES = {
+  'Submitted': 'bg-blue-100 text-blue-700',
+  'Pending': 'bg-amber-100 text-amber-700',
+  'UnderReview': 'bg-purple-100 text-purple-700',
+  'Complete': 'bg-green-100 text-green-700',
+};
+
+const STATUS_DOT_COLORS = {
+  'Submitted': 'bg-blue-500',
+  'Pending': 'bg-amber-500',
+  'UnderReview': 'bg-purple-500',
+  'Complete': 'bg-green-500',
 };
 
 const PRIORITY_OPTIONS = ['High', 'Normal', 'Urgent'];
 
-const AVATAR_PALETTE = [
-  '#2563eb', '#16a34a', '#ea580c', '#a855f7', '#ec4899',
-  '#06b6d4', '#dc2626', '#b45309', '#0891b2', '#7c3aed',
-  '#059669', '#d97706', '#e11d48', '#4f46e5', '#0d9488',
-  '#be123c', '#c026d3', '#65a30d', '#0284c7', '#9333ea',
-  '#db2777', '#ca8a04', '#14b8a6', '#6366f1', '#f97316', '#84cc16',
-];
-
-function getAvatarColor(name) {
-  if (!name) return AVATAR_PALETTE[0];
-  const code = name.charCodeAt(0);
-  return AVATAR_PALETTE[code % AVATAR_PALETTE.length];
+// FIX 4: Client avatars always use blue; grey for unknown
+function getAvatarClasses(clientName) {
+  if (!clientName || clientName === 'Unknown Client') {
+    return 'bg-gray-100 text-gray-500';
+  }
+  return 'bg-blue-100 text-blue-700';
 }
 
 function isOverdue(req) {
@@ -152,18 +155,13 @@ export default function AdviserSOARequests() {
     }
   };
 
-  // FIX 1: New status colours
-  const getStatusColor = (status) => {
-    return STATUS_COLOURS[status] || STATUS_COLOURS['Submitted'];
-  };
-
-  const getPriorityColor = (priority) => {
-    const colors = {
-      'High': { bg: '#fee2e2', color: '#dc2626', label: 'High' },
-      'Normal': { bg: '#fef3c7', color: '#d97706', label: 'Normal' },
-      'Urgent': { bg: '#fce7f3', color: '#be185d', label: 'Urgent' },
+  const getPriorityStyle = (priority) => {
+    const styles = {
+      'High': { dotClass: 'bg-orange-500', badgeClass: 'bg-orange-100 text-orange-700', label: 'High' },
+      'Normal': { dotClass: 'bg-amber-500', badgeClass: 'bg-amber-100 text-amber-700', label: 'Normal' },
+      'Urgent': { dotClass: 'bg-red-500', badgeClass: 'bg-red-100 text-red-700', label: 'Urgent' },
     };
-    return colors[priority] || colors['Normal'];
+    return styles[priority] || styles['Normal'];
   };
 
   // FIX 6: Filters work together on both views
@@ -187,8 +185,21 @@ export default function AdviserSOARequests() {
 
   if (loading) {
     return (
-      <div style={{ padding: '24px 32px' }} className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+      <div className="py-6 px-8">
+        {/* Skeleton stat cards */}
+        <div className="grid grid-cols-4 gap-6 mb-8">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-36 rounded-2xl" />
+          ))}
+        </div>
+        {/* Skeleton filter bar */}
+        <Skeleton className="h-20 rounded-2xl mb-6" />
+        {/* Skeleton table rows */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="h-12 rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -197,7 +208,7 @@ export default function AdviserSOARequests() {
     <div className="py-6 px-8">
       {/* Stats Grid */}
       <div className="grid grid-cols-4 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
           <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4">
             <Clock className="w-6 h-6" />
           </div>
@@ -205,24 +216,24 @@ export default function AdviserSOARequests() {
           <div className="text-sm opacity-90">Total Requests</div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border border-slate-200">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center mb-4">
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
+          <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center mb-4">
             <Clock className="w-6 h-6 text-amber-600" />
           </div>
           <div className="text-4xl font-bold text-slate-800 mb-1">{stats.ready}</div>
           <div className="text-sm text-slate-600">Ready to Review</div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border border-slate-200">
-          <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center mb-4">
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
+          <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center mb-4">
             <Clock className="w-6 h-6 text-purple-600" />
           </div>
           <div className="text-4xl font-bold text-slate-800 mb-1">{stats.inProgress}</div>
           <div className="text-sm text-slate-600">In Progress</div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border border-slate-200">
-          <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
+          <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center mb-4">
             <CheckCircle2 className="w-6 h-6 text-green-600" />
           </div>
           <div className="text-4xl font-bold text-slate-800 mb-1">{stats.complete}</div>
@@ -279,44 +290,44 @@ export default function AdviserSOARequests() {
             <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Client</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Type</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Priority</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Submitted</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Due</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Client</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Type</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Status</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Priority</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Submitted</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Due</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedRequests.length > 0 ? paginatedRequests.map((req) => {
-                  const statusColor = getStatusColor(req.status);
-                  const priorityColor = getPriorityColor(req.priority || 'Normal');
-                  const avatarBg = getAvatarColor(req.client_name);
+                  const priorityStyle = getPriorityStyle(req.priority || 'Normal');
                   const overdue = isOverdue(req);
+                  // TODO: ensure clientName is returned in API response
+                  const displayName = req.client_name && req.client_name !== 'Client' ? req.client_name : 'Unknown Client';
                   return (
-                    <tr key={req.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                    <tr key={req.id} className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors duration-100">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{ background: avatarBg }}>
-                            {req.client_name?.charAt(0) || 'C'}
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm ${getAvatarClasses(displayName)}`}>
+                            {displayName.charAt(0)}
                           </div>
-                          <span className="font-semibold text-sm text-slate-800">{req.client_name}</span>
+                          <span className="font-semibold text-sm text-slate-800">{displayName}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-slate-800 font-medium">{req.type || 'Comprehensive'}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold" style={{ background: statusColor.bg, color: statusColor.color }}>
+                        <Badge className={`border-0 ${STATUS_BADGE_STYLES[req.status] || STATUS_BADGE_STYLES['Submitted']}`}>
                           {SOA_STATUSES.find(st => st.value === req.status)?.label || req.status}
-                        </span>
+                        </Badge>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold" style={{ background: priorityColor.bg, color: priorityColor.color }}>
-                          <span className="w-2 h-2 rounded-full" style={{ background: priorityColor.color }}></span>
-                          {priorityColor.label}
-                        </span>
+                        <Badge className={`border-0 inline-flex items-center gap-1.5 ${priorityStyle.badgeClass}`}>
+                          <span className={`w-2 h-2 rounded-full ${priorityStyle.dotClass}`}></span>
+                          {priorityStyle.label}
+                        </Badge>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-medium text-slate-800">
@@ -357,10 +368,18 @@ export default function AdviserSOARequests() {
                   );
                 }) : (
                   <tr>
-                    <td colSpan="7" className="px-6 py-8 text-center text-slate-600">
-                      {debouncedSearch || statusFilter !== 'all' || priorityFilter !== 'all'
-                        ? 'No requests match your search'
-                        : 'No requests found'}
+                    <td colSpan="7" className="px-6 py-0">
+                      <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                          <FileText className="w-6 h-6 text-gray-400" />
+                        </div>
+                        <p className="text-sm font-semibold text-gray-700">No SOA requests</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {debouncedSearch || statusFilter !== 'all' || priorityFilter !== 'all'
+                            ? 'Try adjusting your filters'
+                            : 'New requests will appear here once submitted'}
+                        </p>
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -403,122 +422,62 @@ export default function AdviserSOARequests() {
       )}
 
       {/* ─── Board View ─── */}
-      {/* TODO: implement drag-to-update-status when confirmed with product */}
+      {/* TODO: implement drag-to-update-status when confirmed */}
       {viewMode === 'board' && (
-        <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+        <div className="flex gap-4 items-start">
           {SOA_STATUSES.map((statusObj) => {
             const colRequests = filteredRequests.filter((r) => r.status === statusObj.value);
-            const colColour = STATUS_COLOURS[statusObj.value]?.dot || '#94A3B8';
+            const dotClass = STATUS_DOT_COLORS[statusObj.value] || 'bg-slate-400';
 
             return (
-              <div
-                key={statusObj.value}
-                style={{
-                  flex: 1,
-                  minWidth: 260,
-                  background: '#F1F5F9',
-                  borderRadius: 14,
-                  padding: 12,
-                }}
-              >
+              <div key={statusObj.value} className="flex-1 min-w-[260px] bg-slate-100 rounded-xl p-3">
                 {/* Column header */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '0 4px' }}>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: colColour, flexShrink: 0 }} />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>{statusObj.label}</span>
-                  <span style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minWidth: 22,
-                    height: 22,
-                    borderRadius: 999,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    background: '#E2E8F0',
-                    color: '#475569',
-                    padding: '0 6px',
-                  }}>
+                <div className="flex items-center gap-2 mb-3 px-1">
+                  <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotClass}`} />
+                  <span className="text-sm font-bold text-slate-900">{statusObj.label}</span>
+                  <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] rounded-full text-xs font-semibold bg-slate-200 text-slate-600 px-1.5">
                     {colRequests.length}
                   </span>
                 </div>
 
                 {/* Cards */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 60 }}>
+                <div className="flex flex-col min-h-[60px]">
                   {colRequests.length === 0 ? (
-                    <div style={{
-                      border: '2px dashed #CBD5E1',
-                      borderRadius: 10,
-                      padding: '24px 12px',
-                      textAlign: 'center',
-                      color: '#94A3B8',
-                      fontSize: 13,
-                    }}>
+                    <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center text-sm text-gray-400">
                       No requests
                     </div>
                   ) : (
                     colRequests.map((req) => {
-                      const priorityColor = getPriorityColor(req.priority || 'Normal');
-                      const avatarBg = getAvatarColor(req.client_name);
+                      const priorityStyle = getPriorityStyle(req.priority || 'Normal');
                       const overdue = isOverdue(req);
+                      const displayName = req.client_name && req.client_name !== 'Client' ? req.client_name : 'Unknown Client';
 
                       return (
                         <div
                           key={req.id}
-                          style={{
-                            background: '#fff',
-                            border: '1px solid #E2E8F0',
-                            borderLeft: `3px solid ${colColour}`,
-                            borderRadius: 10,
-                            padding: '12px 14px',
-                            cursor: 'default',
-                          }}
+                          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-3 hover:shadow-md transition-shadow duration-150 cursor-pointer"
                         >
                           {/* Client name */}
-                          <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', marginBottom: 4 }}>
-                            {req.client_name}
+                          <div className="text-sm font-bold text-slate-900 mb-1">
+                            {displayName}
                           </div>
                           {/* Type */}
-                          <div style={{ fontSize: 12, color: '#64748B', marginBottom: 8 }}>
+                          <div className="text-xs text-slate-500 mb-2">
                             {req.type || 'Comprehensive'}
                           </div>
                           {/* Priority badge */}
-                          <div style={{ marginBottom: 8 }}>
-                            <span style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: 4,
-                              fontSize: 11,
-                              fontWeight: 600,
-                              padding: '2px 8px',
-                              borderRadius: 6,
-                              background: priorityColor.bg,
-                              color: priorityColor.color,
-                            }}>
-                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: priorityColor.color }} />
-                              {priorityColor.label}
-                            </span>
+                          <div className="mb-2">
+                            <Badge className={`border-0 text-xs inline-flex items-center gap-1 ${priorityStyle.badgeClass}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${priorityStyle.dotClass}`} />
+                              {priorityStyle.label}
+                            </Badge>
                           </div>
                           {/* Footer: avatar + due date */}
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div style={{
-                              width: 26,
-                              height: 26,
-                              borderRadius: 6,
-                              background: avatarBg,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: '#fff',
-                              fontSize: 11,
-                              fontWeight: 700,
-                            }}>
-                              {req.client_name?.charAt(0) || 'C'}
+                          <div className="flex items-center justify-between">
+                            <div className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold ${getAvatarClasses(displayName)}`}>
+                              {displayName.charAt(0)}
                             </div>
-                            <span style={{
-                              fontSize: 12,
-                              fontWeight: 500,
-                              color: overdue ? '#DC2626' : '#64748B',
-                            }}>
+                            <span className={`text-xs font-medium ${overdue ? 'text-red-600' : 'text-slate-500'}`}>
                               {formatDate(req.due_date)}
                             </span>
                           </div>
@@ -533,10 +492,14 @@ export default function AdviserSOARequests() {
         </div>
       )}
 
-      {/* No results message for board view */}
-      {viewMode === 'board' && filteredRequests.length === 0 && (debouncedSearch || statusFilter !== 'all' || priorityFilter !== 'all') && (
-        <div className="text-center py-8 text-slate-600">
-          No requests match your search
+      {/* Empty state for board view when all filtered out */}
+      {viewMode === 'board' && filteredRequests.length === 0 && requests.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <FileText className="w-6 h-6 text-gray-400" />
+          </div>
+          <p className="text-sm font-semibold text-gray-700">No SOA requests</p>
+          <p className="text-xs text-gray-400 mt-1">New requests will appear here once submitted</p>
         </div>
       )}
 
