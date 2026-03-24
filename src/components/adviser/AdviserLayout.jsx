@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { base44 } from '@/api/base44Client';
-import { 
-  LayoutDashboard, 
+import {
+  LayoutDashboard,
   Users,
   FileText,
   CheckSquare,
@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AppHeader from '../AppHeader';
+import useHenry from '../henry/useHenry';
+import HenryPanel from '../henry/HenryPanel';
 
 export default function AdviserLayout({ children, currentPage, pageActions }) {
   const [user, setUser] = useState(null);
@@ -29,6 +31,13 @@ export default function AdviserLayout({ children, currentPage, pageActions }) {
     };
     loadUser();
   }, []);
+
+  const henryUserName = user?.first_name || user?.full_name?.split(' ')[0] || '';
+  const henry = useHenry({
+    version: 'adviser',
+    adviserId: user?.id,
+    userName: henryUserName,
+  });
 
   const navItems = [
     { section: 'OVERVIEW', items: [
@@ -106,7 +115,7 @@ export default function AdviserLayout({ children, currentPage, pageActions }) {
 
         {/* AI Assistant Button */}
         <div className="p-4">
-          <Link to={createPageUrl('AdviserHelp')} className="no-underline">
+          <button onClick={henry.openPanel} className="w-full text-left">
             <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] hover:from-[#4f46e5] hover:to-[#7c3aed] cursor-pointer transition-all shadow-lg shadow-purple-900/30">
               <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
@@ -123,7 +132,7 @@ export default function AdviserLayout({ children, currentPage, pageActions }) {
                 <span className="text-white text-xs font-bold">?</span>
               </div>
             </div>
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -134,6 +143,18 @@ export default function AdviserLayout({ children, currentPage, pageActions }) {
           {children}
         </div>
       </div>
+
+      {/* Henry Co-Pilot Panel */}
+      <HenryPanel
+        version="adviser"
+        isOpen={henry.isOpen}
+        onClose={henry.closePanel}
+        messages={henry.messages}
+        isLoading={henry.isLoading}
+        onSend={henry.sendMessage}
+        onClear={henry.clearHistory}
+        userName={henryUserName}
+      />
     </div>
   );
 }

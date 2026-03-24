@@ -4,7 +4,7 @@ import { useRole } from '../RoleContext';
 import SidebarLayout from '../navigation/SidebarLayout';
 import { LayoutDashboard, Users, FileText, Settings, ScrollText, Search, LifeBuoy, CreditCard } from 'lucide-react';
 
-export default function AdviserSidebar({ currentPage }) {
+export default function AdviserSidebar({ currentPage, onHelpClick }) {
   const [adviser, setAdviser] = useState(null);
   const [logo, setLogo] = useState(null);
   const [businessDetails, setBusinessDetails] = useState(null);
@@ -109,9 +109,10 @@ export default function AdviserSidebar({ currentPage }) {
       title={getCompanyName()}
       subtitle={getSubtitle()}
       navSections={navSections}
-      helpPath="AdviserHelp"
+      helpPath={onHelpClick ? undefined : "AdviserHelp"}
       helpText="Ask Henry"
       currentPage={currentPage}
+      onHelpClick={onHelpClick}
     />
   );
 }

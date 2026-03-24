@@ -19,7 +19,7 @@ import {
   FileEdit,
 } from 'lucide-react';
 
-export default function ClientSidebar({ currentPage }) {
+export default function ClientSidebar({ currentPage, onHelpClick }) {
   const [adviceGroup, setAdviceGroup] = useState(null);
   const [businessDetails, setBusinessDetails] = useState(null);
   const [logo, setLogo] = useState(null);
@@ -177,20 +177,37 @@ export default function ClientSidebar({ currentPage }) {
 
       {/* AI Assistant Button */}
       <div className="p-4">
-        <Link to={createPageUrl('ClientHelp')} className="no-underline">
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] hover:from-[#4f46e5] hover:to-[#7c3aed] cursor-pointer transition-all shadow-lg shadow-purple-900/30">
-            <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+        {onHelpClick ? (
+          <button onClick={onHelpClick} className="w-full text-left">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] hover:from-[#4f46e5] hover:to-[#7c3aed] cursor-pointer transition-all shadow-lg shadow-purple-900/30">
+              <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-white font-semibold text-sm">AI Assistant</div>
+                <div className="text-white/80 text-xs">Ask Henry</div>
+              </div>
+              <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-bold">?</span>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-white font-semibold text-sm">AI Assistant</div>
-              <div className="text-white/80 text-xs">Ask Henry</div>
+          </button>
+        ) : (
+          <Link to={createPageUrl('ClientHelp')} className="no-underline">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] hover:from-[#4f46e5] hover:to-[#7c3aed] cursor-pointer transition-all shadow-lg shadow-purple-900/30">
+              <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-white font-semibold text-sm">AI Assistant</div>
+                <div className="text-white/80 text-xs">Ask Henry</div>
+              </div>
+              <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-bold">?</span>
+              </div>
             </div>
-            <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">?</span>
-            </div>
-          </div>
-        </Link>
+          </Link>
+        )}
       </div>
     </div>
   );

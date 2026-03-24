@@ -12,6 +12,10 @@ import ClientSidebar from './client/ClientSidebar';
 // Import unified header
 import AppHeader from './AppHeader';
 
+// Henry co-pilot
+import useHenry from './henry/useHenry';
+import HenryPanel from './henry/HenryPanel';
+
 export default function AppShell({ children, pageActions, pageTitle }) {
   const { navigationChain, originalUser, user, isViewingAs, loadUserData } = useRole();
   const { user: authUser } = useAuth();
@@ -61,6 +65,22 @@ export default function AppShell({ children, pageActions, pageTitle }) {
     if (user?.linkedEntity?.type) return user.linkedEntity.type;
     return originalRole;
   })();
+
+  // Henry co-pilot — determine version and identity based on effective role
+  const henryVersion = currentLevel === 'client' || effectiveRole === 'client' ? 'client' : 'adviser';
+  const henryUserName = originalUser?.first_name || originalUser?.full_name?.split(' ')[0] || '';
+
+  const henryAdviserId = (() => {
+    if (currentLevel === 'adviser') return navigationChain[navigationChain.length - 1]?.id;
+    if (effectiveRole === 'adviser' && user?.linkedEntity?.data?.id) return user.linkedEntity.data.id;
+    return null;
+  })();
+
+  const henry = useHenry({
+    version: henryVersion,
+    adviserId: henryAdviserId,
+    userName: henryUserName,
+  });
 
   // RULE 5: isSpecialLayout is an EXPLICIT whitelist
   const SPECIAL_LAYOUT_ROUTES = [
@@ -118,19 +138,19 @@ export default function AppShell({ children, pageActions, pageTitle }) {
         return <AdviceGroupSidebar currentPage={getCurrentPage()} />;
       }
       if (user.entityType === 'adviser') {
-        return <AdviserSidebar currentPage={getCurrentPage()} />;
+        return <AdviserSidebar currentPage={getCurrentPage()} onHelpClick={henry.openPanel} />;
       }
       if (user.entityType === 'client') {
-        return <ClientSidebar currentPage={getCurrentPage()} />;
+        return <ClientSidebar currentPage={getCurrentPage()} onHelpClick={henry.openPanel} />;
       }
     }
 
     // If viewing as a different level, show that level's sidebar
     if (currentLevel === 'client') {
-      return <ClientSidebar currentPage={getCurrentPage()} />;
+      return <ClientSidebar currentPage={getCurrentPage()} onHelpClick={henry.openPanel} />;
     }
     if (currentLevel === 'adviser') {
-      return <AdviserSidebar currentPage={getCurrentPage()} />;
+      return <AdviserSidebar currentPage={getCurrentPage()} onHelpClick={henry.openPanel} />;
     }
     if (currentLevel === 'advice_group') {
       return <AdviceGroupSidebar currentPage={getCurrentPage()} />;
@@ -144,10 +164,10 @@ export default function AppShell({ children, pageActions, pageTitle }) {
       return <AdviceGroupSidebar currentPage={getCurrentPage()} />;
     }
     if (effectiveRole === 'adviser') {
-      return <AdviserSidebar currentPage={getCurrentPage()} />;
+      return <AdviserSidebar currentPage={getCurrentPage()} onHelpClick={henry.openPanel} />;
     }
     if (effectiveRole === 'client') {
-      return <ClientSidebar currentPage={getCurrentPage()} />;
+      return <ClientSidebar currentPage={getCurrentPage()} onHelpClick={henry.openPanel} />;
     }
 
     return null;
@@ -176,6 +196,10 @@ export default function AppShell({ children, pageActions, pageTitle }) {
   const contentWidth = showSidebar ? `calc(100% - ${sidebarWidth})` : '100%';
   const contentMargin = showSidebar ? sidebarWidth : '0';
 
+  // Show Henry for adviser and client roles
+  const showHenry = effectiveRole === 'adviser' || effectiveRole === 'client'
+    || currentLevel === 'adviser' || currentLevel === 'client';
+
   return (
     <div className="flex min-h-screen bg-[#f8fafc]">
       {showSidebar && sidebarComponent}
@@ -191,6 +215,18 @@ export default function AppShell({ children, pageActions, pageTitle }) {
           {children}
         </main>
       </div>
+      {showHenry && (
+        <HenryPanel
+          version={henryVersion}
+          isOpen={henry.isOpen}
+          onClose={henry.closePanel}
+          messages={henry.messages}
+          isLoading={henry.isLoading}
+          onSend={henry.sendMessage}
+          onClear={henry.clearHistory}
+          userName={henryUserName}
+        />
+      )}
     </div>
   );
 }
