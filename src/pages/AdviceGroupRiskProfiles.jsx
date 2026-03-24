@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { base44 } from '@/api/base44Client';
+import axiosInstance from '@/api/axiosInstance';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,26 +55,30 @@ export default function AdviceGroupRiskProfiles() {
     loadData();
   }, []);
 
+  // TODO: confirm endpoint URLs with primesolve-api if uncertain
   const loadData = async () => {
         try {
-          const currentUser = await base44.auth.me();
-          setUser(currentUser);
+          const currentUser = await axiosInstance.get('/auth/me');
+          setUser(currentUser.data);
 
-          let groupId = currentUser.advice_group_id;
+          let groupId = currentUser.data.advice_group_id;
 
           // If no advice_group_id, get the first available one
           if (!groupId) {
-            const groups = await base44.entities.AdviceGroup.list('created_date', 1);
+            const groupsRes = await axiosInstance.get('/advice-groups', {
+              params: { sortBy: 'created_date', limit: 1 }
+            });
+            const groups = groupsRes.data;
             if (groups.length > 0) {
               groupId = groups[0].id;
             }
           }
 
           if (groupId) {
-            const data = await base44.entities.RiskProfile.filter({
-              advice_group_id: groupId
-            }, 'risk_level');
-            setProfiles(data);
+            const res = await axiosInstance.get('/risk-profiles', {
+              params: { adviceGroupId: groupId }
+            });
+            setProfiles(res.data);
           }
         } catch (error) {
           console.error('Failed to load risk profiles:', error);
@@ -94,7 +98,10 @@ export default function AdviceGroupRiskProfiles() {
 
             // If no advice_group_id, get the first available one
             if (!groupId) {
-              const groups = await base44.entities.AdviceGroup.list('created_date', 1);
+              const groupsRes = await axiosInstance.get('/advice-groups', {
+                params: { sortBy: 'created_date', limit: 1 }
+              });
+              const groups = groupsRes.data;
               if (groups.length > 0) {
                 groupId = groups[0].id;
               }
@@ -114,10 +121,10 @@ export default function AdviceGroupRiskProfiles() {
             };
 
           if (editingProfile) {
-            await base44.entities.RiskProfile.update(editingProfile.id, dataToSave);
+            await axiosInstance.put(`/risk-profiles/${editingProfile.id}`, dataToSave);
             toast.success('Risk profile updated');
           } else {
-            await base44.entities.RiskProfile.create(dataToSave);
+            await axiosInstance.post('/risk-profiles', dataToSave);
             toast.success('Risk profile created');
           }
 
@@ -147,7 +154,7 @@ export default function AdviceGroupRiskProfiles() {
   const handleDelete = async (id) => {
     if (confirm('Delete this risk profile?')) {
       try {
-        await base44.entities.RiskProfile.delete(id);
+        await axiosInstance.delete(`/risk-profiles/${id}`);
         toast.success('Risk profile deleted');
         loadData();
       } catch (error) {
