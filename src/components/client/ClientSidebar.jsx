@@ -163,7 +163,7 @@ export default function ClientSidebar({ currentPage }) {
           <NavLink path="ClientAdviceHistory" label="Advice History" icon={Clock} />
 
           <NavLink path="ClientDocuments" label="Documents" icon={FileCheck} />
-          <NavLink path="ClientMessages" label="Tasks" icon={MessageSquare} />
+          <NavLink path="ClientTasks" label="Tasks" icon={MessageSquare} />
         </div>
 
         {/* ACCOUNT section */}
@@ -184,7 +184,7 @@ export default function ClientSidebar({ currentPage }) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-white font-semibold text-sm">AI Assistant</div>
-              <div className="text-white/80 text-xs">Ask for help</div>
+              <div className="text-white/80 text-xs">Ask Henry</div>
             </div>
             <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
               <span className="text-white text-xs font-bold">?</span>

@@ -193,7 +193,7 @@ export default function ClientDashboard() {
                 </p>
               </div>
             </div>
-            <Link to={createPageUrl('ClientMessages')} style={{ textDecoration: 'none' }}>
+            <Link to={createPageUrl('ClientTasks')} style={{ textDecoration: 'none' }}>
               <button style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -853,7 +853,7 @@ export default function ClientDashboard() {
                   </div>
                 </Link>
 
-                <Link to={createPageUrl('ClientMessages')} style={{ textDecoration: 'none' }}>
+                <Link to={createPageUrl('ClientTasks')} style={{ textDecoration: 'none' }}>
                   <div style={{ 
                     padding: '12px 14px', 
                     background: '#f8fafc', 

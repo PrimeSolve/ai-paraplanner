@@ -213,7 +213,7 @@ export const PAGES = {
     "ClientFactFindAI": ClientFactFindAI,
     "ClientFactFindForm": ClientFactFindForm,
     "ClientHelp": ClientHelp,
-    "ClientMessages": ClientMessages,
+    "ClientTasks": ClientMessages,
     "ClientProfile": ClientProfile,
     "ClientSettings": ClientSettings,
     "FactFindAboutYou": FactFindAboutYou,
