@@ -20,14 +20,13 @@ import {
 /* ─── constants ─── */
 
 const TASK_TYPES = [
-  'Send PDS',
-  'Authority to Proceed',
-  'Read PDS',
-  'Document Request',
-  'Follow-up',
-  'Compliance Deadline',
-  'Internal To-Do',
-  'Client Action',
+  'Fact Find Sent',
+  'Fact Find Completed',
+  'SOA Completed',
+  'SOA Presented',
+  'Authority to Proceed Signed',
+  'PDS Provided',
+  'Other',
 ];
 
 const STATUSES = ['To Do', 'In Progress', 'Done'];
@@ -39,14 +38,13 @@ const STATUS_COLOURS = {
 };
 
 const TYPE_COLOURS = {
-  'Send PDS': '#4F46E5',
-  'Authority to Proceed': '#9333EA',
-  'Read PDS': '#2563EB',
-  'Document Request': '#EA580C',
-  'Follow-up': '#16A34A',
-  'Compliance Deadline': '#DC2626',
-  'Internal To-Do': '#64748B',
-  'Client Action': '#D97706',
+  'Fact Find Sent': '#4F46E5',
+  'Fact Find Completed': '#2563EB',
+  'SOA Completed': '#9333EA',
+  'SOA Presented': '#EA580C',
+  'Authority to Proceed Signed': '#16A34A',
+  'PDS Provided': '#D97706',
+  'Other': '#64748B',
 };
 
 const ASSIGNEE_KEYS = ['Adviser', 'Client'];
@@ -107,8 +105,11 @@ export default function TasksPage() {
   const [adviserName, setAdviserName] = useState('Adviser');
   const menuRef = useRef(null);
 
-  const emptyForm = { title: '', type: 'Send PDS', assignedTo: 'Adviser', status: 'To Do', due: '', notes: '' };
+  const emptyForm = { title: '', type: 'Fact Find Sent', assignedTo: 'Adviser', status: 'To Do', due: '', notes: '' };
   const [formData, setFormData] = useState(emptyForm);
+  const [formErrors, setFormErrors] = useState({});
+  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   /* ─── data fetching (unchanged API calls) ─── */
 
@@ -231,13 +232,31 @@ export default function TasksPage() {
   /* ─── handlers (unchanged API calls) ─── */
 
   const handleSave = async () => {
-    if (!formData.title.trim()) return;
+    // Validation
+    const errors = {};
+    if (!formData.title.trim()) errors.title = 'Title is required';
+    if (!formData.due) errors.due = 'Due date is required';
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    setFormErrors({});
+    setSaveError('');
+    setSaving(true);
+
+    const payload = {
+      ...formData,
+      title: formData.title.trim(),
+      dueDate: formData.due ? new Date(formData.due).toISOString() : null,
+      notes: formData.notes?.trim() || null,
+    };
     try {
       if (editingTask) {
         const taskId = editingTask.id || editingTask.taskId;
-        await axiosInstance.patch(`/tasks/${taskId}`, formData);
+        await axiosInstance.patch(`/tasks/${taskId}`, payload);
       } else {
-        await axiosInstance.post('/tasks', formData);
+        // TODO: confirm endpoint URL with backend
+        await axiosInstance.post('/tasks', payload);
       }
       await loadTasks();
       setModalOpen(false);
@@ -245,6 +264,9 @@ export default function TasksPage() {
       setFormData(emptyForm);
     } catch (error) {
       console.error('Save failed:', error);
+      setSaveError('Failed to add task. Please try again.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -296,6 +318,8 @@ export default function TasksPage() {
   const openAddModal = (presetStatus) => {
     setEditingTask(null);
     setFormData({ ...emptyForm, status: presetStatus || 'To Do' });
+    setFormErrors({});
+    setSaveError('');
     setModalOpen(true);
   };
 
@@ -303,12 +327,14 @@ export default function TasksPage() {
     setEditingTask(task);
     setFormData({
       title: task.title || '',
-      type: task.type || 'Send PDS',
+      type: task.type || 'Fact Find Sent',
       assignedTo: task.assignedTo || 'Adviser',
       status: task.status || 'To Do',
       due: task.due ? task.due.slice(0, 10) : '',
       notes: task.notes || '',
     });
+    setFormErrors({});
+    setSaveError('');
     setModalOpen(true);
   };
 
@@ -1029,7 +1055,7 @@ export default function TasksPage() {
       </div>
 
       {/* ─── Add / Edit Modal ─── */}
-      <Dialog open={modalOpen} onOpenChange={(open) => { if (!open) { setModalOpen(false); setEditingTask(null); setFormData(emptyForm); } }}>
+      <Dialog open={modalOpen} onOpenChange={(open) => { if (!open) { setModalOpen(false); setEditingTask(null); setFormData(emptyForm); setFormErrors({}); setSaveError(''); } }}>
         <DialogContent className="sm:max-w-lg" style={{ fontFamily: "'DM Sans', sans-serif" }}>
           <DialogHeader>
             <DialogTitle style={{ fontSize: 18, fontWeight: 700, color: '#0F172A' }}>
@@ -1046,22 +1072,25 @@ export default function TasksPage() {
             <input
               type="text"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) => { setFormData({ ...formData, title: e.target.value }); setFormErrors((prev) => ({ ...prev, title: '' })); }}
               placeholder="Task title"
               style={{
                 width: '100%',
                 padding: '9px 12px',
                 borderRadius: 10,
-                border: '1px solid #E2E8F0',
+                border: `1px solid ${formErrors.title ? '#DC2626' : '#E2E8F0'}`,
                 fontSize: 14,
                 outline: 'none',
                 background: '#fff',
                 fontFamily: "'DM Sans', sans-serif",
               }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = '#4F46E5')}
-              onBlur={(e) => (e.currentTarget.style.borderColor = '#E2E8F0')}
+              onFocus={(e) => (e.currentTarget.style.borderColor = formErrors.title ? '#DC2626' : '#4F46E5')}
+              onBlur={(e) => (e.currentTarget.style.borderColor = formErrors.title ? '#DC2626' : '#E2E8F0')}
               autoFocus
             />
+            {formErrors.title && (
+              <p style={{ color: '#DC2626', fontSize: 12, marginTop: 4, fontFamily: "'DM Sans', sans-serif" }}>{formErrors.title}</p>
+            )}
           </div>
 
           {/* Two-column: Type + Assigned To */}
@@ -1138,20 +1167,23 @@ export default function TasksPage() {
               <input
                 type="date"
                 value={formData.due}
-                onChange={(e) => setFormData({ ...formData, due: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, due: e.target.value }); setFormErrors((prev) => ({ ...prev, due: '' })); }}
                 style={{
                   width: '100%',
                   padding: '9px 12px',
                   borderRadius: 10,
-                  border: '1px solid #E2E8F0',
+                  border: `1px solid ${formErrors.due ? '#DC2626' : '#E2E8F0'}`,
                   fontSize: 13,
                   outline: 'none',
                   background: '#fff',
                   fontFamily: "'DM Sans', sans-serif",
                 }}
-                onFocus={(e) => (e.currentTarget.style.borderColor = '#4F46E5')}
-                onBlur={(e) => (e.currentTarget.style.borderColor = '#E2E8F0')}
+                onFocus={(e) => (e.currentTarget.style.borderColor = formErrors.due ? '#DC2626' : '#4F46E5')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = formErrors.due ? '#DC2626' : '#E2E8F0')}
               />
+              {formErrors.due && (
+                <p style={{ color: '#DC2626', fontSize: 12, marginTop: 4, fontFamily: "'DM Sans', sans-serif" }}>{formErrors.due}</p>
+              )}
             </div>
           </div>
 
@@ -1179,35 +1211,41 @@ export default function TasksPage() {
             />
           </div>
 
-          {/* Footer buttons */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingTop: 4 }}>
-            <button
-              onClick={() => { setModalOpen(false); setEditingTask(null); setFormData(emptyForm); }}
-              style={{
-                padding: '9px 18px',
-                borderRadius: 10,
-                fontSize: 13,
-                fontWeight: 500,
-                color: '#475569',
-                background: '#fff',
-                border: '1px solid #E2E8F0',
-                cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!formData.title.trim()}
-              style={{
-                ...s.addBtn,
-                opacity: !formData.title.trim() ? 0.5 : 1,
-                cursor: !formData.title.trim() ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {editingTask ? 'Save Changes' : 'Add Task'}
-            </button>
+          {/* Footer */}
+          <div style={{ paddingTop: 4 }}>
+            {saveError && (
+              <p style={{ color: '#DC2626', fontSize: 13, marginBottom: 10, fontFamily: "'DM Sans', sans-serif" }}>{saveError}</p>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button
+                onClick={() => { setModalOpen(false); setEditingTask(null); setFormData(emptyForm); }}
+                disabled={saving}
+                style={{
+                  padding: '9px 18px',
+                  borderRadius: 10,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: '#475569',
+                  background: '#fff',
+                  border: '1px solid #E2E8F0',
+                  cursor: saving ? 'not-allowed' : 'pointer',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                style={{
+                  ...s.addBtn,
+                  opacity: saving ? 0.6 : 1,
+                  cursor: saving ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {saving ? 'Adding...' : editingTask ? 'Save Changes' : 'Add Task'}
+              </button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
