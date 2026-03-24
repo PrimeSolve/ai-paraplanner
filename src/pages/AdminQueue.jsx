@@ -75,21 +75,21 @@ export default function AdminQueue() {
 
   const getStatusBadge = (status) => {
     const styles = {
-      submitted: 'bg-orange-100 text-orange-700 border-orange-200',
-      in_progress: 'bg-blue-100 text-blue-700 border-blue-200',
-      completed: 'bg-green-100 text-green-700 border-green-200',
-      revision_requested: 'bg-red-100 text-red-700 border-red-200',
-      draft: 'bg-slate-100 text-slate-700 border-slate-200',
+      'Draft': 'bg-gray-100 text-gray-600 border-gray-200',
+      'InProgress': 'bg-amber-100 text-amber-700 border-amber-200',
+      'Review': 'bg-purple-100 text-purple-700 border-purple-200',
+      'Approved': 'bg-blue-100 text-blue-700 border-blue-200',
+      'Issued': 'bg-green-100 text-green-700 border-green-200',
     };
     const labels = {
-      submitted: 'Submitted',
-      in_progress: 'In Progress',
-      completed: 'Completed',
-      revision_requested: 'Revision Requested',
-      draft: 'Draft',
+      'Draft': 'Draft',
+      'InProgress': 'In Progress',
+      'Review': 'Under Review',
+      'Approved': 'Approved',
+      'Issued': 'Issued',
     };
     return (
-      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border ${styles[status] || styles.draft}`}>
+      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border ${styles[status] || 'bg-gray-100 text-gray-500 border-gray-200'}`}>
         {labels[status] || status}
       </span>
     );

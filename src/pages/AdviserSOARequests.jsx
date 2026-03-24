@@ -22,15 +22,15 @@ const SOA_STATUSES = [
   { value: 4, label: 'Issued' },
 ];
 
-const getStatusDisplay = (statusInt) => {
+const getStatusDisplay = (status) => {
   const map = {
-    0: { label: 'Draft', badgeClass: 'bg-gray-100 text-gray-600', dotClass: 'bg-gray-500' },
-    1: { label: 'In Progress', badgeClass: 'bg-amber-100 text-amber-700', dotClass: 'bg-amber-500' },
-    2: { label: 'Under Review', badgeClass: 'bg-purple-100 text-purple-700', dotClass: 'bg-purple-500' },
-    3: { label: 'Approved', badgeClass: 'bg-blue-100 text-blue-700', dotClass: 'bg-blue-500' },
-    4: { label: 'Issued', badgeClass: 'bg-green-100 text-green-700', dotClass: 'bg-green-500' },
+    'Draft': { label: 'Draft', badgeClass: 'bg-gray-100 text-gray-600', dotClass: 'bg-gray-500' },
+    'InProgress': { label: 'In Progress', badgeClass: 'bg-amber-100 text-amber-700', dotClass: 'bg-amber-500' },
+    'Review': { label: 'Under Review', badgeClass: 'bg-purple-100 text-purple-700', dotClass: 'bg-purple-500' },
+    'Approved': { label: 'Approved', badgeClass: 'bg-blue-100 text-blue-700', dotClass: 'bg-blue-500' },
+    'Issued': { label: 'Issued', badgeClass: 'bg-green-100 text-green-700', dotClass: 'bg-green-500' },
   };
-  return map[statusInt] ?? { label: 'Unknown', badgeClass: 'bg-gray-100 text-gray-500', dotClass: 'bg-gray-400' };
+  return map[status] ?? { label: status, badgeClass: 'bg-gray-100 text-gray-500', dotClass: 'bg-gray-400' };
 };
 
 function getAvatarClasses(clientName) {
