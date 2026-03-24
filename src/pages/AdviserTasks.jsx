@@ -17,7 +17,25 @@ import {
   CheckCircle2,
   AlertTriangle,
   ListChecks,
+  AlertCircle,
+  ClipboardList,
 } from 'lucide-react';
+
+/* ─── Design System Tokens ───
+ * Primary purple:    #4F46E5 (active states, buttons, breadcrumb highlight)
+ * Success green:     #059669 / #16A34A (Open Tasks card icon, Done status)
+ * Warning amber:     #D97706 (upcoming due dates)
+ * Danger red:        #DC2626 (overdue text, Overdue card icon)
+ * Neutral greys:     #0F172A (darkest), #334155, #475569, #64748B, #94A3B8, #CBD5E1, #E2E8F0, #F1F5F9, #F8FAFC (lightest)
+ * Card backgrounds:  #fff with border #E2E8F0
+ * Border radius:     cards 14px, pills 999px (full), avatars 50% (full), buttons 10px
+ * Typography:        Page title 24px/700, Section label 13px/600, Body 14px/500, Caption 12px/400, Table header 11px/700 uppercase
+ * Font family:       'DM Sans', sans-serif
+ *
+ * Avatar colours:
+ *   Client (C):  bg #DBEAFE, text #1D4ED8
+ *   Adviser (A): bg #EDE9FE, text #7C3AED
+ */
 
 /* ─── constants ─── */
 
@@ -50,6 +68,19 @@ const TYPE_COLOURS = {
   'Compliance Deadline': '#DC2626',
   'Internal To-Do': '#64748B',
   'Client Action': '#D97706',
+};
+
+/* Avatar colours locked in per assignee type */
+const AVATAR_COLOURS = {
+  Client:  { bg: '#DBEAFE', text: '#1D4ED8' },
+  Adviser: { bg: '#EDE9FE', text: '#7C3AED' },
+};
+
+/* Left border stripe colours by status (overdue takes priority) */
+const BORDER_COLOURS = {
+  'To Do': '#CBD5E1',
+  'In Progress': '#F59E0B',
+  'Done': '#4ADE80',
 };
 
 function getRelativeDate(dueDate, status) {
@@ -346,7 +377,7 @@ export default function AdviserTasks() {
       fontSize: 13,
       fontWeight: 500,
       cursor: 'pointer',
-      border: active ? '1px solid #C7D2FE' : '1px solid transparent',
+      border: active ? '1px solid #C7D2FE' : '1px solid #CBD5E1',
       background: active ? '#EEF2FF' : 'transparent',
       color: active ? '#4F46E5' : '#64748B',
       transition: 'all 0.15s',
@@ -360,6 +391,8 @@ export default function AdviserTasks() {
       padding: '20px 24px',
       flex: 1,
       minWidth: 180,
+      transition: 'box-shadow 0.15s, transform 0.15s',
+      cursor: 'default',
     }),
     statValue: (colour) => ({
       fontSize: 28,
@@ -467,19 +500,20 @@ export default function AdviserTasks() {
 
   const renderAvatar = (name) => {
     const letter = (name || 'A')[0].toUpperCase();
+    const colours = AVATAR_COLOURS[name] || AVATAR_COLOURS['Adviser'];
     return (
       <div
         style={{
-          width: 24,
-          height: 24,
+          width: 28,
+          height: 28,
           borderRadius: '50%',
-          background: '#EEF2FF',
-          color: '#4F46E5',
+          background: colours.bg,
+          color: colours.text,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: 11,
-          fontWeight: 600,
+          fontSize: 12,
+          fontWeight: 500,
           flexShrink: 0,
         }}
       >
@@ -535,21 +569,7 @@ export default function AdviserTasks() {
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {/* View Toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', background: '#F1F5F9', borderRadius: 10, padding: 3 }}>
-              <button
-                style={s.viewToggle(viewMode === 'list')}
-                onClick={() => setViewMode('list')}
-              >
-                &#9776; List
-              </button>
-              <button
-                style={s.viewToggle(viewMode === 'board')}
-                onClick={() => setViewMode('board')}
-              >
-                &#8862; Board
-              </button>
-            </div>
+            {/* TODO: re-enable when Board view is built */}
             <button
               style={s.addBtn}
               onClick={() => openAddModal()}
@@ -564,7 +584,11 @@ export default function AdviserTasks() {
 
         {/* ─── Stat Tiles ─── */}
         <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
-          <div style={s.statTile()}>
+          <div
+            style={s.statTile()}
+            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
               <div style={{ width: 36, height: 36, borderRadius: 10, background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <ListChecks className="w-[18px] h-[18px]" style={{ color: '#4F46E5' }} />
@@ -575,7 +599,11 @@ export default function AdviserTasks() {
             <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>{totalCount} total</div>
           </div>
 
-          <div style={s.statTile()}>
+          <div
+            style={s.statTile()}
+            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
               <div style={{ width: 36, height: 36, borderRadius: 10, background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <AlertTriangle className="w-[18px] h-[18px]" style={{ color: '#DC2626' }} />
@@ -588,13 +616,17 @@ export default function AdviserTasks() {
             </div>
           </div>
 
-          <div style={s.statTile()}>
+          <div
+            style={s.statTile()}
+            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <CheckCircle2 className="w-[18px] h-[18px]" style={{ color: '#059669' }} />
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CheckCircle2 className="w-[18px] h-[18px]" style={{ color: '#2563EB' }} />
               </div>
             </div>
-            <div style={s.statValue('#059669')}>{completedThisWeekCount}</div>
+            <div style={s.statValue('#2563EB')}>{completedThisWeekCount}</div>
             <div style={s.statLabel}>Completed This Week</div>
             <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>Last 7 days</div>
           </div>
@@ -603,7 +635,7 @@ export default function AdviserTasks() {
         {/* ─── Filter Bar ─── */}
         <div style={{ ...s.card, padding: '16px 20px', marginBottom: 20 }}>
           {/* Row 1: Search + Status Pills */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
             <div style={{ position: 'relative', minWidth: 260 }}>
               <Search
                 className="w-4 h-4"
@@ -627,6 +659,7 @@ export default function AdviserTasks() {
               />
             </div>
             <div style={{ width: 1, height: 28, background: '#E2E8F0' }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>Status</span>
             <div style={{ display: 'flex', gap: 6 }}>
               {['All', ...STATUSES].map((st) => (
                 <button
@@ -647,7 +680,8 @@ export default function AdviserTasks() {
           </div>
 
           {/* Row 2: Type Pills */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0, marginRight: 4 }}>Type</span>
             {TASK_TYPES.map((type) => (
               <button
                 key={type}
@@ -670,16 +704,13 @@ export default function AdviserTasks() {
         {viewMode === 'list' && (
           <div style={s.card}>
             {filteredTasks.length === 0 && !searchQuery && activeStatus === 'All' && activeType === 'All' ? (
-              <div style={{ padding: '64px 24px', textAlign: 'center' }}>
-                <Inbox className="w-16 h-16 mx-auto" style={{ color: '#CBD5E1', marginBottom: 16 }} />
-                <h3 style={{ fontSize: 17, fontWeight: 600, color: '#334155', marginBottom: 6 }}>No tasks yet</h3>
-                <p style={{ fontSize: 14, color: '#64748B', maxWidth: 380, margin: '0 auto 20px' }}>
-                  Create your first task to get started. Tasks help you track work for clients and your practice.
-                </p>
-                <button style={s.addBtn} onClick={() => openAddModal()}>
-                  <Plus className="w-4 h-4" />
-                  Add Task
-                </button>
+              /* FIX 12 — Empty state */
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 24px', textAlign: 'center' }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <ClipboardList className="w-6 h-6" style={{ color: '#94A3B8' }} />
+                </div>
+                <p style={{ fontSize: 14, fontWeight: 500, color: '#334155', margin: 0 }}>No tasks yet</p>
+                <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 4, marginBottom: 0 }}>Tasks, requests and compliance items will appear here</p>
               </div>
             ) : filteredTasks.length === 0 ? (
               <div style={{ padding: '48px 24px', textAlign: 'center' }}>
@@ -689,11 +720,30 @@ export default function AdviserTasks() {
               </div>
             ) : (
               <div>
+                {/* FIX 4 — Table header row */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 16,
+                    padding: '10px 20px',
+                    borderBottom: '1px solid #E2E8F0',
+                    background: '#F8FAFC',
+                    borderLeft: '3px solid transparent',
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0, fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Task</div>
+                  <div style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', minWidth: 120 }}>Type</div>
+                  <div style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', minWidth: 100 }}>Assignee</div>
+                  <div style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', minWidth: 90, textAlign: 'right' }}>Due</div>
+                  <div style={{ width: 98, flexShrink: 0 }} />
+                </div>
                 {filteredTasks.map((task) => {
                   const taskId = task.id || task.taskId;
                   const isDone = task.status === 'Done';
                   const overdue = isOverdue(task);
-                  const statusColour = overdue ? '#DC2626' : STATUS_COLOURS[task.status] || '#94A3B8';
+                  /* FIX 5 — Systematic left border stripe: overdue (red) > status colour */
+                  const borderColour = overdue ? '#EF4444' : (BORDER_COLOURS[task.status] || '#CBD5E1');
                   const assignee = task.assignedTo || task.assigned_to || 'Adviser';
                   const rel = getRelativeDate(task.due, task.status);
                   const isHovered = hoveredRow === taskId;
@@ -707,11 +757,13 @@ export default function AdviserTasks() {
                         gap: 16,
                         padding: '14px 20px',
                         borderBottom: '1px solid #F1F5F9',
-                        borderLeft: `4px solid ${statusColour}`,
+                        borderLeft: `3px solid ${borderColour}`,
+                        /* FIX 7 — Row hover state */
                         background: isHovered ? '#F8FAFC' : '#fff',
-                        opacity: isDone ? 0.55 : 1,
-                        transition: 'background 0.15s',
-                        cursor: 'default',
+                        /* FIX 6 — Completed row: keep readable, not invisible */
+                        opacity: 1,
+                        transition: 'background 0.1s',
+                        cursor: 'pointer',
                       }}
                       onMouseEnter={() => setHoveredRow(taskId)}
                       onMouseLeave={() => setHoveredRow(null)}
@@ -722,7 +774,8 @@ export default function AdviserTasks() {
                           style={{
                             fontSize: 14,
                             fontWeight: 500,
-                            color: '#0F172A',
+                            /* FIX 6 — Completed rows: strikethrough + gray-400, not near-invisible */
+                            color: isDone ? '#9CA3AF' : '#0F172A',
                             textDecoration: isDone ? 'line-through' : 'none',
                             marginBottom: task.notes ? 2 : 0,
                             overflow: 'hidden',
@@ -733,24 +786,31 @@ export default function AdviserTasks() {
                           {task.title}
                         </div>
                         {task.notes && (
-                          <div style={{ fontSize: 12, color: '#94A3B8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div style={{ fontSize: 12, color: isDone ? '#9CA3AF' : '#94A3B8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {task.notes}
                           </div>
                         )}
                       </div>
 
                       {/* Type chip */}
-                      <div style={{ flexShrink: 0 }}>{renderTypeChip(task.type)}</div>
+                      <div style={{ flexShrink: 0, minWidth: 120 }}>{renderTypeChip(task.type)}</div>
 
-                      {/* Assigned To */}
+                      {/* Assignee */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, minWidth: 100 }}>
                         {renderAvatar(assignee)}
-                        <span style={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>{assignee}</span>
+                        <span style={{ fontSize: 13, color: isDone ? '#9CA3AF' : '#475569', fontWeight: 500 }}>{assignee}</span>
                       </div>
 
-                      {/* Due date */}
+                      {/* Due date — FIX 8: overdue indicator icon */}
                       <div style={{ flexShrink: 0, minWidth: 90, textAlign: 'right' }}>
-                        <span style={{ fontSize: 13, fontWeight: 500, color: rel.colour }}>{rel.text}</span>
+                        {overdue ? (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 500, color: '#DC2626' }}>
+                            <AlertCircle className="w-3.5 h-3.5" style={{ flexShrink: 0 }} />
+                            {rel.text}
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 13, fontWeight: 500, color: rel.colour }}>{rel.text}</span>
+                        )}
                       </div>
 
                       {/* Actions (hover-reveal) */}
