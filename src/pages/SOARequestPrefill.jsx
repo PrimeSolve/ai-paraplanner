@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import axiosInstance from '@/api/axiosInstance';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SOARequestLayout from '../components/soa/SOARequestLayout';
@@ -21,37 +23,37 @@ const documentTypes = [
 ];
 
 export default function SOARequestPrefill() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [soaRequest, setSOARequest] = useState(null);
-  const [user, setUser] = useState(null);
   const [uploadedDocs, setUploadedDocs] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!user?.id) return;
     const loadData = async () => {
       try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
-        
+
         if (id) {
-          const requests = await base44.entities.SOARequest.filter({ id });
-          if (requests[0]) {
-            setSOARequest(requests[0]);
-            setUploadedDocs(requests[0].prefill_documents || []);
+          const response = await axiosInstance.get(`/advice-requests/${id}`);
+          if (response.data) {
+            setSOARequest(response.data);
+            // TODO: prefill_documents not in AdviceRequest schema — needs backend support
+            setUploadedDocs(response.data.prefillDocuments || []);
           }
         } else {
-          // Create new SOA request
-          const newRequest = await base44.entities.SOARequest.create({
-            client_name: currentUser.full_name || currentUser.email,
-            client_email: currentUser.email,
-            status: 'Submitted' // TODO: ensure backend StatusEnum matches new SOA status values
+          // Create new SOA request via real endpoint
+          const response = await axiosInstance.post('/advice-requests', {
+            adviserId: user.id,
+            tenantId: user.tenant_id,
+            scopeOfAdvice: 'Comprehensive',
+            status: 0, // Draft
           });
-          setSOARequest(newRequest);
-          navigate(createPageUrl('SOARequestPrefill') + `?id=${newRequest.id}`, { replace: true });
+          setSOARequest(response.data);
+          navigate(createPageUrl('SOARequestPrefill') + `?id=${response.data.id}`, { replace: true });
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -61,7 +63,7 @@ export default function SOARequestPrefill() {
       }
     };
     loadData();
-  }, []);
+  }, [user]);
 
   const handleFileUpload = async (type, files) => {
     if (!files || files.length === 0) return;
@@ -80,9 +82,10 @@ export default function SOARequestPrefill() {
 
       const newDocs = await Promise.all(uploadPromises);
       const updatedDocs = [...uploadedDocs, ...newDocs];
-      
-      await base44.entities.SOARequest.update(soaRequest.id, {
-        prefill_documents: updatedDocs
+
+      // TODO: prefill_documents not in AdviceRequest schema — needs backend field or separate documents endpoint
+      await axiosInstance.patch(`/advice-requests/${soaRequest.id}`, {
+        prefillDocuments: updatedDocs
       });
 
       setUploadedDocs(updatedDocs);
