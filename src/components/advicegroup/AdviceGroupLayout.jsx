@@ -119,7 +119,7 @@ export default function AdviceGroupLayout({ children, currentPage, pageActions }
                   AI Assistant
                 </div>
                 <div className="text-white/80 text-xs">
-                  Ask for help
+                  Ask Henry
                 </div>
               </div>
               <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">

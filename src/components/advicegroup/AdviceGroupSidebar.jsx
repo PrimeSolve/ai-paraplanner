@@ -3,7 +3,6 @@ import SidebarLayout from '../navigation/SidebarLayout';
 import {
   LayoutDashboard,
   Layers,
-  CheckCircle,
   Users,
   Settings,
   CreditCard,
@@ -14,7 +13,7 @@ export default function AdviceGroupSidebar({ currentPage }) {
     { label: 'OVERVIEW', items: [
       { label: 'Dashboard', path: 'AdviceGroupDashboard', icon: LayoutDashboard },
       { label: 'SOA Queue', path: 'AdviceGroupSOARequests', icon: Layers },
-      { label: 'Completed SOAs', path: 'AdviceGroupCompleted', icon: CheckCircle }
+      // TODO: re-add when Completed SOAs feature is built
     ]},
     { label: 'MANAGEMENT', items: [
       { label: 'Advisers', path: 'AdviceGroupAdvisers', icon: Users },
@@ -43,6 +42,7 @@ export default function AdviceGroupSidebar({ currentPage }) {
       subtitle="ADVICE GROUP"
       navSections={navSections}
       helpPath="AdviceGroupHelp"
+      helpText="Ask Henry"
       currentPage={currentPage}
       accentColor="#3b82f6"
     />
