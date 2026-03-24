@@ -1,199 +1,266 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
-import { toast } from 'sonner';
 
-const ticketCategories = [
-  { id: 'SOA Document Issue', label: 'SOA Document Issue', icon: '📄' },
-  { id: 'Data Query', label: 'Data Query', icon: '📊' },
-  { id: 'Platform Support', label: 'Platform Support', icon: '🔧' },
-  { id: 'Client Query', label: 'Client Query', icon: '👤' },
-  { id: 'General Enquiry', label: 'General Enquiry', icon: '💬' },
-  { id: 'Technical Issue', label: 'Technical Issue', icon: '⚙️' },
-];
+const CATEGORIES = ['Billing', 'Technical', 'SOA', 'Other'];
+const PRIORITIES = ['Low', 'Medium', 'High', 'Urgent'];
 
-const priorityLevels = [
-  { id: 'Low', label: 'Low', description: 'No immediate impact' },
-  { id: 'Medium', label: 'Medium', description: 'Affects workflow' },
-  { id: 'High', label: 'High', description: 'Client impacted' },
-  { id: 'Urgent', label: 'Urgent', description: 'Critical blocker' },
-];
-
-export default function NewTicketModal({ onClose }) {
-  const [user, setUser] = useState(null);
-  const [adviser, setAdviser] = useState(null);
-  const [adviceGroup, setAdviceGroup] = useState(null);
-  const [clients, setClients] = useState([]);
-  
-  const [category, setCategory] = useState(null);
+export default function NewTicketModal({ onClose, onSuccess }) {
   const [subject, setSubject] = useState('');
-  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
   const [priority, setPriority] = useState('Medium');
-  const [clientId, setClientId] = useState('');
+  const [description, setDescription] = useState('');
+  const [relatedClientId, setRelatedClientId] = useState('');
+  const [relatedSOAId, setRelatedSOAId] = useState('');
+  const [relatedFeature, setRelatedFeature] = useState('');
+  const [additionalContext, setAdditionalContext] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  const queryClient = useQueryClient();
+  // SOA category data
+  const [clients, setClients] = useState([]);
+  const [soaRequests, setSoaRequests] = useState([]);
+  const [loadingClients, setLoadingClients] = useState(false);
+  const [loadingSOAs, setLoadingSOAs] = useState(false);
 
   useEffect(() => {
-    const loadData = async () => {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-
-      // Get adviser record
-      const adviserRecords = await base44.entities.Adviser.filter({ user_id: currentUser.id });
-      if (adviserRecords.length > 0) {
-        setAdviser(adviserRecords[0]);
-        
-        // Get advice group
-        const groups = await base44.entities.AdviceGroup.filter({ id: adviserRecords[0].advice_group_id });
-        if (groups.length > 0) {
-          setAdviceGroup(groups[0]);
-        }
-
-        // Get clients
-        const clientList = await base44.entities.Client.filter({ adviser_email: currentUser.email });
-        setClients(clientList);
-      }
-    };
-    loadData();
-  }, []);
-
-  const createTicketMutation = useMutation({
-    mutationFn: (ticketData) => base44.entities.Ticket.create(ticketData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tickets'] });
-      toast.success('Ticket created successfully');
-      onClose();
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to create ticket');
-    },
-  });
-
-  const handleSubmit = async () => {
-    if (!category || !subject || !description) {
-      toast.error('Please fill in all required fields');
-      return;
+    if (category === 'SOA') {
+      loadClients();
     }
+  }, [category]);
 
-    // Generate ticket number
-    const ticketNumber = `TKT-${Date.now().toString().slice(-6)}`;
-
-    // Get selected client if any
-    const selectedClient = clients.find(c => c.id === clientId);
-    
-    // Get user associated with client
-    let clientUser = null;
-    if (selectedClient?.user_id) {
-      const users = await base44.entities.User.filter({ id: selectedClient.user_id });
-      if (users.length > 0) {
-        clientUser = users[0];
-      }
+  useEffect(() => {
+    if (relatedClientId) {
+      loadSOARequests(relatedClientId);
+    } else {
+      setSoaRequests([]);
+      setRelatedSOAId('');
     }
+  }, [relatedClientId]);
 
-    const ticketData = {
-      ticket_number: ticketNumber,
-      subject,
-      description,
-      category,
-      status: 'Open',
-      priority,
-      adviser_email: user.email,
-      adviser_name: user.full_name,
-      advice_group_id: adviceGroup?.id,
-      advice_group_name: adviceGroup?.name,
-      client_id: clientId || null,
-      client_name: clientUser?.full_name || null,
-      comments: [],
-      attachments: [],
-    };
-
-    createTicketMutation.mutate(ticketData);
+  const loadClients = async () => {
+    try {
+      setLoadingClients(true);
+      const user = await base44.auth.me();
+      const clientList = await base44.entities.Client.filter({ adviser_email: user.email });
+      setClients(clientList);
+    } catch (err) {
+      console.error('Failed to load clients:', err);
+    } finally {
+      setLoadingClients(false);
+    }
   };
 
-  if (!user || !adviser) {
-    return null;
-  }
+  const loadSOARequests = async (clientId) => {
+    try {
+      setLoadingSOAs(true);
+      const soas = await base44.entities.SOARequest.filter({ client_id: clientId });
+      setSoaRequests(soas);
+    } catch (err) {
+      console.error('Failed to load SOA requests:', err);
+    } finally {
+      setLoadingSOAs(false);
+    }
+  };
+
+  const validate = () => {
+    const errors = {};
+    if (!subject.trim()) errors.subject = 'Subject is required';
+    if (!category) errors.category = 'Category is required';
+    if (!description.trim()) errors.description = 'Description is required';
+    if (category === 'SOA' && !relatedClientId) errors.relatedClientId = 'Client is required for SOA tickets';
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    setSubmitting(true);
+    setError('');
+
+    try {
+      await base44.entities.Ticket.create({
+        subject: subject.trim(),
+        category,
+        priority,
+        description: description.trim(),
+        related_client_id: relatedClientId || null,
+        related_s_o_a_id: relatedSOAId || null,
+        related_feature: relatedFeature.trim() || null,
+        additional_context: additionalContext.trim() || null,
+      });
+      onSuccess();
+    } catch (err) {
+      console.error('Failed to create ticket:', err);
+      setError('Failed to submit ticket. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
-      <div style={{ backgroundColor: 'white', borderRadius: '16px', maxWidth: '720px', width: '100%', maxHeight: '90vh', overflow: 'auto', padding: '32px', position: 'relative' }}>
-        <button onClick={onClose} style={{ position: 'absolute', top: '20px', right: '20px', padding: '8px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748b' }}>
-          <X className="w-5 h-5" />
-        </button>
-
-        <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#0f172a', marginBottom: '24px', margin: '0 0 24px 0' }}>
-          Create New Support Ticket
-        </h2>
-
-        {/* Category Selection */}
-        <div style={{ marginBottom: '24px' }}>
-          <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase' }}>
-            What type of issue is this? *
-          </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-            {ticketCategories.map(cat => (
-              <div key={cat.id} onClick={() => setCategory(cat.id)} style={{ padding: '16px', borderRadius: '12px', border: `2px solid ${category === cat.id ? '#7C3AED' : '#e2e8f0'}`, backgroundColor: category === cat.id ? '#EDE9FE' : 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.15s ease' }}>
-                <span style={{ fontSize: '24px' }}>{cat.icon}</span>
-                <span style={{ fontSize: '14px', fontWeight: '500', color: '#0f172a' }}>{cat.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Client Selection */}
-        <div style={{ marginBottom: '24px' }}>
-          <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase' }}>
-            Related Client (optional)
-          </label>
-          <select value={clientId} onChange={e => setClientId(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', backgroundColor: 'white', fontSize: '15px', color: '#0f172a', cursor: 'pointer' }}>
-            <option value="">None</option>
-            {clients.map(client => (
-              <option key={client.id} value={client.id}>{client.user_id}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Subject */}
-        <div style={{ marginBottom: '24px' }}>
-          <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase' }}>
-            Subject *
-          </label>
-          <input type="text" value={subject} onChange={e => setSubject(e.target.value)} placeholder="Brief description of the issue..." style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', backgroundColor: 'white', fontSize: '15px', color: '#0f172a', boxSizing: 'border-box' }} />
-        </div>
-
-        {/* Description */}
-        <div style={{ marginBottom: '24px' }}>
-          <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase' }}>
-            Description *
-          </label>
-          <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Provide details about the issue..." style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', backgroundColor: 'white', fontSize: '15px', color: '#0f172a', minHeight: '120px', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
-        </div>
-
-        {/* Priority */}
-        <div style={{ marginBottom: '32px' }}>
-          <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase' }}>
-            Priority
-          </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-            {priorityLevels.map(p => (
-              <div key={p.id} onClick={() => setPriority(p.id)} style={{ padding: '12px', borderRadius: '8px', border: `2px solid ${priority === p.id ? '#7C3AED' : '#e2e8f0'}`, backgroundColor: priority === p.id ? '#EDE9FE' : 'white', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s ease' }}>
-                <div style={{ fontSize: '13px', fontWeight: '600', color: '#0f172a', marginBottom: '4px' }}>{p.label}</div>
-                <div style={{ fontSize: '11px', color: '#64748b' }}>{p.description}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Buttons */}
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button onClick={handleSubmit} disabled={createTicketMutation.isPending} style={{ padding: '12px 24px', borderRadius: '8px', border: 'none', background: '#7C3AED', color: 'white', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
-            {createTicketMutation.isPending ? 'Creating...' : 'Submit Ticket'}
-          </button>
-          <button onClick={onClose} style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
-            Cancel
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-2xl w-full max-w-lg mx-4 shadow-xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+          <h2 className="text-lg font-bold text-slate-800">New Support Ticket</h2>
+          <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-lg transition-colors">
+            <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Subject */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Subject *</label>
+            <input
+              type="text"
+              value={subject}
+              onChange={e => { setSubject(e.target.value); setFieldErrors(prev => ({ ...prev, subject: '' })); }}
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${fieldErrors.subject ? 'border-red-300' : 'border-slate-200'}`}
+              placeholder="Brief description of your issue"
+            />
+            {fieldErrors.subject && <p className="text-xs text-red-500 mt-1">{fieldErrors.subject}</p>}
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Category *</label>
+            <select
+              value={category}
+              onChange={e => {
+                setCategory(e.target.value);
+                setFieldErrors(prev => ({ ...prev, category: '' }));
+                setRelatedClientId('');
+                setRelatedSOAId('');
+                setRelatedFeature('');
+                setAdditionalContext('');
+              }}
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${fieldErrors.category ? 'border-red-300' : 'border-slate-200'}`}
+            >
+              <option value="">Select a category...</option>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            {fieldErrors.category && <p className="text-xs text-red-500 mt-1">{fieldErrors.category}</p>}
+          </div>
+
+          {/* Priority */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Priority *</label>
+            <select
+              value={priority}
+              onChange={e => setPriority(e.target.value)}
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              {PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
+
+          {/* Dynamic fields by category */}
+          {category === 'SOA' && (
+            <>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Client *</label>
+                <select
+                  value={relatedClientId}
+                  onChange={e => { setRelatedClientId(e.target.value); setFieldErrors(prev => ({ ...prev, relatedClientId: '' })); }}
+                  disabled={loadingClients}
+                  className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-50 ${fieldErrors.relatedClientId ? 'border-red-300' : 'border-slate-200'}`}
+                >
+                  <option value="">Select a client...</option>
+                  {clients.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {`${c.first_name || ''} ${c.last_name || ''}`.trim() || c.email}
+                    </option>
+                  ))}
+                </select>
+                {fieldErrors.relatedClientId && <p className="text-xs text-red-500 mt-1">{fieldErrors.relatedClientId}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Related SOA</label>
+                <select
+                  value={relatedSOAId}
+                  onChange={e => setRelatedSOAId(e.target.value)}
+                  disabled={!relatedClientId || loadingSOAs}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-50"
+                >
+                  <option value="">Select an SOA request...</option>
+                  {soaRequests.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.title || s.subject || `SOA #${s.id?.substring(0, 8)}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+
+          {category === 'Technical' && (
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Which page or feature is affected?</label>
+              <input
+                type="text"
+                value={relatedFeature}
+                onChange={e => setRelatedFeature(e.target.value)}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="e.g. Fact Find, SOA Builder, Dashboard..."
+              />
+            </div>
+          )}
+
+          {category === 'Other' && (
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Additional context</label>
+              <textarea
+                value={additionalContext}
+                onChange={e => setAdditionalContext(e.target.value)}
+                rows={3}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                placeholder="Any additional information that might help us..."
+              />
+            </div>
+          )}
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Description *</label>
+            <textarea
+              value={description}
+              onChange={e => { setDescription(e.target.value); setFieldErrors(prev => ({ ...prev, description: '' })); }}
+              rows={4}
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none ${fieldErrors.description ? 'border-red-300' : 'border-slate-200'}`}
+              placeholder="Describe your issue in detail..."
+            />
+            {fieldErrors.description && <p className="text-xs text-red-500 mt-1">{fieldErrors.description}</p>}
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-5 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-colors disabled:opacity-50"
+              style={{ background: '#4F46E5' }}
+            >
+              {submitting ? 'Submitting...' : 'Submit Ticket'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

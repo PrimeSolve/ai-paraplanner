@@ -14,6 +14,7 @@ namespace PrimeSolve.Api.Data
         public DbSet<AdviceRecord> AdviceRecords { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<CompanyShareholder> CompanyShareholders { get; set; }
+        public DbSet<Ticket> Tickets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -68,6 +69,17 @@ namespace PrimeSolve.Api.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => new { e.TenantId, e.CompanyId });
                 entity.Property(e => e.SharePercentage).HasColumnType("decimal(18,4)");
+            });
+
+            modelBuilder.Entity<Ticket>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.TenantId, e.AdviserId });
+                entity.HasIndex(e => e.AdviceGroupId);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.Property(e => e.Status).HasDefaultValue("Open");
+                entity.Property(e => e.Description).HasColumnType("nvarchar(max)");
+                entity.Property(e => e.AdditionalContext).HasColumnType("nvarchar(max)");
             });
         }
     }
