@@ -229,7 +229,7 @@ export default function AdviserAdviceRecordDetail() {
       <div style={{ padding: '24px 32px' }}>
         <div className="text-center py-16">
           <h2 className="text-xl font-semibold text-slate-800">Record not found</h2>
-          <Link to={createPageUrl('AdviserAdviceRecords')}>
+          <Link to={createPageUrl('AdviserAdviceHistory')}>
             <Button variant="outline" className="mt-4">Back to Records</Button>
           </Link>
         </div>
@@ -256,7 +256,7 @@ export default function AdviserAdviceRecordDetail() {
     <div style={{ padding: '24px 32px' }}>
       {/* Back navigation */}
       <div className="mb-6">
-        <Link to={createPageUrl('AdviserAdviceRecords')}>
+        <Link to={createPageUrl('AdviserAdviceHistory')}>
           <Button variant="ghost" size="sm" className="gap-2">
             <ArrowLeft className="w-4 h-4" />
             Back to Advice Records

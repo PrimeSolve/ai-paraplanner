@@ -81,7 +81,7 @@ export default function AdviserSidebar({ currentPage }) {
       { label: 'Clients', icon: Users, path: 'AdviserClients' },
       { label: 'Product Research', icon: Search, path: 'ProductResearch' },
       { label: 'SOA Queue', icon: FileText, path: 'AdviserSOARequests' },
-      { label: 'Advice Records', icon: ScrollText, path: 'AdviserAdviceRecords' }
+      { label: 'Advice History', icon: ScrollText, path: 'AdviserAdviceHistory' }
     ]},
     { label: 'ACCOUNT', border: true, items: [
       { label: 'Billing', icon: CreditCard, path: 'Billing' },

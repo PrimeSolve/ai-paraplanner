@@ -23,34 +23,27 @@ const RECORD_TYPE_CONFIG = {
   fact_find: {
     label: 'Fact Find',
     icon: ClipboardCheck,
+    color: 'bg-indigo-100 text-indigo-700',
+    iconColor: 'text-indigo-600',
+    bgColor: 'bg-indigo-50',
+  },
+  soa_request: {
+    label: 'SOA Request',
+    icon: ScrollText,
     color: 'bg-blue-100 text-blue-700',
     iconColor: 'text-blue-600',
     bgColor: 'bg-blue-50',
   },
-  strategy_recommendations: {
-    label: 'Strategy Recommendations',
-    icon: ScrollText,
+  cashflow_model: {
+    label: 'Cashflow Model',
+    icon: TrendingUp,
     color: 'bg-purple-100 text-purple-700',
     iconColor: 'text-purple-600',
     bgColor: 'bg-purple-50',
   },
-  cashflow_model: {
-    label: 'Cashflow Model',
-    icon: TrendingUp,
-    color: 'bg-orange-100 text-orange-700',
-    iconColor: 'text-orange-600',
-    bgColor: 'bg-orange-50',
-  },
-  soa_document: {
+  statement_of_advice: {
     label: 'Statement of Advice',
     icon: FileText,
-    color: 'bg-teal-100 text-teal-700',
-    iconColor: 'text-teal-600',
-    bgColor: 'bg-teal-50',
-  },
-  compliance_review: {
-    label: 'Compliance Review',
-    icon: ShieldCheck,
     color: 'bg-green-100 text-green-700',
     iconColor: 'text-green-600',
     bgColor: 'bg-green-50',
@@ -210,10 +203,9 @@ export default function AdviserAdviceRecords() {
             >
               <option value="all">All Types</option>
               <option value="fact_find">Fact Find</option>
-              <option value="strategy_recommendations">Strategy Recommendations</option>
+              <option value="soa_request">SOA Request</option>
               <option value="cashflow_model">Cashflow Model</option>
-              <option value="soa_document">SOA Document</option>
-              <option value="compliance_review">Compliance Review</option>
+              <option value="statement_of_advice">Statement of Advice</option>
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
@@ -310,7 +302,7 @@ export default function AdviserAdviceRecords() {
                       <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-4">
                         <ScrollText className="w-8 h-8 text-slate-400" />
                       </div>
-                      <h3 className="text-lg font-semibold text-slate-800 mb-1">No advice records found</h3>
+                      <h3 className="text-lg font-semibold text-slate-800 mb-1">No advice history found</h3>
                       <p className="text-sm text-slate-500">
                         Records are created automatically when you complete fact finds, create strategies, or generate SOAs.
                       </p>
