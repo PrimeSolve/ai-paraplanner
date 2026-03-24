@@ -48,7 +48,7 @@ export default function SOARequestPrefill() {
           const newRequest = await base44.entities.SOARequest.create({
             client_name: currentUser.full_name || currentUser.email,
             client_email: currentUser.email,
-            status: 'draft'
+            status: 'Submitted' // TODO: ensure backend StatusEnum matches new SOA status values
           });
           setSOARequest(newRequest);
           navigate(createPageUrl('SOARequestPrefill') + `?id=${newRequest.id}`, { replace: true });

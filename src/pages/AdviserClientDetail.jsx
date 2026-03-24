@@ -87,7 +87,8 @@ export default function AdviserClientDetail() {
     const id = urlParams.get('id');
     setCreatingSoa(true);
     try {
-      const newSOARequest = await base44.entities.SOARequest.create({ client_id: id, status: 'draft' });
+      // TODO: ensure backend StatusEnum matches new SOA status values (Submitted, Pending, UnderReview, Complete)
+      const newSOARequest = await base44.entities.SOARequest.create({ client_id: id, status: 'Submitted' });
       navigate(createPageUrl('SOARequestWelcome') + `?id=${newSOARequest.id}`);
     } catch (err) {
       console.error('Failed to create SOA request:', err);
