@@ -90,7 +90,7 @@ export default function NewSOARequestModal({ isOpen, onClose, onSuccess, adviser
      const soaRequest = await base44.entities.SOARequest.create({
        client_id: selectedClient,
        fact_find_id: client?.fact_find_id || null,
-       status: 'draft',
+       status: 'Submitted', // TODO: ensure backend StatusEnum matches these values
        completion_percentage: 0,
        sections_completed: [],
        scope_of_advice: {},
