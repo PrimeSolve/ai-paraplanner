@@ -87,29 +87,37 @@ export default function AdviceGroupRiskProfiles() {
       };
 
   const handleSave = async () => {
+          console.log('handleSave called', { editingProfile, formData });
           try {
             if (!formData.name.trim()) {
+              console.log('STOPPED: name empty');
               toast.error('Profile name is required');
               return;
             }
 
             let groupId = user?.advice_group_id;
+            console.log('groupId from user:', groupId, 'user:', user);
 
             // If no advice_group_id, get the first available one
             if (!groupId) {
+              console.log('Fetching advice groups...');
               const groupsRes = await axiosInstance.get('/advice-groups', {
                 params: { sortBy: 'created_date', limit: 1 }
               });
               const groups = groupsRes.data;
+              console.log('advice-groups response:', groups);
               if (groups.length > 0) {
                 groupId = groups[0].id;
               }
             }
 
             if (!groupId) {
+              console.log('STOPPED: no groupId found');
               toast.error('No advice group found. Please contact support.');
               return;
             }
+
+            console.log('Proceeding to save with groupId:', groupId);
 
             const dataToSave = {
               name: formData.name,
@@ -120,19 +128,23 @@ export default function AdviceGroupRiskProfiles() {
             };
 
           if (editingProfile) {
+            console.log('PUT /risk-profiles/' + editingProfile.id, dataToSave);
             await axiosInstance.put(`/risk-profiles/${editingProfile.id}`, dataToSave);
             toast.success('Risk profile updated');
           } else {
+            console.log('POST /risk-profiles', dataToSave);
             await axiosInstance.post('/risk-profiles', dataToSave);
             toast.success('Risk profile created');
           }
 
+          console.log('Save successful, closing dialog');
           setShowDialog(false);
           setEditingProfile(null);
           setFormData(getEmptyFormData());
           await loadData();
         } catch (error) {
           console.error('Save failed:', error.message || error);
+          console.error('Full error object:', error);
           toast.error(error.message || 'Failed to save risk profile');
         }
       };
