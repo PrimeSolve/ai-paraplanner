@@ -11,11 +11,15 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
+  Sparkles,
+  X,
+  AlertTriangle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import SectionConfigEditor from '@/components/soa/SectionConfigEditor';
 import ExampleSOALibrary from '@/components/soa/ExampleSOALibrary';
+import ClairePanel from '@/components/soa/ClairePanel';
 import {
   DEFAULT_SECTION_GROUPS,
   getSectionStatus,
@@ -62,6 +66,9 @@ export default function AdviceGroupSOATemplate() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [overrides, setOverrides] = useState({});
+  const [claireOpen, setClaireOpen] = useState(false);
+  const [claireSectionStates, setClaireSectionStates] = useState({}); // { sectionId: 'mapped' | 'gap' | 'skipped' | 'populated' }
+  const [claireNewSections, setClaireNewSections] = useState([]);
 
   useEffect(() => {
     loadTemplates();
@@ -242,6 +249,28 @@ export default function AdviceGroupSOATemplate() {
     );
   };
 
+  const handleClaireSectionStateChange = (stateMap, newSections) => {
+    setClaireSectionStates(stateMap);
+    setClaireNewSections(newSections || []);
+  };
+
+  const handleClaireSectionUpdate = (sectionId, status) => {
+    setClaireSectionStates((prev) => ({ ...prev, [sectionId]: status }));
+  };
+
+  const handleGapInlineAction = (sectionId, action) => {
+    setClaireSectionStates((prev) => ({
+      ...prev,
+      [sectionId]: action === 'include' ? 'gap' : 'skipped',
+    }));
+  };
+
+  const getClaireIndicator = (sectionId) => {
+    const state = claireSectionStates[sectionId];
+    if (!state || !claireOpen) return null;
+    return state;
+  };
+
   const { configured, total } = countConfigured(sections);
 
   if (loading) {
@@ -253,7 +282,9 @@ export default function AdviceGroupSOATemplate() {
   }
 
   return (
-    <div className="py-6 px-8">
+    <div className={`flex ${claireOpen ? 'h-[calc(100vh-64px)]' : ''}`}>
+    {/* Left panel — template content */}
+    <div className={`py-6 px-8 ${claireOpen ? 'w-[65%] overflow-y-auto' : 'w-full'} transition-all`}>
       {/* Header */}
       <div className="mb-6">
         <div className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-1">
@@ -295,13 +326,25 @@ export default function AdviceGroupSOATemplate() {
             <span className="text-sm text-slate-600">Overrides</span>
           </div>
         </div>
-        <Button
-          onClick={handleSave}
-          disabled={saving}
-          className="bg-indigo-600 hover:bg-indigo-700"
-        >
-          {saving ? 'Saving...' : 'Save Template'}
-        </Button>
+        <div className="flex items-center gap-3">
+          {!claireOpen && (
+            <Button
+              variant="outline"
+              className="border-purple-500 text-purple-600 hover:bg-purple-50"
+              onClick={() => setClaireOpen(true)}
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Build with Claire
+            </Button>
+          )}
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="bg-indigo-600 hover:bg-indigo-700"
+          >
+            {saving ? 'Saving...' : 'Save Template'}
+          </Button>
+        </div>
       </div>
 
       {/* Section Groups with Drag & Drop */}
@@ -363,6 +406,7 @@ export default function AdviceGroupSOATemplate() {
                                   const feedCount = section.data_feeds?.length || 0;
                                   const isOverride = !!overrides[section.id];
                                   const isDisabled = section.enabled === false;
+                                  const claireIndicator = getClaireIndicator(section.id);
 
                                   return (
                                     <Draggable
@@ -377,6 +421,12 @@ export default function AdviceGroupSOATemplate() {
                                           className={`flex items-center gap-3 p-3 bg-white border rounded-lg transition-all ${
                                             snapshot.isDragging
                                               ? 'shadow-md border-purple-400'
+                                              : claireIndicator === 'populated'
+                                              ? 'border-green-300 animate-[flash-green_1s_ease-out]'
+                                              : claireIndicator === 'gap'
+                                              ? 'border-amber-300 bg-amber-50/30'
+                                              : claireIndicator === 'skipped'
+                                              ? 'opacity-40'
                                               : isOverride
                                               ? 'border-purple-300 border-l-4 border-l-purple-500'
                                               : 'border-slate-200'
@@ -389,7 +439,14 @@ export default function AdviceGroupSOATemplate() {
                                             <GripVertical className="w-4 h-4 text-slate-300" />
                                           </div>
 
-                                          <StatusDot status={status} />
+                                          {/* Claire state dot overrides */}
+                                          {claireIndicator === 'mapped' || claireIndicator === 'populated' ? (
+                                            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-green-500" />
+                                          ) : claireIndicator === 'gap' ? (
+                                            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-amber-500" />
+                                          ) : (
+                                            <StatusDot status={status} />
+                                          )}
 
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
@@ -401,15 +458,34 @@ export default function AdviceGroupSOATemplate() {
                                                   Override
                                                 </span>
                                               )}
-                                              {!isOverride && (
+                                              {!isOverride && !claireIndicator && (
                                                 <span className="text-[10px] font-medium text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded">
                                                   Default
                                                 </span>
                                               )}
                                             </div>
                                             <div className="text-xs text-slate-500 truncate">
-                                              {section.desc}
+                                              {claireIndicator === 'gap' ? (
+                                                <span className="text-amber-600">Not found in your documents</span>
+                                              ) : section.desc}
                                             </div>
+                                            {/* Inline gap actions */}
+                                            {claireIndicator === 'gap' && (
+                                              <div className="flex gap-2 mt-1.5">
+                                                <button
+                                                  onClick={(e) => { e.stopPropagation(); handleGapInlineAction(section.id, 'include'); }}
+                                                  className="text-[11px] text-green-600 hover:text-green-700 font-medium"
+                                                >
+                                                  Include anyway
+                                                </button>
+                                                <button
+                                                  onClick={(e) => { e.stopPropagation(); handleGapInlineAction(section.id, 'skip'); }}
+                                                  className="text-[11px] text-slate-400 hover:text-slate-600 font-medium"
+                                                >
+                                                  Skip this section
+                                                </button>
+                                              </div>
+                                            )}
                                           </div>
 
                                           <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -504,6 +580,18 @@ export default function AdviceGroupSOATemplate() {
         section={editingSection}
         onSave={handleSectionSave}
       />
+    </div>
+
+    {/* Right panel — Claire */}
+    {claireOpen && (
+      <div className="w-[35%] border-l border-slate-200 flex-shrink-0 h-full">
+        <ClairePanel
+          onClose={() => setClaireOpen(false)}
+          onSectionUpdate={handleClaireSectionUpdate}
+          onSectionStateChange={handleClaireSectionStateChange}
+        />
+      </div>
+    )}
     </div>
   );
 }
