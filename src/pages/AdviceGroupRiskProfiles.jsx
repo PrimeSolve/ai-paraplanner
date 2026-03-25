@@ -9,12 +9,13 @@ import { Label } from '@/components/ui/label';
 import { Plus, Edit, Trash2, User, HelpCircle, LogOut, ChevronDown, AlertCircle, Trash } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { useAuth } from '@/lib/AuthContext';
 
 
 export default function AdviceGroupRiskProfiles() {
+  const { user } = useAuth();
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
   const [editingProfile, setEditingProfile] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
@@ -52,33 +53,16 @@ export default function AdviceGroupRiskProfiles() {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (user) {
+      loadData();
+    }
+  }, [user]);
 
-  // TODO: confirm endpoint URLs with primesolve-api if uncertain
   const loadData = async () => {
         try {
-          const currentUser = await axiosInstance.get('/auth/me');
-          setUser(currentUser.data);
-
-          let groupId = currentUser.data.advice_group_id;
-
-          // If no advice_group_id, get the first available one
-          if (!groupId) {
-            const groupsRes = await axiosInstance.get('/advice-groups', {
-              params: { sortBy: 'created_date', limit: 1 }
-            });
-            const groups = groupsRes.data;
-            if (groups.length > 0) {
-              groupId = groups[0].id;
-            }
-          }
-
-          if (groupId) {
-            // API already filters by TenantId via RLS — no adviceGroupId param needed
-            const res = await axiosInstance.get('/risk-profiles');
-            setProfiles(res.data);
-          }
+          // API already filters by TenantId via RLS — no adviceGroupId param needed
+          const res = await axiosInstance.get('/risk-profiles');
+          setProfiles(res.data);
         } catch (error) {
           console.error('Failed to load risk profiles:', error);
         } finally {
@@ -93,19 +77,7 @@ export default function AdviceGroupRiskProfiles() {
               return;
             }
 
-            let groupId = user?.advice_group_id;
-
-            // If no advice_group_id, get the first available one
-            if (!groupId) {
-              const groupsRes = await axiosInstance.get('/advice-groups', {
-                params: { sortBy: 'created_date', limit: 1 }
-              });
-              const groups = groupsRes.data;
-              if (groups.length > 0) {
-                groupId = groups[0].id;
-              }
-            }
-
+            const groupId = user?.advice_group_id;
             if (!groupId) {
               toast.error('No advice group found. Please contact support.');
               return;
