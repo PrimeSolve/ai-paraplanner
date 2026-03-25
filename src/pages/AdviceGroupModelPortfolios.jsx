@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import axiosInstance from '@/api/axiosInstance';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -57,27 +57,28 @@ export default function AdviceGroupModelPortfolios() {
 
   const loadData = async () => {
     try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
+      const currentUser = await axiosInstance.get('/auth/me');
+      setUser(currentUser.data);
 
-      let groupId = currentUser.advice_group_id;
+      let groupId = currentUser.data.advice_group_id;
       if (!groupId) {
-        const groups = await base44.entities.AdviceGroup.list('created_date', 1);
+        const groupsRes = await axiosInstance.get('/advice-groups', {
+          params: { sortBy: 'created_date', limit: 1 }
+        });
+        const groups = groupsRes.data;
         if (groups.length > 0) {
           groupId = groups[0].id;
         }
       }
 
       if (groupId) {
-        const portfolioData = await base44.entities.ModelPortfolio.filter({
-          advice_group_id: groupId
-        }, '-created_date');
-        setPortfolios(portfolioData);
-
-        const riskProfileData = await base44.entities.RiskProfile.filter({
-          advice_group_id: groupId
-        }, 'risk_level');
-        setRiskProfiles(riskProfileData);
+        // API already filters by TenantId via RLS — no adviceGroupId param needed
+        const [portfolioRes, riskProfileRes] = await Promise.all([
+          axiosInstance.get('/model-portfolios'),
+          axiosInstance.get('/risk-profiles')
+        ]);
+        setPortfolios(portfolioRes.data);
+        setRiskProfiles(riskProfileRes.data);
       }
     } catch (error) {
       console.error('Failed to load model portfolios:', error);
@@ -92,18 +93,22 @@ export default function AdviceGroupModelPortfolios() {
     setShowEditDialog(true);
   };
 
+  // TODO: confirm DTO field names match API response
   const handleSavePortfolio = async (formData) => {
     try {
       let groupId = user?.advice_group_id;
       if (!groupId) {
-        const groups = await base44.entities.AdviceGroup.list('created_date', 1);
+        const groupsRes = await axiosInstance.get('/advice-groups', {
+          params: { sortBy: 'created_date', limit: 1 }
+        });
+        const groups = groupsRes.data;
         if (groups.length > 0) {
           groupId = groups[0].id;
         }
       }
 
       if (!groupId) {
-        toast.error('No advice group found');
+        toast.error('No advice group found. Please contact support.');
         return;
       }
 
@@ -113,10 +118,10 @@ export default function AdviceGroupModelPortfolios() {
       };
 
       if (editingPortfolio) {
-        await base44.entities.ModelPortfolio.update(editingPortfolio.id, dataToSave);
+        await axiosInstance.put(`/model-portfolios/${editingPortfolio.id}`, dataToSave);
         toast.success('Portfolio updated');
       } else {
-        await base44.entities.ModelPortfolio.create(dataToSave);
+        await axiosInstance.post('/model-portfolios', dataToSave);
         toast.success('Portfolio created');
       }
 
@@ -124,19 +129,20 @@ export default function AdviceGroupModelPortfolios() {
       setEditingPortfolio(null);
       await loadData();
     } catch (error) {
-      console.error('Save failed:', error);
-      toast.error('Failed to save portfolio');
+      console.error('Save failed:', error.message || error);
+      toast.error(error.message || 'Failed to save portfolio');
     }
   };
 
   const handleDeletePortfolio = async (id) => {
     if (confirm('Delete this portfolio?')) {
       try {
-        await base44.entities.ModelPortfolio.delete(id);
+        await axiosInstance.delete(`/model-portfolios/${id}`);
         toast.success('Portfolio deleted');
         await loadData();
       } catch (error) {
-        toast.error('Failed to delete portfolio');
+        console.error('Delete failed:', error.message || error);
+        toast.error(error.message || 'Failed to delete portfolio');
       }
     }
   };
