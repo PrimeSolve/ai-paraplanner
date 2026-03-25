@@ -20,12 +20,13 @@ import {
   Download,
   MoreHorizontal,
   Pencil,
-  Share2,
   Trash2,
   FolderOpen,
-  Users,
+  User,
   Calendar,
   ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
   Inbox,
 } from 'lucide-react';
 
@@ -87,8 +88,20 @@ export default function ClientDocuments() {
   const [sortDir, setSortDir] = useState('desc');
   const [menuOpen, setMenuOpen] = useState(null);
   const [hoveredRow, setHoveredRow] = useState(null);
+  const [renameModalOpen, setRenameModalOpen] = useState(false);
+  const [renameDoc, setRenameDoc] = useState(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [renameError, setRenameError] = useState('');
+  const [renaming, setRenaming] = useState(false);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const fileInputRef = useRef(null);
   const menuRef = useRef(null);
+
+  /* ─── debounce search input by 200ms ─── */
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   /* ─── data fetching (UNCHANGED) ─── */
 
@@ -149,7 +162,7 @@ export default function ClientDocuments() {
       const name = (doc.fileName || doc.file_name || doc.name || '').toLowerCase();
       const uploader = (doc.uploadedBy || doc.uploaded_by || '').toLowerCase();
       const client = (doc.clientName || doc.client_name || '').toLowerCase();
-      const query = searchQuery.toLowerCase();
+      const query = debouncedSearchQuery.toLowerCase();
       const matchesSearch = !query || name.includes(query) || uploader.includes(query) || client.includes(query);
 
       const docCategory = doc.category || doc.fileType || doc.file_type || 'Other';
@@ -180,9 +193,13 @@ export default function ClientDocuments() {
     });
 
     return list;
-  }, [documents, searchQuery, activeCategory, sortCol, sortDir]);
+  }, [documents, debouncedSearchQuery, activeCategory, sortCol, sortDir]);
 
-  const sharedCount = documents.filter(d => d.shared).length;
+  const clientUploadCount = documents.filter(d => {
+    const src = (d.source || d.uploadedBy || d.uploaded_by || '').toLowerCase();
+    return !src || src === 'client';
+  }).length;
+
   const lastUploadDate = useMemo(() => {
     if (!documents.length) return null;
     const dates = documents
@@ -191,6 +208,17 @@ export default function ClientDocuments() {
     if (!dates.length) return null;
     return new Date(Math.max(...dates.map(d => d.getTime())));
   }, [documents]);
+
+  const formatLastUpload = (date) => {
+    if (!date) return '—';
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.round((today - target) / 86400000);
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    return formatDate(date);
+  };
 
   /* ─── handlers (UNCHANGED API calls) ─── */
 
@@ -275,19 +303,38 @@ export default function ClientDocuments() {
     setMenuOpen(null);
   };
 
-  const handleRename = async (doc) => {
-    const docId = doc.id || doc.documentId;
+  const openRenameModal = (doc) => {
     const displayName = doc.fileName || doc.file_name || doc.name || 'Untitled';
-    const newName = window.prompt('Rename document:', displayName);
-    if (newName && newName.trim() && newName !== displayName) {
-      try {
-        await axiosInstance.patch(`/clients/${clientId}/documents/${docId}`, { fileName: newName.trim() });
-        await loadDocuments(clientId);
-      } catch (error) {
-        console.error('Rename failed:', error);
-      }
-    }
+    // Strip file extension for editing
+    const ext = displayName.includes('.') ? displayName.substring(displayName.lastIndexOf('.')) : '';
+    const nameWithoutExt = ext ? displayName.substring(0, displayName.lastIndexOf('.')) : displayName;
+    setRenameDoc({ ...doc, _ext: ext });
+    setRenameValue(nameWithoutExt);
+    setRenameError('');
+    setRenameModalOpen(true);
     setMenuOpen(null);
+  };
+
+  const submitRename = async () => {
+    if (!renameValue.trim()) {
+      setRenameError('Name cannot be empty');
+      return;
+    }
+    const docId = renameDoc.id || renameDoc.documentId;
+    const newName = renameValue.trim() + (renameDoc._ext || '');
+    setRenaming(true);
+    setRenameError('');
+    try {
+      await axiosInstance.patch(`/clients/${clientId}/documents/${docId}`, { displayName: newName });
+      await loadDocuments(clientId);
+      setRenameModalOpen(false);
+      setRenameDoc(null);
+    } catch (error) {
+      console.error('Rename failed:', error);
+      setRenameError('Failed to rename. Please try again.');
+    } finally {
+      setRenaming(false);
+    }
   };
 
   const handleDrop = (e) => {
@@ -327,6 +374,13 @@ export default function ClientDocuments() {
     const raw = doc.source || doc.uploadedBy || doc.uploaded_by || 'Client';
     if (/adviser/i.test(raw)) return 'Adviser';
     return 'Client';
+  };
+
+  const SortIcon = ({ col }) => {
+    if (sortCol !== col) return <ArrowUpDown className="w-3 h-3 text-slate-400" />;
+    return sortDir === 'asc'
+      ? <ArrowUp className="w-3 h-3 text-indigo-600" />
+      : <ArrowDown className="w-3 h-3 text-indigo-600" />;
   };
 
   const inputStyle = { width: "100%", padding: "9px 12px", border: "1.5px solid #E2E8F0", borderRadius: 8, fontSize: 13, outline: "none", fontFamily: "inherit", color: "#0F172A", background: "#fff" };
@@ -370,17 +424,17 @@ export default function ClientDocuments() {
           </div>
           <div className="bg-white rounded-2xl p-6 border border-slate-200">
             <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4">
-              <Users className="w-6 h-6 text-indigo-600" />
+              <User className="w-6 h-6 text-indigo-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">{sharedCount}</div>
-            <div className="text-sm text-slate-600">Shared with Client</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{clientUploadCount}</div>
+            <div className="text-sm text-slate-600">Uploaded by Client</div>
           </div>
           <div className="bg-white rounded-2xl p-6 border border-slate-200">
             <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-4">
               <Calendar className="w-6 h-6 text-indigo-600" />
             </div>
             <div className="text-4xl font-bold text-slate-800 mb-1">
-              {lastUploadDate ? formatDate(lastUploadDate) : '—'}
+              {formatLastUpload(lastUploadDate)}
             </div>
             <div className="text-sm text-slate-600">Last Upload</div>
           </div>
@@ -419,16 +473,16 @@ export default function ClientDocuments() {
 
         {/* ─── Table ─── */}
         <div className="bg-white rounded-2xl border border-slate-200">
-          {documents.length === 0 && !searchQuery && activeCategory === 'All' ? (
-            <div className="py-16 px-6 text-center">
-              <Inbox className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-              <h3 className="text-lg font-semibold text-slate-700 mb-1">No documents yet</h3>
-              <p className="text-sm text-slate-500 max-w-sm mx-auto mb-5">
-                Upload your first document to get started. Documents from fact finds, advisers, and your own uploads will appear here.
-              </p>
+          {documents.length === 0 && !debouncedSearchQuery && activeCategory === 'All' ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                <FolderOpen className="w-6 h-6 text-gray-400" />
+              </div>
+              <p className="text-sm font-medium text-gray-700">No documents yet</p>
+              <p className="text-xs text-gray-400 mt-1">Upload documents to build this client&apos;s file vault</p>
               <button
                 onClick={() => setUploadModalOpen(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 mt-5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors"
               >
                 <Upload className="w-4 h-4" />
                 Upload Document
@@ -443,26 +497,26 @@ export default function ClientDocuments() {
                       <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Type</span>
                     </th>
                     <th className="text-left px-3 py-3">
-                      <button onClick={() => handleSort('name')} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 uppercase tracking-wider bg-transparent border-none cursor-pointer">
-                        Document <ArrowUpDown className="w-3 h-3" />
+                      <button onClick={() => handleSort('name')} className={`inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider bg-transparent border-none cursor-pointer ${sortCol === 'name' ? 'text-indigo-600' : 'text-slate-600'}`}>
+                        Document <SortIcon col="name" />
                       </button>
                     </th>
                     <th className="text-left px-3 py-3">
-                      <button onClick={() => handleSort('category')} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 uppercase tracking-wider bg-transparent border-none cursor-pointer">
-                        Category <ArrowUpDown className="w-3 h-3" />
+                      <button onClick={() => handleSort('category')} className={`inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider bg-transparent border-none cursor-pointer ${sortCol === 'category' ? 'text-indigo-600' : 'text-slate-600'}`}>
+                        Category <SortIcon col="category" />
                       </button>
                     </th>
                     <th className="text-left px-3 py-3">
                       <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Source</span>
                     </th>
                     <th className="text-left px-3 py-3">
-                      <button onClick={() => handleSort('date')} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 uppercase tracking-wider bg-transparent border-none cursor-pointer">
-                        Date <ArrowUpDown className="w-3 h-3" />
+                      <button onClick={() => handleSort('date')} className={`inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider bg-transparent border-none cursor-pointer ${sortCol === 'date' ? 'text-indigo-600' : 'text-slate-600'}`}>
+                        Date <SortIcon col="date" />
                       </button>
                     </th>
                     <th className="text-left px-3 py-3">
-                      <button onClick={() => handleSort('size')} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 uppercase tracking-wider bg-transparent border-none cursor-pointer">
-                        Size <ArrowUpDown className="w-3 h-3" />
+                      <button onClick={() => handleSort('size')} className={`inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider bg-transparent border-none cursor-pointer ${sortCol === 'size' ? 'text-indigo-600' : 'text-slate-600'}`}>
+                        Size <SortIcon col="size" />
                       </button>
                     </th>
                     <th className="text-right px-6 py-3 w-[130px]">
@@ -475,6 +529,7 @@ export default function ClientDocuments() {
                     filteredDocuments.map((doc) => {
                       const displayName = doc.fileName || doc.file_name || doc.name || 'Untitled';
                       const category = doc.category || doc.fileType || doc.file_type || 'Other';
+                      // TODO: confirm field names with API response shape
                       const displayDate = doc.uploadedAt || doc.uploaded_at || doc.createdDate || doc.created_date || doc.date;
                       const fileSize = doc.fileSize || doc.file_size;
                       const typeBadge = getFileTypeBadge(displayName);
@@ -571,19 +626,13 @@ export default function ClientDocuments() {
                                       Download
                                     </button>
                                     <button
-                                      onClick={() => handleRename(doc)}
+                                      onClick={() => openRenameModal(doc)}
                                       className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors text-left border-none bg-transparent cursor-pointer"
                                     >
                                       <Pencil className="w-4 h-4 text-slate-400" />
                                       Rename
                                     </button>
-                                    <button
-                                      onClick={() => handleShare(doc)}
-                                      className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors text-left border-none bg-transparent cursor-pointer"
-                                    >
-                                      <Share2 className="w-4 h-4 text-slate-400" />
-                                      {isShared ? 'Unshare' : 'Share'}
-                                    </button>
+                                    {/* TODO: Share feature — re-enable when client portal sharing is built */}
                                     <div className="h-px bg-slate-100 mx-1" />
                                     <button
                                       onClick={() => handleDelete(doc)}
@@ -604,8 +653,12 @@ export default function ClientDocuments() {
                     <tr>
                       <td colSpan={7} className="px-6 py-12 text-center">
                         <Search className="w-10 h-10 mx-auto text-slate-300 mb-3" />
-                        <p className="text-sm font-medium text-slate-600 mb-1">No documents found</p>
-                        <p className="text-xs text-slate-400">Try adjusting your search or category filter</p>
+                        <p className="text-sm font-medium text-slate-600 mb-1">
+                          {debouncedSearchQuery ? 'No documents match your search' : 'No documents found'}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {debouncedSearchQuery ? 'Try a different search term' : 'Try adjusting your category filter'}
+                        </p>
                       </td>
                     </tr>
                   )}
@@ -711,6 +764,53 @@ export default function ClientDocuments() {
           </div>
         </div>
       )}
+
+      {/* ─── Rename Modal ─── */}
+      <Dialog open={renameModalOpen} onOpenChange={(open) => { if (!open && !renaming) { setRenameModalOpen(false); setRenameDoc(null); } }}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle>Rename Document</DialogTitle>
+            <DialogDescription>Enter a new name for this document.</DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            <input
+              type="text"
+              value={renameValue}
+              onChange={(e) => { setRenameValue(e.target.value); if (renameError === 'Name cannot be empty') setRenameError(''); }}
+              onKeyDown={(e) => { if (e.key === 'Enter') submitRename(); }}
+              style={inputStyle}
+              autoFocus
+            />
+            {renameDoc?._ext && (
+              <p className="text-xs text-slate-400 mt-1">File extension ({renameDoc._ext}) will be preserved</p>
+            )}
+            {renameError && (
+              <p className="text-xs text-red-600 mt-2">{renameError}</p>
+            )}
+          </div>
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              onClick={() => { setRenameModalOpen(false); setRenameDoc(null); }}
+              disabled={renaming}
+              className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors border-none bg-transparent cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={submitRename}
+              disabled={renaming}
+              className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+            >
+              {renaming ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Saving…
+                </>
+              ) : 'Save'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
