@@ -253,7 +253,7 @@ export default function AdviceGroupSOATemplate() {
   }
 
   return (
-    <div className="py-6 px-8" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div className="py-6 px-8">
       {/* Header */}
       <div className="mb-6">
         <div className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-1">
