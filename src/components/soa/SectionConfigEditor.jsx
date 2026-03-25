@@ -82,7 +82,7 @@ export default function SectionConfigEditor({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl w-[95vw] h-[92vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-5xl w-[95vw] max-h-[90vh] min-h-[600px] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold" style={{ fontFamily: 'Inter, sans-serif' }}>
             {section.label}
@@ -104,7 +104,7 @@ export default function SectionConfigEditor({
           </TabsList>
 
           {/* Tab 1: AI Prompt */}
-          <TabsContent value="prompt" className="flex-1 min-h-0 overflow-auto mt-4 space-y-4">
+          <TabsContent value="prompt" className="flex-1 min-h-0 overflow-y-auto mt-4 space-y-4">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
               <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-blue-700">
@@ -118,8 +118,8 @@ export default function SectionConfigEditor({
                 value={prompt.system}
                 onChange={(e) => setPrompt((p) => ({ ...p, system: e.target.value }))}
                 placeholder="Write instructions for the AI to generate this section. E.g.: Write a comprehensive executive summary for this SOA..."
-                className="w-full min-h-[200px] p-3 border border-slate-300 rounded-lg text-sm resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                className="w-full h-[150px] p-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                style={{ fontFamily: "'JetBrains Mono', monospace", resize: 'none' }}
               />
             </div>
 
