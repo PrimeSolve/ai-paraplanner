@@ -5,17 +5,21 @@ import { Badge } from '@/components/ui/badge';
 import {
   GripVertical,
   ChevronDown,
+  ChevronLeft,
   Settings2,
   Upload,
   Loader2,
   AlertCircle,
   Sparkles,
   AlertTriangle,
+  Home,
+  ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import SectionConfigEditor from '@/components/soa/SectionConfigEditor';
 import ClairePanel from '@/components/soa/ClairePanel';
+import TemplateLibrary from '@/components/soa/TemplateLibrary';
 import {
   DEFAULT_SECTION_GROUPS,
   getSectionStatus,
@@ -52,12 +56,19 @@ function MiniBadge({ label, active }) {
 }
 
 export default function AdminTemplate() {
+  // View state: 'library' or 'editor'
+  const [view, setView] = useState('library');
+  const [editingTemplateId, setEditingTemplateId] = useState(null);
+
+  // Library state
+  const [templates, setTemplates] = useState([]);
+  const [loadingLibrary, setLoadingLibrary] = useState(true);
+
+  // Editor state
   const [template, setTemplate] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState(
-    DEFAULT_SECTION_GROUPS.map((g) => g.group)
-  );
+  const [expandedGroups, setExpandedGroups] = useState([]);
   const [sections, setSections] = useState(
     () => JSON.parse(JSON.stringify(DEFAULT_SECTION_GROUPS))
   );
@@ -71,29 +82,51 @@ export default function AdminTemplate() {
   const [claireNewSections, setClaireNewSections] = useState([]);
 
   useEffect(() => {
-    loadTemplate();
-    loadExampleCount();
+    loadTemplates();
   }, []);
 
-  const loadTemplate = async () => {
+  const loadTemplates = async () => {
+    setLoadingLibrary(true);
     try {
-      const templates = await base44.entities.SOATemplate.filter({ owner_type: 'admin' });
-      if (templates[0]) {
-        setTemplate(templates[0]);
-        if (templates[0].sections) {
-          const loaded = typeof templates[0].sections === 'string'
-            ? JSON.parse(templates[0].sections)
-            : templates[0].sections;
-          if (Array.isArray(loaded) && loaded.length > 0) {
-            setSections(loaded);
-          }
-        }
+      // Try the new /available endpoint first, fall back to filter
+      let loaded;
+      try {
+        loaded = await base44.soaTemplateApi.getAvailable();
+      } catch {
+        loaded = await base44.entities.SOATemplate.filter({ owner_type: 'admin' });
       }
+      setTemplates(loaded);
     } catch (error) {
-      console.error('Failed to load template:', error);
+      console.error('Failed to load templates:', error);
     } finally {
-      setLoading(false);
+      setLoadingLibrary(false);
     }
+  };
+
+  const openEditor = async (tmpl) => {
+    setLoading(true);
+    setEditingTemplateId(tmpl.id);
+    setTemplate(tmpl);
+
+    if (tmpl.sections) {
+      const parsed = typeof tmpl.sections === 'string'
+        ? JSON.parse(tmpl.sections)
+        : tmpl.sections;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        setSections(parsed);
+        setExpandedGroups(parsed.map((g) => g.group));
+      } else {
+        setSections(JSON.parse(JSON.stringify(DEFAULT_SECTION_GROUPS)));
+        setExpandedGroups(DEFAULT_SECTION_GROUPS.map((g) => g.group));
+      }
+    } else {
+      setSections(JSON.parse(JSON.stringify(DEFAULT_SECTION_GROUPS)));
+      setExpandedGroups(DEFAULT_SECTION_GROUPS.map((g) => g.group));
+    }
+
+    setView('editor');
+    setLoading(false);
+    loadExampleCount();
   };
 
   const loadExampleCount = async () => {
@@ -119,6 +152,8 @@ export default function AdminTemplate() {
         setTemplate(created);
       }
       toast.success('Template saved successfully');
+      // Refresh library data
+      loadTemplates();
     } catch {
       toast.error('Failed to save template');
     } finally {
@@ -146,6 +181,73 @@ export default function AdminTemplate() {
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleNewFromScratch = async () => {
+    try {
+      const emptySections = DEFAULT_SECTION_GROUPS.map((g) => ({
+        ...g,
+        sections: g.sections.map((s) => ({
+          ...s,
+          prompt: { system: '', output_format: 'prose', max_words: 500, tone: 'professional_clear' },
+          example_content: '',
+          data_feeds: [],
+        })),
+      }));
+      const created = await base44.entities.SOATemplate.create({
+        owner_type: 'admin',
+        name: 'New System Template',
+        description: '',
+        sections: JSON.stringify(emptySections),
+      });
+      toast.success('Template created');
+      await loadTemplates();
+      openEditor(created);
+    } catch {
+      toast.error('Failed to create template');
+    }
+  };
+
+  const handleNewFromDefault = async () => {
+    // Find the default template and duplicate it
+    const defaultTmpl = templates.find((t) => t.name === 'PrimeSolve Default' || (t.owner_type === 'admin'));
+    if (defaultTmpl) {
+      try {
+        const duplicated = await base44.soaTemplateApi.duplicate(defaultTmpl.id, {
+          name: `${defaultTmpl.name || 'Default'} (Copy)`,
+          ownerType: 'admin',
+          ownerId: '',
+        });
+        toast.success('Template duplicated');
+        await loadTemplates();
+        openEditor(duplicated);
+      } catch {
+        // Fallback: create manually
+        const created = await base44.entities.SOATemplate.create({
+          owner_type: 'admin',
+          name: `${defaultTmpl.name || 'Default'} (Copy)`,
+          description: defaultTmpl.description || '',
+          sections: defaultTmpl.sections,
+        });
+        toast.success('Template duplicated');
+        await loadTemplates();
+        openEditor(created);
+      }
+    }
+  };
+
+  const handleDelete = async (tmpl) => {
+    if (tmpl.name === 'PrimeSolve Default') {
+      toast.error('Cannot delete the PrimeSolve Default template');
+      return;
+    }
+    try {
+      await base44.entities.SOATemplate.delete(tmpl.id);
+      toast.success('Template deleted');
+      loadTemplates();
+    } catch {
+      toast.error('Failed to delete template');
     }
   };
 
@@ -177,7 +279,7 @@ export default function AdminTemplate() {
     }
   };
 
-  const openEditor = (section) => {
+  const openSectionEditor = (section) => {
     setEditingSection(section);
     setEditorOpen(true);
   };
@@ -218,6 +320,54 @@ export default function AdminTemplate() {
     return state;
   };
 
+  // ── LIBRARY VIEW ──
+  if (view === 'library') {
+    return (
+      <div className="py-6 px-8">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1.5 text-sm text-slate-500 mb-4">
+          <Home className="w-4 h-4" />
+          <ChevronRight className="w-3.5 h-3.5" />
+          <span className="text-slate-800 font-medium">SOA Templates</span>
+        </div>
+
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">
+            SOA Templates
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Manage system-level SOA document templates available to all advice groups
+          </p>
+        </div>
+
+        <TemplateLibrary
+          templates={templates}
+          activeTemplateId={null}
+          defaultTemplateId={templates.find((t) => t.name === 'PrimeSolve Default')?.id}
+          onEdit={openEditor}
+          onView={openEditor}
+          onDuplicate={(tmpl) => {
+            handleNewFromDefault();
+          }}
+          onDelete={handleDelete}
+          onNewFromClaire={() => {
+            // Find default and open editor with Claire
+            const defaultTmpl = templates.find((t) => t.owner_type === 'admin');
+            if (defaultTmpl) {
+              openEditor(defaultTmpl);
+              setTimeout(() => setClaireOpen(true), 100);
+            }
+          }}
+          onNewFromDefault={handleNewFromDefault}
+          onNewFromScratch={handleNewFromScratch}
+          level="admin"
+          loading={loadingLibrary}
+        />
+      </div>
+    );
+  }
+
+  // ── EDITOR VIEW ──
   const { configured, total } = countConfigured(sections);
 
   if (loading) {
@@ -230,14 +380,34 @@ export default function AdminTemplate() {
 
   return (
     <div className={`flex ${claireOpen ? 'h-[calc(100vh-64px)]' : ''}`}>
-    <div className={`py-6 px-8 ${claireOpen ? 'w-[65%] overflow-y-auto' : 'w-full'} transition-all`} style={{ fontFamily: 'Inter, sans-serif' }}>
-      {/* Header */}
+    <div className={`py-6 px-8 ${claireOpen ? 'w-[65%] overflow-y-auto' : 'w-full'} transition-all`}>
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-1.5 text-sm text-slate-500 mb-4">
+        <Home className="w-4 h-4" />
+        <ChevronRight className="w-3.5 h-3.5" />
+        <button
+          onClick={() => { setView('library'); setClaireOpen(false); }}
+          className="hover:text-slate-700 transition-colors"
+        >
+          SOA Templates
+        </button>
+        <ChevronRight className="w-3.5 h-3.5" />
+        <span className="text-slate-800 font-medium">
+          {template?.name || 'Edit Template'}
+        </span>
+      </div>
+
+      {/* Back button + Header */}
       <div className="mb-6">
-        <div className="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">
-          Template Configuration
-        </div>
-        <h1 className="text-2xl font-bold text-slate-900">
-          PrimeSolve Default Template
+        <button
+          onClick={() => { setView('library'); setClaireOpen(false); }}
+          className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-2"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Templates
+        </button>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Editing: {template?.name || 'PrimeSolve Default Template'}
         </h1>
         <p className="text-sm text-slate-500 mt-1">
           Configure AI prompts, examples, and data feeds for each section
@@ -467,7 +637,7 @@ export default function AdminTemplate() {
                                             className="flex-shrink-0 text-indigo-600 border-indigo-200 hover:bg-indigo-50"
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              openEditor(section);
+                                              openSectionEditor(section);
                                             }}
                                           >
                                             <Settings2 className="w-3.5 h-3.5 mr-1" />

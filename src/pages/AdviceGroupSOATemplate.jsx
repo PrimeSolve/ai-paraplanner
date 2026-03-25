@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import {
   GripVertical,
   ChevronDown,
+  ChevronLeft,
   Settings2,
   RotateCcw,
   Upload,
@@ -14,12 +15,15 @@ import {
   Sparkles,
   X,
   AlertTriangle,
+  Home,
+  ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import SectionConfigEditor from '@/components/soa/SectionConfigEditor';
 import ExampleSOALibrary from '@/components/soa/ExampleSOALibrary';
 import ClairePanel from '@/components/soa/ClairePanel';
+import TemplateLibrary from '@/components/soa/TemplateLibrary';
 import {
   DEFAULT_SECTION_GROUPS,
   getSectionStatus,
@@ -53,9 +57,18 @@ function MiniBadge({ label, active }) {
 }
 
 export default function AdviceGroupSOATemplate() {
+  // View state: 'library' or 'editor'
+  const [view, setView] = useState('library');
+
+  // Library state
+  const [templates, setTemplates] = useState([]);
+  const [loadingLibrary, setLoadingLibrary] = useState(true);
+  const [activeTemplateId, setActiveTemplateId] = useState(null);
+
+  // Editor state
   const [adminTemplate, setAdminTemplate] = useState(null);
   const [groupTemplate, setGroupTemplate] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [expandedGroups, setExpandedGroups] = useState([]);
@@ -67,82 +80,116 @@ export default function AdviceGroupSOATemplate() {
   const [editingSection, setEditingSection] = useState(null);
   const [overrides, setOverrides] = useState({});
   const [claireOpen, setClaireOpen] = useState(false);
-  const [claireSectionStates, setClaireSectionStates] = useState({}); // { sectionId: 'mapped' | 'gap' | 'skipped' | 'populated' }
+  const [claireSectionStates, setClaireSectionStates] = useState({});
   const [claireNewSections, setClaireNewSections] = useState([]);
 
   useEffect(() => {
-    loadTemplates();
+    loadInitialData();
   }, []);
 
-  const loadTemplates = async () => {
+  const loadInitialData = async () => {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
+      await loadTemplates(currentUser);
+    } catch (error) {
+      console.error('Failed to load user:', error);
+      setLoadingLibrary(false);
+    }
+  };
 
-      // Load admin template as base
-      let adminSecs = JSON.parse(JSON.stringify(DEFAULT_SECTION_GROUPS));
+  const loadTemplates = async (currentUser) => {
+    const usr = currentUser || user;
+    setLoadingLibrary(true);
+    try {
+      let loaded;
       try {
-        const adminTemplates = await base44.entities.SOATemplate.filter({ owner_type: 'admin' });
-        if (adminTemplates[0]?.sections) {
-          const loaded = typeof adminTemplates[0].sections === 'string'
-            ? JSON.parse(adminTemplates[0].sections)
-            : adminTemplates[0].sections;
-          if (Array.isArray(loaded) && loaded.length > 0) {
-            adminSecs = loaded;
-          }
-          setAdminTemplate(adminTemplates[0]);
+        loaded = await base44.soaTemplateApi.getAvailable();
+      } catch {
+        // Fallback: load admin + group templates separately
+        const admin = await base44.entities.SOATemplate.filter({ owner_type: 'admin' });
+        let group = [];
+        if (usr?.advice_group_id) {
+          try {
+            group = await base44.entities.SOATemplate.filter({
+              owner_type: 'advice_group',
+              advice_group_id: usr.advice_group_id,
+            });
+          } catch { /* silent */ }
         }
-      } catch { /* silent */ }
-      setAdminSections(adminSecs);
+        loaded = [...admin, ...group];
+      }
+      setTemplates(loaded);
 
-      // Load group template overrides
-      if (currentUser.advice_group_id) {
-        try {
-          const groupTemplates = await base44.entities.SOATemplate.filter({
-            owner_type: 'advice_group',
-            advice_group_id: currentUser.advice_group_id,
-          });
-          if (groupTemplates[0]) {
-            setGroupTemplate(groupTemplates[0]);
-            if (groupTemplates[0].sections) {
-              const loaded = typeof groupTemplates[0].sections === 'string'
-                ? JSON.parse(groupTemplates[0].sections)
-                : groupTemplates[0].sections;
-              if (Array.isArray(loaded) && loaded.length > 0) {
-                setSections(loaded);
-                // Track which sections have overrides
-                const overrideMap = {};
-                for (const group of loaded) {
-                  for (const s of group.sections) {
-                    if (s.prompt?.system || s.example_content) {
-                      overrideMap[s.id] = true;
-                    }
-                  }
-                }
-                setOverrides(overrideMap);
-                setExpandedGroups(loaded.map((g) => g.group));
-                setLoading(false);
-                return;
-              }
-            }
-          }
-        } catch { /* silent */ }
+      // Load admin template for "base" sections
+      const adminTmpls = loaded.filter((t) => t.owner_type === 'admin');
+      if (adminTmpls[0]) {
+        setAdminTemplate(adminTmpls[0]);
+        const adminSecs = typeof adminTmpls[0].sections === 'string'
+          ? JSON.parse(adminTmpls[0].sections)
+          : adminTmpls[0].sections;
+        if (Array.isArray(adminSecs) && adminSecs.length > 0) {
+          setAdminSections(adminSecs);
+        }
       }
 
-      setSections(adminSecs);
-      setExpandedGroups(adminSecs.map((g) => g.group));
+      // Determine active template for this group
+      // TODO: Check advice group's defaultTemplateId from backend
+      const groupTmpls = loaded.filter((t) => t.owner_type === 'advice_group');
+      if (groupTmpls.length > 0) {
+        setActiveTemplateId(groupTmpls[0].id);
+      }
     } catch (error) {
       console.error('Failed to load templates:', error);
     } finally {
-      setLoading(false);
+      setLoadingLibrary(false);
     }
+  };
+
+  const openEditor = (tmpl) => {
+    setLoading(true);
+    setGroupTemplate(tmpl);
+
+    if (tmpl.sections) {
+      const parsed = typeof tmpl.sections === 'string'
+        ? JSON.parse(tmpl.sections)
+        : tmpl.sections;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        setSections(parsed);
+        // Track which sections have overrides
+        const overrideMap = {};
+        for (const group of parsed) {
+          for (const s of group.sections) {
+            if (s.prompt?.system || s.example_content) {
+              overrideMap[s.id] = true;
+            }
+          }
+        }
+        setOverrides(overrideMap);
+        setExpandedGroups(parsed.map((g) => g.group));
+      }
+    } else {
+      // New template with default sections
+      const defaultSecs = adminSections || JSON.parse(JSON.stringify(DEFAULT_SECTION_GROUPS));
+      setSections(defaultSecs);
+      setExpandedGroups(defaultSecs.map((g) => g.group));
+      setOverrides({});
+    }
+
+    setView('editor');
+    setLoading(false);
+  };
+
+  const handleViewDefault = (tmpl) => {
+    // Open default template in read-only-ish mode (same editor, just viewing)
+    openEditor(tmpl);
   };
 
   const handleSave = async () => {
     setSaving(true);
     try {
       const payload = { sections: JSON.stringify(sections) };
-      if (groupTemplate?.id) {
+      if (groupTemplate?.id && groupTemplate.owner_type !== 'admin') {
         await base44.entities.SOATemplate.update(groupTemplate.id, payload);
       } else {
         const created = await base44.entities.SOATemplate.create({
@@ -154,10 +201,93 @@ export default function AdviceGroupSOATemplate() {
         setGroupTemplate(created);
       }
       toast.success('Template saved successfully');
+      loadTemplates();
     } catch {
       toast.error('Failed to save template');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSetAsDefault = async (tmpl) => {
+    // TODO: Call PATCH /api/v1/advice-groups/{id} with { defaultTemplateId: tmpl.id }
+    setActiveTemplateId(tmpl.id);
+    toast.success('Template set as default for SOA generation');
+  };
+
+  const handleNewFromDefault = async () => {
+    const defaultTmpl = templates.find((t) => t.owner_type === 'admin');
+    if (!defaultTmpl) return;
+
+    try {
+      const duplicated = await base44.soaTemplateApi.duplicate(defaultTmpl.id, {
+        name: `${defaultTmpl.name || 'Default'} (Copy)`,
+        ownerType: 'advice_group',
+        ownerId: user?.advice_group_id || '',
+      });
+      toast.success('Template created from default');
+      await loadTemplates();
+      openEditor(duplicated);
+    } catch {
+      // Fallback: create manually
+      try {
+        const created = await base44.entities.SOATemplate.create({
+          owner_type: 'advice_group',
+          advice_group_id: user?.advice_group_id,
+          inherits_from_id: defaultTmpl.id,
+          name: `${defaultTmpl.name || 'Default'} (Copy)`,
+          description: '',
+          sections: defaultTmpl.sections,
+        });
+        toast.success('Template created from default');
+        await loadTemplates();
+        openEditor(created);
+      } catch {
+        toast.error('Failed to create template');
+      }
+    }
+  };
+
+  const handleNewFromScratch = async () => {
+    try {
+      const emptySections = DEFAULT_SECTION_GROUPS.map((g) => ({
+        ...g,
+        sections: g.sections.map((s) => ({
+          ...s,
+          prompt: { system: '', output_format: 'prose', max_words: 500, tone: 'professional_clear' },
+          example_content: '',
+          data_feeds: [],
+        })),
+      }));
+      const created = await base44.entities.SOATemplate.create({
+        owner_type: 'advice_group',
+        advice_group_id: user?.advice_group_id,
+        name: 'New Template',
+        description: '',
+        sections: JSON.stringify(emptySections),
+      });
+      toast.success('Template created');
+      await loadTemplates();
+      openEditor(created);
+    } catch {
+      toast.error('Failed to create template');
+    }
+  };
+
+  const handleDelete = async (tmpl) => {
+    if (tmpl.owner_type === 'admin') {
+      toast.error('Cannot delete the PrimeSolve Default template');
+      return;
+    }
+    try {
+      await base44.entities.SOATemplate.delete(tmpl.id);
+      toast.success('Template deleted');
+      if (activeTemplateId === tmpl.id) {
+        setActiveTemplateId(null);
+      }
+      loadTemplates();
+    } catch {
+      toast.error('Failed to delete template');
     }
   };
 
@@ -188,7 +318,7 @@ export default function AdviceGroupSOATemplate() {
     }
   };
 
-  const openEditor = (section) => {
+  const openSectionEditor = (section) => {
     setEditingSection(section);
     setEditorOpen(true);
   };
@@ -271,6 +401,85 @@ export default function AdviceGroupSOATemplate() {
     return state;
   };
 
+  // ── LIBRARY VIEW ──
+  if (view === 'library') {
+    return (
+      <div className="py-6 px-8">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1.5 text-sm text-slate-500 mb-4">
+          <Home className="w-4 h-4" />
+          <ChevronRight className="w-3.5 h-3.5" />
+          <span className="text-slate-800 font-medium">SOA Templates</span>
+        </div>
+
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">
+            SOA Templates
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Manage your SOA document templates
+          </p>
+        </div>
+
+        <TemplateLibrary
+          templates={templates}
+          activeTemplateId={activeTemplateId}
+          defaultTemplateId={templates.find((t) => t.owner_type === 'admin')?.id}
+          onEdit={(tmpl) => {
+            if (tmpl.owner_type === 'admin') {
+              handleViewDefault(tmpl);
+            } else {
+              openEditor(tmpl);
+            }
+          }}
+          onView={handleViewDefault}
+          onUse={handleSetAsDefault}
+          onDuplicate={(tmpl) => {
+            if (tmpl.owner_type === 'admin') {
+              handleNewFromDefault();
+            } else {
+              // Duplicate owned template
+              (async () => {
+                try {
+                  const duplicated = await base44.soaTemplateApi.duplicate(tmpl.id, {
+                    name: `${tmpl.name || 'Template'} (Copy)`,
+                    ownerType: 'advice_group',
+                    ownerId: user?.advice_group_id || '',
+                  });
+                  toast.success('Template duplicated');
+                  await loadTemplates();
+                } catch {
+                  const created = await base44.entities.SOATemplate.create({
+                    owner_type: 'advice_group',
+                    advice_group_id: user?.advice_group_id,
+                    name: `${tmpl.name || 'Template'} (Copy)`,
+                    sections: tmpl.sections,
+                  });
+                  toast.success('Template duplicated');
+                  await loadTemplates();
+                }
+              })();
+            }
+          }}
+          onDelete={handleDelete}
+          onNewFromClaire={() => {
+            const groupTmpl = templates.find((t) => t.owner_type === 'advice_group');
+            const target = groupTmpl || templates.find((t) => t.owner_type === 'admin');
+            if (target) {
+              openEditor(target);
+              setTimeout(() => setClaireOpen(true), 100);
+            }
+          }}
+          onNewFromDefault={handleNewFromDefault}
+          onNewFromScratch={handleNewFromScratch}
+          level="advice_group"
+          loading={loadingLibrary}
+        />
+      </div>
+    );
+  }
+
+  // ── EDITOR VIEW ──
   const { configured, total } = countConfigured(sections);
 
   if (loading) {
@@ -285,13 +494,33 @@ export default function AdviceGroupSOATemplate() {
     <div className={`flex ${claireOpen ? 'h-[calc(100vh-64px)]' : ''}`}>
     {/* Left panel — template content */}
     <div className={`py-6 px-8 ${claireOpen ? 'w-[65%] overflow-y-auto' : 'w-full'} transition-all`}>
-      {/* Header */}
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-1.5 text-sm text-slate-500 mb-4">
+        <Home className="w-4 h-4" />
+        <ChevronRight className="w-3.5 h-3.5" />
+        <button
+          onClick={() => { setView('library'); setClaireOpen(false); }}
+          className="hover:text-slate-700 transition-colors"
+        >
+          SOA Templates
+        </button>
+        <ChevronRight className="w-3.5 h-3.5" />
+        <span className="text-slate-800 font-medium">
+          {groupTemplate?.name || 'Edit Template'}
+        </span>
+      </div>
+
+      {/* Back button + Header */}
       <div className="mb-6">
-        <div className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-1">
-          Template Configuration
-        </div>
-        <h1 className="text-2xl font-bold text-slate-900">
-          Advice Group Template
+        <button
+          onClick={() => { setView('library'); setClaireOpen(false); }}
+          className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-2"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Templates
+        </button>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Editing: {groupTemplate?.name || 'Advice Group Template'}
         </h1>
         <p className="text-sm text-slate-500 mt-1">
           Customise AI prompts and data feeds from the PrimeSolve default
@@ -439,7 +668,6 @@ export default function AdviceGroupSOATemplate() {
                                             <GripVertical className="w-4 h-4 text-slate-300" />
                                           </div>
 
-                                          {/* Claire state dot overrides */}
                                           {claireIndicator === 'mapped' || claireIndicator === 'populated' ? (
                                             <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-green-500" />
                                           ) : claireIndicator === 'gap' ? (
@@ -469,7 +697,6 @@ export default function AdviceGroupSOATemplate() {
                                                 <span className="text-amber-600">Not found in your documents</span>
                                               ) : section.desc}
                                             </div>
-                                            {/* Inline gap actions */}
                                             {claireIndicator === 'gap' && (
                                               <div className="flex gap-2 mt-1.5">
                                                 <button
@@ -534,7 +761,7 @@ export default function AdviceGroupSOATemplate() {
                                               className="flex-shrink-0 text-indigo-600 border-indigo-200 hover:bg-indigo-50"
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                openEditor(section);
+                                                openSectionEditor(section);
                                               }}
                                             >
                                               <Settings2 className="w-3.5 h-3.5 mr-1" />

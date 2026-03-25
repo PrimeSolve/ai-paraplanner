@@ -7,8 +7,11 @@ import {
   ChevronUp,
   AlertCircle,
   Loader2,
+  Home,
+  ChevronRight,
 } from 'lucide-react';
 import ExampleSOALibrary from '@/components/soa/ExampleSOALibrary';
+import TemplateLibrary from '@/components/soa/TemplateLibrary';
 import {
   DEFAULT_SECTION_GROUPS,
   getSectionStatus,
@@ -58,66 +61,100 @@ function DataFeedChip({ feedKey }) {
 }
 
 export default function AdviserSOATemplate() {
-  const [loading, setLoading] = useState(true);
+  // View state: 'library' or 'detail'
+  const [view, setView] = useState('library');
+
+  // Library state
+  const [templates, setTemplates] = useState([]);
+  const [loadingLibrary, setLoadingLibrary] = useState(true);
+  const [activeTemplateId, setActiveTemplateId] = useState(null);
+  // TODO: Check user.permissions.canOverrideSOATemplate from auth context
+  const [canOverride, setCanOverride] = useState(false);
+
+  // Detail/view state
+  const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [expandedGroups, setExpandedGroups] = useState([]);
   const [effectiveSections, setEffectiveSections] = useState([]);
+  const [viewingTemplate, setViewingTemplate] = useState(null);
 
   useEffect(() => {
-    loadData();
+    loadInitialData();
   }, []);
 
-  const loadData = async () => {
+  const loadInitialData = async () => {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
-
-      let mergedSections = JSON.parse(JSON.stringify(DEFAULT_SECTION_GROUPS));
-
-      // Load admin template
-      try {
-        const adminTemplates = await base44.entities.SOATemplate.filter({ owner_type: 'admin' });
-        if (adminTemplates[0]?.sections) {
-          const loaded = typeof adminTemplates[0].sections === 'string'
-            ? JSON.parse(adminTemplates[0].sections)
-            : adminTemplates[0].sections;
-          if (Array.isArray(loaded) && loaded.length > 0) {
-            mergedSections = loaded;
-          }
-        }
-      } catch { /* silent */ }
-
-      // Override with group template
-      if (currentUser.advice_group_id) {
-        try {
-          const groupTemplates = await base44.entities.SOATemplate.filter({
-            owner_type: 'advice_group',
-            advice_group_id: currentUser.advice_group_id,
-          });
-          if (groupTemplates[0]?.sections) {
-            const loaded = typeof groupTemplates[0].sections === 'string'
-              ? JSON.parse(groupTemplates[0].sections)
-              : groupTemplates[0].sections;
-            if (Array.isArray(loaded) && loaded.length > 0) {
-              mergedSections = loaded;
-            }
-          }
-        } catch { /* silent */ }
-      }
-
-      // Filter out disabled sections
-      const filtered = mergedSections.map((group) => ({
-        ...group,
-        sections: group.sections.filter((s) => s.enabled !== false),
-      })).filter((group) => group.sections.length > 0);
-
-      setEffectiveSections(filtered);
-      setExpandedGroups(filtered.map((g) => g.group));
+      // TODO: Check user.permissions.canOverrideSOATemplate from auth context
+      setCanOverride(currentUser?.permissions?.canOverrideSOATemplate ?? false);
+      await loadTemplates(currentUser);
     } catch (error) {
       console.error('Failed to load user:', error);
-    } finally {
-      setLoading(false);
+      setLoadingLibrary(false);
     }
+  };
+
+  const loadTemplates = async (currentUser) => {
+    const usr = currentUser || user;
+    setLoadingLibrary(true);
+    try {
+      let loaded;
+      try {
+        loaded = await base44.soaTemplateApi.getAvailable();
+      } catch {
+        // Fallback
+        const admin = await base44.entities.SOATemplate.filter({ owner_type: 'admin' });
+        let group = [];
+        if (usr?.advice_group_id) {
+          try {
+            group = await base44.entities.SOATemplate.filter({
+              owner_type: 'advice_group',
+              advice_group_id: usr.advice_group_id,
+            });
+          } catch { /* silent */ }
+        }
+        loaded = [...admin, ...group];
+      }
+      setTemplates(loaded);
+
+      // Determine active template (adviser-level or group default)
+      // TODO: Check adviser's selected template or advice group's defaultTemplateId
+      const groupTmpls = loaded.filter((t) => t.owner_type === 'advice_group');
+      if (groupTmpls.length > 0) {
+        setActiveTemplateId(groupTmpls[0].id);
+      } else if (loaded.length > 0) {
+        setActiveTemplateId(loaded[0].id);
+      }
+    } catch (error) {
+      console.error('Failed to load templates:', error);
+    } finally {
+      setLoadingLibrary(false);
+    }
+  };
+
+  const viewTemplateDetail = (tmpl) => {
+    setViewingTemplate(tmpl);
+
+    let sections;
+    if (tmpl.sections) {
+      const parsed = typeof tmpl.sections === 'string'
+        ? JSON.parse(tmpl.sections)
+        : tmpl.sections;
+      sections = Array.isArray(parsed) ? parsed : JSON.parse(JSON.stringify(DEFAULT_SECTION_GROUPS));
+    } else {
+      sections = JSON.parse(JSON.stringify(DEFAULT_SECTION_GROUPS));
+    }
+
+    // Filter out disabled sections
+    const filtered = sections.map((group) => ({
+      ...group,
+      sections: group.sections.filter((s) => s.enabled !== false),
+    })).filter((group) => group.sections.length > 0);
+
+    setEffectiveSections(filtered);
+    setExpandedGroups(filtered.map((g) => g.group));
+    setView('detail');
   };
 
   const toggleGroup = (groupId) => {
@@ -128,26 +165,97 @@ export default function AdviserSOATemplate() {
     );
   };
 
-  if (loading) {
+  // ── LIBRARY VIEW ──
+  if (view === 'library') {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+      <div className="py-6 px-8">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1.5 text-sm text-slate-500 mb-4">
+          <Home className="w-4 h-4" />
+          <ChevronRight className="w-3.5 h-3.5" />
+          <span className="text-slate-800 font-medium">SOA Templates</span>
+        </div>
+
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">
+            SOA Templates
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            View your available SOA document templates
+          </p>
+        </div>
+
+        {/* Permission restriction message */}
+        {!canOverride && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-amber-800">
+              <strong>Template editing is restricted.</strong> Your advice group administrator
+              has not enabled template overrides for advisers. Contact your advice group admin
+              to request access.
+            </p>
+          </div>
+        )}
+
+        <TemplateLibrary
+          templates={templates}
+          activeTemplateId={activeTemplateId}
+          defaultTemplateId={templates.find((t) => t.owner_type === 'admin')?.id}
+          onEdit={viewTemplateDetail}
+          onView={viewTemplateDetail}
+          onDuplicate={viewTemplateDetail}
+          onDelete={() => {}}
+          level="adviser"
+          canCreate={canOverride}
+          loading={loadingLibrary}
+        />
+
+        {/* Example SOA Library */}
+        {user && (
+          <div className="mt-8">
+            <ExampleSOALibrary
+              ownerType="adviser"
+              ownerId={user.id}
+              onExtractedSections={() => {}}
+            />
+          </div>
+        )}
       </div>
     );
   }
 
+  // ── DETAIL VIEW (read-only) ──
   return (
-    <div className="py-6 px-8" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div className="py-6 px-8">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-1.5 text-sm text-slate-500 mb-4">
+        <Home className="w-4 h-4" />
+        <ChevronRight className="w-3.5 h-3.5" />
+        <button
+          onClick={() => setView('library')}
+          className="hover:text-slate-700 transition-colors"
+        >
+          SOA Templates
+        </button>
+        <ChevronRight className="w-3.5 h-3.5" />
+        <span className="text-slate-800 font-medium">
+          {viewingTemplate?.name || 'View Template'}
+        </span>
+      </div>
+
       {/* Header */}
       <div className="mb-6">
-        <div className="text-xs font-semibold text-teal-600 uppercase tracking-wide mb-1">
-          My SOA Template
-        </div>
-        <h1 className="text-2xl font-bold text-slate-900">
-          SOA Section Configuration
+        <button
+          onClick={() => setView('library')}
+          className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-2"
+        >
+          <ChevronDown className="w-4 h-4 -rotate-90" />
+          Back to Templates
+        </button>
+        <h1 className="text-2xl font-bold text-gray-900">
+          {viewingTemplate?.name || 'SOA Section Configuration'}
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          View your effective template and upload example SOAs to help the AI match your style
+          View your effective template sections
         </p>
       </div>
 
