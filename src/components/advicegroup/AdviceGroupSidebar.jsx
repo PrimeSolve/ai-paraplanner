@@ -41,6 +41,7 @@ export default function AdviceGroupSidebar({ currentPage }) {
       subtitle="ADVICE GROUP"
       navSections={navSections}
       helpPath="AdviceGroupHelp"
+      helpText="Ask Henry"
       currentPage={currentPage}
       accentColor="#3b82f6"
     />
