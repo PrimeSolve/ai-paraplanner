@@ -9,10 +9,13 @@ import {
   Upload,
   Loader2,
   AlertCircle,
+  Sparkles,
+  AlertTriangle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import SectionConfigEditor from '@/components/soa/SectionConfigEditor';
+import ClairePanel from '@/components/soa/ClairePanel';
 import {
   DEFAULT_SECTION_GROUPS,
   getSectionStatus,
@@ -63,6 +66,9 @@ export default function AdminTemplate() {
   const [exampleCount, setExampleCount] = useState(0);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const [claireOpen, setClaireOpen] = useState(false);
+  const [claireSectionStates, setClaireSectionStates] = useState({});
+  const [claireNewSections, setClaireNewSections] = useState([]);
 
   useEffect(() => {
     loadTemplate();
@@ -190,6 +196,28 @@ export default function AdminTemplate() {
     toast.success('Section updated');
   };
 
+  const handleClaireSectionStateChange = (stateMap, newSections) => {
+    setClaireSectionStates(stateMap);
+    setClaireNewSections(newSections || []);
+  };
+
+  const handleClaireSectionUpdate = (sectionId, status) => {
+    setClaireSectionStates((prev) => ({ ...prev, [sectionId]: status }));
+  };
+
+  const handleGapInlineAction = (sectionId, action) => {
+    setClaireSectionStates((prev) => ({
+      ...prev,
+      [sectionId]: action === 'include' ? 'gap' : 'skipped',
+    }));
+  };
+
+  const getClaireIndicator = (sectionId) => {
+    const state = claireSectionStates[sectionId];
+    if (!state || !claireOpen) return null;
+    return state;
+  };
+
   const { configured, total } = countConfigured(sections);
 
   if (loading) {
@@ -201,7 +229,8 @@ export default function AdminTemplate() {
   }
 
   return (
-    <div className="py-6 px-8" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div className={`flex ${claireOpen ? 'h-[calc(100vh-64px)]' : ''}`}>
+    <div className={`py-6 px-8 ${claireOpen ? 'w-[65%] overflow-y-auto' : 'w-full'} transition-all`} style={{ fontFamily: 'Inter, sans-serif' }}>
       {/* Header */}
       <div className="mb-6">
         <div className="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">
@@ -269,13 +298,25 @@ export default function AdminTemplate() {
             <span className="text-sm text-slate-600">Needs config</span>
           </div>
         </div>
-        <Button
-          onClick={handleSave}
-          disabled={saving}
-          className="bg-indigo-600 hover:bg-indigo-700"
-        >
-          {saving ? 'Saving...' : 'Save Template'}
-        </Button>
+        <div className="flex items-center gap-3">
+          {!claireOpen && (
+            <Button
+              variant="outline"
+              className="border-purple-500 text-purple-600 hover:bg-purple-50"
+              onClick={() => setClaireOpen(true)}
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Build with Claire
+            </Button>
+          )}
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="bg-indigo-600 hover:bg-indigo-700"
+          >
+            {saving ? 'Saving...' : 'Save Template'}
+          </Button>
+        </div>
       </div>
 
       {/* Section Groups with Drag & Drop */}
@@ -345,6 +386,7 @@ export default function AdminTemplate() {
                                   const hasPrompt = !!section.prompt?.system;
                                   const hasExample = !!section.example_content;
                                   const feedCount = section.data_feeds?.length || 0;
+                                  const claireIndicator = getClaireIndicator(section.id);
 
                                   return (
                                     <Draggable
@@ -356,10 +398,16 @@ export default function AdminTemplate() {
                                         <div
                                           ref={provided.innerRef}
                                           {...provided.draggableProps}
-                                          className={`flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg transition-all ${
+                                          className={`flex items-center gap-3 p-3 bg-white border rounded-lg transition-all ${
                                             snapshot.isDragging
                                               ? 'shadow-md border-indigo-400'
-                                              : ''
+                                              : claireIndicator === 'populated'
+                                              ? 'border-green-300'
+                                              : claireIndicator === 'gap'
+                                              ? 'border-amber-300 bg-amber-50/30'
+                                              : claireIndicator === 'skipped'
+                                              ? 'opacity-40'
+                                              : 'border-slate-200'
                                           }`}
                                         >
                                           <div
@@ -369,15 +417,39 @@ export default function AdminTemplate() {
                                             <GripVertical className="w-4 h-4 text-slate-300" />
                                           </div>
 
-                                          <StatusDot status={status} />
+                                          {claireIndicator === 'mapped' || claireIndicator === 'populated' ? (
+                                            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-green-500" />
+                                          ) : claireIndicator === 'gap' ? (
+                                            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-amber-500" />
+                                          ) : (
+                                            <StatusDot status={status} />
+                                          )}
 
                                           <div className="flex-1 min-w-0">
                                             <div className="font-medium text-sm text-slate-800">
                                               {section.label}
                                             </div>
                                             <div className="text-xs text-slate-500 truncate">
-                                              {section.desc}
+                                              {claireIndicator === 'gap' ? (
+                                                <span className="text-amber-600">Not found in your documents</span>
+                                              ) : section.desc}
                                             </div>
+                                            {claireIndicator === 'gap' && (
+                                              <div className="flex gap-2 mt-1.5">
+                                                <button
+                                                  onClick={(e) => { e.stopPropagation(); handleGapInlineAction(section.id, 'include'); }}
+                                                  className="text-[11px] text-green-600 hover:text-green-700 font-medium"
+                                                >
+                                                  Include anyway
+                                                </button>
+                                                <button
+                                                  onClick={(e) => { e.stopPropagation(); handleGapInlineAction(section.id, 'skip'); }}
+                                                  className="text-[11px] text-slate-400 hover:text-slate-600 font-medium"
+                                                >
+                                                  Skip this section
+                                                </button>
+                                              </div>
+                                            )}
                                           </div>
 
                                           <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -429,6 +501,18 @@ export default function AdminTemplate() {
         section={editingSection}
         onSave={handleSectionSave}
       />
+    </div>
+
+    {/* Right panel — Claire */}
+    {claireOpen && (
+      <div className="w-[35%] border-l border-slate-200 flex-shrink-0 h-full">
+        <ClairePanel
+          onClose={() => setClaireOpen(false)}
+          onSectionUpdate={handleClaireSectionUpdate}
+          onSectionStateChange={handleClaireSectionStateChange}
+        />
+      </div>
+    )}
     </div>
   );
 }
