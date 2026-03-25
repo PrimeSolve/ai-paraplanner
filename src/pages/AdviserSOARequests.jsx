@@ -13,13 +13,13 @@ import { createPageUrl } from '../utils';
 import { formatDate } from '../utils/dateUtils';
 import NewSOARequestModal from '../components/adviser/NewSOARequestModal.jsx';
 
-// Real status enum from backend (stored as int)
+// Status values as returned by the API (string enum)
 const SOA_STATUSES = [
-  { value: 0, label: 'Draft' },
-  { value: 1, label: 'In Progress' },
-  { value: 2, label: 'Under Review' },
-  { value: 3, label: 'Approved' },
-  { value: 4, label: 'Issued' },
+  { value: 'Draft', label: 'Draft' },
+  { value: 'InProgress', label: 'In Progress' },
+  { value: 'Review', label: 'Under Review' },
+  { value: 'Approved', label: 'Approved' },
+  { value: 'Issued', label: 'Issued' },
 ];
 
 const getStatusDisplay = (status) => {
@@ -141,19 +141,19 @@ export default function AdviserSOARequests() {
   // Filters work together on both views
   const filteredRequests = requests.filter(req => {
     const matchesSearch = !debouncedSearch || req._clientName?.toLowerCase().includes(debouncedSearch.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || req.status === parseInt(statusFilter);
+    const matchesStatus = statusFilter === 'all' || req.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
   const paginatedRequests = filteredRequests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // Stat cards wired to real integer status values
+  // Stat cards using API string status values
   const stats = {
     total: requests.length,
-    inProgress: requests.filter(r => r.status === 1).length,
-    underReview: requests.filter(r => r.status === 2).length,
-    issued: requests.filter(r => r.status === 4).length,
+    inProgress: requests.filter(r => r.status === 'InProgress').length,
+    underReview: requests.filter(r => r.status === 'Review').length,
+    issued: requests.filter(r => r.status === 'Issued').length,
   };
 
   if (loading) {
@@ -296,7 +296,7 @@ export default function AdviserSOARequests() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <AdviserViewButton soaRequestId={req.id} />
-                          {req.status === 4 && (
+                          {req.status === 'Issued' && (
                             <button className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
                               Download
                             </button>
