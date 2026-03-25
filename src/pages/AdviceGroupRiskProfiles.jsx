@@ -75,9 +75,8 @@ export default function AdviceGroupRiskProfiles() {
           }
 
           if (groupId) {
-            const res = await axiosInstance.get('/risk-profiles', {
-              params: { adviceGroupId: groupId }
-            });
+            // API already filters by TenantId via RLS — no adviceGroupId param needed
+            const res = await axiosInstance.get('/risk-profiles');
             setProfiles(res.data);
           }
         } catch (error) {
