@@ -12,8 +12,7 @@ export default function AdviceGroupSidebar({ currentPage }) {
   const navSections = [
     { label: 'OVERVIEW', items: [
       { label: 'Dashboard', path: 'AdviceGroupDashboard', icon: LayoutDashboard },
-      { label: 'SOA Queue', path: 'AdviceGroupSOARequests', icon: Layers },
-      // TODO: re-add when Completed SOAs feature is built
+      { label: 'SOA Queue', path: 'AdviceGroupSOARequests', icon: Layers }
     ]},
     { label: 'MANAGEMENT', items: [
       { label: 'Advisers', path: 'AdviceGroupAdvisers', icon: Users },
