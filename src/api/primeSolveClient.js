@@ -402,6 +402,48 @@ const ai = {
 };
 
 // ──────────────────────────────────────────────────────────────
+// SOA Template API helpers (extended endpoints)
+// ──────────────────────────────────────────────────────────────
+
+export const soaTemplateApi = {
+  /**
+   * Get all templates available to the current user.
+   * Returns: admin templates + advice group templates + adviser templates.
+   */
+  async getAvailable() {
+    const response = await axiosInstance.get('/soa-templates/available');
+    const data = Array.isArray(response.data) ? response.data : (response.data?.items || response.data?.data || []);
+    return data.map(camelToSnakeKeys);
+  },
+
+  /**
+   * Duplicate an existing template.
+   * @param {string} templateId - The template to duplicate
+   * @param {{ name: string, ownerType: string, ownerId: string }} params
+   */
+  async duplicate(templateId, { name, ownerType, ownerId }) {
+    const response = await axiosInstance.post(`/soa-templates/${templateId}/duplicate`, {
+      name,
+      ownerType,
+      ownerId,
+    });
+    return camelToSnakeKeys(response.data);
+  },
+
+  /**
+   * Resolve which template to use for SOA generation (cascade algorithm).
+   * @param {{ adviserTemplateId?: string, adviceGroupTemplateId?: string }} params
+   */
+  async resolve({ adviserTemplateId, adviceGroupTemplateId } = {}) {
+    const params = {};
+    if (adviserTemplateId) params.adviserTemplateId = adviserTemplateId;
+    if (adviceGroupTemplateId) params.adviceGroupTemplateId = adviceGroupTemplateId;
+    const response = await axiosInstance.get('/soa-templates/resolve', { params });
+    return camelToSnakeKeys(response.data);
+  },
+};
+
+// ──────────────────────────────────────────────────────────────
 // Document upload & extraction API helpers
 // ──────────────────────────────────────────────────────────────
 
@@ -528,4 +570,5 @@ export const base44 = {
   ai,
   documentsApi,
   factFindChatApi,
+  soaTemplateApi,
 };

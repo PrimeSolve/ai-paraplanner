@@ -5,7 +5,6 @@ import SidebarLayout from '../navigation/SidebarLayout';
 import {
   LayoutDashboard,
   Layers,
-  CheckCircle,
   Users,
   UserCheck,
   FileText,
@@ -60,8 +59,7 @@ export default function AdminSidebar({ currentPage }) {
   const navSections = [
     { label: 'OVERVIEW', items: [
       { label: 'Dashboard', path: 'AdminDashboard', icon: LayoutDashboard },
-      { label: 'SOA Queue', path: 'AdminQueue', icon: Layers, badge: soaQueueCount > 0 ? String(soaQueueCount) : null },
-      { label: 'Completed SOAs', path: 'AdminCompleted', icon: CheckCircle }
+      { label: 'SOA Queue', path: 'AdminQueue', icon: Layers, badge: soaQueueCount > 0 ? String(soaQueueCount) : null }
     ]},
     { label: 'MANAGEMENT', items: [
       { label: 'Advice Groups', path: 'AdminAdviceGroups', icon: Users },
