@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
+import axiosInstance from '@/api/axiosInstance';
 import { useRole } from '../components/RoleContext';
-import { formatRelativeDate } from '../utils/dateUtils';
+import { toast } from 'sonner';
 import {
   FileText,
   Clock,
@@ -111,12 +112,13 @@ const Avatar = ({ initials, gradientIndex, size = 40 }) => (
 // ============================================
 const StatusBadge = ({ status }) => {
   const statusMap = {
-    'in_progress': { label: 'In Progress', bg: 'rgba(59, 130, 246, 0.1)', color: colors.accent.blue },
-    'submitted': { label: 'Submitted', bg: 'rgba(245, 158, 11, 0.1)', color: colors.accent.warning },
-    'completed': { label: 'Completed', bg: 'rgba(16, 185, 129, 0.1)', color: colors.accent.success },
-    'draft': { label: 'Draft', bg: 'rgba(100, 116, 139, 0.1)', color: colors.core.slateLight },
+    'Draft':      { label: 'Draft',        bg: 'rgba(100, 116, 139, 0.1)', color: colors.core.slateLight },
+    'InProgress': { label: 'In Progress',  bg: 'rgba(245, 158, 11, 0.1)',  color: colors.accent.warning },
+    'Review':     { label: 'Under Review', bg: 'rgba(139, 92, 246, 0.1)',  color: colors.accent.purple },
+    'Approved':   { label: 'Approved',     bg: 'rgba(59, 130, 246, 0.1)',  color: colors.accent.blue },
+    'Issued':     { label: 'Issued',       bg: 'rgba(16, 185, 129, 0.1)',  color: colors.accent.success },
   };
-  const style = statusMap[status] || statusMap['draft'];
+  const style = statusMap[status] || { label: status || 'Unknown', bg: 'rgba(100, 116, 139, 0.1)', color: colors.core.slateLight };
 
   return (
     <span style={{
@@ -140,74 +142,117 @@ const getInitials = (name) => {
   return name.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2);
 };
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+
+const daysBetween = (dateA, dateB) => {
+  return Math.abs(new Date(dateB) - new Date(dateA)) / 86400000;
+};
+
 // ============================================
 // MAIN DASHBOARD COMPONENT
 // ============================================
 export default function AdviceGroupDashboard() {
+  const { user } = useAuth();
   const { switchedToId, switchRole, navigationChain } = useRole();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-  const [groupName, setGroupName] = useState('');
   const [soaRequests, setSoaRequests] = useState([]);
   const [advisers, setAdvisers] = useState([]);
   const [stats, setStats] = useState({ activeSOAs: 0, completedMonth: 0, avgTurnaround: '—', activeAdvisers: 0 });
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadDashboard = async () => {
       try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-        const groupId = switchedToId || currentUser.advice_group_id;
+        setLoading(true);
+
+        // Set up role context from auth user
+        const groupId = switchedToId || user?.advice_group_id;
         if (groupId) {
-          const group = await base44.entities.AdviceGroup.list();
-          const current = group.find(g => g.id === groupId);
-          if (current) {
-            setGroupName(current.name);
-            if (navigationChain.length === 0 || navigationChain[navigationChain.length - 1].id !== groupId) {
+          // Fetch advice group details for role context
+          try {
+            const groupRes = await axiosInstance.get('/advice-groups');
+            const groups = Array.isArray(groupRes.data) ? groupRes.data : (groupRes.data?.items || []);
+            const current = groups.find(g => g.id === groupId);
+            if (current && (navigationChain.length === 0 || navigationChain[navigationChain.length - 1].id !== groupId)) {
               switchRole('advice_group', groupId, current.name);
             }
+          } catch (err) {
+            console.error('Failed to load advice group:', err);
           }
+        }
 
-          const [adviserList, soaList] = await Promise.all([
-            base44.entities.Adviser.filter({ tenant_id: groupId }),
-            base44.entities.SOARequest.list('-created_date', 50),
-          ]);
+        // Fetch advisers and SOA requests in parallel (RLS scopes to tenant)
+        const [advisersRes, soaRes] = await Promise.all([
+          axiosInstance.get('/advisers'),
+          axiosInstance.get('/advice-requests'),
+        ]);
 
-          setAdvisers(adviserList);
-          setSoaRequests(soaList);
+        const adviserList = Array.isArray(advisersRes.data) ? advisersRes.data : (advisersRes.data?.items || []);
+        const soaList = Array.isArray(soaRes.data) ? soaRes.data : (soaRes.data?.items || []);
 
-          // Compute stats from real data
-          const now = new Date();
-          const activeSOAs = soaList.filter(s => s.status === 'in_progress' || s.status === 'submitted').length;
-          const completedMonth = soaList.filter(s => {
-            if (s.status !== 'completed' || !s.completed_date) return false;
-            const d = new Date(s.completed_date);
-            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-          }).length;
+        // Sort SOA requests by createdAt descending
+        soaList.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
-          const completedWithDates = soaList.filter(s => s.status === 'completed' && s.completed_date && s.submitted_date);
-          let avgTurnaround = '—';
-          if (completedWithDates.length > 0) {
-            const totalDays = completedWithDates.reduce((sum, s) => {
-              return sum + (new Date(s.completed_date) - new Date(s.submitted_date)) / 86400000;
-            }, 0);
-            avgTurnaround = (totalDays / completedWithDates.length).toFixed(1) + 'd';
-          }
-
-          setStats({
-            activeSOAs,
-            completedMonth,
-            avgTurnaround,
-            activeAdvisers: adviserList.length,
+        // Resolve client names for SOA requests
+        const clientIds = [...new Set(soaList.map(r => r.client1Id).filter(Boolean))];
+        const clientMap = {};
+        if (clientIds.length > 0) {
+          const clientResponses = await Promise.all(
+            clientIds.map(id => axiosInstance.get(`/clients/${id}`).catch(() => null))
+          );
+          clientResponses.forEach(resp => {
+            if (resp?.data) {
+              clientMap[resp.data.id] = resp.data;
+            }
           });
         }
+
+        // Enrich SOA requests with client names
+        const enrichedSOAs = soaList.map(req => {
+          const client = clientMap[req.client1Id];
+          const clientName = client
+            ? `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Client'
+            : 'Client';
+          return { ...req, _clientName: clientName };
+        });
+
+        setAdvisers(adviserList);
+        setSoaRequests(enrichedSOAs);
+
+        // Compute stats from real data
+        const now = new Date();
+        const activeSOAs = enrichedSOAs.filter(s => s.status !== 'Issued' && s.status !== 'Complete').length;
+        const completedMonth = enrichedSOAs.filter(s => {
+          if (s.status !== 'Issued' || !s.createdAt) return false;
+          const d = new Date(s.createdAt);
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        }).length;
+
+        const completedSOAs = enrichedSOAs.filter(s => s.status === 'Issued' && s.createdAt && s.modifiedAt);
+        let avgTurnaround = '—';
+        if (completedSOAs.length > 0) {
+          const totalDays = completedSOAs.reduce((sum, r) => sum + daysBetween(r.createdAt, r.modifiedAt), 0);
+          avgTurnaround = Math.round(totalDays / completedSOAs.length) + ' days';
+        }
+
+        setStats({
+          activeSOAs,
+          completedMonth,
+          avgTurnaround,
+          activeAdvisers: adviserList.length,
+        });
       } catch (error) {
-        console.error('Failed to load data:', error);
+        console.error('Dashboard load failed:', error);
       } finally {
         setLoading(false);
       }
     };
-    loadData();
+
+    loadDashboard();
   }, []);
 
   if (loading) {
@@ -327,9 +372,9 @@ export default function AdviceGroupDashboard() {
                   >
                     <td style={{ padding: '16px 32px', fontSize: '14px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <Avatar initials={getInitials(req.client_name)} gradientIndex={idx} size={40} />
+                        <Avatar initials={getInitials(req._clientName)} gradientIndex={idx} size={40} />
                         <div>
-                          <div style={{ fontWeight: 600, color: colors.core.navy }}>{req.client_name || req.client_email || 'Client'}</div>
+                          <div style={{ fontWeight: 600, color: colors.core.navy }}>{req._clientName}</div>
                           <div style={{ fontSize: '12px', color: colors.core.slateLight }}>{req.type || 'SOA Request'}</div>
                         </div>
                       </div>
@@ -338,7 +383,7 @@ export default function AdviceGroupDashboard() {
                       <StatusBadge status={req.status} />
                     </td>
                     <td style={{ padding: '16px 32px', fontSize: '14px', color: colors.core.slateLight }}>
-                      {formatRelativeDate(req.created_date)}
+                      {formatDate(req.createdAt)}
                     </td>
                   </tr>
                 )) : (
@@ -387,16 +432,20 @@ export default function AdviceGroupDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <CheckCircle size={18} color={colors.accent.success} />
               <span style={{ fontWeight: 600, color: colors.core.navy }}>Custom Template</span>
-              <span style={{
-                marginLeft: 'auto',
-                display: 'inline-block',
-                background: colors.accent.blue,
-                color: colors.core.white,
-                padding: '4px 12px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: 700,
-              }}>
+              <span
+                onClick={() => navigate(createPageUrl('AdviceGroupSOATemplate'))}
+                style={{
+                  marginLeft: 'auto',
+                  display: 'inline-block',
+                  background: colors.accent.blue,
+                  color: colors.core.white,
+                  padding: '4px 12px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
                 Edit
               </span>
             </div>
@@ -429,7 +478,8 @@ export default function AdviceGroupDashboard() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {advisers.length > 0 ? advisers.slice(0, 5).map((adv, idx) => {
-              const name = `${adv.first_name || ''} ${adv.last_name || ''}`.trim() || adv.email;
+              // TODO: confirm adviser API response includes user details (firstName, lastName, email)
+              const name = `${adv.firstName || adv.first_name || ''} ${adv.lastName || adv.last_name || ''}`.trim() || adv.email || 'Adviser';
               const initials = getInitials(name);
               return (
                 <div key={adv.id || idx} style={{
@@ -445,7 +495,7 @@ export default function AdviceGroupDashboard() {
                       {name}
                     </div>
                     <div style={{ fontSize: '12px', color: colors.core.slateLight }}>
-                      {adv.email}
+                      {adv.email || ''}
                     </div>
                   </div>
                 </div>
@@ -475,13 +525,14 @@ export default function AdviceGroupDashboard() {
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {[
-              { label: 'Edit SOA Template', icon: FileText },
-              { label: 'Invite New Adviser', icon: Users },
-              { label: 'Generate Report', icon: Download },
+              { label: 'Edit SOA Template', icon: FileText, onClick: () => navigate(createPageUrl('AdviceGroupSOATemplate')) },
+              { label: 'Invite New Adviser', icon: Users, onClick: () => navigate(createPageUrl('AdviceGroupAdvisers')) },
+              // TODO: wire to report generation when built
+              { label: 'Generate Report', icon: Download, onClick: () => toast.info('Report generation coming soon') },
             ].map((action, idx) => {
               const Icon = action.icon;
               return (
-                <a key={idx} href="#" style={{
+                <button key={idx} onClick={action.onClick} style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
@@ -492,6 +543,11 @@ export default function AdviceGroupDashboard() {
                   transition: 'background-color 0.2s ease',
                   fontSize: '14px',
                   fontWeight: 500,
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left',
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.background = colors.core.offWhite}
                 onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
@@ -499,7 +555,7 @@ export default function AdviceGroupDashboard() {
                   <Icon size={16} color={colors.core.slateLight} />
                   <span style={{ flex: 1 }}>{action.label}</span>
                   <ChevronRight size={16} color={colors.core.slateLight} />
-                </a>
+                </button>
               );
             })}
           </div>
