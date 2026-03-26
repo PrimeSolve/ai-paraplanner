@@ -16,7 +16,7 @@ import { countConfigured } from '@/utils/soaTemplateDefaults';
  * TemplateCard — displays a single SOA template in the library grid.
  *
  * Props:
- *   template        — the template object ({ id, name, description, owner_type, sections, ... })
+ *   template        — the template object ({ id, name, description, ownerType, sections, ... })
  *   onEdit          — called when Edit is clicked (owned templates)
  *   onView          — called when View is clicked (default/read-only templates)
  *   onUse           — called when "Use as base" / "Set as Default" is clicked
@@ -55,15 +55,15 @@ export default function TemplateCard({
   const ownerBadge = (() => {
     if (level === 'admin') return 'System Template';
     if (isDefault) return 'PrimeSolve Default';
-    if (template.owner_type === 'advice_group') return 'Advice Group';
-    if (template.owner_type === 'adviser') return 'Adviser';
+    if (template.ownerType === 1) return 'Advice Group';
+    if (template.ownerType === 2) return 'Adviser';
     return 'Custom';
   })();
 
   const ownerBadgeColor = (() => {
     if (isDefault) return 'bg-indigo-100 text-indigo-700';
-    if (template.owner_type === 'advice_group') return 'bg-purple-100 text-purple-700';
-    if (template.owner_type === 'adviser') return 'bg-teal-100 text-teal-700';
+    if (template.ownerType === 1) return 'bg-purple-100 text-purple-700';
+    if (template.ownerType === 2) return 'bg-teal-100 text-teal-700';
     return 'bg-slate-100 text-slate-700';
   })();
 
