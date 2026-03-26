@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axiosInstance from '@/api/axiosInstance';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -88,9 +88,13 @@ export default function AdminTemplate() {
   const loadTemplates = async () => {
     setLoadingLibrary(true);
     try {
-      const response = await axiosInstance.get('/soa-templates', { params: { ownerType: 0 } });
-      const data = Array.isArray(response.data) ? response.data : (response.data?.items || response.data?.data || []);
-      setTemplates(data);
+      let loaded;
+      try {
+        loaded = await base44.soaTemplateApi.getAvailable();
+      } catch {
+        loaded = await base44.entities.SOATemplate.filter({ owner_type: 'admin' });
+      }
+      setTemplates(loaded);
     } catch (error) {
       console.error('Failed to load templates:', error);
     } finally {
@@ -126,9 +130,8 @@ export default function AdminTemplate() {
 
   const loadExampleCount = async () => {
     try {
-      const response = await axiosInstance.get('/soa-examples', { params: { ownerType: 0 } });
-      const data = Array.isArray(response.data) ? response.data : (response.data?.items || response.data?.data || []);
-      setExampleCount(data.length);
+      const examples = await base44.entities.SoaExample.filter({ owner_type: 'admin' });
+      setExampleCount(examples.length);
     } catch {
       // silent
     }
@@ -139,13 +142,13 @@ export default function AdminTemplate() {
     try {
       const payload = { sections: JSON.stringify(sections) };
       if (template?.id) {
-        await axiosInstance.put(`/soa-templates/${template.id}`, payload);
+        await base44.entities.SOATemplate.update(template.id, payload);
       } else {
-        const response = await axiosInstance.post('/soa-templates', {
-          ownerType: 0,
+        const created = await base44.entities.SOATemplate.create({
+          owner_type: 'admin',
           ...payload,
         });
-        setTemplate(response.data);
+        setTemplate(created);
       }
       toast.success('Template saved successfully');
       // Refresh library data
@@ -162,17 +165,12 @@ export default function AdminTemplate() {
     if (!file) return;
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const uploadResponse = await axiosInstance.post('/files/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      const uploadResult = uploadResponse.data;
-      await axiosInstance.post('/soa-examples', {
+      const uploadResult = await base44.integrations.Core.UploadFile({ file });
+      await base44.entities.SoaExample.create({
         name: file.name,
-        ownerType: 0,
-        ownerId: 'admin',
-        fileUrl: uploadResult.file_url || uploadResult.url,
+        owner_type: 'admin',
+        owner_id: 'admin',
+        file_url: uploadResult.file_url || uploadResult.url,
         status: 'processing',
       });
       toast.success('Example uploaded — AI is analyzing your SOA...');
@@ -196,15 +194,15 @@ export default function AdminTemplate() {
           data_feeds: [],
         })),
       }));
-      const response = await axiosInstance.post('/soa-templates', {
-        ownerType: 0,
+      const created = await base44.entities.SOATemplate.create({
+        owner_type: 'admin',
         name: 'New System Template',
         description: '',
         sections: JSON.stringify(emptySections),
       });
       toast.success('Template created');
       await loadTemplates();
-      openEditor(response.data);
+      openEditor(created);
     } catch {
       toast.error('Failed to create template');
     }
@@ -212,32 +210,32 @@ export default function AdminTemplate() {
 
   const handleNewFromDefault = async () => {
     // Find the default template and duplicate it
-    const defaultTmpl = templates.find((t) => t.name === 'PrimeSolve Default' || (t.ownerType === 0));
+    const defaultTmpl = templates.find((t) => t.name === 'PrimeSolve Default' || t.owner_type === 'admin');
     if (!defaultTmpl) {
       toast.error('No default template found — use "Start from scratch" instead');
       return;
     }
     try {
-      const response = await axiosInstance.post(`/soa-templates/${defaultTmpl.id}/duplicate`, {
+      const duplicated = await base44.soaTemplateApi.duplicate(defaultTmpl.id, {
         name: `${defaultTmpl.name || 'Default'} (Copy)`,
-        ownerType: 0,
+        ownerType: 'admin',
         ownerId: '',
       });
       toast.success('Template duplicated');
       await loadTemplates();
-      openEditor(response.data);
+      openEditor(duplicated);
     } catch {
       try {
         // Fallback: create manually
-        const response = await axiosInstance.post('/soa-templates', {
-          ownerType: 0,
+        const created = await base44.entities.SOATemplate.create({
+          owner_type: 'admin',
           name: `${defaultTmpl.name || 'Default'} (Copy)`,
           description: defaultTmpl.description || '',
           sections: defaultTmpl.sections,
         });
         toast.success('Template duplicated');
         await loadTemplates();
-        openEditor(response.data);
+        openEditor(created);
       } catch {
         toast.error('Failed to duplicate template');
       }
@@ -250,7 +248,7 @@ export default function AdminTemplate() {
       return;
     }
     try {
-      await axiosInstance.delete(`/soa-templates/${tmpl.id}`);
+      await base44.entities.SOATemplate.delete(tmpl.id);
       toast.success('Template deleted');
       loadTemplates();
     } catch {
@@ -359,17 +357,16 @@ export default function AdminTemplate() {
           onDelete={handleDelete}
           onNewFromClaire={async () => {
             // Find default and open editor with Claire
-            let defaultTmpl = templates.find((t) => t.ownerType === 0);
+            let defaultTmpl = templates.find((t) => t.owner_type === 'admin');
             if (!defaultTmpl) {
               // No template loaded yet — create one so Claire has something to work with
               try {
-                const response = await axiosInstance.post('/soa-templates', {
-                  ownerType: 0,
+                defaultTmpl = await base44.entities.SOATemplate.create({
+                  owner_type: 'admin',
                   name: 'PrimeSolve Default',
                   description: '',
                   sections: JSON.stringify(DEFAULT_SECTION_GROUPS),
                 });
-                defaultTmpl = response.data;
                 await loadTemplates();
               } catch {
                 toast.error('Failed to create template — please try again');
