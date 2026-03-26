@@ -107,11 +107,10 @@ export default function AdviceGroupAdvisers() {
   };
 
   const getAdviserStatus = (adviser) => {
-    // No user record = not yet registered = Pending
-    if (!adviser.firstName && !adviser.first_name) {
+    const hasUser = adviser.firstName || adviser.lastName || adviser.email
+    if (!hasUser) {
       return { label: 'Pending', class: 'bg-amber-100 text-amber-700' }
     }
-    // Has user record, check authorisedRepStatus
     const status = adviser.authorisedRepStatus ?? adviser.AuthorisedRepStatus
     if (status === 0) {
       return { label: 'Active', class: 'bg-green-100 text-green-700' }
@@ -200,7 +199,7 @@ export default function AdviceGroupAdvisers() {
             <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-green-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.firstName && (a.authorisedRepStatus === 0 || a.AuthorisedRepStatus === 0)).length}</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => (a.firstName || a.lastName) && (a.authorisedRepStatus === 0 || a.AuthorisedRepStatus === 0)).length}</div>
             <div className="text-sm text-slate-600">Active Advisers</div>
           </div>
 
@@ -208,7 +207,7 @@ export default function AdviceGroupAdvisers() {
             <div className="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-yellow-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => !a.firstName && !a.first_name).length}</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => !a.firstName && !a.lastName && !a.email).length}</div>
             <div className="text-sm text-slate-600">Pending</div>
           </div>
         </div>
