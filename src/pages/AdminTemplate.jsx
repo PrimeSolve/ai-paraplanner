@@ -89,6 +89,7 @@ export default function AdminTemplate() {
     setLoadingLibrary(true);
     try {
       const response = await axiosInstance.get('/soa-templates', { params: { ownerType: 0 } });
+      console.log('SOA templates response:', JSON.stringify(response.data));
       const data = Array.isArray(response.data) ? response.data : (response.data?.items || response.data?.data || []);
       setTemplates(data);
     } catch (error) {
