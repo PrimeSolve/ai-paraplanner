@@ -15,6 +15,7 @@ namespace PrimeSolve.Api.Data
         public DbSet<Company> Companies { get; set; }
         public DbSet<CompanyShareholder> CompanyShareholders { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
+        public DbSet<SoaTemplate> SoaTemplates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -80,6 +81,14 @@ namespace PrimeSolve.Api.Data
                 entity.Property(e => e.Status).HasDefaultValue("Open");
                 entity.Property(e => e.Description).HasColumnType("nvarchar(max)");
                 entity.Property(e => e.AdditionalContext).HasColumnType("nvarchar(max)");
+            });
+
+            modelBuilder.Entity<SoaTemplate>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.TenantId, e.OwnerType });
+                entity.HasIndex(e => e.OwnerType);
+                entity.Property(e => e.Sections).HasColumnType("nvarchar(max)");
             });
         }
     }
