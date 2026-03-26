@@ -57,7 +57,6 @@ export default function AdviceGroupAdvisers() {
           const advisersData = Array.isArray(advisersRes.data)
             ? advisersRes.data
             : advisersRes.data?.items || advisersRes.data?.data || [];
-          console.log(advisersData);
           setAdvisers(advisersData);
           if (groupRes.data) {
             setGroupName(groupRes.data.name || '');
