@@ -213,17 +213,21 @@ export default function AdminTemplate() {
   const handleNewFromDefault = async () => {
     // Find the default template and duplicate it
     const defaultTmpl = templates.find((t) => t.name === 'PrimeSolve Default' || (t.ownerType === 0));
-    if (defaultTmpl) {
+    if (!defaultTmpl) {
+      toast.error('No default template found — use "Start from scratch" instead');
+      return;
+    }
+    try {
+      const response = await axiosInstance.post(`/soa-templates/${defaultTmpl.id}/duplicate`, {
+        name: `${defaultTmpl.name || 'Default'} (Copy)`,
+        ownerType: 0,
+        ownerId: '',
+      });
+      toast.success('Template duplicated');
+      await loadTemplates();
+      openEditor(response.data);
+    } catch {
       try {
-        const response = await axiosInstance.post(`/soa-templates/${defaultTmpl.id}/duplicate`, {
-          name: `${defaultTmpl.name || 'Default'} (Copy)`,
-          ownerType: 0,
-          ownerId: '',
-        });
-        toast.success('Template duplicated');
-        await loadTemplates();
-        openEditor(response.data);
-      } catch {
         // Fallback: create manually
         const response = await axiosInstance.post('/soa-templates', {
           ownerType: 0,
@@ -234,6 +238,8 @@ export default function AdminTemplate() {
         toast.success('Template duplicated');
         await loadTemplates();
         openEditor(response.data);
+      } catch {
+        toast.error('Failed to duplicate template');
       }
     }
   };
@@ -351,13 +357,27 @@ export default function AdminTemplate() {
             handleNewFromDefault();
           }}
           onDelete={handleDelete}
-          onNewFromClaire={() => {
+          onNewFromClaire={async () => {
             // Find default and open editor with Claire
-            const defaultTmpl = templates.find((t) => t.ownerType === 0);
-            if (defaultTmpl) {
-              openEditor(defaultTmpl);
-              setTimeout(() => setClaireOpen(true), 100);
+            let defaultTmpl = templates.find((t) => t.ownerType === 0);
+            if (!defaultTmpl) {
+              // No template loaded yet — create one so Claire has something to work with
+              try {
+                const response = await axiosInstance.post('/soa-templates', {
+                  ownerType: 0,
+                  name: 'PrimeSolve Default',
+                  description: '',
+                  sections: JSON.stringify(DEFAULT_SECTION_GROUPS),
+                });
+                defaultTmpl = response.data;
+                await loadTemplates();
+              } catch {
+                toast.error('Failed to create template — please try again');
+                return;
+              }
             }
+            openEditor(defaultTmpl);
+            setTimeout(() => setClaireOpen(true), 100);
           }}
           onNewFromDefault={handleNewFromDefault}
           onNewFromScratch={handleNewFromScratch}
