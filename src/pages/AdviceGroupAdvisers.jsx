@@ -57,7 +57,6 @@ export default function AdviceGroupAdvisers() {
           const advisersData = Array.isArray(advisersRes.data)
             ? advisersRes.data
             : advisersRes.data?.items || advisersRes.data?.data || [];
-          console.log(advisersData);
           setAdvisers(advisersData);
           if (groupRes.data) {
             setGroupName(groupRes.data.name || '');
@@ -108,11 +107,17 @@ export default function AdviceGroupAdvisers() {
   };
 
   const getAdviserStatus = (adviser) => {
-    if (adviser.seatActive === 1 || adviser.SeatActive === 1) return 'Active';
-    // seatActive === 0 (or falsy)
-    const hasFirstName = adviser.firstName || adviser.first_name;
-    return hasFirstName ? 'Inactive' : 'Pending';
-  };
+    // No user record = not yet registered = Pending
+    if (!adviser.firstName && !adviser.first_name) {
+      return { label: 'Pending', class: 'bg-amber-100 text-amber-700' }
+    }
+    // Has user record, check authorisedRepStatus
+    const status = adviser.authorisedRepStatus ?? adviser.AuthorisedRepStatus
+    if (status === 0) {
+      return { label: 'Active', class: 'bg-green-100 text-green-700' }
+    }
+    return { label: 'Inactive', class: 'bg-gray-100 text-gray-600' }
+  }
 
   const filteredAdvisers = advisers.filter(a => {
     const fullName = `${a.firstName || ''} ${a.lastName || ''}`.toLowerCase();
@@ -120,7 +125,7 @@ export default function AdviceGroupAdvisers() {
            a.email?.toLowerCase().includes(searchTerm.toLowerCase());
     if (!matchesSearch) return false;
     if (statusFilter !== 'All Statuses') {
-      return getAdviserStatus(a) === statusFilter;
+      return getAdviserStatus(a).label === statusFilter;
     }
     return true;
   });
@@ -195,7 +200,7 @@ export default function AdviceGroupAdvisers() {
             <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-green-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.seatActive === 1 || a.SeatActive === 1).length}</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.firstName && (a.authorisedRepStatus === 0 || a.AuthorisedRepStatus === 0)).length}</div>
             <div className="text-sm text-slate-600">Active Advisers</div>
           </div>
 
@@ -203,7 +208,7 @@ export default function AdviceGroupAdvisers() {
             <div className="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-yellow-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => getAdviserStatus(a) === 'Pending').length}</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => !a.firstName && !a.first_name).length}</div>
             <div className="text-sm text-slate-600">Pending</div>
           </div>
         </div>
@@ -278,14 +283,9 @@ export default function AdviceGroupAdvisers() {
                     <td className="px-6 py-4">
                       {(() => {
                         const status = getAdviserStatus(adviser);
-                        const styles = status === 'Active'
-                          ? 'bg-green-100 text-green-700'
-                          : status === 'Pending'
-                            ? 'bg-orange-100 text-orange-700'
-                            : 'bg-slate-100 text-slate-600';
                         return (
-                          <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${styles}`}>
-                            {status}
+                          <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${status.class}`}>
+                            {status.label}
                           </span>
                         );
                       })()}
