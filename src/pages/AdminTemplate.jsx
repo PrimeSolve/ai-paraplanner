@@ -184,6 +184,7 @@ export default function AdminTemplate() {
   };
 
   const handleNewFromScratch = async () => {
+    console.log('[DEBUG] handleNewFromScratch called');
     try {
       const emptySections = DEFAULT_SECTION_GROUPS.map((g) => ({
         ...g,
@@ -200,15 +201,18 @@ export default function AdminTemplate() {
         description: '',
         sections: JSON.stringify(emptySections),
       });
+      console.log('[DEBUG] handleNewFromScratch created:', created);
       toast.success('Template created');
       await loadTemplates();
       openEditor(created);
-    } catch {
+    } catch (error) {
+      console.error('[DEBUG] handleNewFromScratch error:', error);
       toast.error('Failed to create template');
     }
   };
 
   const handleNewFromDefault = async () => {
+    console.log('[DEBUG] handleNewFromDefault called, templates:', templates);
     // Find the default template and duplicate it
     const defaultTmpl = templates.find((t) => t.name === 'PrimeSolve Default' || t.owner_type === 'admin');
     if (!defaultTmpl) {
@@ -221,10 +225,12 @@ export default function AdminTemplate() {
         ownerType: 'admin',
         ownerId: '',
       });
+      console.log('[DEBUG] handleNewFromDefault duplicated:', duplicated);
       toast.success('Template duplicated');
       await loadTemplates();
       openEditor(duplicated);
-    } catch {
+    } catch (error) {
+      console.error('[DEBUG] handleNewFromDefault duplicate API error:', error);
       try {
         // Fallback: create manually
         const created = await base44.entities.SOATemplate.create({
@@ -233,10 +239,12 @@ export default function AdminTemplate() {
           description: defaultTmpl.description || '',
           sections: defaultTmpl.sections,
         });
+        console.log('[DEBUG] handleNewFromDefault fallback created:', created);
         toast.success('Template duplicated');
         await loadTemplates();
         openEditor(created);
-      } catch {
+      } catch (fallbackError) {
+        console.error('[DEBUG] handleNewFromDefault fallback error:', fallbackError);
         toast.error('Failed to duplicate template');
       }
     }
