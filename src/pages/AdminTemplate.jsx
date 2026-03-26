@@ -223,7 +223,7 @@ export default function AdminTemplate() {
       const duplicated = await base44.soaTemplateApi.duplicate(defaultTmpl.id, {
         name: `${defaultTmpl.name || 'Default'} (Copy)`,
         ownerType: 'admin',
-        ownerId: '',
+        ownerId: '00000000-0000-0000-0000-000000000000',
       });
       console.log('[DEBUG] handleNewFromDefault duplicated:', duplicated);
       toast.success('Template duplicated');
