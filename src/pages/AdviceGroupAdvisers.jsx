@@ -106,10 +106,22 @@ export default function AdviceGroupAdvisers() {
     }
   };
 
+  const getAdviserStatus = (adviser) => {
+    if (adviser.seatActive === 1) return 'Active';
+    // seatActive === 0 (or falsy)
+    const hasIdentity = (adviser.firstName || adviser.lastName || adviser.email);
+    return hasIdentity ? 'Inactive' : 'Pending';
+  };
+
   const filteredAdvisers = advisers.filter(a => {
     const fullName = `${a.firstName || ''} ${a.lastName || ''}`.toLowerCase();
-    return fullName.includes(searchTerm.toLowerCase()) || 
+    const matchesSearch = fullName.includes(searchTerm.toLowerCase()) ||
            a.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!matchesSearch) return false;
+    if (statusFilter !== 'All Statuses') {
+      return getAdviserStatus(a) === statusFilter;
+    }
+    return true;
   });
 
   const avatarGradients = [
@@ -182,7 +194,7 @@ export default function AdviceGroupAdvisers() {
             <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-green-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.authorisedRepStatus === 0).length}</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.seatActive === 1).length}</div>
             <div className="text-sm text-slate-600">Active Advisers</div>
           </div>
 
@@ -190,7 +202,7 @@ export default function AdviceGroupAdvisers() {
             <div className="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-yellow-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.authorisedRepStatus === 1).length}</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => getAdviserStatus(a) === 'Pending').length}</div>
             <div className="text-sm text-slate-600">Pending</div>
           </div>
         </div>
@@ -213,6 +225,7 @@ export default function AdviceGroupAdvisers() {
                 <option>All Statuses</option>
                 <option>Active</option>
                 <option>Pending</option>
+                <option>Inactive</option>
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
@@ -262,9 +275,19 @@ export default function AdviceGroupAdvisers() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${adviser.authorisedRepStatus === 1 ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
-                        {adviser.authorisedRepStatus === 1 ? 'Pending' : 'Active'}
-                      </span>
+                      {(() => {
+                        const status = getAdviserStatus(adviser);
+                        const styles = status === 'Active'
+                          ? 'bg-green-100 text-green-700'
+                          : status === 'Pending'
+                            ? 'bg-orange-100 text-orange-700'
+                            : 'bg-slate-100 text-slate-600';
+                        return (
+                          <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${styles}`}>
+                            {status}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-slate-800">{adviser.activeSoas || 0}</div>
