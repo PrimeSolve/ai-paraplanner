@@ -107,10 +107,10 @@ export default function AdviceGroupAdvisers() {
   };
 
   const getAdviserStatus = (adviser) => {
-    if (adviser.seatActive === 1) return 'Active';
+    if (adviser.seatActive === 1 || adviser.SeatActive === 1) return 'Active';
     // seatActive === 0 (or falsy)
-    const hasIdentity = (adviser.firstName || adviser.lastName || adviser.email);
-    return hasIdentity ? 'Inactive' : 'Pending';
+    const hasFirstName = adviser.firstName || adviser.first_name;
+    return hasFirstName ? 'Inactive' : 'Pending';
   };
 
   const filteredAdvisers = advisers.filter(a => {
@@ -194,7 +194,7 @@ export default function AdviceGroupAdvisers() {
             <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-green-600" />
             </div>
-            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.seatActive === 1).length}</div>
+            <div className="text-4xl font-bold text-slate-800 mb-1">{advisers.filter(a => a.seatActive === 1 || a.SeatActive === 1).length}</div>
             <div className="text-sm text-slate-600">Active Advisers</div>
           </div>
 
