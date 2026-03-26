@@ -48,12 +48,10 @@ export default function AdviceGroupAdvisers() {
         const currentUser = meRes.data;
         setUser(currentUser);
 
-        const groupId = switchedToId || currentUser.adviceGroupId || currentUser.advice_group_id;
+        const groupId = switchedToId || currentUser.adviceGroupId || currentUser.advice_group_id || currentUser.tenantId || currentUser.TenantId;
         if (groupId) {
           const [advisersRes, groupRes] = await Promise.all([
-            axiosInstance.get('/advisers', {
-              params: { adviceGroupId: groupId }
-            }),
+            axiosInstance.get('/advisers'),
             axiosInstance.get(`/tenants/${groupId}`)
           ]);
           const advisersData = Array.isArray(advisersRes.data)
@@ -76,7 +74,7 @@ export default function AdviceGroupAdvisers() {
     if (saving) return;
     setSaving(true);
     try {
-      const groupId = switchedToId || user.adviceGroupId || user.advice_group_id;
+      const groupId = switchedToId || user.adviceGroupId || user.advice_group_id || user.tenantId || user.TenantId;
       await axiosInstance.post('/advisers', {
         firstName: formData.firstName,
         lastName: formData.lastName,
