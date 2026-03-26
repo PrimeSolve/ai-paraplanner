@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { base44 } from '@/api/base44Client';
+import axiosInstance from '@/api/axiosInstance';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -88,14 +88,9 @@ export default function AdminTemplate() {
   const loadTemplates = async () => {
     setLoadingLibrary(true);
     try {
-      // Try the new /available endpoint first, fall back to filter
-      let loaded;
-      try {
-        loaded = await base44.soaTemplateApi.getAvailable();
-      } catch {
-        loaded = await base44.entities.SOATemplate.filter({ owner_type: 'admin' });
-      }
-      setTemplates(loaded);
+      const response = await axiosInstance.get('/soa-templates', { params: { ownerType: 0 } });
+      const data = Array.isArray(response.data) ? response.data : (response.data?.items || response.data?.data || []);
+      setTemplates(data);
     } catch (error) {
       console.error('Failed to load templates:', error);
     } finally {
@@ -131,8 +126,9 @@ export default function AdminTemplate() {
 
   const loadExampleCount = async () => {
     try {
-      const examples = await base44.entities.SoaExample.filter({ owner_type: 'admin' });
-      setExampleCount(examples.length);
+      const response = await axiosInstance.get('/soa-examples', { params: { ownerType: 0 } });
+      const data = Array.isArray(response.data) ? response.data : (response.data?.items || response.data?.data || []);
+      setExampleCount(data.length);
     } catch {
       // silent
     }
@@ -143,13 +139,13 @@ export default function AdminTemplate() {
     try {
       const payload = { sections: JSON.stringify(sections) };
       if (template?.id) {
-        await base44.entities.SOATemplate.update(template.id, payload);
+        await axiosInstance.put(`/soa-templates/${template.id}`, payload);
       } else {
-        const created = await base44.entities.SOATemplate.create({
-          owner_type: 'admin',
+        const response = await axiosInstance.post('/soa-templates', {
+          ownerType: 0,
           ...payload,
         });
-        setTemplate(created);
+        setTemplate(response.data);
       }
       toast.success('Template saved successfully');
       // Refresh library data
@@ -166,12 +162,17 @@ export default function AdminTemplate() {
     if (!file) return;
     setUploading(true);
     try {
-      const uploadResult = await base44.integrations.Core.UploadFile({ file });
-      await base44.entities.SoaExample.create({
+      const formData = new FormData();
+      formData.append('file', file);
+      const uploadResponse = await axiosInstance.post('/files/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const uploadResult = uploadResponse.data;
+      await axiosInstance.post('/soa-examples', {
         name: file.name,
-        owner_type: 'admin',
-        owner_id: 'admin',
-        file_url: uploadResult.file_url || uploadResult.url,
+        ownerType: 0,
+        ownerId: 'admin',
+        fileUrl: uploadResult.file_url || uploadResult.url,
         status: 'processing',
       });
       toast.success('Example uploaded — AI is analyzing your SOA...');
@@ -195,15 +196,15 @@ export default function AdminTemplate() {
           data_feeds: [],
         })),
       }));
-      const created = await base44.entities.SOATemplate.create({
-        owner_type: 'admin',
+      const response = await axiosInstance.post('/soa-templates', {
+        ownerType: 0,
         name: 'New System Template',
         description: '',
         sections: JSON.stringify(emptySections),
       });
       toast.success('Template created');
       await loadTemplates();
-      openEditor(created);
+      openEditor(response.data);
     } catch {
       toast.error('Failed to create template');
     }
@@ -211,28 +212,28 @@ export default function AdminTemplate() {
 
   const handleNewFromDefault = async () => {
     // Find the default template and duplicate it
-    const defaultTmpl = templates.find((t) => t.name === 'PrimeSolve Default' || (t.owner_type === 'admin'));
+    const defaultTmpl = templates.find((t) => t.name === 'PrimeSolve Default' || (t.ownerType === 0));
     if (defaultTmpl) {
       try {
-        const duplicated = await base44.soaTemplateApi.duplicate(defaultTmpl.id, {
+        const response = await axiosInstance.post(`/soa-templates/${defaultTmpl.id}/duplicate`, {
           name: `${defaultTmpl.name || 'Default'} (Copy)`,
-          ownerType: 'admin',
+          ownerType: 0,
           ownerId: '',
         });
         toast.success('Template duplicated');
         await loadTemplates();
-        openEditor(duplicated);
+        openEditor(response.data);
       } catch {
         // Fallback: create manually
-        const created = await base44.entities.SOATemplate.create({
-          owner_type: 'admin',
+        const response = await axiosInstance.post('/soa-templates', {
+          ownerType: 0,
           name: `${defaultTmpl.name || 'Default'} (Copy)`,
           description: defaultTmpl.description || '',
           sections: defaultTmpl.sections,
         });
         toast.success('Template duplicated');
         await loadTemplates();
-        openEditor(created);
+        openEditor(response.data);
       }
     }
   };
@@ -243,7 +244,7 @@ export default function AdminTemplate() {
       return;
     }
     try {
-      await base44.entities.SOATemplate.delete(tmpl.id);
+      await axiosInstance.delete(`/soa-templates/${tmpl.id}`);
       toast.success('Template deleted');
       loadTemplates();
     } catch {
@@ -352,7 +353,7 @@ export default function AdminTemplate() {
           onDelete={handleDelete}
           onNewFromClaire={() => {
             // Find default and open editor with Claire
-            const defaultTmpl = templates.find((t) => t.owner_type === 'admin');
+            const defaultTmpl = templates.find((t) => t.ownerType === 0);
             if (defaultTmpl) {
               openEditor(defaultTmpl);
               setTimeout(() => setClaireOpen(true), 100);
