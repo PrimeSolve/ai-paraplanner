@@ -77,7 +77,7 @@ export default function TemplateLibrary({
           <TemplateCard
             key={template.id}
             template={template}
-            isDefault={template.owner_type === 'admin'}
+            isDefault={template.ownerType === 0}
             isActive={template.id === activeTemplateId}
             level={level}
             onEdit={onEdit}

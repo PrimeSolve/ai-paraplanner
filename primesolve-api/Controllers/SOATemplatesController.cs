@@ -33,33 +33,37 @@ namespace PrimeSolve.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int? ownerType)
         {
-            var tenantId = GetTenantId();
-            if (tenantId == Guid.Empty)
-                return Unauthorized(new { error = "Tenant ID not found in token." });
-
             IQueryable<SoaTemplate> query = _db.SoaTemplates;
 
-            if (ownerType.HasValue)
+            if (ownerType.HasValue && ownerType.Value == 0)
             {
-                if (ownerType.Value == 0)
-                {
-                    // Admin templates are platform-wide — no tenant filter
-                    query = query.Where(t => t.OwnerType == 0);
-                }
-                else if (ownerType.Value == 1)
-                {
-                    query = query.Where(t => t.OwnerType == 1 && t.TenantId == tenantId);
-                }
-                else if (ownerType.Value == 2)
-                {
-                    var adviserId = GetAdviserId();
-                    query = query.Where(t => t.OwnerType == 2 && t.OwnerId == adviserId.ToString());
-                }
+                // Admin templates are platform-wide — no tenant filter required
+                query = query.Where(t => t.OwnerType == 0);
             }
             else
             {
-                // No filter: return admin templates + tenant-scoped templates
-                query = query.Where(t => t.OwnerType == 0 || t.TenantId == tenantId);
+                // All other queries require a valid tenant ID
+                var tenantId = GetTenantId();
+                if (tenantId == Guid.Empty)
+                    return Unauthorized(new { error = "Tenant ID not found in token." });
+
+                if (ownerType.HasValue)
+                {
+                    if (ownerType.Value == 1)
+                    {
+                        query = query.Where(t => t.OwnerType == 1 && t.TenantId == tenantId);
+                    }
+                    else if (ownerType.Value == 2)
+                    {
+                        var adviserId = GetAdviserId();
+                        query = query.Where(t => t.OwnerType == 2 && t.OwnerId == adviserId.ToString());
+                    }
+                }
+                else
+                {
+                    // No filter: return admin templates + tenant-scoped templates
+                    query = query.Where(t => t.OwnerType == 0 || t.TenantId == tenantId);
+                }
             }
 
             var templates = await query
