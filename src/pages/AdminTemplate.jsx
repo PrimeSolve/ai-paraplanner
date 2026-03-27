@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import axiosInstance from '@/api/axiosInstance';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -15,6 +16,7 @@ import {
   Home,
   ChevronRight,
   Trash2,
+  Plus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
@@ -145,7 +147,10 @@ export default function AdminTemplate() {
   const handleNameDescSave = async (field, value) => {
     if (!template?.id) return;
     try {
-      await base44.entities.SOATemplate.update(template.id, { [field]: value });
+      await axiosInstance.put(`/soa-templates/${template.id}`, {
+        name: field === 'name' ? value : templateName,
+        description: field === 'description' ? value : templateDesc,
+      });
       setTemplate((prev) => ({ ...prev, [field]: value }));
     } catch {
       toast.error('Failed to save template details');
@@ -338,6 +343,43 @@ export default function AdminTemplate() {
     setSections(newSections);
     handleSave(newSections);
     toast.success('Section deleted');
+  };
+
+  const handleAddSection = (category) => {
+    const newSections = sections.map((group) => {
+      if (group.group !== category) return group;
+      const nextOrder = group.sections.length > 0
+        ? Math.max(...group.sections.map((s) => s.order ?? 0)) + 1
+        : 1;
+      return {
+        ...group,
+        sections: [
+          ...group.sections,
+          {
+            id: crypto.randomUUID(),
+            name: 'New Section',
+            description: '',
+            category,
+            order: nextOrder,
+            prompt: '',
+            exampleContent: '',
+            dataFeeds: [],
+            outputFormat: 'prose',
+            maxWords: 300,
+            tone: 'professional',
+            isEnabled: true,
+          },
+        ],
+      };
+    });
+    setSections(newSections);
+    handleSave(newSections);
+  };
+
+  const handleAddSectionStandalone = () => {
+    const lastGroup = sections[sections.length - 1];
+    const category = lastGroup ? lastGroup.group : 'general';
+    handleAddSection(category);
   };
 
   const handleClaireSectionStateChange = (stateMap, newSections) => {
@@ -733,6 +775,15 @@ export default function AdminTemplate() {
                                   );
                                 })}
                                 {provided.placeholder}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full mt-2 border-dashed border-slate-300 text-slate-500 hover:text-indigo-600 hover:border-indigo-300"
+                                  onClick={() => handleAddSection(group.group)}
+                                >
+                                  <Plus className="w-4 h-4 mr-1.5" />
+                                  Add Section
+                                </Button>
                               </div>
                             )}
                           </Droppable>
@@ -747,6 +798,15 @@ export default function AdminTemplate() {
           )}
         </Droppable>
       </DragDropContext>
+
+      <Button
+        variant="outline"
+        className="w-full mt-4 border-dashed border-slate-300 text-slate-500 hover:text-indigo-600 hover:border-indigo-300"
+        onClick={handleAddSectionStandalone}
+      >
+        <Plus className="w-4 h-4 mr-1.5" />
+        Add Section
+      </Button>
 
       {/* Section Config Editor Modal */}
       <SectionConfigEditor
