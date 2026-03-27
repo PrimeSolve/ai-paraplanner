@@ -1,15 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
   Plus,
-  Copy,
-  FileText,
 } from 'lucide-react';
 import TemplateCard from './TemplateCard';
 
@@ -26,7 +18,6 @@ import TemplateCard from './TemplateCard';
  *   onDuplicate       — (template) => void
  *   onDelete          — (template) => void
  *   onNewFromClaire   — () => void
- *   onNewFromDefault  — () => void
  *   onNewFromScratch  — () => void
  *   level             — 'admin' | 'advice_group' | 'adviser'
  *   canCreate         — whether the user can create new templates (default true)
@@ -42,14 +33,11 @@ export default function TemplateLibrary({
   onDuplicate,
   onDelete,
   onNewFromClaire,
-  onNewFromDefault,
   onNewFromScratch,
   level = 'advice_group',
   canCreate = true,
   loading = false,
 }) {
-  const [newDialogOpen, setNewDialogOpen] = useState(false);
-
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -70,7 +58,6 @@ export default function TemplateLibrary({
   }
 
   return (
-    <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {templates.map((template) => (
           <TemplateCard
@@ -90,7 +77,7 @@ export default function TemplateLibrary({
         {/* New Template card */}
         {canCreate && (
           <button
-            onClick={() => setNewDialogOpen(true)}
+            onClick={() => onNewFromScratch?.()}
             className="border-2 border-dashed border-slate-300 rounded-xl p-5 flex flex-col items-center justify-center text-center hover:border-slate-400 hover:bg-slate-50 transition-colors min-h-[220px]"
           >
             <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center mb-3">
@@ -101,51 +88,5 @@ export default function TemplateLibrary({
           </button>
         )}
       </div>
-
-      {/* New Template Dialog */}
-      <Dialog open={newDialogOpen} onOpenChange={setNewDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Create New Template</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-3 mt-2">
-            <button
-              onClick={() => { setNewDialogOpen(false); onNewFromDefault?.(); }}
-              className="w-full text-left p-4 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50/50 transition-colors group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                  <Copy className="w-5 h-5 text-indigo-600" />
-                </div>
-                <div>
-                  <div className="font-semibold text-slate-800 text-sm">Start from Default</div>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Duplicate the PrimeSolve default and customise it
-                  </p>
-                </div>
-              </div>
-            </button>
-
-            <button
-              onClick={() => { setNewDialogOpen(false); onNewFromScratch?.(); }}
-              className="w-full text-left p-4 border border-slate-200 rounded-lg hover:border-slate-400 hover:bg-slate-50 transition-colors group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-5 h-5 text-slate-600" />
-                </div>
-                <div>
-                  <div className="font-semibold text-slate-800 text-sm">Start from scratch</div>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Build a blank template with no pre-configured sections
-                  </p>
-                </div>
-              </div>
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
   );
 }
