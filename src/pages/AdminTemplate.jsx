@@ -327,7 +327,7 @@ export default function AdminTemplate() {
       ...group,
       sections: group.sections.map((s) =>
         s.id === sectionId
-          ? { ...s, prompt: config.prompt, example_content: config.example_content, data_feeds: config.data_feeds }
+          ? { ...s, label: config.label, desc: config.desc, prompt: config.prompt, example_content: config.example_content, data_feeds: config.data_feeds }
           : s
       ),
     }));

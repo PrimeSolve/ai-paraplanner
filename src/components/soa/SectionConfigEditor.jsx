@@ -30,6 +30,8 @@ export default function SectionConfigEditor({
   const [prompt, setPrompt] = useState({ system: '', output_format: 'prose', max_words: 500, tone: 'professional_clear' });
   const [exampleContent, setExampleContent] = useState('');
   const [dataFeeds, setDataFeeds] = useState([]);
+  const [sectionLabel, setSectionLabel] = useState('');
+  const [sectionDesc, setSectionDesc] = useState('');
   const [activeTab, setActiveTab] = useState('prompt');
   const fileInputRef = useRef(null);
 
@@ -43,6 +45,8 @@ export default function SectionConfigEditor({
       });
       setExampleContent(section.example_content || '');
       setDataFeeds(section.data_feeds || []);
+      setSectionLabel(section.label || '');
+      setSectionDesc(section.desc || '');
       setActiveTab('prompt');
     }
   }, [section]);
@@ -51,6 +55,8 @@ export default function SectionConfigEditor({
 
   const handleSave = () => {
     onSave(section.id, {
+      label: sectionLabel,
+      desc: sectionDesc,
       prompt,
       example_content: exampleContent,
       data_feeds: dataFeeds,
@@ -84,10 +90,25 @@ export default function SectionConfigEditor({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl w-[95vw] max-h-[90vh] min-h-[600px] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold" style={{ fontFamily: 'Inter, sans-serif' }}>
-            {section.label}
+          <DialogTitle asChild>
+            <input
+              type="text"
+              value={sectionLabel}
+              onChange={(e) => setSectionLabel(e.target.value)}
+              placeholder="Section title"
+              className="text-lg font-semibold w-full border border-slate-300 rounded-lg px-3 py-1.5 bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            />
           </DialogTitle>
-          <DialogDescription>{section.desc}</DialogDescription>
+          <DialogDescription asChild>
+            <input
+              type="text"
+              value={sectionDesc}
+              onChange={(e) => setSectionDesc(e.target.value)}
+              placeholder="Section description"
+              className="text-sm text-slate-500 w-full border border-slate-300 rounded-lg px-3 py-1.5 bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none mt-1"
+            />
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
