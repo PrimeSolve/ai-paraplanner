@@ -243,30 +243,22 @@ export default function AdminTemplate() {
   };
 
   const handleNewFromScratch = async () => {
-    console.log('[DEBUG] handleNewFromScratch called');
     try {
-      const emptySections = DEFAULT_SECTION_GROUPS.map((g) => ({
-        ...g,
-        sections: g.sections.map((s) => ({
-          ...s,
-          prompt: { system: '', output_format: 'prose', max_words: 500, tone: 'professional_clear' },
-          example_content: '',
-          data_feeds: [],
-        })),
-      }));
-      const created = await base44.entities.SOATemplate.create({
-        owner_type: 'admin',
-        owner_id: '00000000-0000-0000-0000-000000000000',
+      const payload = {
         name: 'New System Template',
-        description: 'Custom template',
-        template_data: JSON.stringify(emptySections),
-      });
-      console.log('[DEBUG] handleNewFromScratch created:', created);
+        description: '',
+        ownerType: 0,
+        ownerId: '00000000-0000-0000-0000-000000000000',
+        category: 'Default',
+        templateData: JSON.stringify({ sections: DEFAULT_SECTION_GROUPS }),
+        isActive: true,
+      };
+      const { data: created } = await axiosInstance.post('/soa-templates', payload);
       toast.success('Template created');
       await loadTemplates();
       openEditor(created);
     } catch (error) {
-      console.error('[DEBUG] handleNewFromScratch error:', error);
+      console.error('handleNewFromScratch error:', error);
       toast.error('Failed to create template');
     }
   };
@@ -555,6 +547,26 @@ export default function AdminTemplate() {
         <h1 className="text-2xl font-bold text-gray-900">
           {templateName || 'Edit Template'}
         </h1>
+      </div>
+
+      {/* Editable Name & Description */}
+      <div className="space-y-3 mb-6">
+        <input
+          type="text"
+          value={templateName}
+          onChange={(e) => setTemplateName(e.target.value)}
+          onBlur={handleNameDescSave}
+          placeholder="Template name"
+          className="w-full text-lg font-semibold border border-slate-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        <input
+          type="text"
+          value={templateDesc}
+          onChange={(e) => setTemplateDesc(e.target.value)}
+          onBlur={handleNameDescSave}
+          placeholder="Template description"
+          className="w-full text-sm text-slate-600 border border-slate-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
       </div>
 
       {/* Stats & Actions */}
