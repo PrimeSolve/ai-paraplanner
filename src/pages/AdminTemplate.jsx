@@ -89,13 +89,9 @@ export default function AdminTemplate() {
   const loadTemplates = async () => {
     setLoadingLibrary(true);
     try {
-      let loaded;
-      try {
-        loaded = await base44.soaTemplateApi.getAvailable();
-      } catch {
-        loaded = await base44.entities.SOATemplate.filter({ owner_type: 'admin' });
-      }
-      setTemplates(loaded);
+      const response = await axiosInstance.get('/soa-templates', { params: { ownerType: 0 } });
+      const data = Array.isArray(response.data) ? response.data : (response.data?.items || []);
+      setTemplates(data);
     } catch (error) {
       console.error('Failed to load templates:', error);
     } finally {
@@ -112,10 +108,10 @@ export default function AdminTemplate() {
 
     let loaded = false;
 
-    // Prefer template_data (axiosInstance converts camelCase API responses to snake_case)
-    if (tmpl.template_data) {
+    // Prefer templateData (axiosInstance returns camelCase)
+    if (tmpl.templateData) {
       try {
-        const parsed = JSON.parse(tmpl.template_data);
+        const parsed = JSON.parse(tmpl.templateData);
         let secs = parsed.sections || parsed;
         if (Array.isArray(secs) && secs.length > 0) {
           // If sections are grouped (have a 'group' property and nested 'sections'), use as-is
