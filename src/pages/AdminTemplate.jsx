@@ -261,7 +261,7 @@ export default function AdminTemplate() {
       await loadTemplates();
       openEditor(created);
     } catch (error) {
-      console.error('handleNewFromScratch error:', error);
+      console.error('handleNewFromScratch error:', error?.response?.status, error?.response?.data, error);
       toast.error('Failed to create template');
     }
   };
@@ -310,13 +310,18 @@ export default function AdminTemplate() {
       toast.error('Cannot delete the PrimeSolve Default template');
       return;
     }
+    if (!tmpl.id) {
+      console.error('handleDelete: tmpl.id is missing', tmpl);
+      toast.error('Cannot delete template — no ID found');
+      return;
+    }
     if (!window.confirm(`Delete template "${tmpl.name}"? This cannot be undone.`)) return;
     try {
       await axiosInstance.delete(`/soa-templates/${tmpl.id}`);
       toast.success('Template deleted');
       await loadTemplates();
     } catch (error) {
-      console.error('handleDelete error:', error);
+      console.error('handleDelete error:', error?.response?.status, error?.response?.data, error);
       toast.error('Failed to delete template');
     }
   };
