@@ -190,19 +190,21 @@ export default function AdminTemplate() {
   const handleSave = async (sectionsOverride) => {
     setSaving(true);
     try {
-      const payload = {
-        name: templateName,
-        description: templateDesc,
-        ownerType: template?.ownerType ?? 0,
-        ownerId: template?.ownerId ?? '00000000-0000-0000-0000-000000000000',
-        category: template?.category ?? 'Default',
-        templateData: JSON.stringify({ sections: sectionsOverride || sections }),
-        isActive: true,
-      };
+      const sectionData = JSON.stringify({ sections: sectionsOverride || sections });
       if (template?.id) {
-        await axiosInstance.put(`/soa-templates/${template.id}`, payload);
+        await axiosInstance.put(`/soa-templates/${template.id}`, {
+          name: templateName,
+          description: templateDesc,
+          sections: sectionData,
+        });
       } else {
-        const { data: created } = await axiosInstance.post('/soa-templates', payload);
+        const { data: created } = await axiosInstance.post('/soa-templates', {
+          name: templateName,
+          description: templateDesc,
+          ownerType: template?.ownerType ?? 0,
+          ownerId: template?.ownerId ?? '00000000-0000-0000-0000-000000000000',
+          sections: sectionData,
+        });
         setTemplate(created);
       }
       toast.success('Template saved successfully');
@@ -218,19 +220,21 @@ export default function AdminTemplate() {
   const handleNameDescSave = async () => {
     setSaving(true);
     try {
-      const payload = {
-        name: templateName,
-        description: templateDesc,
-        ownerType: template?.ownerType ?? 0,
-        ownerId: template?.ownerId ?? '00000000-0000-0000-0000-000000000000',
-        category: template?.category ?? 'Default',
-        templateData: JSON.stringify({ sections }),
-        isActive: true,
-      };
+      const sectionData = JSON.stringify({ sections });
       if (template?.id) {
-        await axiosInstance.put(`/soa-templates/${template.id}`, payload);
+        await axiosInstance.put(`/soa-templates/${template.id}`, {
+          name: templateName,
+          description: templateDesc,
+          sections: sectionData,
+        });
       } else {
-        const { data: created } = await axiosInstance.post('/soa-templates', payload);
+        const { data: created } = await axiosInstance.post('/soa-templates', {
+          name: templateName,
+          description: templateDesc,
+          ownerType: template?.ownerType ?? 0,
+          ownerId: template?.ownerId ?? '00000000-0000-0000-0000-000000000000',
+          sections: sectionData,
+        });
         setTemplate(created);
       }
       toast.success('Template saved successfully');
@@ -244,16 +248,13 @@ export default function AdminTemplate() {
 
   const handleNewFromScratch = async () => {
     try {
-      const payload = {
+      const { data: created } = await axiosInstance.post('/soa-templates', {
         name: 'New System Template',
         description: '',
         ownerType: 0,
         ownerId: '00000000-0000-0000-0000-000000000000',
-        category: 'Default',
-        templateData: JSON.stringify({ sections: DEFAULT_SECTION_GROUPS }),
-        isActive: true,
-      };
-      const { data: created } = await axiosInstance.post('/soa-templates', payload);
+        sections: JSON.stringify({ sections: DEFAULT_SECTION_GROUPS }),
+      });
       toast.success('Template created');
       await loadTemplates();
       openEditor(created);
