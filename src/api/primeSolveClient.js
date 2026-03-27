@@ -422,9 +422,14 @@ export const soaTemplateApi = {
    * @param {{ name: string, ownerType: string, ownerId: string }} params
    */
   async duplicate(templateId, { name, ownerType, ownerId }) {
+    // Ensure ownerType is an integer (0=admin, 1=advice_group, 2=adviser)
+    const OWNER_TYPE_MAP = { admin: 0, advice_group: 1, adviser: 2 };
+    const resolvedOwnerType = typeof ownerType === 'string'
+      ? (OWNER_TYPE_MAP[ownerType] ?? 0)
+      : ownerType;
     const response = await axiosInstance.post(`/soa-templates/${templateId}/duplicate`, {
       name,
-      ownerType,
+      ownerType: resolvedOwnerType,
       ownerId,
     });
     return camelToSnakeKeys(response.data);
