@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Save, X, Upload, Info } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import DataFeedPicker from './DataFeedPicker';
 import { OUTPUT_FORMATS, TONE_OPTIONS } from '@/utils/soaTemplateDefaults';
 
@@ -72,11 +72,11 @@ export default function SectionConfigEditor({
       const reader = new FileReader();
       reader.onload = (ev) => {
         setExampleContent(ev.target.result);
-        toast.success('Example content loaded from file');
+        toast({ title: 'Example content loaded from file' });
       };
       reader.readAsText(file);
     } else {
-      toast.info('Example upload processing... PDF/DOCX extraction will be available soon.');
+      toast({ title: 'Example upload processing... PDF/DOCX extraction will be available soon.' });
     }
 
     if (fileInputRef.current) fileInputRef.current.value = '';

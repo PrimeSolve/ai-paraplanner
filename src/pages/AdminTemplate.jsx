@@ -18,7 +18,7 @@ import {
   Trash2,
   Plus,
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import SectionConfigEditor from '@/components/soa/SectionConfigEditor';
 import ClairePanel from '@/components/soa/ClairePanel';
@@ -153,8 +153,9 @@ export default function AdminTemplate() {
         sections: JSON.stringify(sections),
       });
       setTemplate((prev) => ({ ...prev, [field]: value }));
-    } catch {
-      toast.error('Failed to save template details');
+    } catch (err) {
+      console.error('Save template details failed:', err.response?.status, err.response?.data);
+      toast({ title: 'Failed to save template details', variant: 'destructive' });
     }
   };
 
@@ -175,11 +176,12 @@ export default function AdminTemplate() {
         });
         setTemplate(created);
       }
-      toast.success('Template saved successfully');
+      toast({ title: 'Template saved successfully' });
       // Refresh library data
       loadTemplates();
-    } catch {
-      toast.error('Failed to save template');
+    } catch (err) {
+      console.error('Save template failed:', err.response?.status, err.response?.data);
+      toast({ title: 'Failed to save template', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -198,10 +200,10 @@ export default function AdminTemplate() {
         file_url: uploadResult.file_url || uploadResult.url,
         status: 'processing',
       });
-      toast.success('Example uploaded — AI is analyzing your SOA...');
+      toast({ title: 'Example uploaded — AI is analyzing your SOA...' });
       loadExampleCount();
     } catch {
-      toast.info('Example upload processing...');
+      toast({ title: 'Example upload processing...' });
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -228,12 +230,12 @@ export default function AdminTemplate() {
         template_data: JSON.stringify(emptySections),
       });
       console.log('[DEBUG] handleNewFromScratch created:', created);
-      toast.success('Template created');
+      toast({ title: 'Template created' });
       await loadTemplates();
       openEditor(created);
     } catch (error) {
       console.error('[DEBUG] handleNewFromScratch error:', error);
-      toast.error('Failed to create template');
+      toast({ title: 'Failed to create template', variant: 'destructive' });
     }
   };
 
@@ -242,7 +244,7 @@ export default function AdminTemplate() {
     // Find the default template and duplicate it
     const defaultTmpl = templates.find((t) => t.name === 'PrimeSolve Default' || t.owner_type === 'admin');
     if (!defaultTmpl) {
-      toast.error('No default template found — use "Start from scratch" instead');
+      toast({ title: 'No default template found — use "Start from scratch" instead', variant: 'destructive' });
       return;
     }
     try {
@@ -252,7 +254,7 @@ export default function AdminTemplate() {
         ownerId: '00000000-0000-0000-0000-000000000000',
       });
       console.log('[DEBUG] handleNewFromDefault duplicated:', duplicated);
-      toast.success('Template duplicated');
+      toast({ title: 'Template duplicated' });
       await loadTemplates();
       openEditor(duplicated);
     } catch (error) {
@@ -266,27 +268,27 @@ export default function AdminTemplate() {
           sections: defaultTmpl.sections,
         });
         console.log('[DEBUG] handleNewFromDefault fallback created:', created);
-        toast.success('Template duplicated');
+        toast({ title: 'Template duplicated' });
         await loadTemplates();
         openEditor(created);
       } catch (fallbackError) {
         console.error('[DEBUG] handleNewFromDefault fallback error:', fallbackError);
-        toast.error('Failed to duplicate template');
+        toast({ title: 'Failed to duplicate template', variant: 'destructive' });
       }
     }
   };
 
   const handleDelete = async (tmpl) => {
     if (tmpl.name === 'PrimeSolve Default') {
-      toast.error('Cannot delete the PrimeSolve Default template');
+      toast({ title: 'Cannot delete the PrimeSolve Default template', variant: 'destructive' });
       return;
     }
     try {
       await base44.entities.SOATemplate.delete(tmpl.id);
-      toast.success('Template deleted');
+      toast({ title: 'Template deleted' });
       loadTemplates();
     } catch {
-      toast.error('Failed to delete template');
+      toast({ title: 'Failed to delete template', variant: 'destructive' });
     }
   };
 
@@ -334,7 +336,7 @@ export default function AdminTemplate() {
     }));
     setSections(newSections);
     handleSave(newSections);
-    toast.success('Section updated');
+    toast({ title: 'Section updated' });
   };
 
   const handleDeleteSection = (sectionId) => {
@@ -347,7 +349,7 @@ export default function AdminTemplate() {
       .filter((group) => group.sections.length > 0);
     setSections(newSections);
     handleSave(newSections);
-    toast.success('Section deleted');
+    toast({ title: 'Section deleted' });
   };
 
   const handleAddSection = (category) => {
@@ -463,7 +465,7 @@ export default function AdminTemplate() {
                 });
                 await loadTemplates();
               } catch {
-                toast.error('Failed to create template — please try again');
+                toast({ title: 'Failed to create template — please try again', variant: 'destructive' });
                 return;
               }
             }
