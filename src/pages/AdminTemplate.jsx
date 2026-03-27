@@ -110,18 +110,37 @@ export default function AdminTemplate() {
     setTemplateName(tmpl.name || '');
     setTemplateDesc(tmpl.description || '');
 
-    if (tmpl.sections) {
+    let loaded = false;
+
+    // Prefer templateData (the field used by the API for saving)
+    if (tmpl.templateData) {
+      try {
+        const parsed = JSON.parse(tmpl.templateData);
+        const sections = parsed.sections || parsed;
+        if (Array.isArray(sections) && sections.length > 0) {
+          setSections(sections);
+          setExpandedGroups(sections.map((g) => g.group));
+          loaded = true;
+        }
+      } catch (e) {
+        console.error('Failed to parse templateData:', e);
+      }
+    }
+
+    // Fall back to legacy sections field
+    if (!loaded && tmpl.sections) {
       const parsed = typeof tmpl.sections === 'string'
         ? JSON.parse(tmpl.sections)
         : tmpl.sections;
       if (Array.isArray(parsed) && parsed.length > 0) {
         setSections(parsed);
         setExpandedGroups(parsed.map((g) => g.group));
-      } else {
-        setSections(JSON.parse(JSON.stringify(DEFAULT_SECTION_GROUPS)));
-        setExpandedGroups(DEFAULT_SECTION_GROUPS.map((g) => g.group));
+        loaded = true;
       }
-    } else {
+    }
+
+    // Last resort: use defaults
+    if (!loaded) {
       setSections(JSON.parse(JSON.stringify(DEFAULT_SECTION_GROUPS)));
       setExpandedGroups(DEFAULT_SECTION_GROUPS.map((g) => g.group));
     }
