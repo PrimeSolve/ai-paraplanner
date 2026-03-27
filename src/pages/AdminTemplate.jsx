@@ -252,19 +252,18 @@ export default function AdminTemplate() {
         toast.error('No default template found to duplicate');
         return;
       }
-      const { data: duplicated } = await axiosInstance.post(
-        `/soa-templates/${defaultTmpl.id}/duplicate`,
-        {
-          name: 'New System Template',
-          ownerType: 0,
-          ownerId: '00000000-0000-0000-0000-000000000000',
-        }
-      );
-      // Clear all section prompts on the new template
-      await axiosInstance.put(`/soa-templates/${duplicated.id}`, {
-        sections: JSON.stringify({ sections: [] }),
+      const duplicated = await base44.soaTemplateApi.duplicate(defaultTmpl.id, {
+        name: 'New System Template',
+        ownerType: 0,
+        ownerId: '00000000-0000-0000-0000-000000000000',
       });
-      duplicated.sections = JSON.stringify({ sections: [] });
+      const newId = duplicated.id ?? duplicated.Id;
+      // Clear all section prompts on the new template
+      await axiosInstance.put(`/soa-templates/${newId}`, {
+        templateData: JSON.stringify({ sections: [] }),
+      });
+      duplicated.templateData = JSON.stringify({ sections: [] });
+      duplicated.template_data = JSON.stringify({ sections: [] });
       toast.success('Template created');
       await loadTemplates();
       openEditor(duplicated);
