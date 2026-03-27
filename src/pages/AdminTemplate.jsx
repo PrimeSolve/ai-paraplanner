@@ -150,6 +150,7 @@ export default function AdminTemplate() {
       await axiosInstance.put(`/soa-templates/${template.id}`, {
         name: field === 'name' ? value : templateName,
         description: field === 'description' ? value : templateDesc,
+        sections: JSON.stringify(sections),
       });
       setTemplate((prev) => ({ ...prev, [field]: value }));
     } catch {
@@ -609,7 +610,7 @@ export default function AdminTemplate() {
             </Button>
           )}
           <Button
-            onClick={handleSave}
+            onClick={() => handleSave()}
             disabled={saving}
             className="bg-indigo-600 hover:bg-indigo-700"
           >
