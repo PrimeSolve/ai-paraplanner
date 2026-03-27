@@ -387,44 +387,57 @@ export default function AdminTemplate() {
   };
 
   const handleAddSection = (category) => {
-    const newSections = sections.map((group) => {
-      if (group.group !== category) return group;
-      const nextOrder = group.sections.length > 0
-        ? Math.max(...group.sections.map((s) => s.order ?? 0)) + 1
+    const newSection = {
+      id: crypto.randomUUID(),
+      name: 'New Section',
+      label: 'New Section',
+      description: '',
+      desc: '',
+      category,
+      order: 1,
+      prompt: '',
+      exampleContent: '',
+      example_content: '',
+      dataFeeds: [],
+      data_feeds: [],
+      outputFormat: 'prose',
+      maxWords: 300,
+      tone: 'professional',
+      isEnabled: true,
+    };
+
+    let newSections;
+    const existingGroup = sections.find((g) => g.group === category);
+
+    if (!existingGroup) {
+      // No group exists yet — create a default first group
+      newSections = [
+        ...sections,
+        {
+          group: 'general',
+          groupLabel: 'General',
+          icon: '',
+          sections: [newSection],
+        },
+      ];
+    } else {
+      const nextOrder = existingGroup.sections.length > 0
+        ? Math.max(...existingGroup.sections.map((s) => s.order ?? 0)) + 1
         : 1;
-      return {
-        ...group,
-        sections: [
-          ...group.sections,
-          {
-            id: crypto.randomUUID(),
-            name: 'New Section',
-            label: 'New Section',
-            description: '',
-            desc: '',
-            category,
-            order: nextOrder,
-            prompt: '',
-            exampleContent: '',
-            example_content: '',
-            dataFeeds: [],
-            data_feeds: [],
-            outputFormat: 'prose',
-            maxWords: 300,
-            tone: 'professional',
-            isEnabled: true,
-          },
-        ],
-      };
-    });
-    setSections(newSections);
-    handleSave(newSections);
-    // Open editor for the new section so user can set title/description
-    const addedGroup = newSections.find((g) => g.group === category);
-    const newSection = addedGroup?.sections[addedGroup.sections.length - 1];
-    if (newSection) {
-      openSectionEditor(newSection);
+      newSection.order = nextOrder;
+      newSections = sections.map((group) => {
+        if (group.group !== category) return group;
+        return {
+          ...group,
+          sections: [...group.sections, newSection],
+        };
+      });
     }
+
+    setSections(newSections);
+    setExpandedGroups((prev) => prev.includes(category) ? prev : [...prev, 'general']);
+    handleSave(newSections);
+    openSectionEditor(newSection);
   };
 
   const handleAddSectionStandalone = () => {
