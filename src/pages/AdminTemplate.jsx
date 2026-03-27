@@ -104,6 +104,8 @@ export default function AdminTemplate() {
   };
 
   const openEditor = async (tmpl) => {
+    console.log('[openEditor] tmpl.templateData:', tmpl.templateData ? 'EXISTS length=' + tmpl.templateData.length : 'MISSING');
+    console.log('[openEditor] tmpl keys:', Object.keys(tmpl));
     setLoading(true);
     setEditingTemplateId(tmpl.id);
     setTemplate(tmpl);
