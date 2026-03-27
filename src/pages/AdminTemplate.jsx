@@ -362,12 +362,16 @@ export default function AdminTemplate() {
           {
             id: crypto.randomUUID(),
             name: 'New Section',
+            label: 'New Section',
             description: '',
+            desc: '',
             category,
             order: nextOrder,
             prompt: '',
             exampleContent: '',
+            example_content: '',
             dataFeeds: [],
+            data_feeds: [],
             outputFormat: 'prose',
             maxWords: 300,
             tone: 'professional',
@@ -378,6 +382,12 @@ export default function AdminTemplate() {
     });
     setSections(newSections);
     handleSave(newSections);
+    // Open editor for the new section so user can set title/description
+    const addedGroup = newSections.find((g) => g.group === category);
+    const newSection = addedGroup?.sections[addedGroup.sections.length - 1];
+    if (newSection) {
+      openSectionEditor(newSection);
+    }
   };
 
   const handleAddSectionStandalone = () => {
