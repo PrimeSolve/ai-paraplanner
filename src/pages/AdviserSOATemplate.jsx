@@ -120,7 +120,7 @@ export default function AdviserSOATemplate() {
 
       // Determine active template (adviser-level or group default)
       // TODO: Check adviser's selected template or advice group's defaultTemplateId
-      const groupTmpls = loaded.filter((t) => t.owner_type === 'advice_group');
+      const groupTmpls = loaded.filter((t) => (t.ownerType ?? t.owner_type) === 1);
       if (groupTmpls.length > 0) {
         setActiveTemplateId(groupTmpls[0].id);
       } else if (loaded.length > 0) {
@@ -137,11 +137,14 @@ export default function AdviserSOATemplate() {
     setViewingTemplate(tmpl);
 
     let sections;
-    if (tmpl.sections) {
-      const parsed = typeof tmpl.sections === 'string'
-        ? JSON.parse(tmpl.sections)
-        : tmpl.sections;
-      sections = Array.isArray(parsed) ? parsed : JSON.parse(JSON.stringify(DEFAULT_SECTION_GROUPS));
+    const rawSections = tmpl.sections || tmpl.template_data;
+    if (rawSections) {
+      const parsed = typeof rawSections === 'string'
+        ? JSON.parse(rawSections)
+        : rawSections;
+      // Handle wrapped format { sections: [...] }
+      const unwrapped = parsed?.sections || parsed;
+      sections = Array.isArray(unwrapped) ? unwrapped : JSON.parse(JSON.stringify(DEFAULT_SECTION_GROUPS));
     } else {
       sections = JSON.parse(JSON.stringify(DEFAULT_SECTION_GROUPS));
     }
@@ -199,7 +202,7 @@ export default function AdviserSOATemplate() {
         <TemplateLibrary
           templates={templates}
           activeTemplateId={activeTemplateId}
-          defaultTemplateId={templates.find((t) => t.owner_type === 'admin')?.id}
+          defaultTemplateId={templates.find((t) => (t.ownerType ?? t.owner_type) === 0)?.id}
           onEdit={viewTemplateDetail}
           onView={viewTemplateDetail}
           onDuplicate={viewTemplateDetail}

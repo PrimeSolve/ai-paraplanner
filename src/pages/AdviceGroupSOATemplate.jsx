@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import axiosInstance from '@/api/axiosInstance';
 import { Button } from '@/components/ui/button';
 import {
   GripVertical,
@@ -122,20 +123,20 @@ export default function AdviceGroupSOATemplate() {
       setTemplates(loaded);
 
       // Load admin template for "base" sections
-      const adminTmpls = loaded.filter((t) => t.owner_type === 'admin');
+      const adminTmpls = loaded.filter((t) => t.owner_type === 0 || t.ownerType === 0);
       if (adminTmpls[0]) {
         setAdminTemplate(adminTmpls[0]);
-        const adminSecs = typeof adminTmpls[0].sections === 'string'
-          ? JSON.parse(adminTmpls[0].sections)
-          : adminTmpls[0].sections;
-        if (Array.isArray(adminSecs) && adminSecs.length > 0) {
-          setAdminSections(adminSecs);
+        const rawSecs = adminTmpls[0].sections || adminTmpls[0].template_data;
+        const adminSecs = typeof rawSecs === 'string' ? JSON.parse(rawSecs) : rawSecs;
+        // Handle wrapped format { sections: [...] }
+        const unwrapped = adminSecs?.sections || adminSecs;
+        if (Array.isArray(unwrapped) && unwrapped.length > 0) {
+          setAdminSections(unwrapped);
         }
       }
 
       // Determine active template for this group
-      // TODO: Check advice group's defaultTemplateId from backend
-      const groupTmpls = loaded.filter((t) => t.owner_type === 'advice_group');
+      const groupTmpls = loaded.filter((t) => t.owner_type === 1 || t.ownerType === 1);
       if (groupTmpls.length > 0) {
         setActiveTemplateId(groupTmpls[0].id);
       }
@@ -150,15 +151,18 @@ export default function AdviceGroupSOATemplate() {
     setLoading(true);
     setGroupTemplate(tmpl);
 
-    if (tmpl.sections) {
-      const parsed = typeof tmpl.sections === 'string'
-        ? JSON.parse(tmpl.sections)
-        : tmpl.sections;
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        setSections(parsed);
+    const rawSections = tmpl.sections || tmpl.template_data;
+    if (rawSections) {
+      const parsed = typeof rawSections === 'string'
+        ? JSON.parse(rawSections)
+        : rawSections;
+      // Handle wrapped format { sections: [...] }
+      const unwrapped = parsed?.sections || parsed;
+      if (Array.isArray(unwrapped) && unwrapped.length > 0) {
+        setSections(unwrapped);
         // Track which sections have overrides
         const overrideMap = {};
-        for (const group of parsed) {
+        for (const group of unwrapped) {
           for (const s of group.sections) {
             if (s.prompt?.system || s.example_content) {
               overrideMap[s.id] = true;
@@ -166,7 +170,7 @@ export default function AdviceGroupSOATemplate() {
           }
         }
         setOverrides(overrideMap);
-        setExpandedGroups(parsed.map((g) => g.group));
+        setExpandedGroups(unwrapped.map((g) => g.group));
       }
     } else {
       // New template with default sections
@@ -188,15 +192,21 @@ export default function AdviceGroupSOATemplate() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const payload = { sections: JSON.stringify(sections) };
-      if (groupTemplate?.id && groupTemplate.owner_type !== 'admin') {
-        await base44.entities.SOATemplate.update(groupTemplate.id, payload);
+      const sectionData = JSON.stringify({ sections });
+      const ownerType = groupTemplate?.ownerType ?? groupTemplate?.owner_type;
+      if (groupTemplate?.id && ownerType !== 0) {
+        await axiosInstance.put(`/soa-templates/${groupTemplate.id}`, {
+          name: groupTemplate.name,
+          description: groupTemplate.description,
+          sections: sectionData,
+        });
       } else {
-        const created = await base44.entities.SOATemplate.create({
-          owner_type: 'advice_group',
-          advice_group_id: user.advice_group_id,
-          inherits_from_id: adminTemplate?.id,
-          ...payload,
+        const { data: created } = await axiosInstance.post('/soa-templates', {
+          name: groupTemplate?.name || 'Advice Group Template',
+          description: groupTemplate?.description || '',
+          ownerType: 1,
+          ownerId: user.advice_group_id || '',
+          sections: sectionData,
         });
         setGroupTemplate(created);
       }
@@ -216,28 +226,30 @@ export default function AdviceGroupSOATemplate() {
   };
 
   const handleNewFromDefault = async () => {
-    const defaultTmpl = templates.find((t) => t.owner_type === 'admin');
+    const defaultTmpl = templates.find((t) => t.owner_type === 0 || t.ownerType === 0);
     if (!defaultTmpl) return;
 
     try {
-      const duplicated = await base44.soaTemplateApi.duplicate(defaultTmpl.id, {
-        name: `${defaultTmpl.name || 'Default'} (Copy)`,
-        ownerType: 'advice_group',
-        ownerId: user?.advice_group_id || '',
-      });
+      const { data: duplicated } = await axiosInstance.post(
+        `/soa-templates/${defaultTmpl.id}/duplicate`,
+        {
+          name: `${defaultTmpl.name || 'Default'} (Copy)`,
+          ownerType: 1,
+          ownerId: user?.advice_group_id || '',
+        }
+      );
       toast.success('Template created from default');
       await loadTemplates();
       openEditor(duplicated);
     } catch {
       // Fallback: create manually
       try {
-        const created = await base44.entities.SOATemplate.create({
-          owner_type: 'advice_group',
-          advice_group_id: user?.advice_group_id,
-          inherits_from_id: defaultTmpl.id,
+        const { data: created } = await axiosInstance.post('/soa-templates', {
           name: `${defaultTmpl.name || 'Default'} (Copy)`,
           description: '',
-          sections: defaultTmpl.sections,
+          ownerType: 1,
+          ownerId: user?.advice_group_id || '',
+          sections: typeof defaultTmpl.sections === 'string' ? defaultTmpl.sections : JSON.stringify(defaultTmpl.sections),
         });
         toast.success('Template created from default');
         await loadTemplates();
@@ -259,12 +271,12 @@ export default function AdviceGroupSOATemplate() {
           data_feeds: [],
         })),
       }));
-      const created = await base44.entities.SOATemplate.create({
-        owner_type: 'advice_group',
-        advice_group_id: user?.advice_group_id,
+      const { data: created } = await axiosInstance.post('/soa-templates', {
         name: 'New Template',
         description: '',
-        sections: JSON.stringify(emptySections),
+        ownerType: 1,
+        ownerId: user?.advice_group_id || '',
+        sections: JSON.stringify({ sections: emptySections }),
       });
       toast.success('Template created');
       await loadTemplates();
@@ -275,12 +287,13 @@ export default function AdviceGroupSOATemplate() {
   };
 
   const handleDelete = async (tmpl) => {
-    if (tmpl.owner_type === 'admin') {
+    const ownerType = tmpl.ownerType ?? tmpl.owner_type;
+    if (ownerType === 0) {
       toast.error('Cannot delete the PrimeSolve Default template');
       return;
     }
     try {
-      await base44.entities.SOATemplate.delete(tmpl.id);
+      await axiosInstance.delete(`/soa-templates/${tmpl.id}`);
       toast.success('Template deleted');
       if (activeTemplateId === tmpl.id) {
         setActiveTemplateId(null);
@@ -424,9 +437,10 @@ export default function AdviceGroupSOATemplate() {
         <TemplateLibrary
           templates={templates}
           activeTemplateId={activeTemplateId}
-          defaultTemplateId={templates.find((t) => t.owner_type === 'admin')?.id}
+          defaultTemplateId={templates.find((t) => (t.ownerType ?? t.owner_type) === 0)?.id}
           onEdit={(tmpl) => {
-            if (tmpl.owner_type === 'admin') {
+            const ot = tmpl.ownerType ?? tmpl.owner_type;
+            if (ot === 0) {
               handleViewDefault(tmpl);
             } else {
               openEditor(tmpl);
@@ -435,25 +449,29 @@ export default function AdviceGroupSOATemplate() {
           onView={handleViewDefault}
           onUse={handleSetAsDefault}
           onDuplicate={(tmpl) => {
-            if (tmpl.owner_type === 'admin') {
+            const ot = tmpl.ownerType ?? tmpl.owner_type;
+            if (ot === 0) {
               handleNewFromDefault();
             } else {
               // Duplicate owned template
               (async () => {
                 try {
-                  const duplicated = await base44.soaTemplateApi.duplicate(tmpl.id, {
-                    name: `${tmpl.name || 'Template'} (Copy)`,
-                    ownerType: 'advice_group',
-                    ownerId: user?.advice_group_id || '',
-                  });
+                  const { data: duplicated } = await axiosInstance.post(
+                    `/soa-templates/${tmpl.id}/duplicate`,
+                    {
+                      name: `${tmpl.name || 'Template'} (Copy)`,
+                      ownerType: 1,
+                      ownerId: user?.advice_group_id || '',
+                    }
+                  );
                   toast.success('Template duplicated');
                   await loadTemplates();
                 } catch {
-                  const created = await base44.entities.SOATemplate.create({
-                    owner_type: 'advice_group',
-                    advice_group_id: user?.advice_group_id,
+                  const { data: created } = await axiosInstance.post('/soa-templates', {
                     name: `${tmpl.name || 'Template'} (Copy)`,
-                    sections: tmpl.sections,
+                    ownerType: 1,
+                    ownerId: user?.advice_group_id || '',
+                    sections: typeof tmpl.sections === 'string' ? tmpl.sections : JSON.stringify(tmpl.sections),
                   });
                   toast.success('Template duplicated');
                   await loadTemplates();
@@ -463,8 +481,8 @@ export default function AdviceGroupSOATemplate() {
           }}
           onDelete={handleDelete}
           onNewFromClaire={() => {
-            const groupTmpl = templates.find((t) => t.owner_type === 'advice_group');
-            const target = groupTmpl || templates.find((t) => t.owner_type === 'admin');
+            const groupTmpl = templates.find((t) => (t.ownerType ?? t.owner_type) === 1);
+            const target = groupTmpl || templates.find((t) => (t.ownerType ?? t.owner_type) === 0);
             if (target) {
               openEditor(target);
               setTimeout(() => setClaireOpen(true), 100);
