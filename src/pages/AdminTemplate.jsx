@@ -253,7 +253,9 @@ export default function AdminTemplate() {
         description: '',
         ownerType: 0,
         ownerId: '00000000-0000-0000-0000-000000000000',
-        sections: JSON.stringify({ sections: DEFAULT_SECTION_GROUPS }),
+        category: 'Default',
+        templateData: JSON.stringify({ sections: DEFAULT_SECTION_GROUPS }),
+        isActive: true,
       });
       toast.success('Template created');
       await loadTemplates();
@@ -313,7 +315,8 @@ export default function AdminTemplate() {
       await axiosInstance.delete(`/soa-templates/${tmpl.id}`);
       toast.success('Template deleted');
       await loadTemplates();
-    } catch {
+    } catch (error) {
+      console.error('handleDelete error:', error);
       toast.error('Failed to delete template');
     }
   };
