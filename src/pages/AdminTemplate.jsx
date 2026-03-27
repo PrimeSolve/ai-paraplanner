@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
 import axiosInstance from '@/api/axiosInstance';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -244,36 +243,27 @@ export default function AdminTemplate() {
   };
 
   const handleNewFromScratch = async () => {
-    const defaultTmpl = templates.find(
-      (t) => t.name === 'PrimeSolve Default' || t.ownerType === 0 || t.owner_type === 0
-    );
-    if (!defaultTmpl) {
-      toast.error('No default template found to duplicate');
-      return;
-    }
     try {
-      const defaultTmpl = templates.find(
-        (t) => t.name === 'PrimeSolve Default' || t.ownerType === 0
-      );
-      if (!defaultTmpl) {
-        toast.error('No default template found to duplicate');
-        return;
-      }
-      const duplicated = await base44.soaTemplateApi.duplicate(defaultTmpl.id, {
+      // Create a new template with empty section prompts
+      const emptySections = DEFAULT_SECTION_GROUPS.map((g) => ({
+        ...g,
+        sections: g.sections.map((s) => ({
+          ...s,
+          prompt: { system: '', output_format: 'prose', max_words: 500, tone: 'professional_clear' },
+          example_content: '',
+          data_feeds: [],
+        })),
+      }));
+      const { data: created } = await axiosInstance.post('/soa-templates', {
         name: 'New System Template',
-        ownerType: 'admin',
-        ownerId: '00000000-0000-0000-0000-000000000000',
+        description: '',
+        ownerType: 0,
+        ownerId: null,
+        sections: JSON.stringify({ sections: emptySections }),
       });
-      const newId = duplicated.id ?? duplicated.Id;
-      // Clear all section prompts on the new template
-      await axiosInstance.put(`/soa-templates/${newId}`, {
-        templateData: JSON.stringify({ sections: [] }),
-      });
-      duplicated.templateData = JSON.stringify({ sections: [] });
-      duplicated.template_data = JSON.stringify({ sections: [] });
       toast.success('Template created');
       await loadTemplates();
-      openEditor(duplicated);
+      openEditor(created);
     } catch (error) {
       console.error('handleNewFromScratch error:', error);
       toast.error('Failed to create template');
@@ -308,7 +298,9 @@ export default function AdminTemplate() {
           description: defaultTmpl.description || '',
           ownerType: 0,
           ownerId: '00000000-0000-0000-0000-000000000000',
-          sections: typeof defaultTmpl.sections === 'string' ? defaultTmpl.sections : JSON.stringify(defaultTmpl.sections),
+          sections: defaultTmpl.sections
+            ? (typeof defaultTmpl.sections === 'string' ? defaultTmpl.sections : JSON.stringify(defaultTmpl.sections))
+            : JSON.stringify({ sections: DEFAULT_SECTION_GROUPS }),
         });
         toast.success('Template duplicated');
         await loadTemplates();

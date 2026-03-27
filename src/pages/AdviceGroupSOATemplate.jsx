@@ -107,18 +107,14 @@ export default function AdviceGroupSOATemplate() {
       try {
         loaded = await base44.soaTemplateApi.getAvailable();
       } catch {
-        // Fallback: load admin + group templates separately
-        const admin = await base44.entities.SOATemplate.filter({ owner_type: 'admin' });
-        let group = [];
-        if (usr?.advice_group_id) {
-          try {
-            group = await base44.entities.SOATemplate.filter({
-              owner_type: 'advice_group',
-              advice_group_id: usr.advice_group_id,
-            });
-          } catch { /* silent */ }
+        // Fallback: load all templates via axiosInstance
+        try {
+          const response = await axiosInstance.get('/soa-templates');
+          const data = Array.isArray(response.data) ? response.data : (response.data?.items || []);
+          loaded = data;
+        } catch {
+          loaded = [];
         }
-        loaded = [...admin, ...group];
       }
       setTemplates(loaded);
 
