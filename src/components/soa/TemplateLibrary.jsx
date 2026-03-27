@@ -25,7 +25,6 @@ import TemplateCard from './TemplateCard';
  *   onUse             — (template) => void — set as default
  *   onDuplicate       — (template) => void
  *   onDelete          — (template) => void
- *   onNewFromClaire   — () => void
  *   onNewFromDefault  — () => void
  *   onNewFromScratch  — () => void
  *   level             — 'admin' | 'advice_group' | 'adviser'
@@ -41,7 +40,6 @@ export default function TemplateLibrary({
   onUse,
   onDuplicate,
   onDelete,
-  onNewFromClaire,
   onNewFromDefault,
   onNewFromScratch,
   level = 'advice_group',
