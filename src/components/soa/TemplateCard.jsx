@@ -38,12 +38,13 @@ export default function TemplateCard({
   level = 'advice_group',
 }) {
   const sections = (() => {
-    if (!template.sections) return [];
+    const raw = template.sections || template.template_data;
+    if (!raw) return [];
     try {
-      const parsed = typeof template.sections === 'string'
-        ? JSON.parse(template.sections)
-        : template.sections;
-      return Array.isArray(parsed) ? parsed : [];
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      // Handle wrapped format { sections: [...] }
+      const unwrapped = parsed?.sections || parsed;
+      return Array.isArray(unwrapped) ? unwrapped : [];
     } catch {
       return [];
     }
@@ -52,18 +53,20 @@ export default function TemplateCard({
   const { configured, total } = countConfigured(sections);
   const allConfigured = total > 0 && configured === total;
 
+  const ot = template.ownerType ?? template.owner_type;
+
   const ownerBadge = (() => {
     if (level === 'admin') return 'System Template';
     if (isDefault) return 'PrimeSolve Default';
-    if (template.ownerType === 1) return 'Advice Group';
-    if (template.ownerType === 2) return 'Adviser';
+    if (ot === 1) return 'Advice Group';
+    if (ot === 2) return 'Adviser';
     return 'Custom';
   })();
 
   const ownerBadgeColor = (() => {
     if (isDefault) return 'bg-indigo-100 text-indigo-700';
-    if (template.ownerType === 1) return 'bg-purple-100 text-purple-700';
-    if (template.ownerType === 2) return 'bg-teal-100 text-teal-700';
+    if (ot === 1) return 'bg-purple-100 text-purple-700';
+    if (ot === 2) return 'bg-teal-100 text-teal-700';
     return 'bg-slate-100 text-slate-700';
   })();
 

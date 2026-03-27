@@ -108,10 +108,11 @@ export default function AdminTemplate() {
 
     let loaded = false;
 
-    // Prefer templateData (axiosInstance returns camelCase)
-    if (tmpl.templateData) {
+    // Try sections field from API response
+    if (tmpl.sections || tmpl.templateData) {
       try {
-        const parsed = JSON.parse(tmpl.templateData);
+        const raw = tmpl.sections || tmpl.templateData;
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
         let secs = parsed.sections || parsed;
         if (Array.isArray(secs) && secs.length > 0) {
           // If sections are grouped (have a 'group' property and nested 'sections'), use as-is
@@ -191,15 +192,15 @@ export default function AdminTemplate() {
         await axiosInstance.put(`/soa-templates/${template.id}`, {
           name: templateName,
           description: templateDesc,
-          templateData: sectionData,
+          sections: sectionData,
         });
       } else {
         const { data: created } = await axiosInstance.post('/soa-templates', {
           name: templateName,
           description: templateDesc,
-          ownerType: template?.ownerType ?? template?.owner_type ?? 0,
+          ownerType: 0,
           ownerId: template?.ownerId ?? template?.owner_id ?? '00000000-0000-0000-0000-000000000000',
-          templateData: sectionData,
+          sections: sectionData,
         });
         setTemplate(created);
       }
@@ -221,15 +222,15 @@ export default function AdminTemplate() {
         await axiosInstance.put(`/soa-templates/${template.id}`, {
           name: templateName,
           description: templateDesc,
-          templateData: sectionData,
+          sections: sectionData,
         });
       } else {
         const { data: created } = await axiosInstance.post('/soa-templates', {
           name: templateName,
           description: templateDesc,
-          ownerType: template?.ownerType ?? template?.owner_type ?? 0,
+          ownerType: 0,
           ownerId: template?.ownerId ?? template?.owner_id ?? '00000000-0000-0000-0000-000000000000',
-          templateData: sectionData,
+          sections: sectionData,
         });
         setTemplate(created);
       }
@@ -245,7 +246,7 @@ export default function AdminTemplate() {
   const handleNewFromScratch = async () => {
     try {
       const defaultTmpl = templates.find(
-        (t) => t.name === 'PrimeSolve Default' || t.ownerType === 0 || t.owner_type === 0
+        (t) => t.name === 'PrimeSolve Default' || t.ownerType === 0
       );
       if (!defaultTmpl) {
         toast.error('No default template found to duplicate');
@@ -273,39 +274,40 @@ export default function AdminTemplate() {
   };
 
   const handleNewFromDefault = async () => {
-    console.log('[DEBUG] handleNewFromDefault called, templates:', templates);
     // Find the default template and duplicate it
-    const defaultTmpl = templates.find((t) => t.name === 'PrimeSolve Default' || t.owner_type === 'admin');
+    const defaultTmpl = templates.find((t) => t.name === 'PrimeSolve Default' || t.ownerType === 0 || t.owner_type === 0);
     if (!defaultTmpl) {
       toast.error('No default template found — use "Start from scratch" instead');
       return;
     }
     try {
-      const duplicated = await base44.soaTemplateApi.duplicate(defaultTmpl.id, {
-        name: `${defaultTmpl.name || 'Default'} (Copy)`,
-        ownerType: 'admin',
-        ownerId: '00000000-0000-0000-0000-000000000000',
-      });
-      console.log('[DEBUG] handleNewFromDefault duplicated:', duplicated);
+      const { data: duplicated } = await axiosInstance.post(
+        `/soa-templates/${defaultTmpl.id}/duplicate`,
+        {
+          name: `${defaultTmpl.name || 'Default'} (Copy)`,
+          ownerType: 0,
+          ownerId: '00000000-0000-0000-0000-000000000000',
+        }
+      );
       toast.success('Template duplicated');
       await loadTemplates();
       openEditor(duplicated);
     } catch (error) {
-      console.error('[DEBUG] handleNewFromDefault duplicate API error:', error);
+      console.error('handleNewFromDefault duplicate API error:', error);
       try {
         // Fallback: create manually
-        const created = await base44.entities.SOATemplate.create({
-          owner_type: 'admin',
+        const { data: created } = await axiosInstance.post('/soa-templates', {
           name: `${defaultTmpl.name || 'Default'} (Copy)`,
           description: defaultTmpl.description || '',
-          sections: defaultTmpl.sections,
+          ownerType: 0,
+          ownerId: '00000000-0000-0000-0000-000000000000',
+          sections: typeof defaultTmpl.sections === 'string' ? defaultTmpl.sections : JSON.stringify(defaultTmpl.sections),
         });
-        console.log('[DEBUG] handleNewFromDefault fallback created:', created);
         toast.success('Template duplicated');
         await loadTemplates();
         openEditor(created);
       } catch (fallbackError) {
-        console.error('[DEBUG] handleNewFromDefault fallback error:', fallbackError);
+        console.error('handleNewFromDefault fallback error:', fallbackError);
         toast.error('Failed to duplicate template');
       }
     }
@@ -496,16 +498,18 @@ export default function AdminTemplate() {
           onDelete={handleDelete}
           onNewFromClaire={async () => {
             // Find default and open editor with Claire
-            let defaultTmpl = templates.find((t) => t.owner_type === 'admin');
+            let defaultTmpl = templates.find((t) => (t.ownerType === 0 || t.owner_type === 0));
             if (!defaultTmpl) {
               // No template loaded yet — create one so Claire has something to work with
               try {
-                defaultTmpl = await base44.entities.SOATemplate.create({
-                  owner_type: 'admin',
+                const { data } = await axiosInstance.post('/soa-templates', {
                   name: 'PrimeSolve Default',
                   description: '',
+                  ownerType: 0,
+                  ownerId: '00000000-0000-0000-0000-000000000000',
                   sections: JSON.stringify(DEFAULT_SECTION_GROUPS),
                 });
+                defaultTmpl = data;
                 await loadTemplates();
               } catch {
                 toast.error('Failed to create template — please try again');
