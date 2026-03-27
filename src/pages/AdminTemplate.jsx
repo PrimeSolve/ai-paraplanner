@@ -116,10 +116,29 @@ export default function AdminTemplate() {
     if (tmpl.templateData) {
       try {
         const parsed = JSON.parse(tmpl.templateData);
-        const sections = parsed.sections || parsed;
-        if (Array.isArray(sections) && sections.length > 0) {
-          setSections(sections);
-          setExpandedGroups(sections.map((g) => g.group));
+        let secs = parsed.sections || parsed;
+        if (Array.isArray(secs) && secs.length > 0) {
+          // If sections are grouped (have a 'group' property and nested 'sections'), use as-is
+          // If sections are flat, wrap them into groups matching DEFAULT_SECTION_GROUPS structure
+          if (!secs[0].group || !Array.isArray(secs[0].sections)) {
+            const groupMap = {};
+            for (const s of secs) {
+              const gKey = s.group || s.category || 'general';
+              if (!groupMap[gKey]) {
+                const defaultGroup = DEFAULT_SECTION_GROUPS.find((g) => g.group === gKey);
+                groupMap[gKey] = {
+                  group: gKey,
+                  groupLabel: defaultGroup?.groupLabel || gKey,
+                  icon: defaultGroup?.icon || '',
+                  sections: [],
+                };
+              }
+              groupMap[gKey].sections.push(s);
+            }
+            secs = Object.values(groupMap);
+          }
+          setSections(secs);
+          setExpandedGroups(secs.map((g) => g.group));
           loaded = true;
         }
       } catch (e) {
@@ -133,8 +152,27 @@ export default function AdminTemplate() {
         ? JSON.parse(tmpl.sections)
         : tmpl.sections;
       if (Array.isArray(parsed) && parsed.length > 0) {
-        setSections(parsed);
-        setExpandedGroups(parsed.map((g) => g.group));
+        let secs = parsed;
+        // Handle flat sections in legacy field too
+        if (!secs[0].group || !Array.isArray(secs[0].sections)) {
+          const groupMap = {};
+          for (const s of secs) {
+            const gKey = s.group || s.category || 'general';
+            if (!groupMap[gKey]) {
+              const defaultGroup = DEFAULT_SECTION_GROUPS.find((g) => g.group === gKey);
+              groupMap[gKey] = {
+                group: gKey,
+                groupLabel: defaultGroup?.groupLabel || gKey,
+                icon: defaultGroup?.icon || '',
+                sections: [],
+              };
+            }
+            groupMap[gKey].sections.push(s);
+          }
+          secs = Object.values(groupMap);
+        }
+        setSections(secs);
+        setExpandedGroups(secs.map((g) => g.group));
         loaded = true;
       }
     }
