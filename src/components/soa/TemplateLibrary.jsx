@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/dialog';
 import {
   Plus,
-  Sparkles,
   Copy,
   FileText,
 } from 'lucide-react';
@@ -111,25 +110,6 @@ export default function TemplateLibrary({
           </DialogHeader>
 
           <div className="space-y-3 mt-2">
-            {onNewFromClaire && (
-              <button
-                onClick={() => { setNewDialogOpen(false); onNewFromClaire(); }}
-                className="w-full text-left p-4 border border-slate-200 rounded-lg hover:border-purple-300 hover:bg-purple-50/50 transition-colors group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-slate-800 text-sm">Build with Claire</div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Upload your existing SOAs and Claire will build your template
-                    </p>
-                  </div>
-                </div>
-              </button>
-            )}
-
             <button
               onClick={() => { setNewDialogOpen(false); onNewFromDefault?.(); }}
               className="w-full text-left p-4 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50/50 transition-colors group"
