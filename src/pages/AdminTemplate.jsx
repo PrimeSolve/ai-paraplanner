@@ -244,18 +244,29 @@ export default function AdminTemplate() {
 
   const handleNewFromScratch = async () => {
     try {
-      const { data: created } = await axiosInstance.post('/soa-templates', {
-        name: 'New System Template',
-        description: '',
-        ownerType: 0,
-        ownerId: '00000000-0000-0000-0000-000000000000',
-        category: 'Default',
-        templateData: JSON.stringify({ sections: DEFAULT_SECTION_GROUPS }),
-        isActive: true,
+      const defaultTmpl = templates.find(
+        (t) => t.name === 'PrimeSolve Default' || t.ownerType === 0 || t.owner_type === 0
+      );
+      if (!defaultTmpl) {
+        toast.error('No default template found to duplicate');
+        return;
+      }
+      const { data: duplicated } = await axiosInstance.post(
+        `/soa-templates/${defaultTmpl.id}/duplicate`,
+        {
+          name: 'New System Template',
+          ownerType: 0,
+          ownerId: '00000000-0000-0000-0000-000000000000',
+        }
+      );
+      // Clear all section prompts on the new template
+      await axiosInstance.put(`/soa-templates/${duplicated.id}`, {
+        templateData: JSON.stringify({ sections: [] }),
       });
+      duplicated.templateData = JSON.stringify({ sections: [] });
       toast.success('Template created');
       await loadTemplates();
-      openEditor(created);
+      openEditor(duplicated);
     } catch (error) {
       console.error('handleNewFromScratch error:', error);
       toast.error('Failed to create template');
