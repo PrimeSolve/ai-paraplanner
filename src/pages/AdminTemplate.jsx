@@ -160,12 +160,16 @@ export default function AdminTemplate() {
   const handleSave = async (sectionsOverride) => {
     setSaving(true);
     try {
-      const payload = { sections: JSON.stringify(sectionsOverride || sections) };
+      const payload = {
+        name: templateName,
+        description: templateDesc,
+        sections: JSON.stringify(sectionsOverride || sections),
+      };
       if (template?.id) {
-        await base44.entities.SOATemplate.update(template.id, payload);
+        await axiosInstance.put(`/soa-templates/${template.id}`, payload);
       } else {
-        const created = await base44.entities.SOATemplate.create({
-          owner_type: 'admin',
+        const { data: created } = await axiosInstance.post('/soa-templates', {
+          ownerType: 0,
           ...payload,
         });
         setTemplate(created);
