@@ -104,8 +104,6 @@ export default function AdminTemplate() {
   };
 
   const openEditor = async (tmpl) => {
-    console.log('[openEditor] tmpl.templateData:', tmpl.templateData ? 'EXISTS length=' + tmpl.templateData.length : 'MISSING');
-    console.log('[openEditor] tmpl keys:', Object.keys(tmpl));
     setLoading(true);
     setEditingTemplateId(tmpl.id);
     setTemplate(tmpl);
@@ -114,10 +112,10 @@ export default function AdminTemplate() {
 
     let loaded = false;
 
-    // Prefer templateData (the field used by the API for saving)
-    if (tmpl.templateData) {
+    // Prefer template_data (axiosInstance converts camelCase API responses to snake_case)
+    if (tmpl.template_data) {
       try {
-        const parsed = JSON.parse(tmpl.templateData);
+        const parsed = JSON.parse(tmpl.template_data);
         let secs = parsed.sections || parsed;
         if (Array.isArray(secs) && secs.length > 0) {
           // If sections are grouped (have a 'group' property and nested 'sections'), use as-is
@@ -144,7 +142,7 @@ export default function AdminTemplate() {
           loaded = true;
         }
       } catch (e) {
-        console.error('Failed to parse templateData:', e);
+        console.error('Failed to parse template_data:', e);
       }
     }
 
