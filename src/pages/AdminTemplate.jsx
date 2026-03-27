@@ -113,9 +113,54 @@ export default function AdminTemplate() {
         const raw = tmpl.sections || tmpl.templateData;
         const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
         let secs = parsed.sections || parsed;
-        if (Array.isArray(secs) && secs.length > 0) {
-          // If sections are grouped (have a 'group' property and nested 'sections'), use as-is
-          // If sections are flat, wrap them into groups matching DEFAULT_SECTION_GROUPS structure
+        if (Array.isArray(secs)) {
+          if (secs.length === 0) {
+            setSections([]);
+            setExpandedGroups([]);
+            loaded = true;
+          } else {
+            // If sections are grouped (have a 'group' property and nested 'sections'), use as-is
+            // If sections are flat, wrap them into groups matching DEFAULT_SECTION_GROUPS structure
+            if (!secs[0].group || !Array.isArray(secs[0].sections)) {
+              const groupMap = {};
+              for (const s of secs) {
+                const gKey = s.group || s.category || 'general';
+                if (!groupMap[gKey]) {
+                  const defaultGroup = DEFAULT_SECTION_GROUPS.find((g) => g.group === gKey);
+                  groupMap[gKey] = {
+                    group: gKey,
+                    groupLabel: defaultGroup?.groupLabel || gKey,
+                    icon: defaultGroup?.icon || '',
+                    sections: [],
+                  };
+                }
+                groupMap[gKey].sections.push(s);
+              }
+              secs = Object.values(groupMap);
+            }
+            setSections(secs);
+            setExpandedGroups(secs.map((g) => g.group));
+            loaded = true;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to parse template_data:', e);
+      }
+    }
+
+    // Fall back to legacy sections field
+    if (!loaded && tmpl.sections) {
+      const parsed = typeof tmpl.sections === 'string'
+        ? JSON.parse(tmpl.sections)
+        : tmpl.sections;
+      if (Array.isArray(parsed)) {
+        if (parsed.length === 0) {
+          setSections([]);
+          setExpandedGroups([]);
+          loaded = true;
+        } else {
+          let secs = parsed;
+          // Handle flat sections in legacy field too
           if (!secs[0].group || !Array.isArray(secs[0].sections)) {
             const groupMap = {};
             for (const s of secs) {
@@ -137,39 +182,6 @@ export default function AdminTemplate() {
           setExpandedGroups(secs.map((g) => g.group));
           loaded = true;
         }
-      } catch (e) {
-        console.error('Failed to parse template_data:', e);
-      }
-    }
-
-    // Fall back to legacy sections field
-    if (!loaded && tmpl.sections) {
-      const parsed = typeof tmpl.sections === 'string'
-        ? JSON.parse(tmpl.sections)
-        : tmpl.sections;
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        let secs = parsed;
-        // Handle flat sections in legacy field too
-        if (!secs[0].group || !Array.isArray(secs[0].sections)) {
-          const groupMap = {};
-          for (const s of secs) {
-            const gKey = s.group || s.category || 'general';
-            if (!groupMap[gKey]) {
-              const defaultGroup = DEFAULT_SECTION_GROUPS.find((g) => g.group === gKey);
-              groupMap[gKey] = {
-                group: gKey,
-                groupLabel: defaultGroup?.groupLabel || gKey,
-                icon: defaultGroup?.icon || '',
-                sections: [],
-              };
-            }
-            groupMap[gKey].sections.push(s);
-          }
-          secs = Object.values(groupMap);
-        }
-        setSections(secs);
-        setExpandedGroups(secs.map((g) => g.group));
-        loaded = true;
       }
     }
 
@@ -254,11 +266,13 @@ export default function AdminTemplate() {
   const handleNewFromScratch = async () => {
     try {
       const { data: created } = await axiosInstance.post('/soa-templates', {
-        name: 'New System Template',
+        name: 'New Template',
         description: '',
         ownerType: 0,
         ownerId: '00000000-0000-0000-0000-000000000000',
+        category: 'Default',
         templateData: JSON.stringify({ sections: [] }),
+        isActive: true,
       });
       toast.success('Template created');
       await loadTemplates();

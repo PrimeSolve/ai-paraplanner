@@ -144,6 +144,17 @@ export default function TemplateCard({
               <Pencil className="w-3.5 h-3.5 mr-1" />
               Edit
             </Button>
+            <Button size="sm" variant="ghost" onClick={() => onDuplicate?.(template)}>
+              <Copy className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+              onClick={() => onDelete?.(template)}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </Button>
           </>
         ) : (
           <>
