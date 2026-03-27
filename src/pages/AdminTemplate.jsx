@@ -447,22 +447,30 @@ export default function AdminTemplate() {
           <ChevronLeft className="w-4 h-4" />
           Back to Templates
         </button>
-        <input
-          type="text"
-          value={templateName}
-          onChange={(e) => setTemplateName(e.target.value)}
-          onBlur={() => handleNameDescSave('name', templateName)}
-          placeholder="Template name"
-          className="text-2xl font-bold text-gray-900 w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none pb-1 transition-colors"
-        />
-        <input
-          type="text"
-          value={templateDesc}
-          onChange={(e) => setTemplateDesc(e.target.value)}
-          onBlur={() => handleNameDescSave('description', templateDesc)}
-          placeholder="Add a description..."
-          className="text-sm text-slate-500 mt-1 w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none pb-1 transition-colors"
-        />
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Template Name</label>
+            <input
+              type="text"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              onBlur={() => handleNameDescSave('name', templateName)}
+              placeholder="Template name"
+              className="text-lg font-semibold text-gray-900 w-full border border-slate-300 rounded-lg px-3 py-2 bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Description</label>
+            <input
+              type="text"
+              value={templateDesc}
+              onChange={(e) => setTemplateDesc(e.target.value)}
+              onBlur={() => handleNameDescSave('description', templateDesc)}
+              placeholder="Add a description..."
+              className="text-sm text-slate-700 w-full border border-slate-300 rounded-lg px-3 py-2 bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Example SOA Library Banner */}
