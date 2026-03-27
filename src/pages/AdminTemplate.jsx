@@ -253,9 +253,7 @@ export default function AdminTemplate() {
         description: '',
         ownerType: 0,
         ownerId: '00000000-0000-0000-0000-000000000000',
-        category: 'Default',
-        templateData: JSON.stringify({ sections: DEFAULT_SECTION_GROUPS }),
-        isActive: true,
+        sections: JSON.stringify({ sections: DEFAULT_SECTION_GROUPS }),
       });
       toast.success('Template created');
       await loadTemplates();
@@ -312,11 +310,19 @@ export default function AdminTemplate() {
     }
     if (!window.confirm(`Delete template "${tmpl.name}"? This cannot be undone.`)) return;
     try {
-      await axiosInstance.delete(`/soa-templates/${tmpl.id}`);
+      const deleteId = tmpl.id ?? tmpl.Id;
+      console.log('handleDelete: tmpl =', JSON.stringify(tmpl, null, 2), 'deleteId =', deleteId);
+      if (!deleteId) {
+        console.error('handleDelete: no id found on template object, keys:', Object.keys(tmpl));
+        toast.error('Failed to delete template — no ID found');
+        return;
+      }
+      await axiosInstance.delete(`/soa-templates/${deleteId}`);
       toast.success('Template deleted');
       await loadTemplates();
     } catch (error) {
       console.error('handleDelete error:', error);
+      console.error('handleDelete response:', error.response?.status, error.response?.data);
       toast.error('Failed to delete template');
     }
   };
