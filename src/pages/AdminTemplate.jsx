@@ -158,12 +158,13 @@ export default function AdminTemplate() {
   };
 
   const handleSave = async (sectionsOverride) => {
+    const sectionsToSave = Array.isArray(sectionsOverride) ? sectionsOverride : sections;
     setSaving(true);
     try {
       const payload = {
         name: templateName,
         description: templateDesc,
-        sections: JSON.stringify(sectionsOverride || sections),
+        sections: JSON.stringify(sectionsToSave),
       };
       if (template?.id) {
         await axiosInstance.put(`/soa-templates/${template.id}`, payload);
@@ -609,7 +610,7 @@ export default function AdminTemplate() {
             </Button>
           )}
           <Button
-            onClick={handleSave}
+            onClick={() => handleSave()}
             disabled={saving}
             className="bg-indigo-600 hover:bg-indigo-700"
           >
