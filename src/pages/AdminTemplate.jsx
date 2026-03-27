@@ -212,7 +212,8 @@ export default function AdminTemplate() {
       loadTemplates();
     } catch (error) {
       console.error('[handleSave] SAVE FAILED:', error);
-      console.error('[handleSave] Response:', error.response?.status, error.response?.data);
+      console.error('[handleSave] Response:', error.response?.status, JSON.stringify(error.response?.data, null, 2));
+      console.error('[handleSave] Validation errors:', JSON.stringify(error.response?.data?.errors, null, 2));
       toast.error(`Failed to save template: ${error.response?.status || error.message}`);
     } finally {
       setSaving(false);
