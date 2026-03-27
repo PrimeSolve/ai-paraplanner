@@ -1,8 +1,4 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  Plus,
-} from 'lucide-react';
 import TemplateCard from './TemplateCard';
 
 /**
@@ -18,9 +14,7 @@ import TemplateCard from './TemplateCard';
  *   onDuplicate       — (template) => void
  *   onDelete          — (template) => void
  *   onNewFromClaire   — () => void
- *   onNewFromScratch  — () => void
  *   level             — 'admin' | 'advice_group' | 'adviser'
- *   canCreate         — whether the user can create new templates (default true)
  *   loading           — show loading state
  */
 export default function TemplateLibrary({
@@ -33,9 +27,7 @@ export default function TemplateLibrary({
   onDuplicate,
   onDelete,
   onNewFromClaire,
-  onNewFromScratch,
   level = 'advice_group',
-  canCreate = true,
   loading = false,
 }) {
   if (loading) {
@@ -73,20 +65,6 @@ export default function TemplateLibrary({
             onDelete={onDelete}
           />
         ))}
-
-        {/* New Template card */}
-        {canCreate && (
-          <button
-            onClick={() => onNewFromScratch?.()}
-            className="border-2 border-dashed border-slate-300 rounded-xl p-5 flex flex-col items-center justify-center text-center hover:border-slate-400 hover:bg-slate-50 transition-colors min-h-[220px]"
-          >
-            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center mb-3">
-              <Plus className="w-5 h-5 text-slate-500" />
-            </div>
-            <span className="font-semibold text-slate-700 text-sm">New Template</span>
-            <span className="text-xs text-slate-500 mt-1">Create a new SOA template</span>
-          </button>
-        )}
       </div>
   );
 }
