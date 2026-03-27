@@ -80,6 +80,8 @@ export default function AdminTemplate() {
   const [claireOpen, setClaireOpen] = useState(false);
   const [claireSectionStates, setClaireSectionStates] = useState({});
   const [claireNewSections, setClaireNewSections] = useState([]);
+  const [templateName, setTemplateName] = useState('');
+  const [templateDesc, setTemplateDesc] = useState('');
 
   useEffect(() => {
     loadTemplates();
@@ -106,6 +108,8 @@ export default function AdminTemplate() {
     setLoading(true);
     setEditingTemplateId(tmpl.id);
     setTemplate(tmpl);
+    setTemplateName(tmpl.name || '');
+    setTemplateDesc(tmpl.description || '');
 
     if (tmpl.sections) {
       const parsed = typeof tmpl.sections === 'string'
@@ -134,6 +138,16 @@ export default function AdminTemplate() {
       setExampleCount(examples.length);
     } catch {
       // silent
+    }
+  };
+
+  const handleNameDescSave = async (field, value) => {
+    if (!template?.id) return;
+    try {
+      await base44.entities.SOATemplate.update(template.id, { [field]: value });
+      setTemplate((prev) => ({ ...prev, [field]: value }));
+    } catch {
+      toast.error('Failed to save template details');
     }
   };
 
@@ -197,9 +211,10 @@ export default function AdminTemplate() {
       }));
       const created = await base44.entities.SOATemplate.create({
         owner_type: 'admin',
+        owner_id: '00000000-0000-0000-0000-000000000000',
         name: 'New System Template',
-        description: '',
-        sections: JSON.stringify(emptySections),
+        description: 'Custom template',
+        template_data: JSON.stringify(emptySections),
       });
       console.log('[DEBUG] handleNewFromScratch created:', created);
       toast.success('Template created');
@@ -419,7 +434,7 @@ export default function AdminTemplate() {
         </button>
         <ChevronRight className="w-3.5 h-3.5" />
         <span className="text-slate-800 font-medium">
-          {template?.name || 'Edit Template'}
+          {templateName || 'Edit Template'}
         </span>
       </div>
 
@@ -432,12 +447,22 @@ export default function AdminTemplate() {
           <ChevronLeft className="w-4 h-4" />
           Back to Templates
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Editing: {template?.name || 'PrimeSolve Default Template'}
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Configure AI prompts, examples, and data feeds for each section
-        </p>
+        <input
+          type="text"
+          value={templateName}
+          onChange={(e) => setTemplateName(e.target.value)}
+          onBlur={() => handleNameDescSave('name', templateName)}
+          placeholder="Template name"
+          className="text-2xl font-bold text-gray-900 w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none pb-1 transition-colors"
+        />
+        <input
+          type="text"
+          value={templateDesc}
+          onChange={(e) => setTemplateDesc(e.target.value)}
+          onBlur={() => handleNameDescSave('description', templateDesc)}
+          placeholder="Add a description..."
+          className="text-sm text-slate-500 mt-1 w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none pb-1 transition-colors"
+        />
       </div>
 
       {/* Example SOA Library Banner */}
