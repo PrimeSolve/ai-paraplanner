@@ -307,10 +307,11 @@ export default function AdminTemplate() {
       toast.error('Cannot delete the PrimeSolve Default template');
       return;
     }
+    if (!window.confirm(`Delete template "${tmpl.name}"? This cannot be undone.`)) return;
     try {
-      await base44.entities.SOATemplate.delete(tmpl.id);
+      await axiosInstance.delete(`/soa-templates/${tmpl.id}`);
       toast.success('Template deleted');
-      loadTemplates();
+      await loadTemplates();
     } catch {
       toast.error('Failed to delete template');
     }
