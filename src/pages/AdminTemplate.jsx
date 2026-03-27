@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import axiosInstance from '@/api/axiosInstance';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,6 @@ import {
   ChevronDown,
   ChevronLeft,
   Settings2,
-  Upload,
   Loader2,
   AlertCircle,
   Sparkles,
@@ -77,9 +76,6 @@ export default function AdminTemplate() {
   );
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
-  const [exampleCount, setExampleCount] = useState(0);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef(null);
   const [claireOpen, setClaireOpen] = useState(false);
   const [claireSectionStates, setClaireSectionStates] = useState({});
   const [claireNewSections, setClaireNewSections] = useState([]);
@@ -132,30 +128,6 @@ export default function AdminTemplate() {
 
     setView('editor');
     setLoading(false);
-    loadExampleCount();
-  };
-
-  const loadExampleCount = async () => {
-    try {
-      const examples = await base44.entities.SoaExample.filter({ owner_type: 'admin' });
-      setExampleCount(examples.length);
-    } catch {
-      // silent
-    }
-  };
-
-  const handleNameDescSave = async (field, value) => {
-    if (!template?.id) return;
-    try {
-      await axiosInstance.put(`/soa-templates/${template.id}`, {
-        name: field === 'name' ? value : templateName,
-        description: field === 'description' ? value : templateDesc,
-        sections: JSON.stringify(sections),
-      });
-      setTemplate((prev) => ({ ...prev, [field]: value }));
-    } catch {
-      toast.error('Failed to save template details');
-    }
   };
 
   const handleSave = async (sectionsOverride) => {
@@ -182,29 +154,6 @@ export default function AdminTemplate() {
       toast.error('Failed to save template');
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleExampleUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const uploadResult = await base44.integrations.Core.UploadFile({ file });
-      await base44.entities.SoaExample.create({
-        name: file.name,
-        owner_type: 'admin',
-        owner_id: 'admin',
-        file_url: uploadResult.file_url || uploadResult.url,
-        status: 'processing',
-      });
-      toast.success('Example uploaded — AI is analyzing your SOA...');
-      loadExampleCount();
-    } catch {
-      toast.info('Example upload processing...');
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -518,68 +467,9 @@ export default function AdminTemplate() {
           <ChevronLeft className="w-4 h-4" />
           Back to Templates
         </button>
-        <div className="space-y-3">
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Template Name</label>
-            <input
-              type="text"
-              value={templateName}
-              onChange={(e) => setTemplateName(e.target.value)}
-              onBlur={() => handleNameDescSave('name', templateName)}
-              placeholder="Template name"
-              className="text-lg font-semibold text-gray-900 w-full border border-slate-300 rounded-lg px-3 py-2 bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Description</label>
-            <input
-              type="text"
-              value={templateDesc}
-              onChange={(e) => setTemplateDesc(e.target.value)}
-              onBlur={() => handleNameDescSave('description', templateDesc)}
-              placeholder="Add a description..."
-              className="text-sm text-slate-700 w-full border border-slate-300 rounded-lg px-3 py-2 bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Example SOA Library Banner */}
-      <div className="mb-6 rounded-xl p-5 text-white" style={{ background: 'linear-gradient(135deg, #312e81 0%, #4338ca 50%, #6366f1 100%)' }}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold text-lg mb-1">Example SOA Library</h3>
-            <p className="text-indigo-200 text-sm">
-              Upload complete SOA documents. The AI will extract each section to learn your style and structure.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            {exampleCount > 0 && (
-              <span className="text-sm text-indigo-200">
-                {exampleCount} example{exampleCount !== 1 ? 's' : ''}
-              </span>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.docx"
-              onChange={handleExampleUpload}
-              className="hidden"
-            />
-            <Button
-              className="bg-white text-indigo-700 hover:bg-indigo-50"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-            >
-              {uploading ? (
-                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-              ) : (
-                <Upload className="w-4 h-4 mr-1.5" />
-              )}
-              Upload Example SOA
-            </Button>
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold text-gray-900">
+          {templateName || 'Edit Template'}
+        </h1>
       </div>
 
       {/* Stats & Actions */}
