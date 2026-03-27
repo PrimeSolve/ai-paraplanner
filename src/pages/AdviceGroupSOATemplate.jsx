@@ -208,8 +208,10 @@ export default function AdviceGroupSOATemplate() {
       }
       toast.success('Template saved successfully');
       loadTemplates();
-    } catch {
-      toast.error('Failed to save template');
+    } catch (error) {
+      console.error('[AdviceGroup handleSave] SAVE FAILED:', error);
+      console.error('[AdviceGroup handleSave] Response:', error.response?.status, error.response?.data);
+      toast.error(`Failed to save: ${error.response?.status || error.message}`);
     } finally {
       setSaving(false);
     }

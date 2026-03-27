@@ -187,12 +187,15 @@ export default function AdminTemplate() {
     setSaving(true);
     try {
       const sectionData = JSON.stringify({ sections: sectionsOverride || sections });
+      console.log('[handleSave] template.id:', template?.id);
+      console.log('[handleSave] sectionData length:', sectionData.length);
       if (template?.id) {
-        await axiosInstance.put(`/soa-templates/${template.id}`, {
+        const response = await axiosInstance.put(`/soa-templates/${template.id}`, {
           name: templateName,
           description: templateDesc,
           sections: sectionData,
         });
+        console.log('[handleSave] PUT response:', response.status, response.data?.sections ? 'has sections' : 'NO sections');
       } else {
         const { data: created } = await axiosInstance.post('/soa-templates', {
           name: templateName,
@@ -201,13 +204,16 @@ export default function AdminTemplate() {
           ownerId: template?.ownerId ?? template?.owner_id ?? '00000000-0000-0000-0000-000000000000',
           sections: sectionData,
         });
+        console.log('[handleSave] POST response:', created?.id);
         setTemplate(created);
       }
       toast.success('Template saved successfully');
       // Refresh library data
       loadTemplates();
-    } catch {
-      toast.error('Failed to save template');
+    } catch (error) {
+      console.error('[handleSave] SAVE FAILED:', error);
+      console.error('[handleSave] Response:', error.response?.status, error.response?.data);
+      toast.error(`Failed to save template: ${error.response?.status || error.message}`);
     } finally {
       setSaving(false);
     }
@@ -235,8 +241,10 @@ export default function AdminTemplate() {
       }
       toast.success('Template saved successfully');
       loadTemplates();
-    } catch {
-      toast.error('Failed to save template');
+    } catch (error) {
+      console.error('[handleNameDescSave] SAVE FAILED:', error);
+      console.error('[handleNameDescSave] Response:', error.response?.status, error.response?.data);
+      toast.error(`Failed to save: ${error.response?.status || error.message}`);
     } finally {
       setSaving(false);
     }
