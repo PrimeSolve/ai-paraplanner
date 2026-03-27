@@ -244,6 +244,13 @@ export default function AdminTemplate() {
   };
 
   const handleNewFromScratch = async () => {
+    const defaultTmpl = templates.find(
+      (t) => t.name === 'PrimeSolve Default' || t.ownerType === 0 || t.owner_type === 0
+    );
+    if (!defaultTmpl) {
+      toast.error('No default template found to duplicate');
+      return;
+    }
     try {
       const defaultTmpl = templates.find(
         (t) => t.name === 'PrimeSolve Default' || t.ownerType === 0
@@ -254,7 +261,7 @@ export default function AdminTemplate() {
       }
       const duplicated = await base44.soaTemplateApi.duplicate(defaultTmpl.id, {
         name: 'New System Template',
-        ownerType: 0,
+        ownerType: 'admin',
         ownerId: '00000000-0000-0000-0000-000000000000',
       });
       const newId = duplicated.id ?? duplicated.Id;
