@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
+import axiosInstance from '@/api/axiosInstance';
 import { useRole } from '../components/RoleContext';
 import { formatRelativeDate } from '../utils/dateUtils';
 import {
@@ -168,10 +169,11 @@ export default function AdviceGroupDashboard() {
             }
           }
 
-          const [adviserList, soaList] = await Promise.all([
+          const [adviserList, soaResponse] = await Promise.all([
             base44.entities.Adviser.filter({ tenant_id: groupId }),
-            base44.entities.SOARequest.list('-created_date', 50),
+            axiosInstance.get('/advice-requests', { params: { pageSize: 50, sort: '-created_date' } }),
           ]);
+          const soaList = Array.isArray(soaResponse.data) ? soaResponse.data : (soaResponse.data?.items || soaResponse.data?.data || []);
 
           setAdvisers(adviserList);
           setSoaRequests(soaList);
@@ -180,16 +182,16 @@ export default function AdviceGroupDashboard() {
           const now = new Date();
           const activeSOAs = soaList.filter(s => s.status === 'in_progress' || s.status === 'submitted').length;
           const completedMonth = soaList.filter(s => {
-            if (s.status !== 'completed' || !s.completed_date) return false;
-            const d = new Date(s.completed_date);
+            if (s.status !== 'completed' || !s.completedAt) return false;
+            const d = new Date(s.completedAt);
             return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
           }).length;
 
-          const completedWithDates = soaList.filter(s => s.status === 'completed' && s.completed_date && s.submitted_date);
+          const completedWithDates = soaList.filter(s => s.status === 'completed' && s.completedAt && s.submittedAt);
           let avgTurnaround = '—';
           if (completedWithDates.length > 0) {
             const totalDays = completedWithDates.reduce((sum, s) => {
-              return sum + (new Date(s.completed_date) - new Date(s.submitted_date)) / 86400000;
+              return sum + (new Date(s.completedAt) - new Date(s.submittedAt)) / 86400000;
             }, 0);
             avgTurnaround = (totalDays / completedWithDates.length).toFixed(1) + 'd';
           }
@@ -327,9 +329,9 @@ export default function AdviceGroupDashboard() {
                   >
                     <td style={{ padding: '16px 32px', fontSize: '14px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <Avatar initials={getInitials(req.client_name)} gradientIndex={idx} size={40} />
+                        <Avatar initials={getInitials(req.clientName)} gradientIndex={idx} size={40} />
                         <div>
-                          <div style={{ fontWeight: 600, color: colors.core.navy }}>{req.client_name || req.client_email || 'Client'}</div>
+                          <div style={{ fontWeight: 600, color: colors.core.navy }}>{req.clientName || req.clientEmail || 'Client'}</div>
                           <div style={{ fontSize: '12px', color: colors.core.slateLight }}>{req.type || 'SOA Request'}</div>
                         </div>
                       </div>
@@ -338,7 +340,7 @@ export default function AdviceGroupDashboard() {
                       <StatusBadge status={req.status} />
                     </td>
                     <td style={{ padding: '16px 32px', fontSize: '14px', color: colors.core.slateLight }}>
-                      {formatRelativeDate(req.created_date)}
+                      {formatRelativeDate(req.createdAt)}
                     </td>
                   </tr>
                 )) : (
