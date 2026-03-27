@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   Home,
   ChevronRight,
+  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
@@ -151,10 +152,10 @@ export default function AdminTemplate() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (sectionsOverride) => {
     setSaving(true);
     try {
-      const payload = { sections: JSON.stringify(sections) };
+      const payload = { sections: JSON.stringify(sectionsOverride || sections) };
       if (template?.id) {
         await base44.entities.SOATemplate.update(template.id, payload);
       } else {
@@ -313,17 +314,30 @@ export default function AdminTemplate() {
   };
 
   const handleSectionSave = (sectionId, config) => {
-    setSections((prev) =>
-      prev.map((group) => ({
-        ...group,
-        sections: group.sections.map((s) =>
-          s.id === sectionId
-            ? { ...s, prompt: config.prompt, example_content: config.example_content, data_feeds: config.data_feeds }
-            : s
-        ),
-      }))
-    );
+    const newSections = sections.map((group) => ({
+      ...group,
+      sections: group.sections.map((s) =>
+        s.id === sectionId
+          ? { ...s, prompt: config.prompt, example_content: config.example_content, data_feeds: config.data_feeds }
+          : s
+      ),
+    }));
+    setSections(newSections);
+    handleSave(newSections);
     toast.success('Section updated');
+  };
+
+  const handleDeleteSection = (sectionId) => {
+    if (!window.confirm('Delete this section? This cannot be undone.')) return;
+    const newSections = sections
+      .map((group) => ({
+        ...group,
+        sections: group.sections.filter((s) => s.id !== sectionId),
+      }))
+      .filter((group) => group.sections.length > 0);
+    setSections(newSections);
+    handleSave(newSections);
+    toast.success('Section deleted');
   };
 
   const handleClaireSectionStateChange = (stateMap, newSections) => {
@@ -701,6 +715,17 @@ export default function AdminTemplate() {
                                           >
                                             <Settings2 className="w-3.5 h-3.5 mr-1" />
                                             Configure
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="flex-shrink-0 text-red-500 border-red-200 hover:bg-red-50"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleDeleteSection(section.id);
+                                            }}
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
                                           </Button>
                                         </div>
                                       )}
