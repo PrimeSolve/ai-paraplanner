@@ -462,14 +462,6 @@ export default function AdviceGroupSOATemplate() {
             }
           }}
           onDelete={handleDelete}
-          onNewFromClaire={() => {
-            const groupTmpl = templates.find((t) => t.owner_type === 'advice_group');
-            const target = groupTmpl || templates.find((t) => t.owner_type === 'admin');
-            if (target) {
-              openEditor(target);
-              setTimeout(() => setClaireOpen(true), 100);
-            }
-          }}
           onNewFromDefault={handleNewFromDefault}
           onNewFromScratch={handleNewFromScratch}
           level="advice_group"

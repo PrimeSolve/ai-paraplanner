@@ -378,27 +378,6 @@ export default function AdminTemplate() {
             handleNewFromDefault();
           }}
           onDelete={handleDelete}
-          onNewFromClaire={async () => {
-            // Find default and open editor with Claire
-            let defaultTmpl = templates.find((t) => t.owner_type === 'admin');
-            if (!defaultTmpl) {
-              // No template loaded yet — create one so Claire has something to work with
-              try {
-                defaultTmpl = await base44.entities.SOATemplate.create({
-                  owner_type: 'admin',
-                  name: 'PrimeSolve Default',
-                  description: '',
-                  sections: JSON.stringify(DEFAULT_SECTION_GROUPS),
-                });
-                await loadTemplates();
-              } catch {
-                toast.error('Failed to create template — please try again');
-                return;
-              }
-            }
-            openEditor(defaultTmpl);
-            setTimeout(() => setClaireOpen(true), 100);
-          }}
           onNewFromDefault={handleNewFromDefault}
           onNewFromScratch={handleNewFromScratch}
           level="admin"
