@@ -195,15 +195,15 @@ export default function AdminTemplate() {
         await axiosInstance.put(`/soa-templates/${template.id}`, {
           name: templateName,
           description: templateDesc,
-          template_data: sectionData,
+          templateData: sectionData,
         });
       } else {
         const { data: created } = await axiosInstance.post('/soa-templates', {
           name: templateName,
           description: templateDesc,
-          owner_type: template?.ownerType ?? template?.owner_type ?? 0,
-          owner_id: template?.ownerId ?? template?.owner_id ?? '00000000-0000-0000-0000-000000000000',
-          template_data: sectionData,
+          ownerType: template?.ownerType ?? template?.owner_type ?? 0,
+          ownerId: template?.ownerId ?? template?.owner_id ?? '00000000-0000-0000-0000-000000000000',
+          templateData: sectionData,
         });
         setTemplate(created);
       }
@@ -225,15 +225,15 @@ export default function AdminTemplate() {
         await axiosInstance.put(`/soa-templates/${template.id}`, {
           name: templateName,
           description: templateDesc,
-          template_data: sectionData,
+          templateData: sectionData,
         });
       } else {
         const { data: created } = await axiosInstance.post('/soa-templates', {
           name: templateName,
           description: templateDesc,
-          owner_type: template?.ownerType ?? template?.owner_type ?? 0,
-          owner_id: template?.ownerId ?? template?.owner_id ?? '00000000-0000-0000-0000-000000000000',
-          template_data: sectionData,
+          ownerType: template?.ownerType ?? template?.owner_type ?? 0,
+          ownerId: template?.ownerId ?? template?.owner_id ?? '00000000-0000-0000-0000-000000000000',
+          templateData: sectionData,
         });
         setTemplate(created);
       }
@@ -251,11 +251,11 @@ export default function AdminTemplate() {
       const { data: created } = await axiosInstance.post('/soa-templates', {
         name: 'New System Template',
         description: '',
-        owner_type: 0,
-        owner_id: '00000000-0000-0000-0000-000000000000',
+        ownerType: 0,
+        ownerId: '00000000-0000-0000-0000-000000000000',
         category: 'Default',
-        template_data: JSON.stringify({ sections: DEFAULT_SECTION_GROUPS }),
-        is_active: true,
+        templateData: JSON.stringify({ sections: DEFAULT_SECTION_GROUPS }),
+        isActive: true,
       });
       toast.success('Template created');
       await loadTemplates();
