@@ -136,19 +136,47 @@ export default function AdminTemplate() {
       const payload = {
         name: templateName,
         description: templateDesc,
-        sections: JSON.stringify(sectionsOverride || sections),
+        ownerType: template?.ownerType ?? 0,
+        ownerId: template?.ownerId ?? '00000000-0000-0000-0000-000000000000',
+        category: template?.category ?? 'Default',
+        templateData: JSON.stringify({ sections: sectionsOverride || sections }),
+        isActive: true,
       };
       if (template?.id) {
         await axiosInstance.put(`/soa-templates/${template.id}`, payload);
       } else {
-        const { data: created } = await axiosInstance.post('/soa-templates', {
-          ownerType: 0,
-          ...payload,
-        });
+        const { data: created } = await axiosInstance.post('/soa-templates', payload);
         setTemplate(created);
       }
       toast.success('Template saved successfully');
       // Refresh library data
+      loadTemplates();
+    } catch {
+      toast.error('Failed to save template');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleNameDescSave = async () => {
+    setSaving(true);
+    try {
+      const payload = {
+        name: templateName,
+        description: templateDesc,
+        ownerType: template?.ownerType ?? 0,
+        ownerId: template?.ownerId ?? '00000000-0000-0000-0000-000000000000',
+        category: template?.category ?? 'Default',
+        templateData: JSON.stringify({ sections }),
+        isActive: true,
+      };
+      if (template?.id) {
+        await axiosInstance.put(`/soa-templates/${template.id}`, payload);
+      } else {
+        const { data: created } = await axiosInstance.post('/soa-templates', payload);
+        setTemplate(created);
+      }
+      toast.success('Template saved successfully');
       loadTemplates();
     } catch {
       toast.error('Failed to save template');
