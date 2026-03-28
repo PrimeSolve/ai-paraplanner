@@ -466,13 +466,22 @@ export default function AdminTemplate() {
           <span className="text-slate-800 font-medium">SOA Templates</span>
         </div>
 
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
-            SOA Templates
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Manage system-level SOA document templates available to all advice groups
-          </p>
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              SOA Templates
+            </h1>
+            <p className="text-sm text-slate-500 mt-1">
+              Manage system-level SOA document templates available to all advice groups
+            </p>
+          </div>
+          <Button
+            onClick={handleNewFromScratch}
+            className="bg-indigo-600 hover:bg-indigo-700"
+          >
+            <Plus className="w-4 h-4 mr-1.5" />
+            New Template
+          </Button>
         </div>
 
         <TemplateLibrary
