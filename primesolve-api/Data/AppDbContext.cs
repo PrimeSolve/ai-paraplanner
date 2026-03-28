@@ -16,6 +16,7 @@ namespace PrimeSolve.Api.Data
         public DbSet<CompanyShareholder> CompanyShareholders { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<SoaTemplate> SoaTemplates { get; set; }
+        public DbSet<SoaTemplateShare> SoaTemplateShares { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -89,6 +90,18 @@ namespace PrimeSolve.Api.Data
                 entity.HasIndex(e => new { e.TenantId, e.OwnerType });
                 entity.HasIndex(e => e.OwnerType);
                 entity.Property(e => e.Sections).HasColumnType("nvarchar(max)");
+            });
+
+            modelBuilder.Entity<SoaTemplateShare>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.TemplateId, e.SharedToTenantId })
+                      .HasDatabaseName("IX_SOATemplateShares_TemplateId_SharedToTenantId");
+                entity.Property(e => e.IsHidden).HasDefaultValue(false);
+                entity.HasOne(e => e.Template)
+                      .WithMany()
+                      .HasForeignKey(e => e.TemplateId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }
