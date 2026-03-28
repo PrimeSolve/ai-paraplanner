@@ -80,6 +80,7 @@ export default function AdminTemplate() {
   const [claireNewSections, setClaireNewSections] = useState([]);
   const [templateName, setTemplateName] = useState('');
   const [templateDesc, setTemplateDesc] = useState('');
+  const [editingGroupLabel, setEditingGroupLabel] = useState(null);
 
   useEffect(() => {
     loadTemplates();
@@ -427,10 +428,35 @@ export default function AdminTemplate() {
     }
   };
 
-  const handleAddSectionStandalone = () => {
-    const lastGroup = sections[sections.length - 1];
-    const category = lastGroup ? lastGroup.group : 'general';
-    handleAddSection(category);
+  const handleAddGroup = () => {
+    const newGroup = {
+      group: crypto.randomUUID(),
+      groupLabel: 'New Section',
+      icon: '',
+      sections: [],
+    };
+    const newSections = [...sections, newGroup];
+    setSections(newSections);
+    setExpandedGroups((prev) => [...prev, newGroup.group]);
+    handleSave(newSections);
+  };
+
+  const handleDeleteGroup = (groupKey) => {
+    const group = sections.find((g) => g.group === groupKey);
+    if (!window.confirm(`Delete "${group?.groupLabel}" and all its sub-sections? This cannot be undone.`)) return;
+    const newSections = sections.filter((g) => g.group !== groupKey);
+    setSections(newSections);
+    handleSave(newSections);
+    toast.success('Section deleted');
+  };
+
+  const handleGroupLabelChange = (groupKey, newLabel) => {
+    const newSections = sections.map((g) =>
+      g.group === groupKey ? { ...g, groupLabel: newLabel } : g
+    );
+    setSections(newSections);
+    handleSave(newSections);
+    setEditingGroupLabel(null);
   };
 
   const handleClaireSectionStateChange = (stateMap, newSections) => {
@@ -652,8 +678,7 @@ export default function AdminTemplate() {
                           snapshot.isDragging ? 'shadow-lg border-indigo-400' : ''
                         }`}
                       >
-                        <button
-                          onClick={() => toggleGroup(group.group)}
+                        <div
                           {...provided.dragHandleProps}
                           className="w-full flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left cursor-grab active:cursor-grabbing"
                         >
@@ -661,20 +686,58 @@ export default function AdminTemplate() {
                           <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-base flex-shrink-0">
                             {group.icon}
                           </div>
-                          <div className="flex-1">
-                            <div className="font-semibold text-slate-800">
-                              {group.groupLabel}
-                            </div>
+                          <div className="flex-1 min-w-0" onClick={() => toggleGroup(group.group)}>
+                            {editingGroupLabel === group.group ? (
+                              <input
+                                type="text"
+                                defaultValue={group.groupLabel}
+                                autoFocus
+                                className="font-semibold text-slate-800 bg-white border border-indigo-300 rounded px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
+                                onClick={(e) => e.stopPropagation()}
+                                onBlur={(e) => handleGroupLabelChange(group.group, e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.target.blur();
+                                  }
+                                }}
+                              />
+                            ) : (
+                              <div
+                                className="font-semibold text-slate-800 cursor-text hover:bg-white hover:px-2 hover:py-0.5 hover:rounded hover:border hover:border-slate-300 transition-all"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingGroupLabel(group.group);
+                                }}
+                              >
+                                {group.groupLabel}
+                              </div>
+                            )}
                           </div>
-                          <span className="text-xs font-medium text-slate-500">
+                          <span className="text-xs font-medium text-slate-500 flex-shrink-0">
                             {groupConfigured}/{group.sections.length} configured
                           </span>
-                          <ChevronDown
-                            className={`w-4 h-4 text-slate-400 transition-transform ${
-                              isExpanded ? 'rotate-180' : ''
-                            }`}
-                          />
-                        </button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="flex-shrink-0 text-red-400 hover:text-red-600 hover:bg-red-50 p-1 h-auto"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteGroup(group.group);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                          <button
+                            onClick={() => toggleGroup(group.group)}
+                            className="flex-shrink-0 p-1"
+                          >
+                            <ChevronDown
+                              className={`w-4 h-4 text-slate-400 transition-transform ${
+                                isExpanded ? 'rotate-180' : ''
+                              }`}
+                            />
+                          </button>
+                        </div>
 
                         {isExpanded && (
                           <Droppable droppableId={group.group} type="SECTION">
@@ -802,7 +865,7 @@ export default function AdminTemplate() {
                                   onClick={() => handleAddSection(group.group)}
                                 >
                                   <Plus className="w-4 h-4 mr-1.5" />
-                                  Add Section
+                                  Add Sub-section
                                 </Button>
                               </div>
                             )}
@@ -822,7 +885,7 @@ export default function AdminTemplate() {
       <Button
         variant="outline"
         className="w-full mt-4 border-dashed border-slate-300 text-slate-500 hover:text-indigo-600 hover:border-indigo-300"
-        onClick={handleAddSectionStandalone}
+        onClick={handleAddGroup}
       >
         <Plus className="w-4 h-4 mr-1.5" />
         Add Section
