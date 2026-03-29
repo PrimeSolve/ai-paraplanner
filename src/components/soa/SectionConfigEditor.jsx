@@ -89,7 +89,7 @@ export default function SectionConfigEditor({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl w-[95vw] max-h-[90vh] min-h-[600px] overflow-hidden flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="pr-10">
           <DialogTitle asChild>
             <input
               type="text"
@@ -139,7 +139,7 @@ export default function SectionConfigEditor({
                 value={prompt.system}
                 onChange={(e) => setPrompt((p) => ({ ...p, system: e.target.value }))}
                 placeholder="Write instructions for the AI to generate this section. E.g.: Write a comprehensive executive summary for this SOA..."
-                className="w-full h-[150px] p-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full h-[150px] p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 style={{ fontFamily: "'JetBrains Mono', monospace", resize: 'none' }}
               />
             </div>
