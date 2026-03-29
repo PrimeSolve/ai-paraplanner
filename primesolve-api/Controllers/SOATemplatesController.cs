@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PrimeSolve.Api.Data;
 using PrimeSolve.Api.Models;
 
@@ -16,10 +17,12 @@ namespace PrimeSolve.Api.Controllers
     public class SOATemplatesController : ControllerBase
     {
         private readonly AppDbContext _db;
+        private readonly ILogger<SOATemplatesController> _logger;
 
-        public SOATemplatesController(AppDbContext db)
+        public SOATemplatesController(AppDbContext db, ILogger<SOATemplatesController> logger)
         {
             _db = db;
+            _logger = logger;
         }
 
         /// <summary>
@@ -99,27 +102,68 @@ namespace PrimeSolve.Api.Controllers
 
             var adviserId = GetAdviserId();
 
-            var templates = await _db.SoaTemplates
-                .Where(t =>
-                    t.OwnerType == 0 ||                                   // admin
-                    (t.OwnerType == 1 && t.TenantId == tenantId) ||       // advice group
-                    (t.OwnerType == 2 && t.OwnerId == adviserId.ToString())) // adviser
-                .OrderByDescending(t => t.UpdatedAt)
-                .Select(t => new
-                {
-                    id = t.Id,
-                    name = t.Name,
-                    description = t.Description,
-                    ownerType = t.OwnerType,
-                    ownerId = t.OwnerId,
-                    tenantId = t.TenantId,
-                    sections = t.Sections,
-                    createdAt = t.CreatedAt,
-                    updatedAt = t.UpdatedAt
-                })
+            _logger.LogInformation(
+                "[GetAvailable] Called with TenantId={TenantId}, AdviserId={AdviserId}",
+                tenantId, adviserId);
+
+            // Query each category independently for diagnostic visibility
+            var adminTemplates = await _db.SoaTemplates
+                .Where(t => t.OwnerType == 0)
                 .ToListAsync();
 
-            return Ok(templates);
+            var adviceGroupTemplates = await _db.SoaTemplates
+                .Where(t => t.OwnerType == 1 && t.TenantId == tenantId)
+                .ToListAsync();
+
+            var adviserTemplates = await _db.SoaTemplates
+                .Where(t => t.OwnerType == 2 && t.OwnerId == adviserId.ToString())
+                .ToListAsync();
+
+            _logger.LogInformation(
+                "[GetAvailable] adminTemplates={AdminCount} (IDs: {AdminIds}), "
+                + "adviceGroupTemplates={GroupCount} (IDs: {GroupIds}), "
+                + "adviserTemplates={AdviserCount} (IDs: {AdviserIds})",
+                adminTemplates.Count,
+                string.Join(", ", adminTemplates.Select(t => $"{t.Id} [{t.Name}] tenant={t.TenantId}")),
+                adviceGroupTemplates.Count,
+                string.Join(", ", adviceGroupTemplates.Select(t => $"{t.Id} [{t.Name}] tenant={t.TenantId}")),
+                adviserTemplates.Count,
+                string.Join(", ", adviserTemplates.Select(t => $"{t.Id} [{t.Name}] tenant={t.TenantId}")));
+
+            // Also log the total row count in the table for sanity check
+            var totalCount = await _db.SoaTemplates.CountAsync();
+            _logger.LogInformation(
+                "[GetAvailable] Total rows in SoaTemplates table: {TotalCount}", totalCount);
+
+            // Combine and deduplicate (admin templates may overlap with advice group
+            // if they share the same TenantId)
+            var allTemplates = adminTemplates
+                .Concat(adviceGroupTemplates)
+                .Concat(adviserTemplates)
+                .GroupBy(t => t.Id)
+                .Select(g => g.First())
+                .OrderByDescending(t => t.UpdatedAt)
+                .ToList();
+
+            _logger.LogInformation(
+                "[GetAvailable] After dedup: allTemplates={AllCount} (IDs: {AllIds})",
+                allTemplates.Count,
+                string.Join(", ", allTemplates.Select(t => $"{t.Id} [{t.Name}] ownerType={t.OwnerType}")));
+
+            var result = allTemplates.Select(t => new
+            {
+                id = t.Id,
+                name = t.Name,
+                description = t.Description,
+                ownerType = t.OwnerType,
+                ownerId = t.OwnerId,
+                tenantId = t.TenantId,
+                sections = t.Sections,
+                createdAt = t.CreatedAt,
+                updatedAt = t.UpdatedAt
+            });
+
+            return Ok(result);
         }
 
         /// <summary>
