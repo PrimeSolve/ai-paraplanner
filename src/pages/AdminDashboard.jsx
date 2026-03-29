@@ -113,17 +113,10 @@ export default function AdminDashboard() {
       flexDirection: 'column',
       gap: '24px',
     }}>
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800">Admin Dashboard</h1>
-        </div>
-      </div>
-
          {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           {/* Total Advice Groups */}
-          <div className="bg-white rounded-2xl px-6 py-4 border border-slate-200 hover:shadow-lg transition-all">
+          <div className="bg-white rounded-2xl px-6 py-3 border border-slate-200 hover:shadow-lg transition-all">
             <div className="flex items-start justify-between mb-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-blue-600" />
@@ -139,7 +132,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Total Advisers */}
-          <div className="bg-white rounded-2xl px-6 py-4 border border-slate-200 hover:shadow-lg transition-all">
+          <div className="bg-white rounded-2xl px-6 py-3 border border-slate-200 hover:shadow-lg transition-all">
             <div className="flex items-start justify-between mb-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-50 to-cyan-100 flex items-center justify-center">
                 <UserCheck className="w-6 h-6 text-cyan-600" />
@@ -155,7 +148,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Total Clients */}
-          <div className="bg-white rounded-2xl px-6 py-4 border border-slate-200 hover:shadow-lg transition-all">
+          <div className="bg-white rounded-2xl px-6 py-3 border border-slate-200 hover:shadow-lg transition-all">
             <div className="flex items-start justify-between mb-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 flex items-center justify-center">
                 <Users className="w-6 h-6 text-purple-600" />
@@ -171,7 +164,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Pending SOAs */}
-          <div className="bg-white rounded-2xl px-6 py-4 border border-slate-200 hover:shadow-lg transition-all">
+          <div className="bg-white rounded-2xl px-6 py-3 border border-slate-200 hover:shadow-lg transition-all">
             <div className="flex items-start justify-between mb-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center">
                 <Clock className="w-6 h-6 text-orange-600" />
