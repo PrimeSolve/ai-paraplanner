@@ -14,7 +14,7 @@ import {
   Settings2
 } from 'lucide-react';
 
-export default function AdminSidebar({ currentPage }) {
+export default function AdminSidebar({ currentPage, onHelpClick }) {
   const { navigationChain } = useRole();
   const [businessDetails, setBusinessDetails] = useState(null);
   const [soaQueueCount, setSoaQueueCount] = useState(0);
@@ -93,7 +93,8 @@ export default function AdminSidebar({ currentPage }) {
       title={businessDetails?.company_name || 'AI Paraplanner'}
       subtitle={null}
       navSections={navSections}
-      helpPath="AdminHelp"
+      onHelpClick={onHelpClick}
+      helpText="Ask Henry"
       currentPage={currentPage}
     />
   );

@@ -158,7 +158,7 @@ export default function AppShell({ children, pageActions, pageTitle }) {
 
     // Not viewing as anyone — show sidebar based on effective role
     if (effectiveRole === 'admin') {
-      return <AdminSidebar currentPage={getCurrentPage()} />;
+      return <AdminSidebar currentPage={getCurrentPage()} onHelpClick={henry.openPanel} />;
     }
     if (effectiveRole === 'advice_group') {
       return <AdviceGroupSidebar currentPage={getCurrentPage()} />;
@@ -197,7 +197,7 @@ export default function AppShell({ children, pageActions, pageTitle }) {
   const contentMargin = showSidebar ? sidebarWidth : '0';
 
   // Show Henry for adviser and client roles
-  const showHenry = effectiveRole === 'adviser' || effectiveRole === 'client'
+  const showHenry = effectiveRole === 'admin' || effectiveRole === 'adviser' || effectiveRole === 'client'
     || currentLevel === 'adviser' || currentLevel === 'client';
 
   return (

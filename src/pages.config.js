@@ -53,7 +53,6 @@ import AdminClients from './pages/AdminClients';
 import AdminCompleted from './pages/AdminCompleted';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminDataManager from './pages/AdminDataManager';
-import AdminHelp from './pages/AdminHelp';
 import AdminProfile from './pages/AdminProfile';
 import AdminQueue from './pages/AdminQueue';
 import AdminSettings from './pages/AdminSettings';
@@ -161,7 +160,6 @@ export const PAGES = {
     "AdminCompleted": AdminCompleted,
     "AdminDashboard": AdminDashboard,
     "AdminDataManager": AdminDataManager,
-    "AdminHelp": AdminHelp,
     "AdminProfile": AdminProfile,
     "AdminQueue": AdminQueue,
     "AdminSettings": AdminSettings,
