@@ -107,7 +107,7 @@ export default function AdviserSidebar({ currentPage, onHelpClick }) {
       homePath="AdviserDashboard"
       logoContent={logoContent}
       title={getCompanyName()}
-      subtitle={getSubtitle()}
+      subtitle={null}
       navSections={navSections}
       helpPath={onHelpClick ? undefined : "AdviserHelp"}
       helpText="Ask Henry"

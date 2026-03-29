@@ -36,7 +36,7 @@ export default function AdviceGroupSidebar({ currentPage }) {
       homePath="AdviceGroupDashboard"
       logoContent={logoContent}
       title={<>AI <span className="text-[#22d3ee]">Paraplanner</span></>}
-      subtitle="ADVICE GROUP"
+      subtitle={null}
       navSections={navSections}
       helpPath="AdviceGroupHelp"
       helpText="Ask Henry"

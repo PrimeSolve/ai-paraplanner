@@ -141,7 +141,7 @@ export default function AdviserDashboard() {
               { label: 'SOAs in Progress', value: stats.activeSOAs, icon: '📝', color: '#06b6d4' },
               { label: 'Ready for Download', value: stats.readyForDownload, icon: '✅', color: '#10b981' }
             ].map((stat, idx) => (
-              <div key={idx} style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px', position: 'relative' }}>
+              <div key={idx} style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '15px 20px', position: 'relative' }}>
                 <div style={{ width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', fontSize: '24px', background: `${stat.color}15` }}>
                   {stat.icon}
                 </div>
