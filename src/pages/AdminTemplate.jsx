@@ -305,7 +305,7 @@ export default function AdminTemplate() {
 
   const handleShareToggle = async (tmpl) => {
     try {
-      if (tmpl.is_shared) {
+      if (tmpl.isShared || tmpl.is_shared) {
         await axiosInstance.delete(`/soa-templates/${tmpl.id}/share`);
         toast.success('Template unshared');
       } else {

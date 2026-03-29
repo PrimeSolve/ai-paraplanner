@@ -55,6 +55,8 @@ export default function TemplateCard({
   const { configured, total } = countConfigured(sections);
   const allConfigured = total > 0 && configured === total;
 
+  const isShared = template.isShared || template.is_shared || false;
+
   const ot = template.ownerType ?? template.owner_type;
 
   const ownerBadge = (() => {
@@ -99,6 +101,13 @@ export default function TemplateCard({
       <h3 className="font-semibold text-slate-900 mb-1 truncate">
         {template.name || 'Untitled Template'}
       </h3>
+
+      {/* Shared badge */}
+      {isShared && (
+        <span className="inline-block text-[11px] font-medium px-2 py-0.5 rounded-full mb-1 bg-green-100 text-green-700">
+          Shared
+        </span>
+      )}
 
       {/* Owner badge */}
       <span className={`inline-block text-[11px] font-medium px-2 py-0.5 rounded-full mb-3 ${ownerBadgeColor}`}>
@@ -150,10 +159,11 @@ export default function TemplateCard({
               <Button
                 size="sm"
                 variant="ghost"
-                className={template.is_shared ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}
+                className={isShared ? 'text-green-600 hover:text-green-700 hover:bg-green-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}
+                title={isShared ? 'Shared with all Advice Groups — click to unshare' : 'Click to share with all Advice Groups'}
                 onClick={() => onShare(template)}
               >
-                <Share2 className="w-3.5 h-3.5" fill={template.is_shared ? 'currentColor' : 'none'} />
+                <Share2 className="w-3.5 h-3.5" fill={isShared ? 'currentColor' : 'none'} />
               </Button>
             )}
             <Button size="sm" variant="ghost" onClick={() => onDuplicate?.(template)}>
@@ -189,10 +199,11 @@ export default function TemplateCard({
               <Button
                 size="sm"
                 variant="ghost"
-                className={template.is_shared ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}
+                className={isShared ? 'text-green-600 hover:text-green-700 hover:bg-green-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}
+                title={isShared ? 'Shared with all Advice Groups — click to unshare' : 'Click to share with all Advice Groups'}
                 onClick={() => onShare(template)}
               >
-                <Share2 className="w-3.5 h-3.5" fill={template.is_shared ? 'currentColor' : 'none'} />
+                <Share2 className="w-3.5 h-3.5" fill={isShared ? 'currentColor' : 'none'} />
               </Button>
             )}
             <Button size="sm" variant="ghost" onClick={() => onDuplicate?.(template)}>
