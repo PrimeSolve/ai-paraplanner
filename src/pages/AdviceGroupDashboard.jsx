@@ -55,7 +55,7 @@ const StatCard = ({ icon: Icon, value, label, iconColor }) => (
   <div style={{
     background: colors.core.white,
     borderRadius: '16px',
-    padding: '20px',
+    padding: '15px 20px',
     border: `1px solid ${colors.core.greyLight}`,
   }}>
     <div style={{

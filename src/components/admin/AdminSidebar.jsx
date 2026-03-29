@@ -91,7 +91,7 @@ export default function AdminSidebar({ currentPage }) {
       homePath="AdminDashboard"
       logoContent={logoContent}
       title={businessDetails?.company_name || 'AI Paraplanner'}
-      subtitle={getSubtitle()}
+      subtitle={null}
       navSections={navSections}
       helpPath="AdminHelp"
       currentPage={currentPage}
