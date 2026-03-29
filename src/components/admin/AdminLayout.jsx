@@ -145,27 +145,7 @@ export default function AdminLayout({ children, currentPage, pageActions }) {
           ))}
         </nav>
 
-        {/* AI Assistant Button */}
-        <div className="p-4">
-          <Link to={createPageUrl('AdminHelp')} className="no-underline">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] hover:from-[#4f46e5] hover:to-[#7c3aed] cursor-pointer transition-all shadow-lg shadow-purple-900/30">
-              <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-white font-semibold text-sm">
-                  AI Assistant
-                </div>
-                <div className="text-white/80 text-xs">
-                  Ask for help
-                </div>
-              </div>
-              <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">?</span>
-              </div>
-            </div>
-          </Link>
-        </div>
+        {/* AI Assistant Button - Henry panel is opened via AppShell/AdminSidebar */}
 
         <div className="p-4 border-t border-white/[0.08]">
           <Link to={createPageUrl('AdminSettings')} className="no-underline">
