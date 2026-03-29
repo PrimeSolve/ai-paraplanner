@@ -29,6 +29,7 @@ export default function TemplateLibrary({
   onDuplicate,
   onDelete,
   onNewFromClaire,
+  onShare,
   onNewFromScratch,
   level = 'advice_group',
   canCreate = true,
@@ -67,6 +68,7 @@ export default function TemplateLibrary({
             onUse={onUse}
             onDuplicate={onDuplicate}
             onDelete={onDelete}
+            onShare={onShare}
           />
         ))}
       </div>

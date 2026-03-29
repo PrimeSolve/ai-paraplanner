@@ -9,6 +9,7 @@ import {
   Eye,
   ArrowRight,
   Star,
+  Share2,
 } from 'lucide-react';
 import { countConfigured } from '@/utils/soaTemplateDefaults';
 
@@ -33,6 +34,7 @@ export default function TemplateCard({
   onUse,
   onDuplicate,
   onDelete,
+  onShare,
   isDefault = false,
   isActive = false,
   level = 'advice_group',
@@ -144,6 +146,16 @@ export default function TemplateCard({
               <Pencil className="w-3.5 h-3.5 mr-1" />
               Edit
             </Button>
+            {onShare && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className={template.is_shared ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}
+                onClick={() => onShare(template)}
+              >
+                <Share2 className="w-3.5 h-3.5" fill={template.is_shared ? 'currentColor' : 'none'} />
+              </Button>
+            )}
             <Button size="sm" variant="ghost" onClick={() => onDuplicate?.(template)}>
               <Copy className="w-3.5 h-3.5" />
             </Button>
@@ -171,6 +183,16 @@ export default function TemplateCard({
               >
                 <Star className="w-3.5 h-3.5 mr-1" />
                 Set as Default
+              </Button>
+            )}
+            {onShare && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className={template.is_shared ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}
+                onClick={() => onShare(template)}
+              >
+                <Share2 className="w-3.5 h-3.5" fill={template.is_shared ? 'currentColor' : 'none'} />
               </Button>
             )}
             <Button size="sm" variant="ghost" onClick={() => onDuplicate?.(template)}>

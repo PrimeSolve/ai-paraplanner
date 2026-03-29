@@ -303,6 +303,22 @@ export default function AdminTemplate() {
     }
   };
 
+  const handleShareToggle = async (tmpl) => {
+    try {
+      if (tmpl.is_shared) {
+        await axiosInstance.delete(`/soa-templates/${tmpl.id}/share`);
+        toast.success('Template unshared');
+      } else {
+        await axiosInstance.post(`/soa-templates/${tmpl.id}/share`, {});
+        toast.success('Template shared');
+      }
+      await loadTemplates();
+    } catch (error) {
+      console.error('handleShareToggle error:', error);
+      toast.error('Failed to update sharing');
+    }
+  };
+
   const handleDelete = async (tmpl) => {
     if (tmpl.name === 'PrimeSolve Default') {
       toast.error('Cannot delete the PrimeSolve Default template');
@@ -518,6 +534,7 @@ export default function AdminTemplate() {
           onView={openEditor}
           onDuplicate={handleDuplicate}
           onDelete={handleDelete}
+          onShare={handleShareToggle}
           onNewFromClaire={async () => {
             // Find default and open editor with Claire
             let defaultTmpl = templates.find((t) => (t.ownerType === 0 || t.owner_type === 0));
