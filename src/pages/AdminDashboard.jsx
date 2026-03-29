@@ -1,10 +1,66 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Building2, Users, UserCheck, Clock, Clock3 } from 'lucide-react';
+import { Building2, Users, UserCheck, Clock, Clock3, CheckCircle, ChevronRight, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatRelativeDate } from '../utils/dateUtils';
 import { toast } from 'sonner';
+
+// ============================================
+// DESIGN TOKENS (matching AdviceGroupDashboard)
+// ============================================
+const colors = {
+  core: {
+    navy: '#1e293b',
+    slate: '#475569',
+    slateLight: '#64748b',
+    grey: '#94a3b8',
+    greyLight: '#e2e8f0',
+    offWhite: '#f8fafc',
+    white: '#ffffff',
+  },
+  accent: {
+    blue: '#3b82f6',
+    blueDeep: '#1d4ed8',
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    purple: '#8b5cf6',
+    cyan: '#06b6d4',
+  }
+};
+
+const avatarGradients = [
+  'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+  'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+  'linear-gradient(135deg, #10b981, #059669)',
+  'linear-gradient(135deg, #f97316, #ec4899)',
+  'linear-gradient(135deg, #06b6d4, #0891b2)',
+  'linear-gradient(135deg, #f59e0b, #d97706)',
+  'linear-gradient(135deg, #ef4444, #dc2626)',
+];
+
+const Avatar = ({ initials, gradientIndex, size = 40 }) => (
+  <div style={{
+    width: `${size}px`,
+    height: `${size}px`,
+    borderRadius: size > 40 ? '16px' : '12px',
+    background: avatarGradients[gradientIndex % avatarGradients.length],
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: colors.core.white,
+    fontWeight: 700,
+    fontSize: size > 40 ? '18px' : '14px',
+  }}>
+    {initials}
+  </div>
+);
+
+const getInitials = (name) => {
+  if (!name) return '?';
+  return name.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2);
+};
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
@@ -16,6 +72,7 @@ export default function AdminDashboard() {
   });
   const [recentActivity, setRecentActivity] = useState([]);
   const [queueItems, setQueueItems] = useState([]);
+  const [advisers, setAdvisers] = useState([]);
 
   useEffect(() => {
     loadStats();
@@ -23,7 +80,7 @@ export default function AdminDashboard() {
 
   const loadStats = async () => {
     try {
-      const [groups, clients, advisers, soaRequests] = await Promise.all([
+      const [groups, clients, adviserList, soaRequests] = await Promise.all([
         base44.entities.AdviceGroup.list(),
         base44.entities.Client.list(),
         base44.entities.Adviser.list(),
@@ -34,10 +91,12 @@ export default function AdminDashboard() {
 
       setStats({
         totalGroups: groups.length,
-        totalAdvisers: advisers.length,
+        totalAdvisers: adviserList.length,
         totalClients: clients.length,
         pendingSOAs
       });
+
+      setAdvisers(adviserList);
 
       // Build client lookup
       const clientMap = {};
@@ -107,13 +166,13 @@ export default function AdminDashboard() {
 
   return (
     <div style={{
-      flex: 1,
       padding: '24px 32px',
       display: 'flex',
-      flexDirection: 'column',
       gap: '24px',
     }}>
-         {/* Stats Grid */}
+      {/* Main Column */}
+      <div style={{ flex: 1 }}>
+        {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           {/* Total Advice Groups */}
           <div className="bg-white rounded-2xl px-6 py-3 border border-slate-200 hover:shadow-lg transition-all">
@@ -177,88 +236,207 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-6">
-          {/* Recent SOA Activity */}
-          <div className="col-span-2 bg-white rounded-2xl border border-slate-200">
-            <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Clock3 className="w-5 h-5 text-slate-600" />
-                <h3 className="font-semibold text-slate-800">Recent SOA Activity</h3>
-              </div>
-              <Link to={createPageUrl('AdminQueue')} className="text-sm font-medium text-blue-600 hover:text-blue-700">
-                View all
-              </Link>
+        {/* Recent SOA Activity */}
+        <div className="bg-white rounded-2xl border border-slate-200 mb-6">
+          <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock3 className="w-5 h-5 text-slate-600" />
+              <h3 className="font-semibold text-slate-800">Recent SOA Activity</h3>
             </div>
-            <div className="p-6">
-              <div className="space-y-3">
-                {recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-xl ${activity.bgColor} flex items-center justify-center text-white font-bold text-lg`}>
-                        {activity.initial}
-                      </div>
-                      <div>
-                        <div className="font-semibold text-slate-800 text-sm mb-0.5">{activity.client}</div>
-                        <div className="text-xs text-slate-600">
-                          {activity.adviser} • {activity.group}
-                        </div>
-                      </div>
+            <Link to={createPageUrl('AdminQueue')} className="text-sm font-medium text-blue-600 hover:text-blue-700">
+              View all
+            </Link>
+          </div>
+          <div className="p-6">
+            <div className="space-y-3">
+              {recentActivity.map((activity) => (
+                <div key={activity.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl ${activity.bgColor} flex items-center justify-center text-white font-bold text-lg`}>
+                      {activity.initial}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${getStatusColor(activity.status)}`}>
-                        {activity.statusLabel}
-                      </span>
-                      <span className="text-xs text-slate-500">{activity.time}</span>
+                    <div>
+                      <div className="font-semibold text-slate-800 text-sm mb-0.5">{activity.client}</div>
+                      <div className="text-xs text-slate-600">
+                        {activity.adviser} • {activity.group}
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${getStatusColor(activity.status)}`}>
+                      {activity.statusLabel}
+                    </span>
+                    <span className="text-xs text-slate-500">{activity.time}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+        </div>
 
-          {/* Right Column */}
-          <div className="space-y-6">
-            {/* Quick Actions */}
-            <div className="bg-white rounded-2xl border border-slate-200">
-              <div className="px-6 py-5 border-b border-slate-200">
-                <h3 className="font-semibold text-slate-800">Quick Actions</h3>
+        {/* Longest in Queue */}
+        <div className="bg-white rounded-2xl border border-slate-200">
+          <div className="px-6 py-5 border-b border-slate-200 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-slate-600" />
+            <h3 className="font-semibold text-slate-800">Longest in Queue</h3>
+          </div>
+          <div className="p-6 space-y-3">
+            {queueItems.map((item, idx) => (
+              <div key={idx} className={`p-4 rounded-xl border ${item.bgColor} border-${item.statusColor.replace('text-', '')}/20`}>
+                <div className="font-semibold text-slate-800 text-sm mb-1">{item.name}</div>
+                <div className="text-xs text-slate-600 mb-2">{item.waiting}</div>
+                <span className={`text-xs font-semibold ${item.statusColor}`}>{item.status}</span>
               </div>
-              <div className="p-6 space-y-2">
-                <Link to={createPageUrl('AdminAdviceGroups')} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors text-slate-700 hover:text-slate-900">
-                  <Building2 className="w-5 h-5" />
-                  <span className="text-sm font-medium">Manage Groups</span>
-                </Link>
-                <Link to={createPageUrl('AdminQueue')} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors text-slate-700 hover:text-slate-900">
-                  <Clock className="w-5 h-5" />
-                  <span className="text-sm font-medium">View Queue</span>
-                </Link>
-                <Link to={createPageUrl('AdminTemplate')} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors text-slate-700 hover:text-slate-900">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  <span className="text-sm font-medium">Edit Template</span>
-                </Link>
-              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Right Sidebar */}
+      <div style={{
+        width: '320px',
+        flexShrink: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '24px',
+      }}>
+        {/* Template Status */}
+        <div style={{
+          background: colors.core.white,
+          borderRadius: '16px',
+          border: `1px solid ${colors.core.greyLight}`,
+          padding: '24px',
+        }}>
+          <h4 style={{
+            fontSize: '16px',
+            fontWeight: 600,
+            color: colors.core.navy,
+            marginBottom: '16px',
+          }}>
+            Template Status
+          </h4>
+          <div style={{
+            background: `linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05))`,
+            border: `1px solid rgba(16, 185, 129, 0.2)`,
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '16px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <CheckCircle size={18} color={colors.accent.success} />
+              <span style={{ fontWeight: 600, color: colors.core.navy }}>Active SOA Template</span>
+              <Link to={createPageUrl('AdminTemplate')} style={{
+                marginLeft: 'auto',
+                display: 'inline-block',
+                background: colors.accent.blue,
+                color: colors.core.white,
+                padding: '4px 12px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: 700,
+                textDecoration: 'none',
+              }}>
+                Edit
+              </Link>
             </div>
+          </div>
+        </div>
 
-            {/* Longest in Queue */}
-            <div className="bg-white rounded-2xl border border-slate-200">
-              <div className="px-6 py-5 border-b border-slate-200 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-slate-600" />
-                <h3 className="font-semibold text-slate-800">Longest in Queue</h3>
-              </div>
-              <div className="p-6 space-y-3">
-                {queueItems.map((item, idx) => (
-                  <div key={idx} className={`p-4 rounded-xl border ${item.bgColor} border-${item.statusColor.replace('text-', '')}/20`}>
-                    <div className="font-semibold text-slate-800 text-sm mb-1">{item.name}</div>
-                    <div className="text-xs text-slate-600 mb-2">{item.waiting}</div>
-                    <span className={`text-xs font-semibold ${item.statusColor}`}>{item.status}</span>
+        {/* Adviser Activity */}
+        <div style={{
+          background: colors.core.white,
+          borderRadius: '16px',
+          border: `1px solid ${colors.core.greyLight}`,
+          padding: '24px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <h4 style={{
+              fontSize: '16px',
+              fontWeight: 600,
+              color: colors.core.navy,
+              margin: 0,
+            }}>
+              Adviser Activity
+            </h4>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {advisers.length > 0 ? advisers.slice(0, 3).map((adv, idx) => {
+              const name = `${adv.first_name || ''} ${adv.last_name || ''}`.trim() || adv.email;
+              const initials = getInitials(name);
+              return (
+                <div key={adv.id || idx} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  paddingBottom: idx !== Math.min(advisers.length, 3) - 1 ? '16px' : 0,
+                  borderBottom: idx !== Math.min(advisers.length, 3) - 1 ? `1px solid ${colors.core.greyLight}` : 'none',
+                }}>
+                  <Avatar initials={initials} gradientIndex={idx} size={40} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, color: colors.core.navy, fontSize: '14px' }}>
+                      {name}
+                    </div>
+                    <div style={{ fontSize: '12px', color: colors.core.slateLight }}>
+                      {adv.email}
+                    </div>
                   </div>
-                ))}
+                </div>
+              );
+            }) : (
+              <div style={{ textAlign: 'center', color: colors.core.grey, fontSize: '14px', padding: '16px 0' }}>
+                No advisers yet
               </div>
-            </div>
-            </div>
-            </div>
-            </div>
-            );
-            }
+            )}
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div style={{
+          background: colors.core.white,
+          borderRadius: '16px',
+          border: `1px solid ${colors.core.greyLight}`,
+          padding: '24px',
+        }}>
+          <h4 style={{
+            fontSize: '16px',
+            fontWeight: 600,
+            color: colors.core.navy,
+            marginBottom: '16px',
+          }}>
+            Quick Actions
+          </h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {[
+              { label: 'Manage Groups', icon: Building2, to: createPageUrl('AdminAdviceGroups') },
+              { label: 'View Queue', icon: Clock, to: createPageUrl('AdminQueue') },
+              { label: 'Edit Template', icon: FileText, to: createPageUrl('AdminTemplate') },
+            ].map((action, idx) => {
+              const Icon = action.icon;
+              return (
+                <Link key={idx} to={action.to} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  color: colors.core.navy,
+                  transition: 'background-color 0.2s ease',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = colors.core.offWhite}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <Icon size={16} color={colors.core.slateLight} />
+                  <span style={{ flex: 1 }}>{action.label}</span>
+                  <ChevronRight size={16} color={colors.core.slateLight} />
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
