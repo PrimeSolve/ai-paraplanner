@@ -99,45 +99,17 @@ export default function AdviceGroupSOATemplate() {
     }
   };
 
-  const loadTemplates = async (currentUser) => {
-    const usr = currentUser || user;
+  const loadTemplates = async () => {
     setLoadingLibrary(true);
     try {
-      let loaded;
-      try {
-        loaded = await base44.soaTemplateApi.getAvailable();
-      } catch {
-        // Fallback: load all templates via axiosInstance
-        try {
-          const response = await axiosInstance.get('/soa-templates');
-          const data = Array.isArray(response.data) ? response.data : (response.data?.items || []);
-          loaded = data;
-        } catch {
-          loaded = [];
-        }
-      }
-      setTemplates(loaded);
-
-      // Load admin template for "base" sections
-      const adminTmpls = loaded.filter((t) => t.owner_type === 0 || t.ownerType === 0);
-      if (adminTmpls[0]) {
-        setAdminTemplate(adminTmpls[0]);
-        const rawSecs = adminTmpls[0].sections || adminTmpls[0].template_data;
-        const adminSecs = typeof rawSecs === 'string' ? JSON.parse(rawSecs) : rawSecs;
-        // Handle wrapped format { sections: [...] }
-        const unwrapped = adminSecs?.sections || adminSecs;
-        if (Array.isArray(unwrapped) && unwrapped.length > 0) {
-          setAdminSections(unwrapped);
-        }
-      }
-
-      // Determine active template for this group
-      const groupTmpls = loaded.filter((t) => t.owner_type === 1 || t.ownerType === 1);
-      if (groupTmpls.length > 0) {
-        setActiveTemplateId(groupTmpls[0].id);
-      }
+      const response = await axiosInstance.get('/soa-templates/available');
+      const data = Array.isArray(response.data)
+        ? response.data
+        : (response.data?.items || response.data?.data || []);
+      setTemplates(data);
     } catch (error) {
       console.error('Failed to load templates:', error);
+      setTemplates([]);
     } finally {
       setLoadingLibrary(false);
     }
