@@ -372,23 +372,23 @@ export default function AppHeader({ pageActions, pageTitle }) {
                   src={loggedInUser.profile_image_url}
                   alt="Profile"
                   style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '6px',
                     objectFit: 'cover',
                   }}
                 />
               ) : (
                 <div style={{
-                  width: '32px',
-                  height: '32px',
+                  width: '24px',
+                  height: '24px',
                   background: 'linear-gradient(135deg, #8b5cf6, #3b82f6)',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#ffffff',
-                  fontSize: '12px',
+                  fontSize: '10px',
                   fontWeight: 700,
                 }}>
                   {getInitials()}
