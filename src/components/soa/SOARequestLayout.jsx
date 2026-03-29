@@ -155,9 +155,9 @@ export default function SOARequestLayout({ children, currentSection, soaRequest 
   const overallCompletion = soaRequest?.completion_percentage || 0;
 
   return (
-    <div className="flex bg-slate-50 overflow-hidden" style={{ height: 'calc(100vh - 64px)' }}>
+    <div className="flex bg-slate-50 overflow-hidden" style={{ height: 'calc(100vh - 48px)' }}>
       {/* Sidebar Navigation */}
-      <div className="bg-slate-800 text-slate-200 flex flex-col border-r border-slate-900 z-40" style={{ position: 'fixed', left: 0, top: '64px', bottom: 0, width: '320px' }}>
+      <div className="bg-slate-800 text-slate-200 flex flex-col border-r border-slate-900 z-40" style={{ position: 'fixed', left: 0, top: '48px', bottom: 0, width: '320px' }}>
         {/* Brand */}
         <Link to={createPageUrl('Home')}>
           <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-700 flex-shrink-0 cursor-pointer hover:bg-slate-700/50 transition-colors">

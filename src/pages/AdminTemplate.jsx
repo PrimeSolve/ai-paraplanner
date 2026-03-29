@@ -578,7 +578,7 @@ export default function AdminTemplate() {
   }
 
   return (
-    <div className={`flex ${claireOpen ? 'h-[calc(100vh-64px)]' : ''}`}>
+    <div className={`flex ${claireOpen ? 'h-[calc(100vh-48px)]' : ''}`}>
     <div className={`py-6 px-8 ${claireOpen ? 'w-[65%] overflow-y-auto' : 'w-full'} transition-all`}>
       {/* Breadcrumb */}
       <div className="flex items-center gap-1.5 text-sm text-slate-500 mb-4">
