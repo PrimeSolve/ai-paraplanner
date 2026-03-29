@@ -507,7 +507,7 @@ export default function AdviceGroupSOATemplate() {
   }
 
   return (
-    <div className={`flex ${claireOpen ? 'h-[calc(100vh-64px)]' : ''}`}>
+    <div className={`flex ${claireOpen ? 'h-[calc(100vh-48px)]' : ''}`}>
     {/* Left panel — template content */}
     <div className={`py-6 px-8 ${claireOpen ? 'w-[65%] overflow-y-auto' : 'w-full'} transition-all`}>
       {/* Breadcrumb */}

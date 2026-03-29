@@ -135,10 +135,10 @@ export default function AppHeader({ pageActions, pageTitle }) {
   return (
     <div style={{
       width: '100%',
-      height: '64px',
+      height: '48px',
       background: '#ffffff',
       borderBottom: '1px solid #e2e8f0',
-      padding: '12px 32px',
+      padding: '6px 32px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -372,29 +372,29 @@ export default function AppHeader({ pageActions, pageTitle }) {
                   src={loggedInUser.profile_image_url}
                   alt="Profile"
                   style={{
-                    width: '24px',
-                    height: '24px',
+                    width: '20px',
+                    height: '20px',
                     borderRadius: '6px',
                     objectFit: 'cover',
                   }}
                 />
               ) : (
                 <div style={{
-                  width: '24px',
-                  height: '24px',
+                  width: '20px',
+                  height: '20px',
                   background: 'linear-gradient(135deg, #8b5cf6, #3b82f6)',
                   borderRadius: '6px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#ffffff',
-                  fontSize: '10px',
+                  fontSize: '9px',
                   fontWeight: 700,
                 }}>
                   {getInitials()}
                 </div>
               )}
-              <span style={{ color: '#1e293b' }}>
+              <span style={{ color: '#1e293b', fontSize: '13px' }}>
                 {loggedInUser.display_name || loggedInUser.full_name || loggedInUser.email}
               </span>
             </button>

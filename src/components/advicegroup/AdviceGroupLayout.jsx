@@ -132,7 +132,7 @@ export default function AdviceGroupLayout({ children, currentPage, pageActions }
 
       {/* Main Content */}
       <div className="flex-1 ml-[260px] bg-[#f8fafc]">
-        <div style={{ paddingTop: '64px' }}>
+        <div style={{ paddingTop: '48px' }}>
           <AppHeader pageActions={pageActions} />
           {children}
         </div>
