@@ -65,10 +65,18 @@ export default function AdminTeam() {
   }, []);
 
   const mapRole = (roleValue) => {
-    if (roleValue === 0 || roleValue === '0' || roleValue === 'admin' || roleValue === 'platformadmin') return 'admin';
-    if (roleValue === 1 || roleValue === '1' || roleValue === 'tenantadmin' || roleValue === 'advicegroup' || roleValue === 'advice_group') return 'advice_group';
-    if (roleValue === 2 || roleValue === '2' || roleValue === 3 || roleValue === '3' || roleValue === 'adviser' || roleValue === 'advisor' || roleValue === 'supportstaff') return 'adviser';
-    if (roleValue === 4 || roleValue === '4' || roleValue === 'client') return 'client';
+    const num = typeof roleValue === 'number' ? roleValue : parseInt(roleValue);
+    if (!isNaN(num)) {
+      if (num === 0) return 'admin';
+      if (num === 1) return 'advice_group';
+      if (num === 2 || num === 3) return 'adviser';
+      if (num === 4) return 'client';
+    }
+    const str = String(roleValue ?? '').toLowerCase();
+    if (str === 'admin' || str === 'platformadmin') return 'admin';
+    if (str === 'tenantadmin' || str === 'advicegroup' || str === 'advice_group') return 'advice_group';
+    if (str === 'adviser' || str === 'advisor' || str === 'supportstaff') return 'adviser';
+    if (str === 'client') return 'client';
     return 'user';
   };
 
@@ -93,7 +101,7 @@ export default function AdminTeam() {
           full_name: user?.full_name || `${admin.first_name || ''} ${admin.last_name || ''}`.trim() || 'No name',
           role: mapRole(rawRole),
           status: admin.status || (user ? 'active' : 'pending'),
-          created_at: admin.created_at || user?.created_at,
+          created_date: admin.created_date || admin.created_at || user?.created_date || user?.created_at,
         };
       });
 
@@ -398,10 +406,10 @@ export default function AdminTeam() {
                     </td>
                     <td className="py-4 px-6">
                       <div className="text-sm text-[#0f172a]">
-                        {formatDate(member.created_at)}
+                        {formatDate(member.created_date)}
                       </div>
                       <div className="text-xs text-[#64748b]">
-                        {formatRelativeDate(member.created_at)}
+                        {formatRelativeDate(member.created_date)}
                       </div>
                     </td>
                     <td className="py-4 px-6">
