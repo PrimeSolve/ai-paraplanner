@@ -55,13 +55,6 @@ export default function AdminTeam() {
   useEffect(() => {
     loadTeam();
 
-    // Listen for custom event from header button
-    const handleOpenDialog = () => {
-      setEditingMember(null);
-      setShowInviteModal(true);
-    };
-    window.addEventListener('openAddMemberDialog', handleOpenDialog);
-    return () => window.removeEventListener('openAddMemberDialog', handleOpenDialog);
   }, []);
 
   const mapRole = (roleValue) => {
@@ -276,7 +269,7 @@ export default function AdminTeam() {
         <Card className="bg-white">
           {/* Filters Header */}
           <div className="px-6 py-4 border-b border-[#e2e8f0] flex items-center gap-3">
-            <div className="relative flex-1">
+            <div className="relative w-[350px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8]" />
               <Input
                 placeholder="Search team members..."
@@ -313,6 +306,19 @@ export default function AdminTeam() {
                 <DropdownMenuItem onClick={() => setStatusFilter('pending')}>Pending Invite</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <div className="flex-1" />
+
+            <Button
+              onClick={() => {
+                setEditingMember(null);
+                setShowInviteModal(true);
+              }}
+              className="bg-[#0F4C5C] hover:bg-[#0d3f4d] text-white whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Member
+            </Button>
           </div>
 
           <div className="overflow-x-auto">
