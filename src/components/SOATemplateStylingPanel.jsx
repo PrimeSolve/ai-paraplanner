@@ -85,6 +85,26 @@ export const DEFAULT_STYLING_CONFIG = {
   },
 };
 
+// ─── Deep merge helper ────────────────────────────────────────────
+function deepMerge(defaults, overrides) {
+  if (!overrides || typeof overrides !== 'object') return structuredClone(defaults);
+  const result = structuredClone(defaults);
+  for (const key of Object.keys(overrides)) {
+    if (
+      overrides[key] !== null &&
+      typeof overrides[key] === 'object' &&
+      !Array.isArray(overrides[key]) &&
+      typeof result[key] === 'object' &&
+      result[key] !== null
+    ) {
+      result[key] = deepMerge(result[key], overrides[key]);
+    } else {
+      result[key] = overrides[key];
+    }
+  }
+  return result;
+}
+
 // ─── API helpers ──────────────────────────────────────────────────
 const getStylingConfig = (templateId) =>
   axiosInstance.get(`/soa-templates/${templateId}/styling-config`).then((r) => r.data);
@@ -208,11 +228,7 @@ export default function SOATemplateStylingPanel({ templateId, onClose }) {
     getStylingConfig(templateId)
       .then((data) => {
         if (cancelled) return;
-        if (!data || Object.keys(data).length === 0) {
-          setConfig(structuredClone(DEFAULT_STYLING_CONFIG));
-        } else {
-          setConfig(data);
-        }
+        setConfig(deepMerge(DEFAULT_STYLING_CONFIG, data));
       })
       .catch(() => {
         if (!cancelled) setConfig(structuredClone(DEFAULT_STYLING_CONFIG));
