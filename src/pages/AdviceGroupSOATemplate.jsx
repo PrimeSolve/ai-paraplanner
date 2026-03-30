@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import {
   GripVertical,
   ChevronDown,
+  ChevronUp,
   ChevronLeft,
   Settings2,
   RotateCcw,
@@ -18,6 +19,11 @@ import {
   AlertTriangle,
   Home,
   ChevronRight,
+  Plus,
+  FileText,
+  TrendingUp,
+  DollarSign,
+  Shield,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
@@ -35,29 +41,54 @@ import {
 } from '@/utils/soaTemplateDefaults';
 
 function StatusDot({ status }) {
-  const colors = {
-    configured: 'bg-green-500',
-    auto: 'bg-blue-500',
-    partial: 'bg-amber-500',
-    'needs-config': 'bg-slate-300',
+  const colorMap = {
+    configured: '#16a34a',
+    auto: '#16a34a',
+    partial: '#d97706',
+    'needs-config': '#d1d5db',
   };
   return (
     <span
-      className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${colors[status] || colors['needs-config']}`}
+      className="flex-shrink-0 rounded-full"
+      style={{
+        width: 7,
+        height: 7,
+        backgroundColor: colorMap[status] || colorMap['needs-config'],
+      }}
     />
   );
 }
 
-function MiniBadge({ label, active }) {
+function TagPill({ label, variant }) {
+  const styles = {
+    prompt: { background: '#ede9fe', color: '#6d28d9' },
+    'prompt-off': { background: 'var(--color-background-secondary, #f1f5f9)', color: 'var(--color-text-secondary, #64748b)' },
+    example: { background: '#dcfce7', color: '#15803d' },
+    'example-off': { background: 'var(--color-background-secondary, #f1f5f9)', color: 'var(--color-text-secondary, #64748b)' },
+    feed: { background: '#fef3c7', color: '#b45309' },
+    'feed-off': { background: 'var(--color-background-secondary, #f1f5f9)', color: 'var(--color-text-secondary, #64748b)' },
+  };
+  const s = styles[variant] || styles['prompt-off'];
   return (
     <span
-      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-        active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-400'
-      }`}
+      className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+      style={{ backgroundColor: s.background, color: s.color }}
     >
       {label}
     </span>
   );
+}
+
+const GROUP_ICON_DEFAULTS = [
+  { bg: '#ede9fe', fg: '#6d28d9', Icon: FileText },
+  { bg: '#dcfce7', fg: '#15803d', Icon: TrendingUp },
+  { bg: '#fef3c7', fg: '#b45309', Icon: DollarSign },
+  { bg: '#dbeafe', fg: '#1d4ed8', Icon: Shield },
+];
+
+function getGroupIconStyle(groupIdx) {
+  if (groupIdx < GROUP_ICON_DEFAULTS.length) return GROUP_ICON_DEFAULTS[groupIdx];
+  return { bg: 'var(--color-background-secondary, #f1f5f9)', fg: '#64748b', Icon: FileText };
 }
 
 export default function AdviceGroupSOATemplate() {
@@ -382,6 +413,32 @@ export default function AdviceGroupSOATemplate() {
     }));
   };
 
+  const handleAddSection = (groupId) => {
+    setSections((prev) =>
+      prev.map((group) => {
+        if (group.group !== groupId) return group;
+        const newId = `${groupId}-custom-${Date.now()}`;
+        return {
+          ...group,
+          sections: [
+            ...group.sections,
+            {
+              id: newId,
+              label: 'New Section',
+              desc: 'Click Configure to set up this section',
+              group: groupId,
+              enabled: true,
+              order: group.sections.length + 1,
+              prompt: { system: '', output_format: 'prose', max_words: 500, tone: 'professional_clear' },
+              example_content: '',
+              data_feeds: [],
+            },
+          ],
+        };
+      })
+    );
+  };
+
   const getClaireIndicator = (sectionId) => {
     const state = claireSectionStates[sectionId];
     if (!state || !claireOpen) return null;
@@ -491,34 +548,30 @@ export default function AdviceGroupSOATemplate() {
   }
 
   return (
-    <div className={`flex ${claireOpen ? 'h-[calc(100vh-48px)]' : ''}`}>
+    <div className={`flex flex-col ${claireOpen ? 'h-[calc(100vh-48px)]' : ''}`}>
+    {/* Change 1: Back navigation bar */}
+    <div
+      className="flex items-center gap-2 bg-white flex-shrink-0"
+      style={{ padding: '10px 24px', borderBottom: '0.5px solid #e2e8f0' }}
+    >
+      <button
+        onClick={() => { setView('library'); setClaireOpen(false); }}
+        className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+      >
+        <ChevronLeft className="w-4 h-4" />
+        Back to templates
+      </button>
+      <span className="text-sm text-slate-300">/</span>
+      <span className="text-sm text-slate-800 font-semibold">
+        {groupTemplate?.name || 'AI Paraplanner'}
+      </span>
+    </div>
+
+    <div className={`flex flex-1 ${claireOpen ? 'overflow-hidden' : ''}`}>
     {/* Left panel — template content */}
     <div className={`py-6 px-8 ${claireOpen ? 'w-[65%] overflow-y-auto' : 'w-full'} transition-all`}>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-1.5 text-sm text-slate-500 mb-4">
-        <Home className="w-4 h-4" />
-        <ChevronRight className="w-3.5 h-3.5" />
-        <button
-          onClick={() => { setView('library'); setClaireOpen(false); }}
-          className="hover:text-slate-700 transition-colors"
-        >
-          SOA Templates
-        </button>
-        <ChevronRight className="w-3.5 h-3.5" />
-        <span className="text-slate-800 font-medium">
-          {groupTemplate?.name || 'Edit Template'}
-        </span>
-      </div>
-
-      {/* Back button + Header */}
+      {/* Page Header */}
       <div className="mb-6">
-        <button
-          onClick={() => { setView('library'); setClaireOpen(false); }}
-          className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-2"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Back to Templates
-        </button>
         <h1 className="text-2xl font-bold text-gray-900">
           Editing: {groupTemplate?.name || 'Advice Group Template'}
         </h1>
@@ -539,7 +592,7 @@ export default function AdviceGroupSOATemplate() {
         </div>
       </div>
 
-      {/* Stats & Actions */}
+      {/* Stats & Actions — Change 2: Preview button added */}
       <div className="flex gap-4 mb-6 items-center justify-between">
         <div className="flex gap-4">
           <div className="flex items-center gap-3 bg-white rounded-lg border border-slate-200 px-6 py-3">
@@ -556,6 +609,14 @@ export default function AdviceGroupSOATemplate() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            className="border-[#6366f1] text-[#6366f1] hover:bg-indigo-50"
+            onClick={() => toast('Generating preview with dummy data…')}
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            Preview with dummy data
+          </Button>
           {!claireOpen && (
             <Button
               variant="outline"
@@ -576,7 +637,7 @@ export default function AdviceGroupSOATemplate() {
         </div>
       </div>
 
-      {/* Section Groups with Drag & Drop */}
+      {/* Section Groups with Drag & Drop — Change 3 & 4 */}
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="groups" type="GROUP">
           {(provided) => (
@@ -587,6 +648,11 @@ export default function AdviceGroupSOATemplate() {
             >
               {sections.map((group, groupIdx) => {
                 const isExpanded = expandedGroups.includes(group.group);
+                const groupIconStyle = getGroupIconStyle(groupIdx);
+                const GroupIcon = groupIconStyle.Icon;
+                const groupConfigured = group.sections.filter(
+                  (s) => { const st = getSectionStatus(s); return st === 'configured' || st === 'auto'; }
+                ).length;
 
                 return (
                   <Draggable key={group.group} draggableId={group.group} index={groupIdx}>
@@ -598,33 +664,48 @@ export default function AdviceGroupSOATemplate() {
                           snapshot.isDragging ? 'shadow-lg border-purple-400' : ''
                         }`}
                       >
+                        {/* Group header */}
                         <button
                           onClick={() => toggleGroup(group.group)}
                           {...provided.dragHandleProps}
-                          className="w-full flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left cursor-grab active:cursor-grabbing"
+                          className="w-full flex items-center gap-3 p-4 hover:bg-slate-100 transition-colors text-left cursor-grab active:cursor-grabbing"
+                          style={{
+                            backgroundColor: 'var(--color-background-secondary, #f8fafc)',
+                            borderBottom: isExpanded ? '0.5px solid #e2e8f0' : 'none',
+                          }}
                         >
-                          <GripVertical className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                          <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-base flex-shrink-0">
-                            {group.icon}
+                          <span className="text-slate-400 flex-shrink-0" style={{ fontSize: 16, lineHeight: 1 }}>⠿</span>
+                          <div
+                            className="flex items-center justify-center flex-shrink-0 rounded-lg"
+                            style={{
+                              width: 32,
+                              height: 32,
+                              backgroundColor: groupIconStyle.bg,
+                            }}
+                          >
+                            <GroupIcon style={{ width: 18, height: 18, color: groupIconStyle.fg }} />
                           </div>
-                          <div className="flex-1">
-                            <div className="font-semibold text-slate-800">{group.groupLabel}</div>
-                          </div>
-                          <span className="text-xs font-medium text-slate-500">
-                            {group.sections.length} sections
+                          <span className="flex-1 text-sm font-medium text-slate-800">
+                            {group.groupLabel}
                           </span>
-                          <ChevronDown
-                            className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                          />
+                          <span className="text-xs text-slate-500">
+                            {groupConfigured} / {group.sections.length} configured
+                          </span>
+                          {isExpanded ? (
+                            <ChevronUp className="w-4 h-4 text-slate-400" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-slate-400" />
+                          )}
                         </button>
 
+                        {/* Sub-sections — hidden when collapsed */}
                         {isExpanded && (
                           <Droppable droppableId={group.group} type="SECTION">
                             {(provided, snapshot) => (
                               <div
                                 ref={provided.innerRef}
                                 {...provided.droppableProps}
-                                className={`border-t border-slate-200 p-3 space-y-2 ${
+                                className={`p-3 space-y-2 ${
                                   snapshot.isDraggingOver ? 'bg-purple-50/50' : ''
                                 }`}
                               >
@@ -636,6 +717,8 @@ export default function AdviceGroupSOATemplate() {
                                   const isOverride = !!overrides[section.id];
                                   const isDisabled = section.enabled === false;
                                   const claireIndicator = getClaireIndicator(section.id);
+
+                                  const SectionIcon = getIconComponent(section.icon) || DefaultSectionIcon;
 
                                   return (
                                     <Draggable
@@ -661,6 +744,7 @@ export default function AdviceGroupSOATemplate() {
                                               : 'border-slate-200'
                                           } ${isDisabled ? 'opacity-50' : ''}`}
                                         >
+                                          {/* Drag handle */}
                                           <div
                                             {...provided.dragHandleProps}
                                             className="cursor-grab active:cursor-grabbing flex-shrink-0"
@@ -668,23 +752,30 @@ export default function AdviceGroupSOATemplate() {
                                             <GripVertical className="w-4 h-4 text-slate-300" />
                                           </div>
 
-                                          {(() => {
-                                            const SectionIcon = getIconComponent(section.icon) || DefaultSectionIcon;
-                                            const statusColors = {
-                                              configured: 'text-green-600',
-                                              auto: 'text-blue-600',
-                                              partial: 'text-amber-600',
-                                              'needs-config': 'text-slate-400',
-                                            };
-                                            const iconColor =
-                                              claireIndicator === 'mapped' || claireIndicator === 'populated'
-                                                ? 'text-green-600'
-                                                : claireIndicator === 'gap'
-                                                ? 'text-amber-600'
-                                                : (statusColors[status] || 'text-slate-400');
-                                            return <SectionIcon className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />;
-                                          })()}
+                                          {/* Status dot */}
+                                          <StatusDot status={status} />
 
+                                          {/* Sub-icon */}
+                                          <div
+                                            className="flex items-center justify-center flex-shrink-0 rounded-md"
+                                            style={{
+                                              width: 26,
+                                              height: 26,
+                                              backgroundColor: section.icon
+                                                ? groupIconStyle.bg
+                                                : 'var(--color-background-secondary, #f1f5f9)',
+                                            }}
+                                          >
+                                            <SectionIcon
+                                              style={{
+                                                width: 14,
+                                                height: 14,
+                                                color: section.icon ? groupIconStyle.fg : '#64748b',
+                                              }}
+                                            />
+                                          </div>
+
+                                          {/* Title + description */}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
                                               <span className="font-medium text-sm text-slate-800">
@@ -693,11 +784,6 @@ export default function AdviceGroupSOATemplate() {
                                               {isOverride && (
                                                 <span className="text-[10px] font-semibold text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded">
                                                   Override
-                                                </span>
-                                              )}
-                                              {!isOverride && !claireIndicator && (
-                                                <span className="text-[10px] font-medium text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded">
-                                                  Default
                                                 </span>
                                               )}
                                             </div>
@@ -724,15 +810,17 @@ export default function AdviceGroupSOATemplate() {
                                             )}
                                           </div>
 
+                                          {/* Tag pills */}
                                           <div className="flex items-center gap-1.5 flex-shrink-0">
-                                            <MiniBadge label="Prompt" active={hasPrompt} />
-                                            <MiniBadge label="Example" active={hasExample} />
-                                            <MiniBadge
+                                            <TagPill label="Prompt" variant={hasPrompt ? 'prompt' : 'prompt-off'} />
+                                            <TagPill label="Example" variant={hasExample ? 'example' : 'example-off'} />
+                                            <TagPill
                                               label={feedCount > 0 ? `${feedCount} feeds` : 'Feed'}
-                                              active={feedCount > 0}
+                                              variant={feedCount > 0 ? 'feed' : 'feed-off'}
                                             />
                                           </div>
 
+                                          {/* Actions */}
                                           <div className="flex items-center gap-1 flex-shrink-0">
                                             <Button
                                               size="sm"
@@ -767,7 +855,8 @@ export default function AdviceGroupSOATemplate() {
                                             <Button
                                               size="sm"
                                               variant="outline"
-                                              className="flex-shrink-0 text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                                              className="flex-shrink-0 text-[#6366f1] hover:bg-indigo-50"
+                                              style={{ borderColor: '#a5b4fc' }}
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 openSectionEditor(section);
@@ -783,6 +872,15 @@ export default function AdviceGroupSOATemplate() {
                                   );
                                 })}
                                 {provided.placeholder}
+
+                                {/* Add sub-section row */}
+                                <button
+                                  onClick={() => handleAddSection(group.group)}
+                                  className="w-full flex items-center justify-center gap-1.5 py-2.5 text-sm text-slate-400 hover:text-[#6366f1] hover:bg-indigo-50/50 rounded-lg transition-colors"
+                                >
+                                  <Plus className="w-4 h-4" />
+                                  Add sub-section
+                                </button>
                               </div>
                             )}
                           </Droppable>
@@ -828,6 +926,7 @@ export default function AdviceGroupSOATemplate() {
         />
       </div>
     )}
+    </div>
     </div>
   );
 }
