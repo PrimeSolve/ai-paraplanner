@@ -11,6 +11,8 @@ import {
   Home,
   ChevronRight,
 } from 'lucide-react';
+import { getIconComponent } from '@/components/IconPicker';
+import { FileText as DefaultSectionIcon } from 'lucide-react';
 import ExampleSOALibrary from '@/components/soa/ExampleSOALibrary';
 import TemplateLibrary from '@/components/soa/TemplateLibrary';
 import SOATemplateStylingPanel from '@/components/SOATemplateStylingPanel';
@@ -320,7 +322,16 @@ export default function AdviserSOATemplate() {
                         key={section.id}
                         className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg"
                       >
-                        <StatusDot status={status} />
+                        {(() => {
+                          const SectionIcon = getIconComponent(section.icon) || DefaultSectionIcon;
+                          const statusColors = {
+                            configured: 'text-green-600',
+                            auto: 'text-blue-600',
+                            partial: 'text-amber-600',
+                            'needs-config': 'text-slate-400',
+                          };
+                          return <SectionIcon className={`w-4 h-4 flex-shrink-0 ${statusColors[status] || 'text-slate-400'}`} />;
+                        })()}
 
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm text-slate-800">
