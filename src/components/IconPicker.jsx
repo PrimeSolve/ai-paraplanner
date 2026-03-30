@@ -17,6 +17,8 @@ import {
   Scale, Gavel, FileWarning, AlertCircle, Info,
   // Retirement & super
   Sunset, Clock, CalendarDays, Hourglass,
+  // Search
+  Search,
 } from 'lucide-react';
 
 const ICON_MAP = {
@@ -41,7 +43,9 @@ export function getIconComponent(name) {
 
 export default function IconPicker({ value, onChange }) {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const ref = useRef(null);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     if (!open) return;
@@ -52,7 +56,18 @@ export default function IconPicker({ value, onChange }) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [open]);
 
+  useEffect(() => {
+    if (open && searchRef.current) {
+      searchRef.current.focus();
+    }
+    if (!open) setSearch('');
+  }, [open]);
+
   const SelectedIcon = value ? ICON_MAP[value] : FileText;
+
+  const filteredNames = search
+    ? ICON_NAMES.filter((name) => name.toLowerCase().includes(search.toLowerCase()))
+    : ICON_NAMES;
 
   return (
     <div className="relative inline-block" ref={ref}>
@@ -69,8 +84,20 @@ export default function IconPicker({ value, onChange }) {
 
       {open && (
         <div className="absolute z-50 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg p-2 w-[264px]">
-          <div className="grid grid-cols-6 gap-1">
-            {ICON_NAMES.map((name) => {
+          {/* Search input */}
+          <div className="relative mb-2">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <input
+              ref={searchRef}
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search icons…"
+              className="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+          <div className="grid grid-cols-6 gap-1 max-h-[240px] overflow-y-auto">
+            {filteredNames.map((name) => {
               const Icon = ICON_MAP[name];
               const isSelected = value === name;
               return (
@@ -92,6 +119,11 @@ export default function IconPicker({ value, onChange }) {
                 </button>
               );
             })}
+            {filteredNames.length === 0 && (
+              <div className="col-span-6 py-3 text-center text-xs text-slate-400">
+                No icons found
+              </div>
+            )}
           </div>
         </div>
       )}

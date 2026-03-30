@@ -6,10 +6,15 @@ import { Badge } from '@/components/ui/badge';
 import {
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
   AlertCircle,
   Loader2,
   Home,
   ChevronRight,
+  FileText,
+  TrendingUp,
+  DollarSign,
+  Shield,
 } from 'lucide-react';
 import { getIconComponent } from '@/components/IconPicker';
 import { FileText as DefaultSectionIcon } from 'lucide-react';
@@ -23,29 +28,50 @@ import {
 } from '@/utils/soaTemplateDefaults';
 
 function StatusDot({ status }) {
-  const colors = {
-    configured: 'bg-green-500',
-    auto: 'bg-blue-500',
-    partial: 'bg-amber-500',
-    'needs-config': 'bg-slate-300',
+  const colorMap = {
+    configured: '#16a34a',
+    auto: '#16a34a',
+    partial: '#d97706',
+    'needs-config': '#d1d5db',
   };
   return (
     <span
-      className={`w-2 h-2 rounded-full flex-shrink-0 ${colors[status] || colors['needs-config']}`}
+      className="flex-shrink-0 rounded-full"
+      style={{ width: 7, height: 7, backgroundColor: colorMap[status] || colorMap['needs-config'] }}
     />
   );
 }
 
-function MiniBadge({ label, active }) {
+function TagPill({ label, variant }) {
+  const styles = {
+    prompt: { background: '#ede9fe', color: '#6d28d9' },
+    'prompt-off': { background: 'var(--color-background-secondary, #f1f5f9)', color: 'var(--color-text-secondary, #64748b)' },
+    example: { background: '#dcfce7', color: '#15803d' },
+    'example-off': { background: 'var(--color-background-secondary, #f1f5f9)', color: 'var(--color-text-secondary, #64748b)' },
+    feed: { background: '#fef3c7', color: '#b45309' },
+    'feed-off': { background: 'var(--color-background-secondary, #f1f5f9)', color: 'var(--color-text-secondary, #64748b)' },
+  };
+  const s = styles[variant] || styles['prompt-off'];
   return (
     <span
-      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-        active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-400'
-      }`}
+      className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+      style={{ backgroundColor: s.background, color: s.color }}
     >
       {label}
     </span>
   );
+}
+
+const GROUP_ICON_DEFAULTS = [
+  { bg: '#ede9fe', fg: '#6d28d9', Icon: FileText },
+  { bg: '#dcfce7', fg: '#15803d', Icon: TrendingUp },
+  { bg: '#fef3c7', fg: '#b45309', Icon: DollarSign },
+  { bg: '#dbeafe', fg: '#1d4ed8', Icon: Shield },
+];
+
+function getGroupIconStyle(groupIdx) {
+  if (groupIdx < GROUP_ICON_DEFAULTS.length) return GROUP_ICON_DEFAULTS[groupIdx];
+  return { bg: 'var(--color-background-secondary, #f1f5f9)', fg: '#64748b', Icon: FileText };
 }
 
 function DataFeedChip({ feedKey }) {
@@ -237,32 +263,28 @@ export default function AdviserSOATemplate() {
 
   // ── DETAIL VIEW (read-only) ──
   return (
-    <div className="py-6 px-8">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-1.5 text-sm text-slate-500 mb-4">
-        <Home className="w-4 h-4" />
-        <ChevronRight className="w-3.5 h-3.5" />
+    <div>
+      {/* Back navigation bar */}
+      <div
+        className="flex items-center gap-2 bg-white"
+        style={{ padding: '10px 24px', borderBottom: '0.5px solid #e2e8f0' }}
+      >
         <button
           onClick={() => setView('library')}
-          className="hover:text-slate-700 transition-colors"
+          className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 transition-colors"
         >
-          SOA Templates
+          <ChevronLeft className="w-4 h-4" />
+          Back to templates
         </button>
-        <ChevronRight className="w-3.5 h-3.5" />
-        <span className="text-slate-800 font-medium">
-          {viewingTemplate?.name || 'View Template'}
+        <span className="text-sm text-slate-300">/</span>
+        <span className="text-sm text-slate-800 font-semibold">
+          {viewingTemplate?.name || 'AI Paraplanner'}
         </span>
       </div>
 
+    <div className="py-6 px-8">
       {/* Header */}
       <div className="mb-6">
-        <button
-          onClick={() => setView('library')}
-          className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-2"
-        >
-          <ChevronDown className="w-4 h-4 -rotate-90" />
-          Back to Templates
-        </button>
         <h1 className="text-2xl font-bold text-gray-900">
           {viewingTemplate?.name || 'SOA Section Configuration'}
         </h1>
@@ -284,24 +306,38 @@ export default function AdviserSOATemplate() {
 
       {/* Section Groups */}
       <div className="space-y-3">
-        {effectiveSections.map((group) => {
+        {effectiveSections.map((group, groupIdx) => {
           const isExpanded = expandedGroups.includes(group.group);
+          const groupIconStyle = getGroupIconStyle(groupIdx);
+          const GroupIcon = groupIconStyle.Icon;
+          const groupConfigured = group.sections.filter(
+            (s) => { const st = getSectionStatus(s); return st === 'configured' || st === 'auto'; }
+          ).length;
 
           return (
             <Card key={group.group} className="overflow-hidden">
+              {/* Group header */}
               <button
                 onClick={() => toggleGroup(group.group)}
-                className="w-full flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+                className="w-full flex items-center gap-3 p-4 hover:bg-slate-100 transition-colors text-left"
+                style={{
+                  backgroundColor: 'var(--color-background-secondary, #f8fafc)',
+                  borderBottom: isExpanded ? '0.5px solid #e2e8f0' : 'none',
+                }}
               >
-                <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center text-base flex-shrink-0">
-                  {group.icon}
+                <span className="text-slate-400 flex-shrink-0" style={{ fontSize: 16, lineHeight: 1 }}>⠿</span>
+                <div
+                  className="flex items-center justify-center flex-shrink-0 rounded-lg"
+                  style={{ width: 32, height: 32, backgroundColor: groupIconStyle.bg }}
+                >
+                  <GroupIcon style={{ width: 18, height: 18, color: groupIconStyle.fg }} />
                 </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-slate-800">{group.groupLabel}</div>
-                </div>
-                <Badge variant="secondary" className="text-xs">
-                  {group.sections.length} sections
-                </Badge>
+                <span className="flex-1 text-sm font-medium text-slate-800">
+                  {group.groupLabel}
+                </span>
+                <span className="text-xs text-slate-500">
+                  {groupConfigured} / {group.sections.length} configured
+                </span>
                 {isExpanded ? (
                   <ChevronUp className="w-4 h-4 text-slate-400" />
                 ) : (
@@ -310,28 +346,41 @@ export default function AdviserSOATemplate() {
               </button>
 
               {isExpanded && (
-                <div className="border-t border-slate-200 p-3 space-y-2">
+                <div className="p-3 space-y-2">
                   {group.sections.map((section) => {
                     const status = getSectionStatus(section);
                     const hasPrompt = !!section.prompt?.system;
                     const hasExample = !!section.example_content;
                     const feedCount = section.data_feeds?.length || 0;
+                    const SectionIcon = getIconComponent(section.icon) || DefaultSectionIcon;
 
                     return (
                       <div
                         key={section.id}
                         className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg"
                       >
-                        {(() => {
-                          const SectionIcon = getIconComponent(section.icon) || DefaultSectionIcon;
-                          const statusColors = {
-                            configured: 'text-green-600',
-                            auto: 'text-blue-600',
-                            partial: 'text-amber-600',
-                            'needs-config': 'text-slate-400',
-                          };
-                          return <SectionIcon className={`w-4 h-4 flex-shrink-0 ${statusColors[status] || 'text-slate-400'}`} />;
-                        })()}
+                        {/* Status dot */}
+                        <StatusDot status={status} />
+
+                        {/* Sub-icon */}
+                        <div
+                          className="flex items-center justify-center flex-shrink-0 rounded-md"
+                          style={{
+                            width: 26,
+                            height: 26,
+                            backgroundColor: section.icon
+                              ? groupIconStyle.bg
+                              : 'var(--color-background-secondary, #f1f5f9)',
+                          }}
+                        >
+                          <SectionIcon
+                            style={{
+                              width: 14,
+                              height: 14,
+                              color: section.icon ? groupIconStyle.fg : '#64748b',
+                            }}
+                          />
+                        </div>
 
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm text-slate-800">
@@ -354,12 +403,13 @@ export default function AdviserSOATemplate() {
                           )}
                         </div>
 
+                        {/* Tag pills */}
                         <div className="flex items-center gap-1.5 flex-shrink-0">
-                          <MiniBadge label="Prompt" active={hasPrompt} />
-                          <MiniBadge label="Example" active={hasExample} />
-                          <MiniBadge
+                          <TagPill label="Prompt" variant={hasPrompt ? 'prompt' : 'prompt-off'} />
+                          <TagPill label="Example" variant={hasExample ? 'example' : 'example-off'} />
+                          <TagPill
                             label={feedCount > 0 ? `${feedCount} feeds` : 'Feed'}
-                            active={feedCount > 0}
+                            variant={feedCount > 0 ? 'feed' : 'feed-off'}
                           />
                         </div>
                       </div>
@@ -382,6 +432,7 @@ export default function AdviserSOATemplate() {
           />
         </div>
       )}
+    </div>
     </div>
   );
 }
