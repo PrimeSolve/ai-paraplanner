@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import ExampleSOALibrary from '@/components/soa/ExampleSOALibrary';
 import TemplateLibrary from '@/components/soa/TemplateLibrary';
+import SOATemplateStylingPanel from '@/components/SOATemplateStylingPanel';
 import {
   DEFAULT_SECTION_GROUPS,
   getSectionStatus,
@@ -78,6 +79,7 @@ export default function AdviserSOATemplate() {
   const [expandedGroups, setExpandedGroups] = useState([]);
   const [effectiveSections, setEffectiveSections] = useState([]);
   const [viewingTemplate, setViewingTemplate] = useState(null);
+  const [settingsPanelTemplateId, setSettingsPanelTemplateId] = useState(null);
 
   useEffect(() => {
     loadInitialData();
@@ -204,10 +206,18 @@ export default function AdviserSOATemplate() {
           onView={viewTemplateDetail}
           onDuplicate={viewTemplateDetail}
           onDelete={() => {}}
+          onStylingSettings={(tmpl) => setSettingsPanelTemplateId(tmpl.id)}
           level="adviser"
           canCreate={canOverride}
           loading={loadingLibrary}
         />
+
+        {settingsPanelTemplateId && (
+          <SOATemplateStylingPanel
+            templateId={settingsPanelTemplateId}
+            onClose={() => setSettingsPanelTemplateId(null)}
+          />
+        )}
 
         {/* Example SOA Library */}
         {user && (

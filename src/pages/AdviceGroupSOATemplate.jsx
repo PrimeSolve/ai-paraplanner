@@ -25,6 +25,7 @@ import SectionConfigEditor from '@/components/soa/SectionConfigEditor';
 import ExampleSOALibrary from '@/components/soa/ExampleSOALibrary';
 import ClairePanel from '@/components/soa/ClairePanel';
 import TemplateLibrary from '@/components/soa/TemplateLibrary';
+import SOATemplateStylingPanel from '@/components/SOATemplateStylingPanel';
 import {
   DEFAULT_SECTION_GROUPS,
   getSectionStatus,
@@ -79,6 +80,7 @@ export default function AdviceGroupSOATemplate() {
   const [adminSections, setAdminSections] = useState(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
+  const [settingsPanelTemplateId, setSettingsPanelTemplateId] = useState(null);
   const [overrides, setOverrides] = useState({});
   const [claireOpen, setClaireOpen] = useState(false);
   const [claireSectionStates, setClaireSectionStates] = useState({});
@@ -460,9 +462,17 @@ export default function AdviceGroupSOATemplate() {
           }}
           onNewFromDefault={handleNewFromDefault}
           onNewFromScratch={handleNewFromScratch}
+          onStylingSettings={(tmpl) => setSettingsPanelTemplateId(tmpl.id)}
           level="advice_group"
           loading={loadingLibrary}
         />
+
+        {settingsPanelTemplateId && (
+          <SOATemplateStylingPanel
+            templateId={settingsPanelTemplateId}
+            onClose={() => setSettingsPanelTemplateId(null)}
+          />
+        )}
       </div>
     );
   }

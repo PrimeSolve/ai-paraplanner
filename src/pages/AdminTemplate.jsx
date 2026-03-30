@@ -21,6 +21,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import SectionConfigEditor from '@/components/soa/SectionConfigEditor';
 import ClairePanel from '@/components/soa/ClairePanel';
 import TemplateLibrary from '@/components/soa/TemplateLibrary';
+import SOATemplateStylingPanel from '@/components/SOATemplateStylingPanel';
 import {
   DEFAULT_SECTION_GROUPS,
   getSectionStatus,
@@ -76,6 +77,7 @@ export default function AdminTemplate() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [claireOpen, setClaireOpen] = useState(false);
+  const [settingsPanelTemplateId, setSettingsPanelTemplateId] = useState(null);
   const [claireSectionStates, setClaireSectionStates] = useState({});
   const [claireNewSections, setClaireNewSections] = useState([]);
   const [templateName, setTemplateName] = useState('');
@@ -559,9 +561,17 @@ export default function AdminTemplate() {
             setTimeout(() => setClaireOpen(true), 100);
           }}
           onNewFromScratch={handleNewFromScratch}
+          onStylingSettings={(tmpl) => setSettingsPanelTemplateId(tmpl.id)}
           level="admin"
           loading={loadingLibrary}
         />
+
+        {settingsPanelTemplateId && (
+          <SOATemplateStylingPanel
+            templateId={settingsPanelTemplateId}
+            onClose={() => setSettingsPanelTemplateId(null)}
+          />
+        )}
       </div>
     );
   }
