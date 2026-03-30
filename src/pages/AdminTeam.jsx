@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import axiosInstance from '@/api/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { formatDate, formatRelativeDate } from '../utils/dateUtils';
@@ -7,17 +8,18 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Plus, 
-  Search, 
-  ChevronDown, 
-  Users, 
-  Shield, 
-  FileText, 
-  CheckCircle, 
+import {
+  Plus,
+  Search,
+  ChevronDown,
+  Users,
+  Shield,
+  FileText,
+  CheckCircle,
   Send,
   X,
-  MoreVertical
+  MoreVertical,
+  Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -40,10 +42,10 @@ export default function AdminTeam() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteName, setInviteName] = useState('');
-  const [tempPassword, setTempPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState('user');
   const [inviting, setInviting] = useState(false);
-  const [successCredentials, setSuccessCredentials] = useState(null);
+  const [emailError, setEmailError] = useState('');
+  const [nameError, setNameError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -110,31 +112,33 @@ export default function AdminTeam() {
     }
   };
 
+  const validateForm = () => {
+    let valid = true;
+    setEmailError('');
+    setNameError('');
+
+    if (!inviteEmail.trim()) {
+      setEmailError('Email is required');
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteEmail.trim())) {
+      setEmailError('Please enter a valid email address');
+      valid = false;
+    }
+
+    if (!inviteName.trim()) {
+      setNameError('Full name is required');
+      valid = false;
+    }
+
+    return valid;
+  };
+
   const handleSaveMember = async () => {
-    try {
-      console.log('Step 1: Function started');
-      console.log('Email:', inviteEmail);
-      console.log('Password:', tempPassword);
-      console.log('Name:', inviteName);
-      console.log('Role:', selectedRole);
-      
-      if (!inviteEmail) {
-        console.log('Step 2: No email - showing error');
-        toast.error('Please enter an email address');
-        return;
-      }
+    if (!validateForm()) return;
 
-      if (!editingMember && !tempPassword) {
-        console.log('Step 3: No password - showing error');
-        toast.error('Please enter a temporary password');
-        return;
-      }
-
-      console.log('Step 4: Validation passed, setting inviting=true');
-      setInviting(true);
-
-      if (editingMember) {
-        console.log('Step 5a: Updating existing member');
+    if (editingMember) {
+      try {
+        setInviting(true);
         await base44.entities.Admin.update(editingMember.id, {
           email: inviteEmail,
           first_name: inviteName.split(' ')[0] || '',
@@ -142,72 +146,43 @@ export default function AdminTeam() {
         });
         toast.success('Team member updated');
         setShowInviteModal(false);
-        setInviting(false);
-      } else {
-        console.log('Step 5b: Creating new member');
-        console.log('Step 6: Calling base44.auth.register...');
-        console.log('Parameters:', { email: inviteEmail, password: tempPassword, full_name: inviteName });
-        
-        const registerResult = await base44.auth.register({
-          email: inviteEmail,
-          password: tempPassword,
-          full_name: inviteName
-        });
-
-        console.log('Step 7: Registration successful! Result:', registerResult);
-        
-        // Auto-verify the user so they can log in immediately
-        console.log('Step 7a: Verifying user with OTP...');
-        await new Promise(resolve => setTimeout(resolve, 500)); // Wait for OTP to be set
-        
-        const users = await base44.entities.User.filter({ email: inviteEmail });
-        console.log('Found users:', users.length);
-        if (users.length > 0) {
-          const user = users[0];
-          console.log('OTP code:', user.otp_code);
-          
-          // Use verifyOtp to mark user as verified
-          if (user.otp_code) {
-            try {
-              await base44.auth.verifyOtp({
-                email: inviteEmail,
-                otpCode: user.otp_code
-              });
-              console.log('User verified via OTP');
-            } catch (verifyError) {
-              console.error('OTP verification failed:', verifyError);
-            }
-          }
-        } else {
-          console.log('ERROR: No user found with email:', inviteEmail);
-        }
-        
-        console.log('Step 8: Creating Admin record...');
-        
-        await base44.entities.Admin.create({
-          email: inviteEmail,
-          first_name: inviteName.split(' ')[0] || '',
-          last_name: inviteName.split(' ').slice(1).join(' ') || '',
-          status: 'pending',
-          user_type: selectedRole === 'admin' ? 'admin' : 'paraplanner'
-        });
-
-        console.log('Step 9: Admin record created, showing success');
-        setSuccessCredentials({ email: inviteEmail, password: tempPassword });
+        setInviteEmail('');
+        setInviteName('');
+        setSelectedRole('user');
+        setEditingMember(null);
+        await loadTeam();
+      } catch (error) {
+        toast.error('Something went wrong. Please try again.');
+      } finally {
         setInviting(false);
       }
+      return;
+    }
 
-      console.log('Step 10: Clearing form and reloading team');
+    try {
+      setInviting(true);
+      setEmailError('');
+
+      await axiosInstance.post('/users', {
+        email: inviteEmail.trim(),
+        fullName: inviteName.trim(),
+        role: selectedRole === 'admin' ? 'Admin' : 'Paraplanner'
+      });
+
+      setShowInviteModal(false);
+      toast.success('Team member created successfully');
       setInviteEmail('');
       setInviteName('');
-      setTempPassword('');
       setSelectedRole('user');
       setEditingMember(null);
       await loadTeam();
-      console.log('Step 11: Complete!');
     } catch (error) {
-      console.error('ERROR in handleSaveMember:', error);
-      toast.error('Error: ' + error.message);
+      if (error.response?.status === 400) {
+        setEmailError('A team member with this email already exists');
+      } else {
+        toast.error('Something went wrong. Please try again.');
+      }
+    } finally {
       setInviting(false);
     }
   };
@@ -472,53 +447,18 @@ export default function AdminTeam() {
       <Dialog open={showInviteModal} onOpenChange={(open) => {
         if (!open) {
           setShowInviteModal(false);
-          setSuccessCredentials(null);
           setInviting(false);
+          setEmailError('');
+          setNameError('');
         }
       }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-[#0f172a]">
-              {successCredentials ? '✓ Team Member Created' : editingMember ? 'Edit Team Member' : 'Add Team Member'}
+              {editingMember ? 'Edit Team Member' : 'Add Team Member'}
             </DialogTitle>
           </DialogHeader>
 
-          {successCredentials ? (
-            <div className="flex flex-col py-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 mx-auto">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-              <p className="text-center text-[#0f172a] font-medium mb-4">
-                Account created successfully!
-              </p>
-              
-              <div className="bg-slate-50 rounded-lg p-4 space-y-3 mb-4">
-                <div>
-                  <label className="text-xs font-semibold text-[#64748b] uppercase">Email</label>
-                  <p className="text-sm text-[#0f172a] font-mono">{successCredentials.email}</p>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-[#64748b] uppercase">Temporary Password</label>
-                  <p className="text-sm text-[#0f172a] font-mono">{successCredentials.password}</p>
-                </div>
-              </div>
-
-              <p className="text-xs text-[#64748b] text-center mb-4">
-                Share these credentials with the new team member. They can change their password after logging in.
-              </p>
-
-              <Button 
-                onClick={() => {
-                  setShowInviteModal(false);
-                  setSuccessCredentials(null);
-                }}
-                className="bg-[#3b82f6] hover:bg-[#2563eb]"
-              >
-                Done
-              </Button>
-            </div>
-          ) : (
-            <>
               <div className="space-y-5 py-4">
                 <div>
                   <label className="text-sm font-medium text-[#0f172a] mb-2 block">
@@ -528,14 +468,19 @@ export default function AdminTeam() {
                     type="email"
                     placeholder="colleague@company.com"
                     value={inviteEmail}
+                    className={emailError ? 'border-red-500' : ''}
                     onChange={(e) => {
-                      console.log('Email input onChange fired, value:', e.target.value);
                       setInviteEmail(e.target.value);
+                      if (emailError) setEmailError('');
                     }}
                   />
-                  <p className="text-xs text-[#64748b] mt-1.5">
-                    The team member will be created and you can send a welcome email separately
-                  </p>
+                  {emailError ? (
+                    <p className="text-xs text-red-500 mt-1.5">{emailError}</p>
+                  ) : (
+                    <p className="text-xs text-[#64748b] mt-1.5">
+                      The team member will be created and you can send a welcome email separately
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -546,26 +491,16 @@ export default function AdminTeam() {
                     type="text"
                     placeholder="Enter their full name"
                     value={inviteName}
-                    onChange={(e) => setInviteName(e.target.value)}
+                    className={nameError ? 'border-red-500' : ''}
+                    onChange={(e) => {
+                      setInviteName(e.target.value);
+                      if (nameError) setNameError('');
+                    }}
                   />
+                  {nameError && (
+                    <p className="text-xs text-red-500 mt-1.5">{nameError}</p>
+                  )}
                 </div>
-
-                {!editingMember && (
-                  <div>
-                    <label className="text-sm font-medium text-[#0f172a] mb-2 block">
-                      Temporary Password
-                    </label>
-                    <Input
-                      type="text"
-                      placeholder="Set a temporary password"
-                      value={tempPassword}
-                      onChange={(e) => setTempPassword(e.target.value)}
-                    />
-                    <p className="text-xs text-[#64748b] mt-1.5">
-                      You'll share this with the team member so they can log in
-                    </p>
-                  </div>
-                )}
 
                 <div>
                   <label className="text-sm font-medium text-[#0f172a] mb-3 block">
@@ -622,24 +557,28 @@ export default function AdminTeam() {
               </div>
 
               <div className="flex justify-end gap-3 pt-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
+                  disabled={inviting}
                   onClick={() => {
                     setShowInviteModal(false);
                     setEditingMember(null);
+                    setEmailError('');
+                    setNameError('');
                   }}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  onClick={() => {
-                    handleSaveMember();
-                  }}
-                  disabled={inviting || !inviteEmail || (!editingMember && !tempPassword)}
+                <Button
+                  onClick={handleSaveMember}
+                  disabled={inviting}
                   className="bg-[#3b82f6] hover:bg-[#2563eb]"
                 >
                   {inviting ? (
-                    'Creating...'
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
                   ) : editingMember ? (
                     'Save Changes'
                   ) : (
@@ -650,8 +589,6 @@ export default function AdminTeam() {
                   )}
                 </Button>
               </div>
-            </>
-          )}
         </DialogContent>
       </Dialog>
 
