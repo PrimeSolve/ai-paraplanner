@@ -10,6 +10,7 @@ import {
   ArrowRight,
   Star,
   Share2,
+  Settings2,
 } from 'lucide-react';
 import { countConfigured } from '@/utils/soaTemplateDefaults';
 
@@ -35,6 +36,7 @@ export default function TemplateCard({
   onDuplicate,
   onDelete,
   onShare,
+  onStylingSettings,
   isDefault = false,
   isActive = false,
   level = 'advice_group',
@@ -219,6 +221,20 @@ export default function TemplateCard({
             </Button>
           </>
         )}
+
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
+
+        {/* Settings cog */}
+        <Button
+          size="sm"
+          variant="ghost"
+          className="border border-indigo-300 bg-indigo-50 hover:bg-indigo-100 text-indigo-600"
+          onClick={() => onStylingSettings?.(template)}
+          title="Global styling settings"
+        >
+          <Settings2 className="w-3.5 h-3.5" />
+        </Button>
       </div>
     </div>
   );
