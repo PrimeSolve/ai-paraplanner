@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { getIconComponent } from '@/components/IconPicker';
+import { FileText as DefaultSectionIcon } from 'lucide-react';
 import SectionConfigEditor from '@/components/soa/SectionConfigEditor';
 import ExampleSOALibrary from '@/components/soa/ExampleSOALibrary';
 import ClairePanel from '@/components/soa/ClairePanel';
@@ -314,7 +316,7 @@ export default function AdviceGroupSOATemplate() {
         ...group,
         sections: group.sections.map((s) =>
           s.id === sectionId
-            ? { ...s, prompt: config.prompt, example_content: config.example_content, data_feeds: config.data_feeds }
+            ? { ...s, icon: config.icon, prompt: config.prompt, example_content: config.example_content, data_feeds: config.data_feeds }
             : s
         ),
       }))
@@ -666,13 +668,22 @@ export default function AdviceGroupSOATemplate() {
                                             <GripVertical className="w-4 h-4 text-slate-300" />
                                           </div>
 
-                                          {claireIndicator === 'mapped' || claireIndicator === 'populated' ? (
-                                            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-green-500" />
-                                          ) : claireIndicator === 'gap' ? (
-                                            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-amber-500" />
-                                          ) : (
-                                            <StatusDot status={status} />
-                                          )}
+                                          {(() => {
+                                            const SectionIcon = getIconComponent(section.icon) || DefaultSectionIcon;
+                                            const statusColors = {
+                                              configured: 'text-green-600',
+                                              auto: 'text-blue-600',
+                                              partial: 'text-amber-600',
+                                              'needs-config': 'text-slate-400',
+                                            };
+                                            const iconColor =
+                                              claireIndicator === 'mapped' || claireIndicator === 'populated'
+                                                ? 'text-green-600'
+                                                : claireIndicator === 'gap'
+                                                ? 'text-amber-600'
+                                                : (statusColors[status] || 'text-slate-400');
+                                            return <SectionIcon className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />;
+                                          })()}
 
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">

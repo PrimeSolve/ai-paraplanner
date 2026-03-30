@@ -19,6 +19,7 @@ import {
 import { Save, X, Upload, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import DataFeedPicker from './DataFeedPicker';
+import IconPicker from '@/components/IconPicker';
 import { OUTPUT_FORMATS, TONE_OPTIONS } from '@/utils/soaTemplateDefaults';
 
 export default function SectionConfigEditor({
@@ -32,6 +33,7 @@ export default function SectionConfigEditor({
   const [dataFeeds, setDataFeeds] = useState([]);
   const [sectionLabel, setSectionLabel] = useState('');
   const [sectionDesc, setSectionDesc] = useState('');
+  const [icon, setIcon] = useState('');
   const [activeTab, setActiveTab] = useState('prompt');
   const fileInputRef = useRef(null);
 
@@ -47,6 +49,7 @@ export default function SectionConfigEditor({
       setDataFeeds(section.data_feeds || []);
       setSectionLabel(section.label || '');
       setSectionDesc(section.desc || '');
+      setIcon(section.icon || '');
       setActiveTab('prompt');
     }
   }, [section]);
@@ -57,6 +60,7 @@ export default function SectionConfigEditor({
     onSave(section.id, {
       label: sectionLabel,
       desc: sectionDesc,
+      icon,
       prompt,
       example_content: exampleContent,
       data_feeds: dataFeeds,
@@ -109,6 +113,9 @@ export default function SectionConfigEditor({
               className="text-sm text-slate-500 w-full border border-slate-300 rounded-lg px-3 py-1.5 bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none mt-1"
             />
           </DialogDescription>
+          <div className="mt-2">
+            <IconPicker value={icon} onChange={setIcon} />
+          </div>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">

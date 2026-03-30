@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Lock,
   Pencil,
+  ScrollText,
   Copy,
   Trash2,
   Eye,
@@ -12,6 +13,7 @@ import {
   Share2,
   Settings2,
 } from 'lucide-react';
+import { getIconComponent } from '@/components/IconPicker';
 import { countConfigured } from '@/utils/soaTemplateDefaults';
 
 /**
@@ -87,9 +89,10 @@ export default function TemplateCard({
         }`}>
           {isDefault ? (
             <Lock className="w-5 h-5 text-indigo-600" />
-          ) : (
-            <Pencil className="w-5 h-5 text-slate-500" />
-          )}
+          ) : (() => {
+            const TemplateIcon = getIconComponent(template.icon) || ScrollText;
+            return <TemplateIcon className="w-5 h-5 text-slate-500" />;
+          })()}
         </div>
         {isActive && (
           <Badge className="bg-green-100 text-green-700 border-green-200 text-xs font-semibold">
