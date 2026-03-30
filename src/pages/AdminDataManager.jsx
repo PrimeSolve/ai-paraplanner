@@ -131,7 +131,7 @@ const FundOptionsPanel = ({ fundId }) => {
               <td style={{ padding: '10px 14px', fontSize: '13px', color: colors.text }}>{opt.return3yr != null ? `${opt.return3yr}%` : '-'}</td>
               <td style={{ padding: '10px 14px', fontSize: '13px', color: colors.text }}>{opt.return5yr != null ? `${opt.return5yr}%` : '-'}</td>
               <td style={{ padding: '10px 14px', fontSize: '13px', color: colors.text }}>{opt.return10yr != null ? `${opt.return10yr}%` : '-'}</td>
-              <td style={{ padding: '10px 14px', fontSize: '13px', color: colors.text }}>{opt.iCR != null ? `${opt.iCR}%` : '-'}</td>
+              <td style={{ padding: '10px 14px', fontSize: '13px', color: colors.text }}>{opt.icr != null ? `${opt.icr}%` : '-'}</td>
             </tr>
           ))}
         </tbody>
@@ -152,7 +152,10 @@ export default function AdminDataManager() {
     setError(null);
 
     axiosInstance.get('/funds')
-      .then((res) => setFunds(res.data))
+      .then((res) => {
+        console.log('[AdminDataManager] funds response:', res.data);
+        setFunds(res.data);
+      })
       .catch((err) => setError(err.response?.data?.message || 'Failed to load funds.'))
       .finally(() => setLoading(false));
   }, []);
@@ -163,7 +166,7 @@ export default function AdminDataManager() {
     return funds.filter(
       (f) =>
         (f.provider || '').toLowerCase().includes(term) ||
-        (f.schemeName || '').toLowerCase().includes(term)
+        (f.fundType || '').toLowerCase().includes(term)
     );
   }, [funds, searchTerm]);
 
@@ -196,7 +199,7 @@ export default function AdminDataManager() {
             </span>
             <input
               type="text"
-              placeholder="Search by provider or scheme name..."
+              placeholder="Search by provider or fund type..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
@@ -255,7 +258,7 @@ export default function AdminDataManager() {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ backgroundColor: colors.background }}>
-                    {['Provider', 'Scheme Name', 'Fund Type'].map((col) => (
+                    {['Provider', 'Fund Type', 'AUM', 'Chant West'].map((col) => (
                       <th key={col} style={{
                         padding: '12px 16px',
                         textAlign: 'left',
@@ -274,7 +277,7 @@ export default function AdminDataManager() {
                 <tbody>
                   {filteredFunds.length === 0 ? (
                     <tr>
-                      <td colSpan={3} style={{ padding: '40px', textAlign: 'center', color: colors.textMuted, fontSize: '14px' }}>
+                      <td colSpan={4} style={{ padding: '40px', textAlign: 'center', color: colors.textMuted, fontSize: '14px' }}>
                         {searchTerm ? 'No funds match your search.' : 'No funds found.'}
                       </td>
                     </tr>
@@ -299,9 +302,6 @@ export default function AdminDataManager() {
                           <td style={{ padding: '14px 16px', fontSize: '14px', color: colors.text, fontWeight: '500' }}>
                             {fund.provider}
                           </td>
-                          <td style={{ padding: '14px 16px', fontSize: '14px', color: colors.text }}>
-                            {fund.schemeName}
-                          </td>
                           <td style={{ padding: '14px 16px', fontSize: '14px' }}>
                             <span style={{
                               padding: '4px 10px',
@@ -314,10 +314,16 @@ export default function AdminDataManager() {
                               {fund.fundType}
                             </span>
                           </td>
+                          <td style={{ padding: '14px 16px', fontSize: '14px', color: colors.text }}>
+                            {fund.aum || '—'}
+                          </td>
+                          <td style={{ padding: '14px 16px', fontSize: '14px', color: colors.text }}>
+                            {fund.chantWestRating || '—'}
+                          </td>
                         </tr>
                         {expandedFundId === fund.id && (
                           <tr>
-                            <td colSpan={3} style={{ padding: 0, backgroundColor: colors.background }}>
+                            <td colSpan={4} style={{ padding: 0, backgroundColor: colors.background }}>
                               <FundOptionsPanel fundId={fund.id} />
                             </td>
                           </tr>
