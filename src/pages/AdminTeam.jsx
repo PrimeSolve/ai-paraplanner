@@ -15,7 +15,6 @@ import {
   Users,
   Shield,
   FileText,
-  CheckCircle,
   Send,
   X,
   MoreVertical,
@@ -65,6 +64,14 @@ export default function AdminTeam() {
     return () => window.removeEventListener('openAddMemberDialog', handleOpenDialog);
   }, []);
 
+  const mapRole = (roleValue) => {
+    if (roleValue === 0 || roleValue === '0' || roleValue === 'admin' || roleValue === 'platformadmin') return 'admin';
+    if (roleValue === 1 || roleValue === '1' || roleValue === 'tenantadmin' || roleValue === 'advicegroup' || roleValue === 'advice_group') return 'advice_group';
+    if (roleValue === 2 || roleValue === '2' || roleValue === 3 || roleValue === '3' || roleValue === 'adviser' || roleValue === 'advisor' || roleValue === 'supportstaff') return 'adviser';
+    if (roleValue === 4 || roleValue === '4' || roleValue === 'client') return 'client';
+    return 'user';
+  };
+
   const loadTeam = async () => {
     try {
       const [users, admins] = await Promise.all([
@@ -72,18 +79,21 @@ export default function AdminTeam() {
         base44.entities.Admin.list('-created_date', 100)
       ]);
 
+      console.log('[AdminTeam] Raw API response - admins:', admins);
+      console.log('[AdminTeam] Raw API response - users:', users);
+
       // Merge User and Admin data
       const teamWithStats = admins.map(admin => {
         const user = users.find(u => u.id === admin.user_id);
+        console.log('[AdminTeam] admin record:', admin, '| matched user:', user);
+        const rawRole = admin.role ?? user?.role;
         return {
           id: admin.id,
           email: admin.email,
           full_name: user?.full_name || `${admin.first_name || ''} ${admin.last_name || ''}`.trim() || 'No name',
-          role: user?.role || 'user',
+          role: mapRole(rawRole),
           status: admin.status || (user ? 'active' : 'pending'),
-          created_date: admin.created_date,
-          soasThisMonth: Math.floor(Math.random() * 20),
-          soasTotal: Math.floor(Math.random() * 100) + 20
+          created_at: admin.created_at || user?.created_at,
         };
       });
 
@@ -222,15 +232,14 @@ export default function AdminTeam() {
   const stats = {
     total: team.length,
     admins: team.filter(m => m.role === 'admin').length,
-    users: team.filter(m => m.role === 'user').length,
-    soasThisMonth: team.reduce((sum, m) => sum + (m.soasThisMonth || 0), 0)
+    users: team.filter(m => m.role !== 'admin').length,
   };
 
   return (
     <div className="py-6 px-8">
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-3 gap-6 mb-8">
           <Card className="bg-gradient-to-br from-[#22d3ee] to-[#06b6d4] text-white p-6 border-0">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -261,15 +270,6 @@ export default function AdminTeam() {
             <div className="text-sm text-[#64748b]">Paraplanners</div>
           </Card>
 
-          <Card className="bg-white p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-[#10b981]/10 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-[#10b981]" />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-[#0f172a] mb-1">{stats.soasThisMonth}</div>
-            <div className="text-sm text-[#64748b]">SOAs This Month</div>
-          </Card>
         </div>
 
         {/* Team Table */}
@@ -329,9 +329,6 @@ export default function AdminTeam() {
                     Status
                   </th>
                   <th className="text-left py-4 px-6 text-xs font-semibold text-[#64748b] uppercase tracking-wider">
-                    SOAs Completed
-                  </th>
-                  <th className="text-left py-4 px-6 text-xs font-semibold text-[#64748b] uppercase tracking-wider">
                     Joined
                   </th>
                   <th className="text-left py-4 px-6 text-xs font-semibold text-[#64748b] uppercase tracking-wider">
@@ -354,10 +351,14 @@ export default function AdminTeam() {
                       </div>
                     </td>
                     <td className="py-4 px-6">
-                      <Badge 
+                      <Badge
                         className={
-                          member.role === 'admin' 
-                            ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] border-0' 
+                          member.role === 'admin'
+                            ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] border-0'
+                            : member.role === 'adviser'
+                            ? 'bg-[#10b981]/10 text-[#10b981] border-0'
+                            : member.role === 'advice_group'
+                            ? 'bg-[#f59e0b]/10 text-[#f59e0b] border-0'
                             : 'bg-[#3b82f6]/10 text-[#3b82f6] border-0'
                         }
                       >
@@ -365,6 +366,16 @@ export default function AdminTeam() {
                           <>
                             <Shield className="w-3 h-3 mr-1" />
                             Admin
+                          </>
+                        ) : member.role === 'adviser' ? (
+                          <>
+                            <FileText className="w-3 h-3 mr-1" />
+                            Adviser
+                          </>
+                        ) : member.role === 'advice_group' ? (
+                          <>
+                            <Users className="w-3 h-3 mr-1" />
+                            Advice Group
                           </>
                         ) : (
                           <>
@@ -386,21 +397,11 @@ export default function AdminTeam() {
                       )}
                     </td>
                     <td className="py-4 px-6">
-                      <div>
-                        <div className="font-semibold text-[#0f172a]">{member.soasThisMonth || 0}</div>
-                        <div className="text-xs text-[#64748b]">THIS MONTH</div>
-                      </div>
-                      <div className="mt-1">
-                        <div className="font-semibold text-[#0f172a]">{member.soasTotal || 0}</div>
-                        <div className="text-xs text-[#64748b]">TOTAL</div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6">
                       <div className="text-sm text-[#0f172a]">
-                        {formatDate(member.created_date)}
+                        {formatDate(member.created_at)}
                       </div>
                       <div className="text-xs text-[#64748b]">
-                        {formatRelativeDate(member.created_date)}
+                        {formatRelativeDate(member.created_at)}
                       </div>
                     </td>
                     <td className="py-4 px-6">
