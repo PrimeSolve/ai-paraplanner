@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginRedirect } from '@/auth/msalInstance';
 import { ChevronDown } from 'lucide-react';
+import NeuralBackground from '../components/NeuralBackground';
+import Hero from '../components/Hero';
 
 export default function PublicHome() {
   const navigate = useNavigate();
@@ -14,58 +16,40 @@ export default function PublicHome() {
   }, []);
 
   return (
-    <div className="font-['Poppins']">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
-
-        :root {
-          --navy-deep: #0a0f1a;
-          --navy: #0f172a;
-          --navy-light: #1e293b;
-          --slate: #334155;
-          --slate-light: #64748b;
-          --cyan-glow: #22d3ee;
-          --blue-electric: #3b82f6;
-          --blue-deep: #1d4ed8;
-          --coral: #f97316;
-          --coral-light: #fb923c;
-          --coral-dark: #ea580c;
-          --white: #ffffff;
-          --off-white: #f8fafc;
-          --grey-light: #e2e8f0;
-          --grey: #94a3b8;
-          --success: #10b981;
-        }
-      `}</style>
+    <div style={{ background: '#060D1A', minHeight: '100vh', color: '#F0F4FF', fontFamily: "'DM Sans', sans-serif" }}>
+      <NeuralBackground opacity={0.4} />
 
       {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'py-3 shadow-lg' : 'py-4'} bg-white/95 backdrop-blur-md border-b border-black/5`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'py-3' : 'py-4'}`} style={{ background: 'rgba(6,13,26,0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-[1400px] mx-auto px-12 flex items-center justify-between">
           <a href="#" className="flex items-center gap-3 no-underline">
-            <div className="w-[42px] h-[42px] bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] rounded-xl flex items-center justify-center font-bold text-white text-sm shadow-lg">
+            <div className="w-[42px] h-[42px] rounded-xl flex items-center justify-center font-bold text-[#060D1A] text-sm shadow-lg" style={{ background: 'linear-gradient(135deg, #00C9B1, #00A693)' }}>
               AI
             </div>
-            <span className="font-['Playfair_Display'] text-[22px] font-semibold text-[#0f172a]">
-              AI <span className="text-[#3b82f6]">Paraplanner</span>
+            <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 22, fontWeight: 600, color: '#F0F4FF' }}>
+              AI <span style={{ color: '#00C9B1' }}>Paraplanner</span>
             </span>
           </a>
 
           <div className="flex items-center gap-9">
-            <a href="#how-it-works" className="text-[15px] font-medium text-[#334155] hover:text-[#0f172a] no-underline relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-[#3b82f6] after:transition-all hover:after:w-full">How It Works</a>
-            <a href="#features" className="text-[15px] font-medium text-[#334155] hover:text-[#0f172a] no-underline relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-[#3b82f6] after:transition-all hover:after:w-full">Features</a>
-            <a href="#pricing" className="text-[15px] font-medium text-[#334155] hover:text-[#0f172a] no-underline relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-[#3b82f6] after:transition-all hover:after:w-full">Pricing</a>
+            <a href="#how-it-works" className="text-[15px] font-medium no-underline transition-colors" style={{ color: 'rgba(176,196,222,0.65)' }}>How It Works</a>
+            <a href="#features" className="text-[15px] font-medium no-underline transition-colors" style={{ color: 'rgba(176,196,222,0.65)' }}>Features</a>
+            <a href="#avatar" className="text-[15px] font-medium no-underline transition-colors" style={{ color: 'rgba(176,196,222,0.65)' }}>AI Delivery</a>
+            <a href="#pricing" className="text-[15px] font-medium no-underline transition-colors" style={{ color: 'rgba(176,196,222,0.65)' }}>Pricing</a>
           </div>
 
           <div className="flex items-center gap-4">
             <button
               onClick={() => loginRedirect()}
-              className="px-6 py-3 rounded-[10px] text-[15px] font-semibold text-[#0f172a] bg-transparent border-2 border-[#e2e8f0] hover:border-[#0f172a] hover:bg-[#0f172a] hover:text-white transition-all cursor-pointer"
+              className="px-6 py-3 rounded-[10px] text-[15px] font-semibold transition-all cursor-pointer"
+              style={{ color: '#F0F4FF', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)' }}
             >
               Sign In
             </button>
             <button
               onClick={() => navigate('/Register')}
-              className="px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
+              className="px-6 py-3 rounded-[10px] text-[15px] font-semibold hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
+              style={{ color: '#060D1A', background: 'linear-gradient(135deg, #00C9B1, #00A693)' }}
             >
               Get Started
             </button>
@@ -74,72 +58,15 @@ export default function PublicHome() {
       </nav>
 
       {/* Hero Section */}
-      <section className="min-h-screen pt-[140px] pb-20 px-12 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#f0f4f8] via-[#e8eef5] to-[#dce5f0]" />
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #1d4ed8 1px, transparent 0)', backgroundSize: '40px 40px' }} />
-        <div className="max-w-[1400px] mx-auto grid grid-cols-2 gap-20 items-center relative z-10">
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="font-['Playfair_Display'] text-[60px] leading-[1.15] font-semibold mb-6">
-              <span className="text-[#0f172a]">Paraplanning that </span>
-              <span className="text-[#3b82f6]">scales</span>
-              <span className="text-[#0f172a]"> with your practice</span>
-            </h1>
-
-            <p className="text-[19px] text-[#0f172a] leading-[1.7] mb-9 max-w-[520px]">
-              AI handles the preparation. Humans ensure the quality. Your clients get advice they actually understand.
-            </p>
-
-            <div className="flex gap-4 mb-12">
-              <button
-                onClick={() => navigate('/Register')}
-                className="px-8 py-4 rounded-[12px] text-[17px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
-              >
-                Get Started
-              </button>
-              <a
-                href="#how-it-works"
-                className="px-8 py-4 rounded-[12px] text-[17px] font-semibold text-[#0f172a] bg-white border-2 border-[#e2e8f0] hover:border-[#0f172a] inline-flex items-center gap-2 no-underline transition-all"
-              >
-                See How It Works
-                <ChevronDown className="w-5 h-5" />
-              </a>
-            </div>
-
-            <div className="grid grid-cols-3 gap-8">
-              <div>
-                <div className="text-[36px] font-bold text-[#0f172a] mb-1">75%</div>
-                <div className="text-[15px] text-[#64748b]">Faster Fact Finds</div>
-              </div>
-              <div>
-                <div className="text-[36px] font-bold text-[#0f172a] mb-1">24hr</div>
-                <div className="text-[15px] text-[#64748b]">SOA Turnaround</div>
-              </div>
-              <div>
-                <div className="text-[36px] font-bold text-[#0f172a] mb-1">4+ hrs</div>
-                <div className="text-[15px] text-[#64748b]">Adviser Prep Time Saved</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative animate-in fade-in slide-in-from-right-4 duration-700 delay-300">
-            <div className="rounded-2xl overflow-hidden shadow-2xl">
-              <iframe
-                src="https://app.heygen.com/embed/67699df2c2294868a5b586c42f2fa217"
-                className="w-full aspect-video border-0"
-                allow="fullscreen"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+      <Hero />
 
       {/* How It Works Section */}
       <section id="how-it-works" className="py-24 relative overflow-hidden bg-[#0f172a]">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(135deg, #22d3ee 0%, transparent 50%, #3b82f6 100%)' }} />
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(135deg, #00C9B1 0%, transparent 50%, #3b82f6 100%)' }} />
         <div className="max-w-[1200px] mx-auto px-12 relative z-10">
           <div className="text-center mb-20">
-            <h2 className="font-['Playfair_Display'] text-[52px] font-semibold text-white mb-4">
-              How It <span className="text-[#22d3ee]">Works</span>
+            <h2 className="font-['Syne'] text-[52px] font-semibold text-white mb-4">
+              How It <span className="text-[#00C9B1]">Works</span>
             </h2>
             <p className="text-[19px] text-[#94a3b8] max-w-[700px] mx-auto">
               From fact find to advice delivery — a seamless journey powered by AI and backed by humans.
@@ -148,7 +75,7 @@ export default function PublicHome() {
 
           <div className="space-y-12 relative">
             {/* Center line */}
-            <div className="absolute left-1/2 top-[60px] bottom-[60px] w-[2px] bg-[#22d3ee] -translate-x-1/2" />
+            <div className="absolute left-1/2 top-[60px] bottom-[60px] w-[2px] bg-[#00C9B1] -translate-x-1/2" />
 
             {/* Step 1 */}
             <div className="grid grid-cols-2 gap-16 items-start relative">
@@ -158,13 +85,13 @@ export default function PublicHome() {
                   Send your client an AI-powered Fact Find. Smart pre-fill extracts data from documents while the AI assistant guides them through every section.
                 </p>
                 <div className="flex gap-2 justify-end flex-wrap">
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">AI-Powered</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Smart Pre-fill</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Mobile Friendly</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">AI-Powered</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Smart Pre-fill</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Mobile Friendly</span>
                 </div>
               </div>
               <div></div>
-              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">1</div>
+              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(0,201,177,0.6)] z-10">1</div>
             </div>
 
             {/* Step 2 */}
@@ -176,12 +103,12 @@ export default function PublicHome() {
                   Your AI paraplanner guides you through recommendations in real time. It prompts for missing details, validates your strategy, and ensures nothing slips through.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Real-time Guidance</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Smart Validation</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Nothing Missed</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Real-time Guidance</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Smart Validation</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Nothing Missed</span>
                 </div>
               </div>
-              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">2</div>
+              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(0,201,177,0.6)] z-10">2</div>
             </div>
 
             {/* Step 3 */}
@@ -192,13 +119,13 @@ export default function PublicHome() {
                   Powered by PrimeSolve's optimised modelling engine, AI generates a compliant, comprehensive Statement of Advice. Every document is reviewed by qualified paraplanners.
                 </p>
                 <div className="flex gap-2 justify-end flex-wrap">
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">PrimeSolve Engine</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Human Reviewed</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Compliant</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">PrimeSolve Engine</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Human Reviewed</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Compliant</span>
                 </div>
               </div>
               <div></div>
-              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">3</div>
+              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(0,201,177,0.6)] z-10">3</div>
             </div>
 
             {/* Step 4 */}
@@ -210,12 +137,12 @@ export default function PublicHome() {
                   Get your completed SOA in 24 hours. Choose PDF or Word for compliance records, plus interactive HTML for client engagement — you get all three. Review, refine, and deliver to your client.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">PDF Export</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Word Export</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#22d3ee] text-[13px] font-semibold rounded-full">Interactive HTML</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">PDF Export</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Word Export</span>
+                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Interactive HTML</span>
                 </div>
               </div>
-              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(34,211,238,0.6)] z-10">4</div>
+              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(0,201,177,0.6)] z-10">4</div>
             </div>
           </div>
         </div>
@@ -225,8 +152,8 @@ export default function PublicHome() {
       <section id="features" className="py-24 bg-gradient-to-br from-[#0a0f1a] to-[#0f172a]">
         <div className="max-w-[1200px] mx-auto px-12">
           <div className="text-center mb-16">
-            <h2 className="font-['Playfair_Display'] text-[52px] font-semibold text-white mb-4">
-              Breakthrough <span className="text-[#22d3ee]">Features</span>
+            <h2 className="font-['Syne'] text-[52px] font-semibold text-white mb-4">
+              Breakthrough <span className="text-[#00C9B1]">Features</span>
             </h2>
             <p className="text-[19px] text-[#94a3b8]">
               What makes AI Paraplanner different from everything else.
@@ -304,73 +231,74 @@ export default function PublicHome() {
       </section>
 
       {/* AI Avatar Section */}
-      <section id="avatar" className="py-24 bg-[#f8fafc]">
+      <section id="avatar" className="py-24" style={{ background: 'linear-gradient(135deg, #0a0f1a 0%, #0D1929 100%)' }}>
         <div className="max-w-[1200px] mx-auto px-12">
           <div className="grid grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="font-['Playfair_Display'] text-[48px] font-semibold text-[#0f172a] mb-4 leading-tight">
+              <h2 className="text-[48px] font-semibold text-white mb-4 leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
                 Your AI avatar.
               </h2>
-              <h3 className="font-['Playfair_Display'] text-[48px] font-semibold text-[#f97316] mb-6 leading-tight">
+              <h3 className="text-[48px] font-semibold mb-6 leading-tight" style={{ fontFamily: "'Syne', sans-serif", color: '#00C9B1' }}>
                 Explaining your advice.
               </h3>
-              <p className="text-[17px] text-[#334155] leading-relaxed mb-8">
+              <p className="text-[17px] leading-relaxed mb-8" style={{ color: 'rgba(176,196,222,0.65)' }}>
                 Imagine your client receiving their SOA as a beautiful, interactive HTML document. They click play, and a digital version of you walks them through every recommendation, every strategy, every fee.
               </p>
               <div className="space-y-4 mb-8">
                 <div className="flex items-start gap-3">
                   <div className="w-7 h-7 rounded-full bg-[#10b981] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">✓</div>
                   <div>
-                    <span className="text-[16px] font-bold text-[#0f172a]">Ask questions anytime</span>
-                    <span className="text-[16px] text-[#64748b]"> — The AI knows your SOA inside out</span>
+                    <span className="text-[16px] font-bold text-white">Ask questions anytime</span>
+                    <span className="text-[16px]" style={{ color: 'rgba(176,196,222,0.65)' }}> — The AI knows your SOA inside out</span>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-7 h-7 rounded-full bg-[#10b981] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">✓</div>
                   <div>
-                    <span className="text-[16px] font-bold text-[#0f172a]">Available 24/7</span>
-                    <span className="text-[16px] text-[#64748b]"> — Clients review advice on their schedule</span>
+                    <span className="text-[16px] font-bold text-white">Available 24/7</span>
+                    <span className="text-[16px]" style={{ color: 'rgba(176,196,222,0.65)' }}> — Clients review advice on their schedule</span>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-7 h-7 rounded-full bg-[#10b981] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">✓</div>
                   <div>
-                    <span className="text-[16px] font-bold text-[#0f172a]">Consistent messaging</span>
-                    <span className="text-[16px] text-[#64748b]"> — Every explanation is accurate and compliant</span>
+                    <span className="text-[16px] font-bold text-white">Consistent messaging</span>
+                    <span className="text-[16px]" style={{ color: 'rgba(176,196,222,0.65)' }}> — Every explanation is accurate and compliant</span>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-7 h-7 rounded-full bg-[#10b981] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">✓</div>
                   <div>
-                    <span className="text-[16px] font-bold text-[#0f172a]">Beautiful presentation</span>
-                    <span className="text-[16px] text-[#64748b]"> — Not PDF junk, but engaging HTML</span>
+                    <span className="text-[16px] font-bold text-white">Beautiful presentation</span>
+                    <span className="text-[16px]" style={{ color: 'rgba(176,196,222,0.65)' }}> — Not PDF junk, but engaging HTML</span>
                   </div>
                 </div>
               </div>
               <button
                 onClick={() => navigate('/Register')}
-                className="inline-block px-8 py-4 rounded-[12px] text-[17px] font-bold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
+                className="inline-block px-8 py-4 rounded-[12px] text-[17px] font-bold hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
+                style={{ color: '#060D1A', background: 'linear-gradient(135deg, #00C9B1, #00A693)' }}
               >
                 Get Started
               </button>
             </div>
             <div>
-              <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+              <div className="rounded-2xl shadow-2xl overflow-hidden" style={{ border: '1px solid rgba(0,201,177,0.2)', background: 'rgba(13,25,41,0.7)' }}>
                 {/* Chat Header */}
-                <div className="bg-gradient-to-r from-[#3b82f6] to-[#1d4ed8] p-4">
+                <div className="p-4" style={{ background: 'linear-gradient(135deg, rgba(0,201,177,0.2), rgba(30,136,229,0.2))', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                   <h3 className="text-white font-bold text-[17px]">AI Fact Find Assistant</h3>
-                  <p className="text-white/80 text-[14px]">Goals Discovery Session</p>
+                  <p className="text-[14px]" style={{ color: 'rgba(176,196,222,0.65)' }}>Goals Discovery Session</p>
                 </div>
 
                 {/* Chat Body */}
-                <div className="p-6 space-y-4 bg-slate-50">
+                <div className="p-6 space-y-4" style={{ background: 'rgba(0,0,0,0.15)' }}>
                   {/* Avatar Message 1 */}
                   <div className="flex gap-3 items-start">
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    <div className="w-11 h-11 rounded-full flex items-center justify-center text-[#060D1A] font-bold text-sm flex-shrink-0" style={{ background: 'linear-gradient(135deg, #00C9B1, #00A693)' }}>
                       AI
                     </div>
-                    <div className="bg-[#f8fafc] rounded-2xl rounded-tl-sm p-4 max-w-[75%]">
-                      <p className="text-[14px] text-slate-700 leading-relaxed">
+                    <div className="rounded-2xl rounded-tl-sm p-4 max-w-[75%]" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <p className="text-[14px] leading-relaxed" style={{ color: 'rgba(176,196,222,0.85)' }}>
                         "Hi Sarah, we have successfully captured your relevant financial data now. We are going to switch gears now and work together to define your lifestyle and financial goals. Ready to get started?"
                       </p>
                     </div>
@@ -378,23 +306,23 @@ export default function PublicHome() {
 
                   {/* User Message */}
                   <div className="flex gap-3 items-start justify-end">
-                    <div className="bg-gradient-to-r from-[#3b82f6] to-[#1d4ed8] rounded-2xl rounded-tr-sm p-4 max-w-[75%]">
-                      <p className="text-[14px] text-white leading-relaxed">
+                    <div className="rounded-2xl rounded-tr-sm p-4 max-w-[75%]" style={{ background: 'linear-gradient(135deg, #00C9B1, #00A693)' }}>
+                      <p className="text-[14px] leading-relaxed" style={{ color: '#060D1A' }}>
                         "Sure, ask me what you need to know."
                       </p>
                     </div>
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#f97316] to-[#ea580c] flex items-center justify-center text-white font-bold flex-shrink-0">
+                    <div className="w-11 h-11 rounded-full flex items-center justify-center font-bold flex-shrink-0" style={{ background: 'linear-gradient(135deg, #1E88E5, #1565C0)', color: '#F0F4FF' }}>
                       S
                     </div>
                   </div>
 
                   {/* Avatar Message 2 */}
                   <div className="flex gap-3 items-start">
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    <div className="w-11 h-11 rounded-full flex items-center justify-center text-[#060D1A] font-bold text-sm flex-shrink-0" style={{ background: 'linear-gradient(135deg, #00C9B1, #00A693)' }}>
                       AI
                     </div>
-                    <div className="bg-[#f8fafc] rounded-2xl rounded-tl-sm p-4 max-w-[75%]">
-                      <p className="text-[14px] text-slate-700 leading-relaxed">
+                    <div className="rounded-2xl rounded-tl-sm p-4 max-w-[75%]" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <p className="text-[14px] leading-relaxed" style={{ color: 'rgba(176,196,222,0.85)' }}>
                         "Great. We can see you have children currently in grade 5 and grade 3. Have you decided on where they might go to high school?"
                       </p>
                     </div>
@@ -410,8 +338,8 @@ export default function PublicHome() {
       <section id="pricing" className="py-24 bg-[#0f172a]">
         <div className="max-w-[1200px] mx-auto px-12">
           <div className="text-center mb-16">
-            <h2 className="font-['Playfair_Display'] text-[52px] font-semibold text-white mb-4">
-              Simple, transparent <span className="text-[#22d3ee]">pricing</span>
+            <h2 className="font-['Syne'] text-[52px] font-semibold text-white mb-4">
+              Simple, transparent <span className="text-[#00C9B1]">pricing</span>
             </h2>
             <p className="text-[19px] text-[#94a3b8]">
               Start with pay-as-you-go, upgrade when you're ready.
@@ -421,30 +349,30 @@ export default function PublicHome() {
           <div className="grid grid-cols-3 gap-8">
             {/* Tier 1 - Scaled Advice */}
             <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all">
-              <div className="text-sm font-bold text-[#22d3ee] uppercase tracking-wide mb-2">Scaled Advice</div>
+              <div className="text-sm font-bold text-[#00C9B1] uppercase tracking-wide mb-2">Scaled Advice</div>
               <div className="mb-6">
                 <span className="text-[48px] font-bold text-white">$395</span>
                 <div className="text-[#94a3b8] text-[15px]">per transaction</div>
               </div>
               <div className="space-y-3 mb-8">
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-[#e2e8f0]">AI Fact Find with pre-fill</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-[#e2e8f0]">AI SOA Request builder</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-[#e2e8f0]">Human paraplanner review</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-[#e2e8f0]">48-hour turnaround</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-[#e2e8f0]">PDF + Word + HTML delivery</span>
                 </div>
               </div>
@@ -457,38 +385,38 @@ export default function PublicHome() {
             </div>
 
             {/* Tier 2 - Comprehensive Advice (FEATURED) */}
-            <div className="bg-gradient-to-br from-[#22d3ee]/10 to-[#3b82f6]/10 border-2 border-[#22d3ee] rounded-2xl p-8 transform scale-105 shadow-[0_0_40px_rgba(34,211,238,0.3)] relative">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#22d3ee] to-[#3b82f6] text-[#0f172a] px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
+            <div className="bg-gradient-to-br from-[#00C9B1]/10 to-[#3b82f6]/10 border-2 border-[#00C9B1] rounded-2xl p-8 transform scale-105 shadow-[0_0_40px_rgba(0,201,177,0.3)] relative">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#00C9B1] to-[#3b82f6] text-[#0f172a] px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
                 Most Popular
               </div>
-              <div className="text-sm font-bold text-[#22d3ee] uppercase tracking-wide mb-2">Comprehensive Advice</div>
+              <div className="text-sm font-bold text-[#00C9B1] uppercase tracking-wide mb-2">Comprehensive Advice</div>
               <div className="mb-6">
                 <span className="text-[48px] font-bold text-white">$695</span>
                 <div className="text-[#94a3b8] text-[15px]">per transaction</div>
               </div>
               <div className="space-y-3 mb-8">
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-white font-medium">Everything in Tier 1</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-white">Custom AI avatar</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-white">SOA AI walkthroughs</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-white">Unlimited strategy recommendations</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-white">Unlimited cashflow models</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-white">Stress test report</span>
                 </div>
               </div>
@@ -502,30 +430,30 @@ export default function PublicHome() {
 
             {/* Tier 3 - Enterprise */}
             <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all">
-              <div className="text-sm font-bold text-[#22d3ee] uppercase tracking-wide mb-2">Enterprise</div>
+              <div className="text-sm font-bold text-[#00C9B1] uppercase tracking-wide mb-2">Enterprise</div>
               <div className="mb-6">
                 <span className="text-[48px] font-bold text-white">Custom</span>
                 <div className="text-[#94a3b8] text-[15px]">volume pricing</div>
               </div>
               <div className="space-y-3 mb-8">
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-[#e2e8f0]">For advice groups</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-[#e2e8f0]">Prepaid client packages</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-[#e2e8f0]">Volume discounts available</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-[#e2e8f0]">Dedicated support</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#22d3ee]/20 flex items-center justify-center text-[#22d3ee] text-xs mt-0.5 flex-shrink-0">✓</div>
+                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
                   <span className="text-[15px] text-[#e2e8f0]">Custom integrations</span>
                 </div>
               </div>
@@ -545,11 +473,11 @@ export default function PublicHome() {
         <div className="max-w-[1400px] mx-auto px-12">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-[42px] h-[42px] bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] rounded-xl flex items-center justify-center font-bold text-white text-sm shadow-lg">
+              <div className="w-[42px] h-[42px] rounded-xl flex items-center justify-center font-bold text-[#060D1A] text-sm shadow-lg" style={{ background: 'linear-gradient(135deg, #00C9B1, #00A693)' }}>
                 AI
               </div>
-              <span className="font-['Playfair_Display'] text-[22px] font-semibold text-white">
-                AI <span className="text-[#3b82f6]">Paraplanner</span>
+              <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 22, fontWeight: 600, color: '#F0F4FF' }}>
+                AI <span style={{ color: '#00C9B1' }}>Paraplanner</span>
               </span>
             </div>
 

@@ -2,6 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --navy:      #060D1A;
+  --navy-mid:  #0D1929;
+  --navy-card: rgba(13,25,41,0.7);
+  --teal:      #00C9B1;
+  --blue:      #1E88E5;
+  --white:     #F0F4FF;
+  --muted:     rgba(176,196,222,0.65);
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+}
+
+@keyframes orbFloat {
+  0%   { opacity: 0.6; transform: translate(0,0) scale(1); }
+  33%  { opacity: 0.9; transform: translate(40px,-30px) scale(1.05); }
+  66%  { opacity: 0.5; transform: translate(-20px,40px) scale(0.95); }
+  100% { opacity: 0.6; transform: translate(0,0) scale(1); }
+}
+
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(0,201,177,0.5); }
+  50%      { box-shadow: 0 0 0 6px rgba(0,201,177,0); }
+}
+
+@keyframes scrollPulse {
+  0%,100% { opacity: 0.3; transform: scaleY(0.8); }
+  50%      { opacity: 1;   transform: scaleY(1.2); }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
