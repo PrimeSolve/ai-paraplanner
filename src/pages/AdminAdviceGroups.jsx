@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Building2, Users, FileText, Settings, ChevronDown, MoreHorizontal } from 'lucide-react';
+import { Plus, Search, Building2, Users, FileText, Settings, ChevronDown, MoreHorizontal, Mail, Loader2 } from 'lucide-react';
+import axiosInstance from '@/api/axiosInstance';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatDate, formatRelativeDate } from '../utils/dateUtils';
@@ -27,6 +28,7 @@ export default function AdminAdviceGroups() {
   const [user, setUser] = useState(null);
   const [adviserCounts, setAdviserCounts] = useState({});
   const [templateCount, setTemplateCount] = useState(0);
+  const [sendingWelcomeEmailId, setSendingWelcomeEmailId] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -71,6 +73,19 @@ export default function AdminAdviceGroups() {
       console.error('Failed to load groups:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendWelcomeEmail = async (group) => {
+    setSendingWelcomeEmailId(group.id);
+    try {
+      await axiosInstance.post(`/advice-groups/${group.id}/invite`, { email: group.contact_email });
+      toast.success('Welcome email sent successfully');
+    } catch (error) {
+      console.error('Failed to send welcome email:', error);
+      toast.error('Failed to send welcome email. Please try again.');
+    } finally {
+      setSendingWelcomeEmailId(null);
     }
   };
 
@@ -356,6 +371,18 @@ export default function AdminAdviceGroups() {
                             <MoreHorizontal className="w-4 h-4" />
                           </button>
                           <div className="invisible group-hover/menu:visible absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-2xl z-[9999]">
+                            <button
+                              onClick={() => handleSendWelcomeEmail(group)}
+                              disabled={sendingWelcomeEmailId === group.id}
+                              className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-slate-700 border-b border-slate-100 transition-colors disabled:opacity-50"
+                            >
+                              {sendingWelcomeEmailId === group.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Mail className="w-4 h-4" />
+                              )}
+                              Send Welcome Email
+                            </button>
                             <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-slate-700 border-b border-slate-100 transition-colors">
                               <FileText className="w-4 h-4" />
                               Edit Template
