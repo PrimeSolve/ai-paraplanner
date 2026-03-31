@@ -4,13 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatDate, formatRelativeDate } from '../utils/dateUtils';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, ChevronDown, Users, CheckCircle, Briefcase, Star, MoreHorizontal, Edit, Trash2, Mail, Plus } from 'lucide-react';
+import { Search, ChevronDown, Users, CheckCircle, Briefcase, Star, MoreHorizontal, Edit, Trash2, Mail } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { useRole } from '../components/RoleContext';
 import { toast } from 'sonner';
 
@@ -37,15 +34,6 @@ export default function AdminAdvisers() {
   const [planFilter, setPlanFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [adviceGroups, setAdviceGroups] = useState([]);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    company: ''
-  });
   const itemsPerPage = 7;
 
   useEffect(() => {
@@ -98,30 +86,6 @@ export default function AdminAdvisers() {
   };
 
 
-
-  const handleCreateAdviser = async (e) => {
-    e.preventDefault();
-    if (saving) return;
-    setSaving(true);
-    try {
-      await axiosInstance.post('/advisers', {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        company: formData.company,
-      });
-      toast.success('Adviser created successfully');
-      setShowAddModal(false);
-      setFormData({ firstName: '', lastName: '', email: '', phone: '', company: '' });
-      loadData();
-    } catch (error) {
-      console.error('Failed to create adviser:', error);
-      toast.error(error.response?.data?.message || 'Failed to create adviser');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const filteredAdvisers = advisers.filter(adviser =>
     adviser.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -227,14 +191,6 @@ export default function AdminAdvisers() {
                 <option>Joined</option>
               </select>
             </div>
-            <div className="flex-1" />
-            <Button
-              onClick={() => setShowAddModal(true)}
-              className="bg-[#0F4C5C] hover:bg-[#0d3f4d] text-white whitespace-nowrap"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Adviser
-            </Button>
           </div>
         </div>
 
@@ -377,70 +333,6 @@ export default function AdminAdvisers() {
           </div>
         </div>
 
-        {/* Add Adviser Modal */}
-        <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Add New Adviser</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleCreateAdviser} className="space-y-4 pt-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label>First Name *</Label>
-                  <Input
-                    required
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                    placeholder="John"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Last Name *</Label>
-                  <Input
-                    required
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                    placeholder="Smith"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Email *</Label>
-                <Input
-                  required
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  placeholder="john@example.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Phone</Label>
-                <Input
-                  value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  placeholder="+61 400 000 000"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Company</Label>
-                <Input
-                  value={formData.company}
-                  onChange={(e) => setFormData({...formData, company: e.target.value})}
-                  placeholder="Company Name"
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => { setShowAddModal(false); setFormData({ firstName: '', lastName: '', email: '', phone: '', company: '' }); }}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={saving} style={{ backgroundColor: '#0F4C5C' }} className="hover:opacity-90">
-                  {saving ? 'Adding...' : 'Add Adviser'}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
     </div>
   );
 }
