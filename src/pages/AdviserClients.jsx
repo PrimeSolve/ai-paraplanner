@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Users, CheckCircle, Clock, MoreHorizontal, Edit2, Trash2, TrendingUp } from 'lucide-react';
+import { Search, Users, CheckCircle, Clock, MoreHorizontal, Edit2, Trash2, TrendingUp, Plus } from 'lucide-react';
 import { openModel } from '../utils/modelLauncher';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link, useNavigate } from 'react-router-dom';
@@ -29,11 +29,6 @@ export default function AdviserClients() {
 
   useEffect(() => {
     loadData();
-
-    // Listen for custom event from header button
-    const handleOpenDialog = () => setShowAddModal(true);
-    window.addEventListener('openAddClientDialog', handleOpenDialog);
-    return () => window.removeEventListener('openAddClientDialog', handleOpenDialog);
   }, []);
 
   const loadData = async () => {
@@ -179,6 +174,14 @@ export default function AdviserClients() {
               <option value="not_started">Not Started</option>
             </select>
           </div>
+          <div className="flex-1" />
+          <Button
+            onClick={() => setShowAddModal(true)}
+            className="bg-[#0F4C5C] hover:bg-[#0d3f4d] text-white whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Client
+          </Button>
         </div>
       </div>
 

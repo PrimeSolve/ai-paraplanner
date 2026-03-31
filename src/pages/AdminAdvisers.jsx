@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, ChevronDown, Users, CheckCircle, Briefcase, Star, MoreHorizontal, Edit, Trash2, Mail } from 'lucide-react';
+import { Search, ChevronDown, Users, CheckCircle, Briefcase, Star, MoreHorizontal, Edit, Trash2, Mail, Plus } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -51,10 +51,6 @@ export default function AdminAdvisers() {
 
   useEffect(() => {
     loadData();
-
-    const handleOpenDialog = () => setShowAddModal(true);
-    window.addEventListener('openAddAdviserAdminDialog', handleOpenDialog);
-    return () => window.removeEventListener('openAddAdviserAdminDialog', handleOpenDialog);
   }, []);
 
   const loadData = async () => {
@@ -232,6 +228,14 @@ export default function AdminAdvisers() {
                 <option>Joined</option>
               </select>
             </div>
+            <div className="flex-1" />
+            <Button
+              onClick={() => setShowAddModal(true)}
+              className="bg-[#0F4C5C] hover:bg-[#0d3f4d] text-white whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Adviser
+            </Button>
           </div>
         </div>
 
