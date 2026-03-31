@@ -255,8 +255,8 @@ export default function Hero() {
               )}
               {videoLoaded && (
                 <iframe
-                  src="https://www.youtube.com/embed/iINCz8Lrq5Q?autoplay=1&rel=0&modestbranding=1&color=white"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  src="https://app.heygen.com/embed/67699df2c2294868a5b586c42f2fa217"
+                  allow="fullscreen"
                   allowFullScreen
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
                 />
