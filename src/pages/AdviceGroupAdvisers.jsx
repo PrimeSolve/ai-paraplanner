@@ -98,7 +98,7 @@ export default function AdviceGroupAdvisers() {
 
   const handleSendWelcomeEmail = async (adviser) => {
     try {
-      await axiosInstance.post(`/advisers/${adviser.id}/invite`, { email: adviser.email });
+      await axiosInstance.post(`/advisers/${adviser.id}/send-welcome-email`);
       toast.success('Welcome email sent');
     } catch (error) {
       console.error('Failed to send welcome email:', error);
@@ -305,7 +305,7 @@ export default function AdviceGroupAdvisers() {
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleSendWelcomeEmail(adviser)}>
+                            <DropdownMenuItem onSelect={() => handleSendWelcomeEmail(adviser)}>
                               <Mail className="w-4 h-4 mr-2" />
                               Send Welcome Email
                             </DropdownMenuItem>
