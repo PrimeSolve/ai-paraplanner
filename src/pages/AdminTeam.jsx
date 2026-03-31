@@ -105,7 +105,7 @@ export default function AdminTeam() {
   const handleSendWelcomeEmail = async (member) => {
     setSendingWelcomeEmailId(member.id);
     try {
-      await axiosInstance.post(`/api/v1/users/${member.id}/send-welcome-email`);
+      await axiosInstance.post(`/users/${member.id}/send-welcome-email`);
       toast.success('Welcome email sent successfully');
     } catch (error) {
       console.error('Failed to send welcome email:', error);
