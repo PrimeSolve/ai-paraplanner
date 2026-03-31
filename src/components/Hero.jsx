@@ -32,6 +32,7 @@ function useCounter(target, duration = 1800, startDelay = 900) {
 }
 
 export default function Hero() {
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const stat1 = useCounter(75);
   const stat2 = useCounter(24);
   const stat3 = useCounter(4);
@@ -216,43 +217,69 @@ export default function Hero() {
             </div>
 
             {/* Video */}
-            <div
-              onClick={() => window.open('https://www.youtube.com/watch?v=iINCz8Lrq5Q', '_blank')}
-              style={{
-                position: 'relative',
-                width: '100%',
-                aspectRatio: '16/9',
-                background: 'linear-gradient(135deg, #060D1A 0%, #0D1929 100%)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 20,
-                cursor: 'pointer',
-              }}
-            >
-              <div style={{
-                width: 72, height: 72, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #00C9B1, #00A693)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 0 40px rgba(0,201,177,0.4)',
-              }}>
-                <div style={{
-                  width: 0, height: 0,
-                  borderTop: '13px solid transparent',
-                  borderBottom: '13px solid transparent',
-                  borderLeft: '22px solid #060D1A',
-                  marginLeft: 5,
-                }} />
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 14, color: '#F0F4FF', fontWeight: 500, marginBottom: 4, fontFamily: "'DM Sans', sans-serif" }}>
-                  Watch the demo
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              aspectRatio: '16/9',
+              background: '#000',
+            }}>
+              {!videoLoaded && (
+                <div
+                  onClick={() => setVideoLoaded(true)}
+                  style={{
+                    position: 'absolute', inset: 0,
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center',
+                    gap: 20,
+                    background: 'linear-gradient(135deg, #060D1A 0%, #0D1929 100%)',
+                    cursor: 'pointer', zIndex: 2,
+                  }}
+                >
+                  <div style={{
+                    width: 72, height: 72, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #00C9B1, #00A693)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 0 40px rgba(0,201,177,0.4)',
+                  }}>
+                    <div style={{
+                      width: 0, height: 0,
+                      borderTop: '13px solid transparent',
+                      borderBottom: '13px solid transparent',
+                      borderLeft: '22px solid #060D1A',
+                      marginLeft: 5,
+                    }} />
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{
+                      fontSize: 14, color: '#F0F4FF',
+                      fontWeight: 500, marginBottom: 4,
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}>
+                      Watch the demo
+                    </div>
+                    <div style={{
+                      fontSize: 12,
+                      color: 'rgba(176,196,222,0.5)',
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontWeight: 300,
+                    }}>
+                      1 min 50 sec
+                    </div>
+                  </div>
                 </div>
-                <div style={{ fontSize: 12, color: 'rgba(176,196,222,0.5)', fontFamily: "'DM Sans', sans-serif", fontWeight: 300 }}>
-                  Opens on YouTube ↗
-                </div>
-              </div>
+              )}
+              {videoLoaded && (
+                <iframe
+                  src="https://www.youtube.com/embed/iINCz8Lrq5Q?autoplay=1&rel=0&modestbranding=1&color=white"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{
+                    position: 'absolute', inset: 0,
+                    width: '100%', height: '100%',
+                    border: 'none',
+                  }}
+                />
+              )}
             </div>
 
             {/* Footer pills */}
