@@ -255,7 +255,7 @@ export default function Hero() {
                       fontWeight: 500, marginBottom: 4,
                       fontFamily: "'DM Sans', sans-serif",
                     }}>
-                      Watch the demo
+                      Watch the story
                     </div>
                     <div style={{
                       fontSize: 12,
@@ -263,15 +263,15 @@ export default function Hero() {
                       fontFamily: "'DM Sans', sans-serif",
                       fontWeight: 300,
                     }}>
-                      1 min 50 sec
+                      See why advisers are switching
                     </div>
                   </div>
                 </div>
               )}
               {videoLoaded && (
                 <iframe
-                  src="https://www.youtube.com/embed/iINCz8Lrq5Q?autoplay=1&rel=0&modestbranding=1&color=white"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  src="https://player.vimeo.com/video/1178681835?autoplay=1&title=0&byline=0&portrait=0"
+                  allow="autoplay; fullscreen; picture-in-picture"
                   allowFullScreen
                   style={{
                     position: 'absolute', inset: 0,
