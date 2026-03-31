@@ -316,7 +316,7 @@ export default function AdminAdvisers() {
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleSendWelcomeEmail(adviser)}>
+                            <DropdownMenuItem onSelect={() => handleSendWelcomeEmail(adviser)}>
                               <Mail className="w-4 h-4 mr-2" />
                               Send Welcome Email
                             </DropdownMenuItem>
