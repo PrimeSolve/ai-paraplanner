@@ -66,10 +66,6 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  if (currentPageName === 'AdminAdvisers') {
-    pageActions = null;
-  }
-
   if (currentPageName === 'AdviceGroupAdvisers') {
     pageActions = (
       <button
