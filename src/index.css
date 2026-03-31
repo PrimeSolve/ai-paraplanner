@@ -36,6 +36,16 @@
   50%      { transform: scale(1.2); opacity: 0; }
 }
 
+@keyframes typingBounce {
+  0%,100% { transform: translateY(0);  opacity: 0.4; }
+  50%      { transform: translateY(-5px); opacity: 1; }
+}
+
+@keyframes livePulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.3; transform: scale(0.75); }
+}
+
 /* Step card hover */
 .hiw-step-card:hover {
   border-color: rgba(0,201,177,0.3) !important;
