@@ -5,6 +5,7 @@ import { ChevronDown } from 'lucide-react';
 import NeuralBackground from '../components/NeuralBackground';
 import Hero from '../components/Hero';
 import Features from '../components/Features';
+import HowItWorks from '../components/HowItWorks';
 
 export default function PublicHome() {
   const navigate = useNavigate();
@@ -62,92 +63,7 @@ export default function PublicHome() {
       <Hero />
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-24 relative overflow-hidden bg-[#0f172a]">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(135deg, #00C9B1 0%, transparent 50%, #3b82f6 100%)' }} />
-        <div className="max-w-[1200px] mx-auto px-12 relative z-10">
-          <div className="text-center mb-20">
-            <h2 className="font-['Syne'] text-[52px] font-semibold text-white mb-4">
-              How It <span className="text-[#00C9B1]">Works</span>
-            </h2>
-            <p className="text-[19px] text-[#94a3b8] max-w-[700px] mx-auto">
-              From fact find to advice delivery — a seamless journey powered by AI and backed by humans.
-            </p>
-          </div>
-
-          <div className="space-y-12 relative">
-            {/* Center line */}
-            <div className="absolute left-1/2 top-[60px] bottom-[60px] w-[2px] bg-[#00C9B1] -translate-x-1/2" />
-
-            {/* Step 1 */}
-            <div className="grid grid-cols-2 gap-16 items-start relative">
-              <div className="text-right bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
-                <h3 className="text-[24px] font-bold text-white mb-3">Build Your Client Profile</h3>
-                <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
-                  Send your client an AI-powered Fact Find. Smart pre-fill extracts data from documents while the AI assistant guides them through every section.
-                </p>
-                <div className="flex gap-2 justify-end flex-wrap">
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">AI-Powered</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Smart Pre-fill</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Mobile Friendly</span>
-                </div>
-              </div>
-              <div></div>
-              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(0,201,177,0.6)] z-10">1</div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="grid grid-cols-2 gap-16 items-start relative">
-              <div></div>
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
-                <h3 className="text-[24px] font-bold text-white mb-3">Create a Cashflow Model or SOA Request</h3>
-                <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
-                  Your AI paraplanner guides you through recommendations in real time. It prompts for missing details, validates your strategy, and ensures nothing slips through.
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Real-time Guidance</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Smart Validation</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Nothing Missed</span>
-                </div>
-              </div>
-              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(0,201,177,0.6)] z-10">2</div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="grid grid-cols-2 gap-16 items-start relative">
-              <div className="text-right bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
-                <h3 className="text-[24px] font-bold text-white mb-3">AI Generates a Compliant SOA</h3>
-                <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
-                  Powered by PrimeSolve's optimised modelling engine, AI generates a compliant, comprehensive Statement of Advice. Every document is reviewed by qualified paraplanners.
-                </p>
-                <div className="flex gap-2 justify-end flex-wrap">
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">PrimeSolve Engine</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Human Reviewed</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Compliant</span>
-                </div>
-              </div>
-              <div></div>
-              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(0,201,177,0.6)] z-10">3</div>
-            </div>
-
-            {/* Step 4 */}
-            <div className="grid grid-cols-2 gap-16 items-start relative">
-              <div></div>
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
-                <h3 className="text-[24px] font-bold text-white mb-3">Review, Refine & Deliver</h3>
-                <p className="text-[16px] text-[#94a3b8] leading-relaxed mb-4">
-                  Get your completed SOA in 24 hours. Choose PDF or Word for compliance records, plus interactive HTML for client engagement — you get all three. Review, refine, and deliver to your client.
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">PDF Export</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Word Export</span>
-                  <span className="px-3 py-1 bg-[#1e293b] text-[#00C9B1] text-[13px] font-semibold rounded-full">Interactive HTML</span>
-                </div>
-              </div>
-              <div className="absolute left-1/2 top-8 -translate-x-1/2 w-14 h-14 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-[22px] font-bold shadow-[0_0_30px_rgba(0,201,177,0.6)] z-10">4</div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HowItWorks />
 
       {/* Features Section */}
       <Features />
