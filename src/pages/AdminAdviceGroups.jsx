@@ -41,11 +41,6 @@ export default function AdminAdviceGroups() {
 
   useEffect(() => {
     loadData();
-    
-    // Listen for custom event from header button
-    const handleOpenDialog = () => setDialogOpen(true);
-    window.addEventListener('openAddAdviceGroupDialog', handleOpenDialog);
-    return () => window.removeEventListener('openAddAdviceGroupDialog', handleOpenDialog);
   }, []);
 
   const loadData = async () => {
@@ -143,9 +138,6 @@ export default function AdminAdviceGroups() {
   return (
     <div className="p-8">
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <button style={{ display: 'none' }} />
-          </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Create New Advice Group</DialogTitle>
@@ -288,6 +280,14 @@ export default function AdminAdviceGroups() {
                   <option value="default">Default</option>
                 </select>
               </div>
+              <div className="flex-1" />
+              <Button
+                onClick={() => setDialogOpen(true)}
+                className="bg-[#0F4C5C] hover:bg-[#0d3f4d] text-white whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Advice Group
+              </Button>
             </div>
           </div>
 
