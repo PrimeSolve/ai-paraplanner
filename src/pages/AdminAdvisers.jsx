@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '@/api/axiosInstance';
-import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { formatDate, formatRelativeDate } from '../utils/dateUtils';
@@ -80,8 +79,8 @@ export default function AdminAdvisers() {
 
   const handleSendWelcomeEmail = async (adviser) => {
     try {
-      await base44.users.inviteUser(adviser.email, 'user');
-      toast.success('Welcome email sent');
+      await axiosInstance.post(`/advisers/${adviser.id}/send-welcome-email`);
+      toast.success('Welcome email sent successfully');
     } catch (error) {
       console.error('Failed to send welcome email:', error);
       toast.error('Failed to send welcome email');
