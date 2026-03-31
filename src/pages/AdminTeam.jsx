@@ -19,7 +19,9 @@ import {
   X,
   MoreVertical,
   Loader2,
-  Mail
+  Mail,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -442,7 +444,7 @@ export default function AdminTeam() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              onClick={() => handleSendWelcomeEmail(member)}
+                              onSelect={() => handleSendWelcomeEmail(member)}
                               disabled={sendingWelcomeEmailId === member.id}
                             >
                               {sendingWelcomeEmailId === member.id ? (
@@ -452,13 +454,15 @@ export default function AdminTeam() {
                               )}
                               Send Welcome Email
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEditMember(member)}>
+                            <DropdownMenuItem onSelect={() => handleEditMember(member)}>
+                              <Edit className="w-4 h-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => setMemberToDelete(member)}
+                              onSelect={() => setMemberToDelete(member)}
                               className="text-red-600"
                             >
+                              <Trash2 className="w-4 h-4 mr-2" />
                               Remove
                             </DropdownMenuItem>
                           </DropdownMenuContent>
