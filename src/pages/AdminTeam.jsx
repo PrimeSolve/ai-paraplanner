@@ -18,7 +18,8 @@ import {
   Send,
   X,
   MoreVertical,
-  Loader2
+  Loader2,
+  Mail
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -51,6 +52,7 @@ export default function AdminTeam() {
   const [inviteSuccess, setInviteSuccess] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
   const [memberToDelete, setMemberToDelete] = useState(null);
+  const [sendingWelcomeEmailId, setSendingWelcomeEmailId] = useState(null);
 
   useEffect(() => {
     loadTeam();
@@ -95,6 +97,19 @@ export default function AdminTeam() {
       console.error('Failed to load team:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendWelcomeEmail = async (member) => {
+    setSendingWelcomeEmailId(member.id);
+    try {
+      await axiosInstance.post(`/api/v1/users/${member.id}/send-welcome-email`);
+      toast.success('Welcome email sent successfully');
+    } catch (error) {
+      console.error('Failed to send welcome email:', error);
+      toast.error('Failed to send welcome email. Please try again.');
+    } finally {
+      setSendingWelcomeEmailId(null);
     }
   };
 
@@ -426,10 +441,21 @@ export default function AdminTeam() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleSendWelcomeEmail(member)}
+                              disabled={sendingWelcomeEmailId === member.id}
+                            >
+                              {sendingWelcomeEmailId === member.id ? (
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              ) : (
+                                <Mail className="w-4 h-4 mr-2" />
+                              )}
+                              Send Welcome Email
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEditMember(member)}>
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => setMemberToDelete(member)}
                               className="text-red-600"
                             >
