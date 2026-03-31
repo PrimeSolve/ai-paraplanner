@@ -476,7 +476,7 @@ export default function Register() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 13, fontWeight: 700, color: '#fff',
             }}>AI</div>
-            <span style={{ color: '#00C9B1' }}>AI</span>&nbsp;Paraplanner
+            <span><span style={{ color: '#00C9B1' }}>AI</span> Paraplanner</span>
           </motion.a>
 
           {/* Middle content */}
