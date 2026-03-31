@@ -7,6 +7,7 @@ import Hero from '../components/Hero';
 import Features from '../components/Features';
 import HowItWorks from '../components/HowItWorks';
 import AIDelivery from '../components/AIDelivery';
+import Pricing from '../components/Pricing';
 
 export default function PublicHome() {
   const navigate = useNavigate();
@@ -73,138 +74,7 @@ export default function PublicHome() {
       <AIDelivery />
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 bg-[#0f172a]">
-        <div className="max-w-[1200px] mx-auto px-12">
-          <div className="text-center mb-16">
-            <h2 className="font-['Syne'] text-[52px] font-semibold text-white mb-4">
-              Simple, transparent <span className="text-[#00C9B1]">pricing</span>
-            </h2>
-            <p className="text-[19px] text-[#94a3b8]">
-              Start with pay-as-you-go, upgrade when you're ready.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-8">
-            {/* Tier 1 - Scaled Advice */}
-            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all">
-              <div className="text-sm font-bold text-[#00C9B1] uppercase tracking-wide mb-2">Scaled Advice</div>
-              <div className="mb-6">
-                <span className="text-[48px] font-bold text-white">$395</span>
-                <div className="text-[#94a3b8] text-[15px]">per transaction</div>
-              </div>
-              <div className="space-y-3 mb-8">
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-[#e2e8f0]">AI Fact Find with pre-fill</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-[#e2e8f0]">AI SOA Request builder</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-[#e2e8f0]">Human paraplanner review</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-[#e2e8f0]">48-hour turnaround</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-[#e2e8f0]">PDF + Word + HTML delivery</span>
-                </div>
-              </div>
-              <button
-                onClick={() => navigate('/Register')}
-                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-transparent border-2 border-white/20 hover:border-white hover:bg-white hover:text-[#0f172a] transition-all cursor-pointer"
-              >
-                Get Started
-              </button>
-            </div>
-
-            {/* Tier 2 - Comprehensive Advice (FEATURED) */}
-            <div className="bg-gradient-to-br from-[#00C9B1]/10 to-[#3b82f6]/10 border-2 border-[#00C9B1] rounded-2xl p-8 transform scale-105 shadow-[0_0_40px_rgba(0,201,177,0.3)] relative">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#00C9B1] to-[#3b82f6] text-[#0f172a] px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
-                Most Popular
-              </div>
-              <div className="text-sm font-bold text-[#00C9B1] uppercase tracking-wide mb-2">Comprehensive Advice</div>
-              <div className="mb-6">
-                <span className="text-[48px] font-bold text-white">$695</span>
-                <div className="text-[#94a3b8] text-[15px]">per transaction</div>
-              </div>
-              <div className="space-y-3 mb-8">
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-white font-medium">Everything in Tier 1</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-white">Custom AI avatar</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-white">SOA AI walkthroughs</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-white">Unlimited strategy recommendations</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-white">Unlimited cashflow models</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1] flex items-center justify-center text-[#0f172a] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-white">Stress test report</span>
-                </div>
-              </div>
-              <button
-                onClick={() => navigate('/Register')}
-                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:-translate-y-0.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
-              >
-                Get Started
-              </button>
-            </div>
-
-            {/* Tier 3 - Enterprise */}
-            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all">
-              <div className="text-sm font-bold text-[#00C9B1] uppercase tracking-wide mb-2">Enterprise</div>
-              <div className="mb-6">
-                <span className="text-[48px] font-bold text-white">Custom</span>
-                <div className="text-[#94a3b8] text-[15px]">volume pricing</div>
-              </div>
-              <div className="space-y-3 mb-8">
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-[#e2e8f0]">For advice groups</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-[#e2e8f0]">Prepaid client packages</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-[#e2e8f0]">Volume discounts available</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-[#e2e8f0]">Dedicated support</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#00C9B1]/20 flex items-center justify-center text-[#00C9B1] text-xs mt-0.5 flex-shrink-0">✓</div>
-                  <span className="text-[15px] text-[#e2e8f0]">Custom integrations</span>
-                </div>
-              </div>
-              <button
-                onClick={() => navigate('/Register')}
-                className="w-full px-6 py-3 rounded-[10px] text-[15px] font-semibold text-white bg-transparent border-2 border-white/20 hover:border-white hover:bg-white hover:text-[#0f172a] transition-all cursor-pointer"
-              >
-                Contact Us
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Pricing />
 
       {/* Footer */}
       <footer className="py-12 bg-[#0a0f1a] border-t border-white/10">
