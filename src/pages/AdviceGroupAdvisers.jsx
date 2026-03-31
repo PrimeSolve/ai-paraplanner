@@ -239,6 +239,10 @@ export default function AdviceGroupAdvisers() {
                 <option>Name A-Z</option>
               </select>
             </div>
+            <Button onClick={() => setShowInvite(true)} className="h-11 bg-[#0F4C5C] hover:bg-[#0d3f4d] text-white font-semibold">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Adviser
+            </Button>
           </div>
         </div>
 
