@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Plus, Search, Building2, Users, FileText, Settings, ChevronDown, MoreHorizontal, Mail, Loader2 } from 'lucide-react';
 import axiosInstance from '@/api/axiosInstance';
 import { Link } from 'react-router-dom';
@@ -74,7 +75,7 @@ export default function AdminAdviceGroups() {
   const handleSendWelcomeEmail = async (group) => {
     setSendingWelcomeEmailId(group.id);
     try {
-      await axiosInstance.post(`/advice-groups/${group.id}/invite`, { email: group.contact_email });
+      await axiosInstance.post(`/advice-groups/${group.id}/send-welcome-email`);
       toast.success('Welcome email sent successfully');
     } catch (error) {
       console.error('Failed to send welcome email:', error);
@@ -366,36 +367,37 @@ export default function AdminAdviceGroups() {
                           className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
                           View
                         </button>
-                        <div className="relative group/menu">
-                          <button className="p-1.5 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </button>
-                          <div className="invisible group-hover/menu:visible absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-2xl z-[9999]">
-                            <button
-                              onClick={() => handleSendWelcomeEmail(group)}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button size="sm" variant="ghost" className="p-1.5">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onSelect={() => handleSendWelcomeEmail(group)}
                               disabled={sendingWelcomeEmailId === group.id}
-                              className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-slate-700 border-b border-slate-100 transition-colors disabled:opacity-50"
                             >
                               {sendingWelcomeEmailId === group.id ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                               ) : (
-                                <Mail className="w-4 h-4" />
+                                <Mail className="w-4 h-4 mr-2" />
                               )}
                               Send Welcome Email
-                            </button>
-                            <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-slate-700 border-b border-slate-100 transition-colors">
-                              <FileText className="w-4 h-4" />
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <FileText className="w-4 h-4 mr-2" />
                               Edit Template
-                            </button>
-                            <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-slate-700 border-b border-slate-100 transition-colors">
-                              <Users className="w-4 h-4" />
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Users className="w-4 h-4 mr-2" />
                               View Advisers
-                            </button>
-                            <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-sm text-red-700 transition-colors">
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600">
                               Delete Group
-                            </button>
-                          </div>
-                        </div>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </td>
                   </tr>
