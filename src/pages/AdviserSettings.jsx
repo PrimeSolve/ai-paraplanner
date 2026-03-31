@@ -9,8 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { Shield, Mail, Calendar, Upload, X } from 'lucide-react';
+import { useRole } from '@/components/RoleContext';
 
 export default function AdviserSettings() {
+  const { originalUser } = useRole();
+  const isPlatformAdmin = originalUser?.role === 'admin';
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -30,9 +33,17 @@ export default function AdviserSettings() {
     notifySOAReadEmail: false,
     notifySOAReadSms: false,
   });
+  const [emailBranding, setEmailBranding] = useState({
+    email_template_type: 'ai_branded',
+    email_template_id: '',
+    email_from_address: '',
+    email_from_name: '',
+  });
+  const [emailBrandingErrors, setEmailBrandingErrors] = useState({});
   // Snapshot of last-saved state for Cancel reset
   const [savedFormData, setSavedFormData] = useState(null);
   const [savedNotifications, setSavedNotifications] = useState(null);
+  const [savedEmailBranding, setSavedEmailBranding] = useState(null);
 
   useEffect(() => {
     loadAdviser();
@@ -60,10 +71,18 @@ export default function AdviserSettings() {
         notifySOAReadEmail: currentUser.notifySOAReadEmail ?? false,
         notifySOAReadSms: currentUser.notifySOAReadSms ?? false,
       };
+      const branding = {
+        email_template_type: currentUser.email_template_type || 'ai_branded',
+        email_template_id: currentUser.email_template_id || '',
+        email_from_address: currentUser.email_from_address || '',
+        email_from_name: currentUser.email_from_name || '',
+      };
       setFormData(form);
       setNotifications(notifs);
+      setEmailBranding(branding);
       setSavedFormData(form);
       setSavedNotifications(notifs);
+      setSavedEmailBranding(branding);
     } catch (error) {
       console.error('Failed to load adviser:', error);
     } finally {
@@ -74,16 +93,40 @@ export default function AdviserSettings() {
   const handleCancel = () => {
     if (savedFormData) setFormData(savedFormData);
     if (savedNotifications) setNotifications(savedNotifications);
+    if (savedEmailBranding) setEmailBranding(savedEmailBranding);
+    setEmailBrandingErrors({});
     setSaveError('');
   };
 
+  const validateEmailBranding = () => {
+    if (emailBranding.email_template_type !== 'custom') return true;
+    const errors = {};
+    if (!emailBranding.email_from_name.trim()) {
+      errors.email_from_name = 'From name is required';
+    }
+    if (!emailBranding.email_from_address.trim()) {
+      errors.email_from_address = 'From address is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailBranding.email_from_address.trim())) {
+      errors.email_from_address = 'Must be a valid email address';
+    }
+    if (!emailBranding.email_template_id.trim()) {
+      errors.email_template_id = 'Template ID is required';
+    } else if (!emailBranding.email_template_id.trim().startsWith('d-')) {
+      errors.email_template_id = 'Template ID must start with d-';
+    }
+    setEmailBrandingErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSave = async () => {
+    if (!validateEmailBranding()) return;
     setSaving(true);
     setSaveError('');
     try {
       // TODO: confirm PATCH endpoint and field names with primesolve-api if uncertain.
       // TODO: confirm this updates Users/Advisers record used in client registration
       const adviserId = user?.id;
+      const isCustom = emailBranding.email_template_type === 'custom';
       await axiosInstance.patch(`/advisers/${adviserId}`, {
         fullName: formData.full_name,
         mobile: formData.mobile,
@@ -94,11 +137,16 @@ export default function AdviserSettings() {
         notifyFactFindCompletedSms: notifications.notifyFactFindCompletedSms,
         notifySOAReadEmail: notifications.notifySOAReadEmail,
         notifySOAReadSms: notifications.notifySOAReadSms,
+        email_template_type: isCustom ? 'custom' : 'ai_branded',
+        email_template_id: isCustom ? emailBranding.email_template_id : null,
+        email_from_address: isCustom ? emailBranding.email_from_address : null,
+        email_from_name: isCustom ? emailBranding.email_from_name : null,
       });
 
       // Update saved snapshots
       setSavedFormData({ ...formData });
       setSavedNotifications({ ...notifications });
+      setSavedEmailBranding({ ...emailBranding });
 
       toast.success('Settings saved');
       window.dispatchEvent(new Event('userProfileUpdated'));
@@ -380,6 +428,107 @@ export default function AdviserSettings() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Email Branding */}
+        <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6">
+          <h3 className="text-lg font-semibold text-[#0f172a] mb-6">Email Branding</h3>
+
+          {isPlatformAdmin ? (
+            <div className="space-y-6">
+              <div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-[#0f172a]">Use custom email template</span>
+                  <Switch
+                    checked={emailBranding.email_template_type === 'custom'}
+                    onCheckedChange={(checked) => {
+                      setEmailBranding({
+                        ...emailBranding,
+                        email_template_type: checked ? 'custom' : 'ai_branded',
+                      });
+                      if (!checked) setEmailBrandingErrors({});
+                    }}
+                    className="data-[state=checked]:bg-blue-500"
+                  />
+                </div>
+                <p className="text-sm text-[#64748b] mt-2">
+                  {emailBranding.email_template_type === 'custom'
+                    ? 'Client fact find emails will use the custom template configured below.'
+                    : 'Client fact find emails will use the standard AI Paraplanner branded template.'}
+                </p>
+              </div>
+
+              {emailBranding.email_template_type === 'custom' && (
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium text-[#0f172a] mb-2 block">From Name</Label>
+                    <Input
+                      value={emailBranding.email_from_name}
+                      onChange={(e) => {
+                        setEmailBranding({ ...emailBranding, email_from_name: e.target.value });
+                        if (emailBrandingErrors.email_from_name) {
+                          setEmailBrandingErrors({ ...emailBrandingErrors, email_from_name: '' });
+                        }
+                      }}
+                      placeholder="e.g. Paul Scaturchio"
+                      className="border-[#e2e8f0]"
+                    />
+                    {emailBrandingErrors.email_from_name && (
+                      <p className="text-xs text-red-600 mt-1">{emailBrandingErrors.email_from_name}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-[#0f172a] mb-2 block">From Address</Label>
+                    <Input
+                      value={emailBranding.email_from_address}
+                      onChange={(e) => {
+                        setEmailBranding({ ...emailBranding, email_from_address: e.target.value });
+                        if (emailBrandingErrors.email_from_address) {
+                          setEmailBrandingErrors({ ...emailBrandingErrors, email_from_address: '' });
+                        }
+                      }}
+                      placeholder="e.g. paul.scaturchio@aiparaplanner.com.au"
+                      className="border-[#e2e8f0]"
+                    />
+                    {emailBrandingErrors.email_from_address && (
+                      <p className="text-xs text-red-600 mt-1">{emailBrandingErrors.email_from_address}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Template ID</Label>
+                    <Input
+                      value={emailBranding.email_template_id}
+                      onChange={(e) => {
+                        setEmailBranding({ ...emailBranding, email_template_id: e.target.value });
+                        if (emailBrandingErrors.email_template_id) {
+                          setEmailBrandingErrors({ ...emailBrandingErrors, email_template_id: '' });
+                        }
+                      }}
+                      placeholder="e.g. d-1cefc73a5b044a98a4c63ec98cd1ca95"
+                      className="border-[#e2e8f0]"
+                    />
+                    <p className="text-xs text-[#94a3b8] mt-1">SendGrid dynamic template ID. Must start with d-</p>
+                    {emailBrandingErrors.email_template_id && (
+                      <p className="text-xs text-red-600 mt-1">{emailBrandingErrors.email_template_id}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-[#0f172a]">Custom template</span>
+              {emailBranding.email_template_type === 'custom' ? (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  Active
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                  Default
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
