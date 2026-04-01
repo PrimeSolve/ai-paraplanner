@@ -52,6 +52,29 @@ function dbToModelFormat(db) {
   const { adjustments: partnerAdj, ...partnerIncFields } = partnerIncomeEntry;
   const { adjustments: expAdj, ...expFields } = expenseEntry;
 
+  // Map income fields with explicit defaults so the cashflow engine always has what it needs
+  const mapIncome = (inc) => ({
+    i_gross: inc?.i_gross || "",
+    i_super_inc: inc?.i_super_inc || "2",
+    i_bonus: inc?.i_bonus || "",
+    i_increase: inc?.i_increase || "2.5",
+    i_fbt: inc?.i_fbt || "2",
+    i_fbt_value: inc?.i_fbt_value || "",
+    i_nontax: inc?.i_nontax || "2",
+    i_nontax_value: inc?.i_nontax_value || "",
+    i_pay_freq: inc?.i_pay_freq || "12",
+    i_cgt_losses: inc?.i_cgt_losses || "",
+    i_revenue_losses: inc?.i_revenue_losses || "",
+    adjustments: inc?.adjustments || [],
+  });
+
+  // Compute annualised living expenses from expense data
+  const eDisc = parseFloat(expFields.e_disc) || 0;
+  const eSave = parseFloat(expFields.e_save) || 0;
+  const eFreqMap = { 1: 52, 2: 26, 3: 12, 4: 4, 5: 1 };
+  const eFreqMultiplier = eFreqMap[expFields.e_freq] || 12;
+  const annualisedLivingExpenses = (eDisc + eSave) * eFreqMultiplier;
+
   // Map trusts_companies entities into separate arrays
   const entities = tcData.entities || [];
   const trusts = entities.filter(e => e.type === 'trust');
@@ -130,11 +153,14 @@ function dbToModelFormat(db) {
     insurance: { policies: insData.policies || [] },
     _insActiveIdx: insData.active_idx ?? 0,
     income: {
-      client1: Object.keys(clientIncFields).length ? clientIncFields : { i_gross: '', i_super_inc: '2', i_fbt: '2', i_fbt_value: '', i_bonus: '', i_increase: '2.5', i_nontax: '2', i_cgt_losses: '', i_revenue_losses: '', adjustments: [] },
-      client2: Object.keys(partnerIncFields).length ? partnerIncFields : { i_gross: '', i_super_inc: '2', i_fbt: '2', i_fbt_value: '', i_bonus: '', i_increase: '2.5', i_nontax: '2', i_cgt_losses: '', i_revenue_losses: '', adjustments: [] },
+      client1: mapIncome(clientIncFields),
+      client2: mapIncome(partnerIncFields),
     },
     expenses: expFields,
-    cashflowConfig: { livingExpenses: 0, livingExpensesGrowth: 0.025 },
+    cashflowConfig: {
+      livingExpenses: annualisedLivingExpenses,
+      livingExpensesGrowth: 0.025,
+    },
     assetAssumptions: {},
     goals: [],
     advice_reason: mappedAdviceReason,
