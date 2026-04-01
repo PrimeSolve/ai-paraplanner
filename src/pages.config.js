@@ -79,6 +79,7 @@ import Billing from './pages/Billing';
 import AdviserAdviceRecords from './pages/AdviserAdviceRecords';
 import AdviserAdviceRecordDetail from './pages/AdviserAdviceRecordDetail';
 import AdviserAnalytics from './pages/AdviserAnalytics';
+import AdviserAvatarConfig from './pages/AdviserAvatarConfig';
 import AdviserAvatarSetup from './pages/AdviserAvatarSetup';
 import AdviserCalendar from './pages/AdviserCalendar';
 import AdviserClientDetail from './pages/AdviserClientDetail';
@@ -187,6 +188,7 @@ export const PAGES = {
     "AdviserAdviceHistory": AdviserAdviceRecords,
     "AdviserAdviceRecordDetail": AdviserAdviceRecordDetail,
     "AdviserAnalytics": AdviserAnalytics,
+    "AdviserAvatarConfig": AdviserAvatarConfig,
     "AdviserAvatarSetup": AdviserAvatarSetup,
     "AdviserCalendar": AdviserCalendar,
     "AdviserClientDetail": AdviserClientDetail,
