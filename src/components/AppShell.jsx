@@ -200,6 +200,17 @@ export default function AppShell({ children, pageActions, pageTitle }) {
   const showHenry = effectiveRole === 'admin' || effectiveRole === 'adviser' || effectiveRole === 'client'
     || currentLevel === 'adviser' || currentLevel === 'client';
 
+  // Pages that render their own breadcrumb bar — hide the global AppHeader to avoid double topbar
+  const HIDE_HEADER_ROUTES = [
+    '/AdminQueue',
+    '/AdminAdvisers',
+    '/AdminClients',
+    '/AdminTemplate',
+    '/AdminTeam',
+    '/AdminSettings',
+  ];
+  const hideAppHeader = HIDE_HEADER_ROUTES.some(route => location.pathname.startsWith(route));
+
   return (
     <div className="flex min-h-screen" style={{ background: '#F0F3F8' }}>
       {showSidebar && sidebarComponent}
@@ -210,7 +221,7 @@ export default function AppShell({ children, pageActions, pageTitle }) {
         flexDirection: 'column',
         minHeight: '100vh'
       }}>
-        <AppHeader pageActions={pageActions} pageTitle={pageTitle} />
+        {!hideAppHeader && <AppHeader pageActions={pageActions} pageTitle={pageTitle} />}
         <main className="flex-1">
           {children}
         </main>
