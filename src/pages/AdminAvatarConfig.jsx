@@ -79,7 +79,7 @@ export default function AdminAvatarConfig() {
 
   return (
     <div className="min-h-screen" style={{ background: '#f8fafc' }}>
-      <div className="max-w-[960px] mx-auto px-6 pt-8 pb-28">
+      <div style={{ padding: '28px 32px', paddingBottom: '112px' }}>
         {/* Header */}
         <h1 className="text-2xl font-bold text-slate-800 mb-1">Avatar configuration</h1>
         <p className="text-sm text-slate-500 mb-6">Configure the AI Paraplanner avatar experience for each role level</p>
