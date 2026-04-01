@@ -10,12 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import { 
-  Building2, 
-  Target, 
-  Users, 
-  Bell, 
-  UserPlus, 
+import {
+  Building2,
+  Target,
+  Users,
+  Bell,
+  UserPlus,
   Settings2,
   Upload,
   Briefcase,
@@ -26,7 +26,13 @@ import {
   CreditCard,
   HelpCircle,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Palette,
+  Link2,
+  Sun,
+  Moon,
+  Monitor,
+  ChevronRight
 } from 'lucide-react';
 
 export default function AdminSettings() {
@@ -56,7 +62,7 @@ export default function AdminSettings() {
       }
     }
   }, []);
-  
+
   const [businessDetails, setBusinessDetails] = useState(() => {
     const saved = localStorage.getItem('businessDetails');
     return saved ? JSON.parse(saved) : {
@@ -70,12 +76,11 @@ export default function AdminSettings() {
     };
   });
 
-  const [slaTargets, setSlaTargets] = useState([
-    { id: 1, type: 'Comprehensive', icon: '📋', color: '#8b5cf6', target: 5, warning: 4 },
-    { id: 2, type: 'Insurance', icon: '🛡️', color: '#3b82f6', target: 3, warning: 2 },
-    { id: 3, type: 'Superannuation', icon: '💰', color: '#f59e0b', target: 4, warning: 3 },
-    { id: 4, type: 'Investment', icon: '📈', color: '#10b981', target: 4, warning: 3 }
-  ]);
+  const [slaTargets, setSlaTargets] = useState({
+    comprehensiveSOA: 24,
+    limitedAdvice: 12,
+    breachAlert: 48
+  });
 
   const [slaSettings, setSlaSettings] = useState({
     autoEscalate: true,
@@ -92,26 +97,32 @@ export default function AdminSettings() {
   });
 
   const [notifications, setNotifications] = useState({
-    newSubmissions: true,
-    dailyDigest: true,
-    overdueAlerts: true,
-    adviserRegistration: true,
-    slackWebhook: 'https://hooks.slack.com/services/...'
+    soaSubmitted: true,
+    soaApproved: true,
+    slaBreach: true,
+    newAdviceGroup: false,
+    newAdviser: false,
+    supportTicket: true
   });
 
   const [adviserOnboarding, setAdviserOnboarding] = useState({
+    requireAFSL: true,
     requireApproval: true,
     sendWelcomeEmail: true,
-    requireAFSL: true,
-    defaultPricingPlan: 'starter',
-    trialPeriod: 14
+    showChecklist: false,
+    welcomeMessage: 'Welcome to AI Paraplanner! We\'re excited to have you on board. Complete your profile setup to start submitting SOA requests.'
   });
 
   const [integrations, setIntegrations] = useState({
-    sendgrid: { connected: true },
-    stripe: { connected: true },
-    googleDrive: { connected: false },
-    slack: { connected: false }
+    sendgrid: { connected: true, name: 'SendGrid', description: 'Transactional email delivery', color: '#1A82E2' },
+    stripe: { connected: true, name: 'Stripe', description: 'Payment processing & billing', color: '#635BFF' },
+    entra: { connected: true, name: 'Microsoft Entra ID', description: 'Identity & access management', color: '#00A4EF' },
+    claude: { connected: true, name: 'Anthropic Claude', description: 'AI-powered SOA generation', color: '#D4A574' },
+    livekit: { connected: false, name: 'LiveKit', description: 'Real-time audio & video', color: '#7C3AED' }
+  });
+
+  const [themeSelection, setThemeSelection] = useState(() => {
+    return document.documentElement.getAttribute('data-theme') || 'dark';
   });
 
   const [apiKey, setApiKey] = useState('sk_live_51234567890abcdefghijklmnopqrstuvwxyz');
@@ -132,646 +143,852 @@ export default function AdminSettings() {
     }
   };
 
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+    (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
   const tabs = [
     { id: 'business', label: 'Business Details', icon: Building2 },
+    { id: 'appearance', label: 'Appearance', icon: Palette },
     { id: 'sla', label: 'SLA & Targets', icon: Target },
-    { id: 'team', label: 'Team Defaults', icon: Users },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'adviser', label: 'Adviser Onboarding', icon: UserPlus },
-    { id: 'integrations', label: 'Integrations', icon: Settings2 }
+    { id: 'integrations', label: 'Integrations', icon: Link2 }
   ];
 
-  return (
-    <div className="py-6 px-8">
+  // Inline style objects for theme-aware styling
+  const s = {
+    page: {
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100%',
+      fontFamily: "'DM Sans', sans-serif",
+    },
+    topbar: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '14px 24px',
+      borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : '#E2E8F0'}`,
+      background: isDark ? '#040B15' : '#ffffff',
+    },
+    breadcrumb: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      fontSize: '13px',
+      color: isDark ? 'rgba(176,196,222,0.65)' : '#64748b',
+    },
+    breadcrumbActive: {
+      color: isDark ? '#F0F4FF' : '#0f172a',
+      fontWeight: 500,
+    },
+    badge: {
+      fontSize: '10px',
+      fontWeight: 600,
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em',
+      padding: '2px 8px',
+      borderRadius: '6px',
+      background: isDark ? 'rgba(0,201,177,0.1)' : 'rgba(0,166,147,0.08)',
+      color: '#00A693',
+    },
+    settingsLayout: {
+      display: 'grid',
+      gridTemplateColumns: '200px 1fr',
+      flex: 1,
+      minHeight: 0,
+    },
+    subnav: {
+      padding: '20px 12px',
+      background: isDark ? '#040B15' : '#ffffff',
+      borderRight: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : '#E2E8F0'}`,
+      overflowY: 'auto',
+    },
+    subnavTitle: {
+      fontSize: '9px',
+      textTransform: 'uppercase',
+      letterSpacing: '0.1em',
+      color: isDark ? 'rgba(176,196,222,0.45)' : '#94a3b8',
+      fontWeight: 600,
+      padding: '0 10px',
+      marginBottom: '8px',
+    },
+    subnavItem: (isActive) => ({
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      padding: '8px 10px',
+      borderRadius: '8px',
+      fontSize: '13px',
+      fontWeight: isActive ? 500 : 400,
+      cursor: 'pointer',
+      transition: 'all 0.15s',
+      background: isActive ? 'rgba(0,201,177,0.08)' : 'transparent',
+      color: isActive ? '#00A693' : (isDark ? 'rgba(176,196,222,0.65)' : '#64748b'),
+      border: 'none',
+      width: '100%',
+      textAlign: 'left',
+    }),
+    content: {
+      padding: '24px',
+      overflowY: 'auto',
+      background: isDark ? '#060D1A' : '#f8fafc',
+    },
+    card: {
+      background: isDark ? 'rgba(13,25,41,0.7)' : '#ffffff',
+      border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : '#E2E8F0'}`,
+      borderRadius: '14px',
+      marginBottom: '16px',
+    },
+    cardHeader: {
+      padding: '18px 22px',
+      borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : '#f1f5f9'}`,
+    },
+    cardHeaderTitle: {
+      fontSize: '14px',
+      fontWeight: 600,
+      color: isDark ? '#F0F4FF' : '#0f172a',
+      margin: 0,
+    },
+    cardHeaderDesc: {
+      fontSize: '12px',
+      color: isDark ? 'rgba(176,196,222,0.5)' : '#94a3b8',
+      marginTop: '2px',
+    },
+    cardBody: {
+      padding: '22px',
+    },
+    saveBar: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      gap: '10px',
+      padding: '16px 22px',
+      borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : '#f1f5f9'}`,
+    },
+    label: {
+      fontSize: '12px',
+      fontWeight: 500,
+      color: isDark ? 'rgba(176,196,222,0.75)' : '#475569',
+      marginBottom: '6px',
+      display: 'block',
+    },
+    hint: {
+      fontSize: '11px',
+      color: isDark ? 'rgba(176,196,222,0.4)' : '#94a3b8',
+      marginTop: '4px',
+    },
+    input: {
+      background: isDark ? 'rgba(255,255,255,0.04)' : '#f8fafc',
+      border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0'}`,
+      borderRadius: '8px',
+      color: isDark ? '#F0F4FF' : '#0f172a',
+      fontSize: '13px',
+      padding: '8px 12px',
+      width: '100%',
+      outline: 'none',
+      fontFamily: "'DM Sans', sans-serif",
+    },
+    textarea: {
+      background: isDark ? 'rgba(255,255,255,0.04)' : '#f8fafc',
+      border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0'}`,
+      borderRadius: '8px',
+      color: isDark ? '#F0F4FF' : '#0f172a',
+      fontSize: '13px',
+      padding: '8px 12px',
+      width: '100%',
+      minHeight: '80px',
+      resize: 'vertical',
+      outline: 'none',
+      fontFamily: "'DM Sans', sans-serif",
+    },
+    cancelBtn: {
+      padding: '7px 16px',
+      borderRadius: '8px',
+      fontSize: '13px',
+      fontWeight: 500,
+      cursor: 'pointer',
+      border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0'}`,
+      background: 'transparent',
+      color: isDark ? 'rgba(176,196,222,0.65)' : '#64748b',
+      fontFamily: "'DM Sans', sans-serif",
+    },
+    saveBtn: {
+      padding: '7px 20px',
+      borderRadius: '8px',
+      fontSize: '13px',
+      fontWeight: 500,
+      cursor: 'pointer',
+      border: 'none',
+      background: '#00C9B1',
+      color: '#ffffff',
+      fontFamily: "'DM Sans', sans-serif",
+    },
+    toggleRow: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '12px 0',
+      borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.03)' : '#f1f5f9'}`,
+    },
+    toggleLabel: {
+      fontSize: '13px',
+      fontWeight: 500,
+      color: isDark ? '#F0F4FF' : '#0f172a',
+    },
+    toggleDesc: {
+      fontSize: '11px',
+      color: isDark ? 'rgba(176,196,222,0.45)' : '#94a3b8',
+      marginTop: '2px',
+    },
+    groupLabel: {
+      fontSize: '10px',
+      fontWeight: 600,
+      textTransform: 'uppercase',
+      letterSpacing: '0.08em',
+      color: isDark ? 'rgba(176,196,222,0.4)' : '#94a3b8',
+      paddingTop: '16px',
+      paddingBottom: '4px',
+    },
+  };
 
+  /* ----- Custom Toggle Component ----- */
+  const Toggle = ({ checked, onChange }) => (
+    <button
+      onClick={() => onChange(!checked)}
+      style={{
+        width: '36px',
+        height: '20px',
+        borderRadius: '10px',
+        border: 'none',
+        padding: '2px',
+        cursor: 'pointer',
+        transition: 'background 0.2s',
+        background: checked ? '#00C9B1' : (isDark ? 'rgba(255,255,255,0.1)' : '#E0E6F0'),
+        display: 'flex',
+        alignItems: 'center',
+        flexShrink: 0,
+      }}
+    >
+      <div style={{
+        width: '16px',
+        height: '16px',
+        borderRadius: '50%',
+        background: '#ffffff',
+        transition: 'transform 0.2s',
+        transform: checked ? 'translateX(16px)' : 'translateX(0px)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+      }} />
+    </button>
+  );
 
-          {/* Content */}
-          <div className="flex gap-6">
-            {/* Sidebar */}
-            <div className="w-[220px] flex-shrink-0">
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] p-2">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                return (
+  /* ----- RENDER SECTIONS ----- */
+
+  const renderBusinessDetails = () => (
+    <>
+      {/* Card 1 — Logo */}
+      <div style={s.card}>
+        <div style={s.cardHeader}>
+          <div style={s.cardHeaderTitle}>Company Logo</div>
+        </div>
+        <div style={s.cardBody}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '16px',
+              overflow: 'hidden',
+              flexShrink: 0,
+            }}>
+              {logoPreview ? (
+                <img src={logoPreview} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : 'AI'}
+            </div>
+            <div>
+              <label style={{ cursor: 'pointer' }}>
+                <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0'}`,
+                  color: isDark ? 'rgba(176,196,222,0.65)' : '#64748b',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                }}>
+                  <Upload style={{ width: '14px', height: '14px' }} />
+                  Upload
+                </span>
+              </label>
+              <div style={s.hint}>PNG or SVG, max 2MB</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Card 2 — Company Information */}
+      <div style={s.card}>
+        <div style={s.cardHeader}>
+          <div style={s.cardHeaderTitle}>Company Information</div>
+        </div>
+        <div style={s.cardBody}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+            <div>
+              <label style={s.label}>Company Name</label>
+              <input
+                style={s.input}
+                value={businessDetails.companyName}
+                onChange={(e) => setBusinessDetails({...businessDetails, companyName: e.target.value})}
+              />
+            </div>
+            <div>
+              <label style={s.label}>ABN</label>
+              <input
+                style={s.input}
+                value={businessDetails.abn}
+                onChange={(e) => setBusinessDetails({...businessDetails, abn: e.target.value})}
+              />
+            </div>
+            <div>
+              <label style={s.label}>Role</label>
+              <Select
+                value={businessDetails.role}
+                onValueChange={(value) => setBusinessDetails({...businessDetails, role: value})}
+              >
+                <SelectTrigger style={{
+                  ...s.input,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: 'pointer',
+                  height: '38px',
+                  padding: '0 12px',
+                }}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="advice_group">Advice Group</SelectItem>
+                  <SelectItem value="adviser">Adviser</SelectItem>
+                  <SelectItem value="client">Client</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+            <div>
+              <label style={s.label}>Business Contact Email</label>
+              <input
+                type="email"
+                style={s.input}
+                value={businessDetails.businessEmail}
+                onChange={(e) => setBusinessDetails({...businessDetails, businessEmail: e.target.value})}
+              />
+              <div style={s.hint}>Used for invoicing and business enquiries</div>
+            </div>
+            <div>
+              <label style={s.label}>Support Email</label>
+              <input
+                type="email"
+                style={s.input}
+                value={businessDetails.supportEmail}
+                onChange={(e) => setBusinessDetails({...businessDetails, supportEmail: e.target.value})}
+              />
+              <div style={s.hint}>Displayed to advisers for support requests</div>
+            </div>
+          </div>
+          <div>
+            <label style={s.label}>Business Address</label>
+            <textarea
+              style={s.textarea}
+              value={businessDetails.address}
+              onChange={(e) => setBusinessDetails({...businessDetails, address: e.target.value})}
+            />
+          </div>
+        </div>
+        <div style={s.saveBar}>
+          <button style={s.cancelBtn}>Cancel</button>
+          <button
+            style={s.saveBtn}
+            onClick={() => {
+              localStorage.setItem('businessDetails', JSON.stringify(businessDetails));
+              window.dispatchEvent(new Event('businessDetailsUpdated'));
+              toast.success('Business details saved successfully');
+            }}
+          >
+            Save changes
+          </button>
+        </div>
+      </div>
+    </>
+  );
+
+  const renderAppearance = () => {
+    const themes = [
+      {
+        id: 'light',
+        label: 'Light',
+        preview: (
+          <div style={{ display: 'flex', height: '48px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #E2E8F0' }}>
+            <div style={{ width: '30%', background: '#ffffff' }} />
+            <div style={{ flex: 1, background: '#f8fafc' }} />
+          </div>
+        ),
+      },
+      {
+        id: 'dark',
+        label: 'Dark',
+        preview: (
+          <div style={{ display: 'flex', height: '48px', borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ width: '30%', background: '#0f172a' }} />
+            <div style={{ flex: 1, background: '#060D1A' }} />
+          </div>
+        ),
+      },
+      {
+        id: 'system',
+        label: 'System',
+        preview: (
+          <div style={{ display: 'flex', height: '48px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #E2E8F0' }}>
+            <div style={{ flex: 1, background: 'linear-gradient(135deg, #f8fafc 50%, #060D1A 50%)' }} />
+          </div>
+        ),
+      },
+    ];
+
+    return (
+      <div style={s.card}>
+        <div style={s.cardHeader}>
+          <div style={s.cardHeaderTitle}>Theme</div>
+          <div style={s.cardHeaderDesc}>Choose how the interface looks</div>
+        </div>
+        <div style={s.cardBody}>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            {themes.map((t) => {
+              const selected = themeSelection === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setThemeSelection(t.id)}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    borderRadius: '10px',
+                    border: `1.5px solid ${selected ? 'rgba(0,201,177,0.4)' : (isDark ? 'rgba(255,255,255,0.06)' : '#E2E8F0')}`,
+                    background: selected ? 'rgba(0,201,177,0.04)' : 'transparent',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                  }}
+                >
+                  {t.preview}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '10px' }}>
+                    <div style={{
+                      width: '16px',
+                      height: '16px',
+                      borderRadius: '50%',
+                      border: `2px solid ${selected ? '#00C9B1' : (isDark ? 'rgba(255,255,255,0.12)' : '#cbd5e1')}`,
+                      background: selected ? '#00C9B1' : 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                      {selected && (
+                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ffffff' }} />
+                      )}
+                    </div>
+                    <span style={{
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      color: selected ? (isDark ? '#F0F4FF' : '#0f172a') : (isDark ? 'rgba(176,196,222,0.5)' : '#94a3b8'),
+                    }}>
+                      {t.label}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div style={s.saveBar}>
+          <button style={s.cancelBtn} onClick={() => setThemeSelection(document.documentElement.getAttribute('data-theme') || 'dark')}>Cancel</button>
+          <button
+            style={s.saveBtn}
+            onClick={() => {
+              if (themeSelection === 'system') {
+                document.documentElement.removeAttribute('data-theme');
+              } else {
+                document.documentElement.setAttribute('data-theme', themeSelection);
+              }
+              localStorage.setItem('theme', themeSelection);
+              toast.success('Theme updated');
+            }}
+          >
+            Save changes
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderSLA = () => {
+    const slaCards = [
+      { key: 'comprehensiveSOA', label: 'Comprehensive SOA', hint: 'Full advice document turnaround' },
+      { key: 'limitedAdvice', label: 'Limited Advice', hint: 'Scaled advice turnaround' },
+      { key: 'breachAlert', label: 'SLA Breach Alert', hint: 'Alert threshold for overdue items' },
+    ];
+
+    return (
+      <div style={s.card}>
+        <div style={s.cardHeader}>
+          <div style={s.cardHeaderTitle}>SLA Targets</div>
+          <div style={s.cardHeaderDesc}>Configure target turnaround times</div>
+        </div>
+        <div style={s.cardBody}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+            {slaCards.map((item) => (
+              <div
+                key={item.key}
+                style={{
+                  padding: '20px',
+                  borderRadius: '10px',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : '#E2E8F0'}`,
+                  background: isDark ? 'rgba(255,255,255,0.02)' : '#f8fafc',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ ...s.label, textAlign: 'center', marginBottom: '12px' }}>{item.label}</div>
+                <input
+                  type="number"
+                  value={slaTargets[item.key]}
+                  onChange={(e) => setSlaTargets({ ...slaTargets, [item.key]: parseInt(e.target.value) || 0 })}
+                  style={{
+                    ...s.input,
+                    fontSize: '18px',
+                    fontVariantNumeric: 'tabular-nums',
+                    textAlign: 'center',
+                    fontWeight: 600,
+                    width: '80px',
+                    margin: '0 auto',
+                    display: 'block',
+                    padding: '8px',
+                  }}
+                />
+                <div style={{ fontSize: '11px', color: isDark ? 'rgba(176,196,222,0.4)' : '#94a3b8', marginTop: '6px' }}>hours</div>
+                <div style={{ ...s.hint, marginTop: '8px' }}>{item.hint}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={s.saveBar}>
+          <button style={s.cancelBtn}>Cancel</button>
+          <button style={s.saveBtn} onClick={() => toast.success('SLA targets saved')}>Save changes</button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderNotifications = () => (
+    <div style={s.card}>
+      <div style={s.cardHeader}>
+        <div style={s.cardHeaderTitle}>Email Notifications</div>
+        <div style={s.cardHeaderDesc}>Configure which events trigger email alerts</div>
+      </div>
+      <div style={s.cardBody}>
+        <div style={s.groupLabel}>SOA Events</div>
+        <div style={s.toggleRow}>
+          <div>
+            <div style={s.toggleLabel}>SOA submitted</div>
+            <div style={s.toggleDesc}>Notify when a new SOA request is submitted</div>
+          </div>
+          <Toggle checked={notifications.soaSubmitted} onChange={(v) => setNotifications({...notifications, soaSubmitted: v})} />
+        </div>
+        <div style={s.toggleRow}>
+          <div>
+            <div style={s.toggleLabel}>SOA approved</div>
+            <div style={s.toggleDesc}>Notify when an SOA is approved by the adviser</div>
+          </div>
+          <Toggle checked={notifications.soaApproved} onChange={(v) => setNotifications({...notifications, soaApproved: v})} />
+        </div>
+        <div style={s.toggleRow}>
+          <div>
+            <div style={s.toggleLabel}>SLA breach</div>
+            <div style={s.toggleDesc}>Notify when an SOA exceeds its target turnaround</div>
+          </div>
+          <Toggle checked={notifications.slaBreach} onChange={(v) => setNotifications({...notifications, slaBreach: v})} />
+        </div>
+
+        <div style={s.groupLabel}>Platform Events</div>
+        <div style={s.toggleRow}>
+          <div>
+            <div style={s.toggleLabel}>New advice group registered</div>
+            <div style={s.toggleDesc}>Notify when a new advice group signs up</div>
+          </div>
+          <Toggle checked={notifications.newAdviceGroup} onChange={(v) => setNotifications({...notifications, newAdviceGroup: v})} />
+        </div>
+        <div style={s.toggleRow}>
+          <div>
+            <div style={s.toggleLabel}>New adviser registered</div>
+            <div style={s.toggleDesc}>Notify when a new adviser signs up</div>
+          </div>
+          <Toggle checked={notifications.newAdviser} onChange={(v) => setNotifications({...notifications, newAdviser: v})} />
+        </div>
+        <div style={{ ...s.toggleRow, borderBottom: 'none' }}>
+          <div>
+            <div style={s.toggleLabel}>Support ticket opened</div>
+            <div style={s.toggleDesc}>Notify when a new support ticket is created</div>
+          </div>
+          <Toggle checked={notifications.supportTicket} onChange={(v) => setNotifications({...notifications, supportTicket: v})} />
+        </div>
+      </div>
+      <div style={s.saveBar}>
+        <button style={s.cancelBtn}>Cancel</button>
+        <button style={s.saveBtn} onClick={() => toast.success('Notification preferences saved')}>Save changes</button>
+      </div>
+    </div>
+  );
+
+  const renderAdviserOnboarding = () => (
+    <div style={s.card}>
+      <div style={s.cardHeader}>
+        <div style={s.cardHeaderTitle}>Onboarding Settings</div>
+        <div style={s.cardHeaderDesc}>Configure how new advisers are onboarded</div>
+      </div>
+      <div style={s.cardBody}>
+        <div style={s.toggleRow}>
+          <div>
+            <div style={s.toggleLabel}>Require AFSL verification</div>
+            <div style={s.toggleDesc}>Advisers must provide valid AFSL details during registration</div>
+          </div>
+          <Toggle checked={adviserOnboarding.requireAFSL} onChange={(v) => setAdviserOnboarding({...adviserOnboarding, requireAFSL: v})} />
+        </div>
+        <div style={s.toggleRow}>
+          <div>
+            <div style={s.toggleLabel}>Require licensee approval</div>
+            <div style={s.toggleDesc}>New adviser accounts must be approved before access is granted</div>
+          </div>
+          <Toggle checked={adviserOnboarding.requireApproval} onChange={(v) => setAdviserOnboarding({...adviserOnboarding, requireApproval: v})} />
+        </div>
+        <div style={s.toggleRow}>
+          <div>
+            <div style={s.toggleLabel}>Send welcome email</div>
+            <div style={s.toggleDesc}>Automatically send a welcome email when an adviser is approved</div>
+          </div>
+          <Toggle checked={adviserOnboarding.sendWelcomeEmail} onChange={(v) => setAdviserOnboarding({...adviserOnboarding, sendWelcomeEmail: v})} />
+        </div>
+        <div style={{ ...s.toggleRow, borderBottom: 'none' }}>
+          <div>
+            <div style={s.toggleLabel}>Show onboarding checklist</div>
+            <div style={s.toggleDesc}>Display a getting-started checklist on first login</div>
+          </div>
+          <Toggle checked={adviserOnboarding.showChecklist} onChange={(v) => setAdviserOnboarding({...adviserOnboarding, showChecklist: v})} />
+        </div>
+
+        <div style={{ marginTop: '20px' }}>
+          <label style={s.label}>Welcome Message</label>
+          <textarea
+            style={s.textarea}
+            value={adviserOnboarding.welcomeMessage}
+            onChange={(e) => setAdviserOnboarding({...adviserOnboarding, welcomeMessage: e.target.value})}
+          />
+          <div style={s.hint}>Shown to advisers on their first login</div>
+        </div>
+      </div>
+      <div style={s.saveBar}>
+        <button style={s.cancelBtn}>Cancel</button>
+        <button style={s.saveBtn} onClick={() => toast.success('Onboarding settings saved')}>Save changes</button>
+      </div>
+    </div>
+  );
+
+  const renderIntegrations = () => (
+    <div style={s.card}>
+      <div style={s.cardHeader}>
+        <div style={s.cardHeaderTitle}>Connected Services</div>
+        <div style={s.cardHeaderDesc}>Manage external service integrations</div>
+      </div>
+      <div style={s.cardBody}>
+        {Object.entries(integrations).map(([key, integration], idx, arr) => (
+          <div
+            key={key}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '14px 0',
+              borderBottom: idx < arr.length - 1 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : '#f1f5f9'}` : 'none',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: `${integration.color}18`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <div style={{
+                  width: '18px',
+                  height: '18px',
+                  borderRadius: '4px',
+                  background: integration.color,
+                }} />
+              </div>
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#F0F4FF' : '#0f172a' }}>
+                  {integration.name}
+                </div>
+                <div style={{ fontSize: '11px', color: isDark ? 'rgba(176,196,222,0.4)' : '#94a3b8' }}>
+                  {integration.description}
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {integration.connected ? (
+                <>
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    background: isDark ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.08)',
+                    color: '#10b981',
+                  }}>
+                    Connected
+                  </span>
                   <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                      activeTab === tab.id
-                        ? 'bg-[#eff6ff] text-[#1d4ed8]'
-                        : 'text-[#64748b] hover:bg-[#f8fafc]'
-                    }`}
+                    onClick={() => setIntegrations({...integrations, [key]: {...integration, connected: false}})}
+                    style={{
+                      padding: '5px 12px',
+                      borderRadius: '7px',
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : '#E2E8F0'}`,
+                      background: 'transparent',
+                      color: isDark ? 'rgba(176,196,222,0.5)' : '#94a3b8',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                    onMouseEnter={(e) => { e.target.style.borderColor = '#ef4444'; e.target.style.color = '#ef4444'; }}
+                    onMouseLeave={(e) => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.06)' : '#E2E8F0'; e.target.style.color = isDark ? 'rgba(176,196,222,0.5)' : '#94a3b8'; }}
                   >
-                    <Icon className="w-5 h-5 flex-shrink-0" />
-                    <span className="whitespace-nowrap">{tab.label}</span>
+                    Disconnect
                   </button>
-                );
-              })}
+                </>
+              ) : (
+                <>
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    background: isDark ? 'rgba(255,255,255,0.04)' : '#f1f5f9',
+                    color: isDark ? 'rgba(176,196,222,0.4)' : '#94a3b8',
+                  }}>
+                    Not connected
+                  </span>
+                  <button
+                    onClick={() => setIntegrations({...integrations, [key]: {...integration, connected: true}})}
+                    style={{
+                      padding: '5px 12px',
+                      borderRadius: '7px',
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : '#E2E8F0'}`,
+                      background: 'transparent',
+                      color: isDark ? 'rgba(176,196,222,0.5)' : '#94a3b8',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                    onMouseEnter={(e) => { e.target.style.borderColor = '#00C9B1'; e.target.style.color = '#00C9B1'; }}
+                    onMouseLeave={(e) => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.06)' : '#E2E8F0'; e.target.style.color = isDark ? 'rgba(176,196,222,0.5)' : '#94a3b8'; }}
+                  >
+                    Connect
+                  </button>
+                </>
+              )}
             </div>
-            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
-            {/* Main Content */}
-            <div className="flex-1">
-            {/* Business Details */}
-            {activeTab === 'business' && (
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-8">
-                <div className="mb-6">
-                  <h2 className="text-xl font-semibold text-[#0f172a] mb-1">Business Details</h2>
-                  <p className="text-sm text-[#64748b]">Your company information displayed to advisers</p>
-                </div>
+  const sectionMap = {
+    business: renderBusinessDetails,
+    appearance: renderAppearance,
+    sla: renderSLA,
+    notifications: renderNotifications,
+    adviser: renderAdviserOnboarding,
+    integrations: renderIntegrations,
+  };
 
-                <div className="space-y-6">
-                  {/* Company Logo */}
-                  <div>
-                    <Label className="text-sm font-medium text-[#0f172a] mb-3 block">Company Logo</Label>
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] rounded-xl flex items-center justify-center text-white font-bold text-xl">
-                        {logoPreview ? (
-                          <img src={logoPreview} alt="Logo" className="w-full h-full object-cover rounded-xl" />
-                        ) : (
-                          'AI'
-                        )}
-                      </div>
-                      <div className="flex gap-3">
-                        <label className="cursor-pointer">
-                          <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                          <span className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors bg-[#3b82f6] hover:bg-[#2563eb] text-white h-9 px-4 py-2">
-                            <Upload className="w-4 h-4 mr-2" />
-                            Upload New Logo
-                          </span>
-                        </label>
-                        {logoPreview && (
-                          <Button 
-                            variant="outline" 
-                            onClick={() => {
-                              setLogoPreview(null);
-                              setBusinessDetails({...businessDetails, logo_url: null});
-                            }}
-                          >
-                            Remove
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                    <p className="text-xs text-[#64748b] mt-2">PNG or SVG, max 2MB</p>
-                  </div>
+  return (
+    <div style={s.page}>
+      {/* TOPBAR */}
+      <div style={s.topbar}>
+        <div style={s.breadcrumb}>
+          <Link to={createPageUrl('AdminDashboard')} style={{ color: 'inherit', textDecoration: 'none', fontSize: '15px' }}>
+            🏠
+          </Link>
+          <ChevronRight style={{ width: '14px', height: '14px', opacity: 0.4 }} />
+          <span style={s.breadcrumbActive}>Settings</span>
+          <span style={s.badge}>Platform Admin</span>
+        </div>
+      </div>
 
-                  {/* Company Name, ABN & Role */}
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Company Name</Label>
-                      <Input
-                        value={businessDetails.companyName}
-                        onChange={(e) => setBusinessDetails({...businessDetails, companyName: e.target.value})}
-                        className="border-[#e2e8f0]"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">ABN</Label>
-                      <Input
-                        value={businessDetails.abn}
-                        onChange={(e) => setBusinessDetails({...businessDetails, abn: e.target.value})}
-                        className="border-[#e2e8f0]"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Role</Label>
-                      <Select
-                        value={businessDetails.role}
-                        onValueChange={(value) => setBusinessDetails({...businessDetails, role: value})}
-                      >
-                        <SelectTrigger className="border-[#e2e8f0]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="advice_group">Advice Group</SelectItem>
-                          <SelectItem value="adviser">Adviser</SelectItem>
-                          <SelectItem value="client">Client</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {/* Emails */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Business Contact Email</Label>
-                      <Input
-                        type="email"
-                        value={businessDetails.businessEmail}
-                        onChange={(e) => setBusinessDetails({...businessDetails, businessEmail: e.target.value})}
-                        className="border-[#e2e8f0]"
-                      />
-                      <p className="text-xs text-[#64748b] mt-1">Used for invoicing and business enquiries</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Support Email</Label>
-                      <Input
-                        type="email"
-                        value={businessDetails.supportEmail}
-                        onChange={(e) => setBusinessDetails({...businessDetails, supportEmail: e.target.value})}
-                        className="border-[#e2e8f0]"
-                      />
-                      <p className="text-xs text-[#64748b] mt-1">Displayed to advisers for support requests</p>
-                    </div>
-                  </div>
-
-                  {/* Address */}
-                  <div>
-                    <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Business Address</Label>
-                    <Textarea
-                      value={businessDetails.address}
-                      onChange={(e) => setBusinessDetails({...businessDetails, address: e.target.value})}
-                      className="border-[#e2e8f0] min-h-[100px]"
-                    />
-                  </div>
-
-                  <div className="pt-4 border-t border-[#e2e8f0]">
-                    <Button 
-                      className="bg-[#0f172a] hover:bg-[#1e293b] text-white"
-                      onClick={() => {
-                        localStorage.setItem('businessDetails', JSON.stringify(businessDetails));
-                        window.dispatchEvent(new Event('businessDetailsUpdated'));
-                        toast.success('Business details saved successfully');
-                      }}
-                    >
-                      Save Changes
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* SLA & Targets */}
-            {activeTab === 'sla' && (
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-8">
-                <div className="mb-6">
-                  <h2 className="text-xl font-semibold text-[#0f172a] mb-1">SLA & Turnaround Targets</h2>
-                  <p className="text-sm text-[#64748b]">Configure target completion times by advice type</p>
-                </div>
-
-                <div className="space-y-6">
-                  {/* Targets Table */}
-                  <div>
-                    <div className="grid grid-cols-[1fr,120px,120px] gap-4 mb-3 px-4">
-                      <div className="text-xs font-semibold text-[#64748b] uppercase tracking-wider">Advice Type</div>
-                      <div className="text-xs font-semibold text-[#64748b] uppercase tracking-wider">Target (Days)</div>
-                      <div className="text-xs font-semibold text-[#64748b] uppercase tracking-wider">Warning At</div>
-                    </div>
-                    <div className="space-y-2">
-                      {slaTargets.map((item) => (
-                        <div key={item.id} className="grid grid-cols-[1fr,120px,120px] gap-4 items-center bg-[#f8fafc] rounded-xl p-4">
-                          <div className="flex items-center gap-3">
-                            <div 
-                              className="w-10 h-10 rounded-lg flex items-center justify-center text-lg"
-                              style={{ backgroundColor: `${item.color}20` }}
-                            >
-                              {item.icon}
-                            </div>
-                            <span className="font-medium text-[#0f172a]">{item.type}</span>
-                          </div>
-                          <Input
-                            type="number"
-                            value={item.target}
-                            onChange={(e) => {
-                              const updated = slaTargets.map(t => 
-                                t.id === item.id ? {...t, target: parseInt(e.target.value)} : t
-                              );
-                              setSlaTargets(updated);
-                            }}
-                            className="border-[#e2e8f0] text-center"
-                          />
-                          <Input
-                            type="number"
-                            value={item.warning}
-                            onChange={(e) => {
-                              const updated = slaTargets.map(t => 
-                                t.id === item.id ? {...t, warning: parseInt(e.target.value)} : t
-                              );
-                              setSlaTargets(updated);
-                            }}
-                            className="border-[#e2e8f0] text-center"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Settings */}
-                  <div className="space-y-4 pt-4 border-t border-[#e2e8f0]">
-                    <div className="flex items-center justify-between p-4 bg-[#f8fafc] rounded-xl">
-                      <div>
-                        <div className="font-medium text-[#0f172a] mb-1">Auto-escalate overdue SOAs</div>
-                        <div className="text-sm text-[#64748b]">Automatically flag SOAs as high priority when they exceed the target</div>
-                      </div>
-                      <Switch
-                        checked={slaSettings.autoEscalate}
-                        onCheckedChange={(checked) => setSlaSettings({...slaSettings, autoEscalate: checked})}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-[#f8fafc] rounded-xl">
-                      <div>
-                        <div className="font-medium text-[#0f172a] mb-1">Include weekends in turnaround calculation</div>
-                        <div className="text-sm text-[#64748b]">Count Saturday and Sunday as working days</div>
-                      </div>
-                      <Switch
-                        checked={slaSettings.includeWeekends}
-                        onCheckedChange={(checked) => setSlaSettings({...slaSettings, includeWeekends: checked})}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="pt-4">
-                    <Button className="bg-[#0f172a] hover:bg-[#1e293b] text-white">
-                      Save Changes
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Team Defaults */}
-            {activeTab === 'team' && (
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-8">
-                <div className="mb-6">
-                  <h2 className="text-xl font-semibold text-[#0f172a] mb-1">Team Defaults</h2>
-                  <p className="text-sm text-[#64748b]">Configure default settings for team members and assignments</p>
-                </div>
-
-                <div className="space-y-6">
-                  {/* Capacity & Assignment */}
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Default Capacity for New Team Members</Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="number"
-                          value={teamDefaults.defaultCapacity}
-                          onChange={(e) => setTeamDefaults({...teamDefaults, defaultCapacity: parseInt(e.target.value)})}
-                          className="border-[#e2e8f0] w-24"
-                        />
-                        <span className="text-sm text-[#64748b]">SOAs</span>
-                      </div>
-                      <p className="text-xs text-[#64748b] mt-2">Maximum concurrent SOAs a new team member can handle</p>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Assignment Mode</Label>
-                      <Select
-                        value={teamDefaults.assignmentMode}
-                        onValueChange={(value) => setTeamDefaults({...teamDefaults, assignmentMode: value})}
-                      >
-                        <SelectTrigger className="border-[#e2e8f0]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="manual">Manual Assignment</SelectItem>
-                          <SelectItem value="auto">Auto Assignment</SelectItem>
-                          <SelectItem value="round-robin">Round Robin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-[#64748b] mt-2">How new SOA requests are assigned to team members</p>
-                    </div>
-                  </div>
-
-                  {/* Working Days & Hours */}
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Working Days</Label>
-                      <Select
-                        value={teamDefaults.workingDays}
-                        onValueChange={(value) => setTeamDefaults({...teamDefaults, workingDays: value})}
-                      >
-                        <SelectTrigger className="border-[#e2e8f0]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="monday-friday">Monday - Friday</SelectItem>
-                          <SelectItem value="monday-saturday">Monday - Saturday</SelectItem>
-                          <SelectItem value="all-week">All Week</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Business Hours</Label>
-                      <div className="flex items-center gap-3">
-                        <Input
-                          type="time"
-                          value={teamDefaults.businessHoursStart}
-                          onChange={(e) => setTeamDefaults({...teamDefaults, businessHoursStart: e.target.value})}
-                          className="border-[#e2e8f0]"
-                        />
-                        <span className="text-[#64748b]">to</span>
-                        <Input
-                          type="time"
-                          value={teamDefaults.businessHoursEnd}
-                          onChange={(e) => setTeamDefaults({...teamDefaults, businessHoursEnd: e.target.value})}
-                          className="border-[#e2e8f0]"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Self-Assign */}
-                  <div className="flex items-center justify-between p-4 bg-[#f8fafc] rounded-xl">
-                    <div>
-                      <div className="font-medium text-[#0f172a] mb-1">Allow team members to self-assign</div>
-                      <div className="text-sm text-[#64748b]">Team members can pick up unassigned SOAs themselves</div>
-                    </div>
-                    <Switch
-                      checked={teamDefaults.allowSelfAssign}
-                      onCheckedChange={(checked) => setTeamDefaults({...teamDefaults, allowSelfAssign: checked})}
-                    />
-                  </div>
-
-                  <div className="pt-4 border-t border-[#e2e8f0]">
-                    <Button className="bg-[#0f172a] hover:bg-[#1e293b] text-white">
-                      Save Changes
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Notifications */}
-            {activeTab === 'notifications' && (
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-8">
-                <div className="mb-6">
-                  <h2 className="text-xl font-semibold text-[#0f172a] mb-1">Notifications</h2>
-                  <p className="text-sm text-[#64748b]">Configure how you receive alerts and updates</p>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-[#f8fafc] rounded-xl">
-                    <div>
-                      <div className="font-medium text-[#0f172a] mb-1">Email alerts for new submissions</div>
-                      <div className="text-sm text-[#64748b]">Receive an email when a new SOA request is submitted</div>
-                    </div>
-                    <Switch
-                      checked={notifications.newSubmissions}
-                      onCheckedChange={(checked) => setNotifications({...notifications, newSubmissions: checked})}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-[#f8fafc] rounded-xl">
-                    <div>
-                      <div className="font-medium text-[#0f172a] mb-1">Daily digest email</div>
-                      <div className="text-sm text-[#64748b]">Receive a daily summary of queue status and completed work</div>
-                    </div>
-                    <Switch
-                      checked={notifications.dailyDigest}
-                      onCheckedChange={(checked) => setNotifications({...notifications, dailyDigest: checked})}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-[#f8fafc] rounded-xl">
-                    <div>
-                      <div className="font-medium text-[#0f172a] mb-1">Overdue SOA alerts</div>
-                      <div className="text-sm text-[#64748b]">Get notified when an SOA exceeds its target turnaround</div>
-                    </div>
-                    <Switch
-                      checked={notifications.overdueAlerts}
-                      onCheckedChange={(checked) => setNotifications({...notifications, overdueAlerts: checked})}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-[#f8fafc] rounded-xl">
-                    <div>
-                      <div className="font-medium text-[#0f172a] mb-1">New adviser registration alerts</div>
-                      <div className="text-sm text-[#64748b]">Get notified when a new adviser signs up</div>
-                    </div>
-                    <Switch
-                      checked={notifications.adviserRegistration}
-                      onCheckedChange={(checked) => setNotifications({...notifications, adviserRegistration: checked})}
-                    />
-                  </div>
-
-                  <div className="pt-4 border-t border-[#e2e8f0]">
-                    <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Slack Webhook URL (optional)</Label>
-                    <Input
-                      type="url"
-                      value={notifications.slackWebhook}
-                      onChange={(e) => setNotifications({...notifications, slackWebhook: e.target.value})}
-                      placeholder="https://hooks.slack.com/services/..."
-                      className="border-[#e2e8f0]"
-                    />
-                    <p className="text-xs text-[#64748b] mt-2">Send notifications to a Slack channel</p>
-                  </div>
-
-                  <div className="pt-4">
-                    <Button className="bg-[#0f172a] hover:bg-[#1e293b] text-white">
-                      Save Changes
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Adviser Onboarding */}
-            {activeTab === 'adviser' && (
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-8">
-                <div className="mb-6">
-                  <h2 className="text-xl font-semibold text-[#0f172a] mb-1">Adviser Onboarding</h2>
-                  <p className="text-sm text-[#64748b]">Configure how new advisers are onboarded to the platform</p>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-[#f8fafc] rounded-xl">
-                    <div>
-                      <div className="font-medium text-[#0f172a] mb-1">Require admin approval for new advisers</div>
-                      <div className="text-sm text-[#64748b]">New adviser accounts must be approved before they can submit SOA requests</div>
-                    </div>
-                    <Switch
-                      checked={adviserOnboarding.requireApproval}
-                      onCheckedChange={(checked) => setAdviserOnboarding({...adviserOnboarding, requireApproval: checked})}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-[#f8fafc] rounded-xl">
-                    <div>
-                      <div className="font-medium text-[#0f172a] mb-1">Send welcome email</div>
-                      <div className="text-sm text-[#64748b]">Automatically send a welcome email when an adviser account is approved</div>
-                    </div>
-                    <Switch
-                      checked={adviserOnboarding.sendWelcomeEmail}
-                      onCheckedChange={(checked) => setAdviserOnboarding({...adviserOnboarding, sendWelcomeEmail: checked})}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-[#f8fafc] rounded-xl">
-                    <div>
-                      <div className="font-medium text-[#0f172a] mb-1">Require AFSL verification</div>
-                      <div className="text-sm text-[#64748b]">Advisers must provide valid AFSL details during registration</div>
-                    </div>
-                    <Switch
-                      checked={adviserOnboarding.requireAFSL}
-                      onCheckedChange={(checked) => setAdviserOnboarding({...adviserOnboarding, requireAFSL: checked})}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6 pt-4">
-                    <div>
-                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Default Pricing Plan</Label>
-                      <Select
-                        value={adviserOnboarding.defaultPricingPlan}
-                        onValueChange={(value) => setAdviserOnboarding({...adviserOnboarding, defaultPricingPlan: value})}
-                      >
-                        <SelectTrigger className="border-[#e2e8f0]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="starter">Starter (5 SOAs/month)</SelectItem>
-                          <SelectItem value="professional">Professional (15 SOAs/month)</SelectItem>
-                          <SelectItem value="enterprise">Enterprise (Unlimited)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">Trial Period</Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="number"
-                          value={adviserOnboarding.trialPeriod}
-                          onChange={(e) => setAdviserOnboarding({...adviserOnboarding, trialPeriod: parseInt(e.target.value)})}
-                          className="border-[#e2e8f0] w-24"
-                        />
-                        <span className="text-sm text-[#64748b]">days</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-[#e2e8f0]">
-                    <Button className="bg-[#0f172a] hover:bg-[#1e293b] text-white">
-                      Save Changes
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Integrations */}
-            {activeTab === 'integrations' && (
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-8">
-                <div className="mb-6">
-                  <h2 className="text-xl font-semibold text-[#0f172a] mb-1">Integrations</h2>
-                  <p className="text-sm text-[#64748b]">Connect external services and manage API access</p>
-                </div>
-
-                <div className="space-y-8">
-                  {/* Connected Services */}
-                  <div>
-                    <div className="text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-4">Connected Services</div>
-                    <div className="space-y-3">
-                      {/* SendGrid */}
-                      <div className="flex items-center justify-between p-4 border border-[#e2e8f0] rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-[#eff6ff] rounded-lg flex items-center justify-center">
-                            <div className="w-6 h-6 bg-[#3b82f6] rounded-md"></div>
-                          </div>
-                          <div>
-                            <div className="font-medium text-[#0f172a]">SendGrid</div>
-                            <div className="text-sm text-[#10b981]">✓ Connected</div>
-                          </div>
-                        </div>
-                        <Button variant="outline" className="border-[#e2e8f0]">
-                          Configure
-                        </Button>
-                      </div>
-
-                      {/* Stripe */}
-                      <div className="flex items-center justify-between p-4 border border-[#e2e8f0] rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-[#eff6ff] rounded-lg flex items-center justify-center">
-                            <div className="w-6 h-6 bg-[#635bff] rounded-md"></div>
-                          </div>
-                          <div>
-                            <div className="font-medium text-[#0f172a]">Stripe</div>
-                            <div className="text-sm text-[#10b981]">✓ Connected</div>
-                          </div>
-                        </div>
-                        <Button variant="outline" className="border-[#e2e8f0]">
-                          Configure
-                        </Button>
-                      </div>
-
-                      {/* Google Drive */}
-                      <div className="flex items-center justify-between p-4 border border-[#e2e8f0] rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-[#fef3c7] rounded-lg flex items-center justify-center">
-                            <div className="w-6 h-6 bg-[#f59e0b] rounded-md"></div>
-                          </div>
-                          <div>
-                            <div className="font-medium text-[#0f172a]">Google Drive</div>
-                            <div className="text-sm text-[#64748b]">Not connected</div>
-                          </div>
-                        </div>
-                        <Button className="bg-[#3b82f6] hover:bg-[#2563eb] text-white">
-                          Connect
-                        </Button>
-                      </div>
-
-                      {/* Slack */}
-                      <div className="flex items-center justify-between p-4 border border-[#e2e8f0] rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-[#fce7f3] rounded-lg flex items-center justify-center">
-                            <div className="w-6 h-6 bg-[#ec4899] rounded-md"></div>
-                          </div>
-                          <div>
-                            <div className="font-medium text-[#0f172a]">Slack</div>
-                            <div className="text-sm text-[#64748b]">Not connected</div>
-                          </div>
-                        </div>
-                        <Button className="bg-[#3b82f6] hover:bg-[#2563eb] text-white">
-                          Connect
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* API Access */}
-                  <div className="pt-6 border-t border-[#e2e8f0]">
-                    <div className="text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-4">API Access</div>
-                    <div>
-                      <Label className="text-sm font-medium text-[#0f172a] mb-2 block">API Key</Label>
-                      <div className="flex items-center gap-3 mb-2">
-                        <Input
-                          type={showApiKey ? "text" : "password"}
-                          value={apiKey}
-                          readOnly
-                          className="border-[#e2e8f0] font-mono text-sm flex-1"
-                        />
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setShowApiKey(!showApiKey)}
-                          className="border-[#e2e8f0]"
-                        >
-                          {showApiKey ? 'Hide' : 'Show'}
-                        </Button>
-                        <Button 
-                          variant="outline"
-                          onClick={() => {
-                            navigator.clipboard.writeText(apiKey);
-                          }}
-                          className="border-[#e2e8f0]"
-                        >
-                          Copy
-                        </Button>
-                      </div>
-                      <p className="text-xs text-[#64748b] mb-4">Use this key to access the AI Paraplanner API</p>
-                      <Button variant="destructive" className="bg-[#ef4444] hover:bg-[#dc2626]">
-                        Regenerate API Key
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            </div>
-            </div>
-            </div>
+      {/* SETTINGS LAYOUT */}
+      <div style={s.settingsLayout}>
+        {/* LEFT SUB-NAV */}
+        <div style={s.subnav}>
+          <div style={s.subnavTitle}>Settings</div>
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={s.subnavItem(isActive)}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.04)' : '#f8fafc';
+                    e.currentTarget.style.color = isDark ? '#F0F4FF' : '#0f172a';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = isDark ? 'rgba(176,196,222,0.65)' : '#64748b';
+                  }
+                }}
+              >
+                <Icon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
+                <span>{tab.label}</span>
+              </button>
             );
-            }
+          })}
+        </div>
+
+        {/* SETTINGS CONTENT */}
+        <div style={s.content}>
+          {sectionMap[activeTab]?.()}
+        </div>
+      </div>
+    </div>
+  );
+}
