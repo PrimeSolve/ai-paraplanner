@@ -2,28 +2,66 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 
-export default function NavigationItem({ item, isActive, accentColor = 'white' }) {
+export default function NavigationItem({ item, isActive, accentColor = '#00C9B1' }) {
   const Icon = item.icon;
 
   return (
     <Link
       to={createPageUrl(item.path)}
-      className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium no-underline transition-all mb-1 relative ${
-        isActive
-          ? 'bg-white/10 text-white'
-          : 'text-[#94a3b8] hover:bg-white/[0.05] hover:text-white'
-      }`}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '9px',
+        padding: '8px 12px',
+        borderRadius: '8px',
+        margin: '1px 6px',
+        cursor: 'pointer',
+        color: isActive ? '#00C9B1' : 'rgba(176,196,222,0.6)',
+        fontSize: '12px',
+        fontWeight: isActive ? 500 : 400,
+        textDecoration: 'none',
+        transition: 'all 0.15s',
+        position: 'relative',
+        background: isActive ? 'rgba(0,201,177,0.12)' : 'transparent',
+      }}
+      onMouseEnter={(e) => {
+        if (!isActive) {
+          e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+          e.currentTarget.style.color = '#F0F4FF';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isActive) {
+          e.currentTarget.style.background = 'transparent';
+          e.currentTarget.style.color = 'rgba(176,196,222,0.6)';
+        }
+      }}
     >
       {isActive && (
         <div
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-md"
-          style={{ backgroundColor: accentColor }}
+          style={{
+            position: 'absolute',
+            left: '-6px',
+            top: '4px',
+            bottom: '4px',
+            width: '3px',
+            borderRadius: '0 3px 3px 0',
+            background: accentColor,
+          }}
         />
       )}
-      <Icon className="w-5 h-5" />
+      <Icon style={{ width: '14px', height: '14px', flexShrink: 0 }} />
       <span>{item.label}</span>
       {item.badge && (
-        <span className="ml-auto bg-[#f97316] text-white text-[11px] font-bold px-2 py-0.5 rounded-xl">
+        <span style={{
+          marginLeft: 'auto',
+          fontSize: '9px',
+          fontWeight: 700,
+          padding: '2px 6px',
+          borderRadius: '10px',
+          background: item.badgeColor === 'warn' ? 'rgba(245,166,35,0.15)' : 'rgba(0,201,177,0.15)',
+          color: item.badgeColor === 'warn' ? '#F5A623' : '#00C9B1',
+        }}>
           {item.badge}
         </span>
       )}

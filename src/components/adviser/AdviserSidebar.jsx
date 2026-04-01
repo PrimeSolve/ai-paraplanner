@@ -93,9 +93,22 @@ export default function AdviserSidebar({ currentPage, onHelpClick }) {
   ];
 
   const logoContent = (
-    <div className="w-10 h-10 bg-[#1e293b] rounded-xl flex items-center justify-center font-bold text-sm shadow-lg overflow-hidden">
+    <div style={{
+      width: '30px',
+      height: '30px',
+      background: 'linear-gradient(135deg, #00C9B1, #1E88E5)',
+      borderRadius: '8px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '11px',
+      fontWeight: 700,
+      color: '#fff',
+      flexShrink: 0,
+      overflow: 'hidden',
+    }}>
       {logo ? (
-        <img src={logo} alt="Logo" className="w-full h-full object-cover" />
+        <img src={logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       ) : (
         'AI'
       )}
@@ -113,6 +126,7 @@ export default function AdviserSidebar({ currentPage, onHelpClick }) {
       helpText="Ask Henry"
       currentPage={currentPage}
       onHelpClick={onHelpClick}
+      accentColor="#00C9B1"
     />
   );
 }

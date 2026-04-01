@@ -26,7 +26,12 @@ export default function AdviceGroupSidebar({ currentPage }) {
   ];
 
   const logoContent = (
-    <div className="w-10 h-10 bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] rounded-xl flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-900/30">
+    <div style={{
+      width: '30px', height: '30px',
+      background: 'linear-gradient(135deg, #00C9B1, #1E88E5)',
+      borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: '11px', fontWeight: 700, color: '#fff', flexShrink: 0,
+    }}>
       AI
     </div>
   );
@@ -35,13 +40,13 @@ export default function AdviceGroupSidebar({ currentPage }) {
     <SidebarLayout
       homePath="AdviceGroupDashboard"
       logoContent={logoContent}
-      title={<>AI <span className="text-[#22d3ee]">Paraplanner</span></>}
+      title="AI Paraplanner"
       subtitle={null}
       navSections={navSections}
       helpPath="AdviceGroupHelp"
       helpText="Ask Henry"
       currentPage={currentPage}
-      accentColor="#3b82f6"
+      accentColor="#00C9B1"
     />
   );
 }
