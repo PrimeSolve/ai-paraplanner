@@ -43,11 +43,13 @@ export default function AdminTeam() {
   const [loading, setLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteName, setInviteName] = useState('');
+  const [inviteFirstName, setInviteFirstName] = useState('');
+  const [inviteLastName, setInviteLastName] = useState('');
   const [selectedRole, setSelectedRole] = useState('user');
   const [inviting, setInviting] = useState(false);
   const [emailError, setEmailError] = useState('');
-  const [nameError, setNameError] = useState('');
+  const [firstNameError, setFirstNameError] = useState('');
+  const [lastNameError, setLastNameError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -58,7 +60,6 @@ export default function AdminTeam() {
 
   useEffect(() => {
     loadTeam();
-
   }, []);
 
   const mapRole = (roleValue) => {
@@ -79,7 +80,6 @@ export default function AdminTeam() {
       console.log('[AdminTeam] Raw API response - admins:', admins);
       console.log('[AdminTeam] Raw API response - users:', users);
 
-      // Merge User and Admin data
       const teamWithStats = admins.map(admin => {
         const user = users.find(u => u.id === admin.user_id);
         console.log('[AdminTeam] admin record:', admin, '| matched user:', user);
@@ -135,7 +135,8 @@ export default function AdminTeam() {
   const validateForm = () => {
     let valid = true;
     setEmailError('');
-    setNameError('');
+    setFirstNameError('');
+    setLastNameError('');
 
     if (!inviteEmail.trim()) {
       setEmailError('Email is required');
@@ -145,8 +146,13 @@ export default function AdminTeam() {
       valid = false;
     }
 
-    if (!inviteName.trim()) {
-      setNameError('Full name is required');
+    if (!inviteFirstName.trim()) {
+      setFirstNameError('First name is required');
+      valid = false;
+    }
+
+    if (!inviteLastName.trim()) {
+      setLastNameError('Last name is required');
       valid = false;
     }
 
@@ -156,20 +162,19 @@ export default function AdminTeam() {
   const handleSaveMember = async () => {
     if (!validateForm()) return;
 
+    const fullName = `${inviteFirstName.trim()} ${inviteLastName.trim()}`;
+
     if (editingMember) {
       try {
         setInviting(true);
         await base44.entities.Admin.update(editingMember.id, {
           email: inviteEmail,
-          first_name: inviteName.split(' ')[0] || '',
-          last_name: inviteName.split(' ').slice(1).join(' ') || ''
+          first_name: inviteFirstName.trim(),
+          last_name: inviteLastName.trim()
         });
         toast.success('Team member updated');
         setShowInviteModal(false);
-        setInviteEmail('');
-        setInviteName('');
-        setSelectedRole('user');
-        setEditingMember(null);
+        resetForm();
         await loadTeam();
       } catch (error) {
         toast.error('Something went wrong. Please try again.');
@@ -185,16 +190,13 @@ export default function AdminTeam() {
 
       await axiosInstance.post('/users', {
         email: inviteEmail.trim(),
-        fullName: inviteName.trim(),
+        fullName: fullName,
         role: selectedRole === 'admin' ? 'Admin' : 'Paraplanner'
       });
 
       setShowInviteModal(false);
-      toast.success('Team member created successfully');
-      setInviteEmail('');
-      setInviteName('');
-      setSelectedRole('user');
-      setEditingMember(null);
+      toast.success('Invite sent successfully');
+      resetForm();
       await loadTeam();
     } catch (error) {
       if (error.response?.status === 400) {
@@ -207,462 +209,773 @@ export default function AdminTeam() {
     }
   };
 
-  const getInitials = (name, email) => {
-    if (name) {
-      const parts = name.split(' ');
-      return parts.length > 1 ? `${parts[0][0]}${parts[1][0]}` : parts[0][0];
-    }
-    return email?.charAt(0).toUpperCase() || '?';
+  const resetForm = () => {
+    setInviteEmail('');
+    setInviteFirstName('');
+    setInviteLastName('');
+    setSelectedRole('user');
+    setEditingMember(null);
+    setEmailError('');
+    setFirstNameError('');
+    setLastNameError('');
   };
 
+  const getInitials = (name, email) => {
+    if (name && name !== 'No name') {
+      const parts = name.trim().split(' ').filter(Boolean);
+      if (parts.length > 1) {
+        const first = parts[0][0];
+        const last = parts[parts.length - 1][0];
+        if (first && last) return `${first}${last}`.toUpperCase();
+      }
+      if (parts.length === 1 && parts[0][0]) return parts[0][0].toUpperCase();
+    }
+    return email?.charAt(0)?.toUpperCase() || '?';
+  };
+
+  const avatarColors = [
+    '#ec4899', '#22d3ee', '#f97316', '#8b5cf6', '#10b981', '#3b82f6', '#ef4444', '#06b6d4'
+  ];
+
   const getAvatarColor = (email) => {
-    const colors = [
-      'bg-[#ec4899] text-white',
-      'bg-[#22d3ee] text-white',
-      'bg-[#f97316] text-white',
-      'bg-[#8b5cf6] text-white',
-      'bg-[#10b981] text-white',
-      'bg-[#3b82f6] text-white'
-    ];
-    const index = email?.charCodeAt(0) % colors.length || 0;
-    return colors[index];
+    const index = (email?.charCodeAt(0) || 0) % avatarColors.length;
+    return avatarColors[index];
   };
 
   const filteredTeam = team.filter(member => {
     const matchesSearch = member.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           member.email?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = roleFilter === 'all' || 
+    const matchesRole = roleFilter === 'all' ||
                         (roleFilter === 'admin' && member.role === 'admin') ||
-                        (roleFilter === 'user' && member.role === 'user');
+                        (roleFilter === 'user' && member.role !== 'admin');
     const matchesStatus = statusFilter === 'all' || member.status === statusFilter;
-    
+
     return matchesSearch && matchesRole && matchesStatus;
   });
 
   const stats = {
     total: team.length,
     admins: team.filter(m => m.role === 'admin').length,
-    users: team.filter(m => m.role !== 'admin').length,
+    paraplanners: team.filter(m => m.role !== 'admin').length,
   };
 
+  if (loading) {
+    return (
+      <div style={{ padding: '24px 32px' }} className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800" />
+      </div>
+    );
+  }
+
   return (
-    <div className="py-6 px-8">
+    <div style={{ padding: '24px 32px', fontFamily: "'DM Sans', sans-serif" }}>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-[#22d3ee] to-[#06b6d4] text-white p-6 border-0">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5" />
+      {/* TOPBAR / Breadcrumb */}
+      <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ fontSize: '14px' }}>🏠</span>
+        <span style={{ fontSize: '13px', color: '#94a3b8' }}>›</span>
+        <span style={{ fontSize: '14px', fontWeight: 600, color: '#0f172a' }}>Team</span>
+        <span style={{
+          fontSize: '11px',
+          fontWeight: 600,
+          background: '#e2e8f0',
+          color: '#475569',
+          padding: '2px 8px',
+          borderRadius: '999px',
+          marginLeft: '4px',
+        }}>
+          {stats.total} member{stats.total !== 1 ? 's' : ''}
+        </span>
+      </div>
+
+      {/* KPI ROW */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '24px' }}>
+        {/* Team members */}
+        <div style={{
+          background: '#ffffff',
+          borderRadius: '14px',
+          border: '1px solid #e2e8f0',
+          overflow: 'hidden',
+        }}>
+          <div style={{ height: '4px', background: 'linear-gradient(90deg, #0d9488, #14b8a6)' }} />
+          <div style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+              <div style={{
+                width: '40px', height: '40px', borderRadius: '10px',
+                background: 'rgba(13,148,136,0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Users size={20} color="#0d9488" />
               </div>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: '#64748b' }}>Team Members</span>
             </div>
-            <div className="text-3xl font-bold mb-1">{stats.total}</div>
-            <div className="text-sm opacity-90">Team Members</div>
-          </Card>
-
-          <Card className="bg-white p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-[#8b5cf6]/10 rounded-lg flex items-center justify-center">
-                <Shield className="w-5 h-5 text-[#8b5cf6]" />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-[#0f172a] mb-1">{stats.admins}</div>
-            <div className="text-sm text-[#64748b]">Admins</div>
-          </Card>
-
-          <Card className="bg-white p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-[#3b82f6]/10 rounded-lg flex items-center justify-center">
-                <FileText className="w-5 h-5 text-[#3b82f6]" />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-[#0f172a] mb-1">{stats.users}</div>
-            <div className="text-sm text-[#64748b]">Paraplanners</div>
-          </Card>
-
+            <div style={{ fontSize: '32px', fontWeight: 700, color: '#0f172a' }}>{stats.total}</div>
+          </div>
         </div>
 
-        {/* Team Table */}
-        <Card className="bg-white">
-          {/* Filters Header */}
-          <div className="px-6 py-4 border-b border-[#e2e8f0] flex items-center gap-3">
-            <div className="relative w-[350px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8]" />
-              <Input
-                placeholder="Search team members..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 bg-white h-10"
-              />
+        {/* Admins */}
+        <div style={{
+          background: '#ffffff',
+          borderRadius: '14px',
+          border: '1px solid #e2e8f0',
+          overflow: 'hidden',
+        }}>
+          <div style={{ height: '4px', background: 'linear-gradient(90deg, #2563eb, #3b82f6)' }} />
+          <div style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+              <div style={{
+                width: '40px', height: '40px', borderRadius: '10px',
+                background: 'rgba(37,99,235,0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Shield size={20} color="#2563eb" />
+              </div>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: '#64748b' }}>Admins</span>
+            </div>
+            <div style={{ fontSize: '32px', fontWeight: 700, color: '#0f172a' }}>{stats.admins}</div>
+          </div>
+        </div>
+
+        {/* Paraplanners */}
+        <div style={{
+          background: '#ffffff',
+          borderRadius: '14px',
+          border: '1px solid #e2e8f0',
+          overflow: 'hidden',
+        }}>
+          <div style={{ height: '4px', background: 'linear-gradient(90deg, #7c3aed, #8b5cf6)' }} />
+          <div style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+              <div style={{
+                width: '40px', height: '40px', borderRadius: '10px',
+                background: 'rgba(139,92,246,0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <FileText size={20} color="#8b5cf6" />
+              </div>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: '#64748b' }}>Paraplanners</span>
+            </div>
+            <div style={{ fontSize: '32px', fontWeight: 700, color: '#0f172a' }}>{stats.paraplanners}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* FILTERS BAR */}
+      <div style={{
+        background: '#ffffff',
+        borderRadius: '14px',
+        border: '1px solid #e2e8f0',
+        padding: '16px 20px',
+        marginBottom: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+      }}>
+        {/* Search */}
+        <div style={{ position: 'relative', flex: '1 1 320px', maxWidth: '360px' }}>
+          <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+          <input
+            type="text"
+            placeholder="Search team members..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              height: '38px',
+              paddingLeft: '36px',
+              paddingRight: '12px',
+              border: '1px solid #e2e8f0',
+              borderRadius: '10px',
+              fontSize: '13px',
+              color: '#0f172a',
+              background: '#f8fafc',
+              outline: 'none',
+            }}
+          />
+        </div>
+
+        {/* Role select */}
+        <select
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+          style={{
+            height: '38px',
+            padding: '0 32px 0 12px',
+            border: '1px solid #e2e8f0',
+            borderRadius: '10px',
+            fontSize: '13px',
+            fontWeight: 500,
+            color: '#475569',
+            background: '#f8fafc',
+            cursor: 'pointer',
+            outline: 'none',
+          }}
+        >
+          <option value="all">All Roles</option>
+          <option value="admin">Admin</option>
+          <option value="user">Paraplanner</option>
+        </select>
+
+        {/* Status select */}
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{
+            height: '38px',
+            padding: '0 32px 0 12px',
+            border: '1px solid #e2e8f0',
+            borderRadius: '10px',
+            fontSize: '13px',
+            fontWeight: 500,
+            color: '#475569',
+            background: '#f8fafc',
+            cursor: 'pointer',
+            outline: 'none',
+          }}
+        >
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="pending">Pending Invite</option>
+        </select>
+
+        {/* Results count */}
+        <span style={{ fontSize: '12px', color: '#94a3b8', whiteSpace: 'nowrap' }}>
+          {filteredTeam.length} result{filteredTeam.length !== 1 ? 's' : ''}
+        </span>
+
+        <div style={{ flex: 1 }} />
+
+        {/* Add Member button */}
+        <button
+          onClick={() => {
+            resetForm();
+            setShowInviteModal(true);
+          }}
+          style={{
+            height: '38px',
+            padding: '0 20px',
+            background: 'linear-gradient(135deg, #0d9488, #0f766e)',
+            color: '#ffffff',
+            border: 'none',
+            borderRadius: '10px',
+            fontSize: '13px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <Plus size={15} />
+          Add Member
+        </button>
+      </div>
+
+      {/* TABLE */}
+      <div style={{
+        background: '#ffffff',
+        borderRadius: '14px',
+        border: '1px solid #e2e8f0',
+        overflow: 'hidden',
+      }}>
+        {/* Header */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
+          padding: '0 24px',
+          background: '#f8fafc',
+          borderBottom: '1px solid #e2e8f0',
+        }}>
+          {['MEMBER', 'ROLE', 'STATUS', 'JOINED', 'ACTIONS'].map((col) => (
+            <div key={col} style={{
+              padding: '12px 0',
+              fontSize: '11px',
+              fontWeight: 700,
+              color: '#64748b',
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+            }}>
+              {col}
+            </div>
+          ))}
+        </div>
+
+        {/* Rows */}
+        {filteredTeam.length > 0 ? filteredTeam.map((member) => (
+          <div
+            key={member.id}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
+              padding: '0 24px',
+              borderBottom: '1px solid #f1f5f9',
+              alignItems: 'center',
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            {/* MEMBER */}
+            <div style={{ padding: '14px 0', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '8px',
+                background: getAvatarColor(member.email),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#ffffff',
+                fontSize: '11px',
+                fontWeight: 700,
+                flexShrink: 0,
+              }}>
+                {getInitials(member.full_name, member.email)}
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  color: '#0f172a',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>
+                  {member.full_name || 'No name'}
+                </div>
+                <div style={{
+                  fontSize: '10px',
+                  color: '#94a3b8',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>
+                  {member.email}
+                </div>
+              </div>
             </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="bg-white whitespace-nowrap">
-                  Role
-                  <ChevronDown className="w-4 h-4 ml-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setRoleFilter('all')}>All Roles</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setRoleFilter('admin')}>Admin</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setRoleFilter('user')}>Paraplanner</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* ROLE */}
+            <div style={{ padding: '14px 0' }}>
+              {member.role === 'admin' ? (
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '4px 10px',
+                  borderRadius: '999px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  background: 'rgba(30,136,229,0.1)',
+                  color: '#85B7EB',
+                }}>
+                  <FileText size={12} />
+                  Admin
+                </span>
+              ) : (
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '4px 10px',
+                  borderRadius: '999px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  background: 'rgba(140,80,255,0.1)',
+                  color: '#B794FF',
+                }}>
+                  <FileText size={12} />
+                  Paraplanner
+                </span>
+              )}
+            </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="bg-white whitespace-nowrap">
-                  Status
-                  <ChevronDown className="w-4 h-4 ml-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setStatusFilter('all')}>All Status</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('active')}>Active</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('pending')}>Pending Invite</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* STATUS */}
+            <div style={{ padding: '14px 0' }}>
+              {member.status === 'pending' ? (
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '4px 10px',
+                  borderRadius: '999px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  background: 'rgba(245,158,11,0.1)',
+                  color: '#f59e0b',
+                }}>
+                  Pending Invite
+                </span>
+              ) : (
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '4px 10px',
+                  borderRadius: '999px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  background: 'rgba(16,185,129,0.1)',
+                  color: '#10b981',
+                }}>
+                  Active
+                </span>
+              )}
+            </div>
 
-            <div className="flex-1" />
+            {/* JOINED */}
+            <div style={{ padding: '14px 0' }}>
+              <div style={{ fontSize: '11px', color: '#475569' }}>
+                {formatDate(member.created_at)}
+              </div>
+              <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>
+                {formatRelativeDate(member.created_at)}
+              </div>
+            </div>
 
-            <Button
-              onClick={() => {
-                setEditingMember(null);
-                setShowInviteModal(true);
-              }}
-              className="bg-[#0F4C5C] hover:bg-[#0d3f4d] text-white whitespace-nowrap"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Member
-            </Button>
+            {/* ACTIONS */}
+            <div style={{ padding: '14px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                onClick={() => handleEditMember(member)}
+                style={{
+                  height: '30px',
+                  padding: '0 14px',
+                  background: '#3b82f6',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                View
+              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button style={{
+                    width: '30px',
+                    height: '30px',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    background: 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#64748b',
+                  }}>
+                    <MoreVertical size={14} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onSelect={() => handleSendWelcomeEmail(member)}
+                    disabled={sendingWelcomeEmailId === member.id}
+                  >
+                    {sendingWelcomeEmailId === member.id ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Mail className="w-4 h-4 mr-2" />
+                    )}
+                    Send Welcome Email
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => handleEditMember(member)}>
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => setMemberToDelete(member)}
+                    className="text-red-600"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remove
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-[#e2e8f0]">
-                  <th className="text-left py-4 px-6 text-xs font-semibold text-[#64748b] uppercase tracking-wider">
-                    Member
-                  </th>
-                  <th className="text-left py-4 px-6 text-xs font-semibold text-[#64748b] uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="text-left py-4 px-6 text-xs font-semibold text-[#64748b] uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="text-left py-4 px-6 text-xs font-semibold text-[#64748b] uppercase tracking-wider">
-                    Joined
-                  </th>
-                  <th className="text-left py-4 px-6 text-xs font-semibold text-[#64748b] uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTeam.map((member) => (
-                  <tr key={member.id} className="border-b border-[#f1f5f9] hover:bg-[#f8fafc] transition-colors">
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-semibold text-sm ${getAvatarColor(member.email)}`}>
-                          {getInitials(member.full_name, member.email)}
-                        </div>
-                        <div>
-                          <div className="font-medium text-[#0f172a]">{member.full_name || 'No name'}</div>
-                          <div className="text-sm text-[#64748b]">{member.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <Badge
-                        className={
-                          member.role === 'admin'
-                            ? 'bg-[#8b5cf6]/10 text-[#8b5cf6] border-0'
-                            : member.role === 'adviser'
-                            ? 'bg-[#10b981]/10 text-[#10b981] border-0'
-                            : member.role === 'advice_group'
-                            ? 'bg-[#f59e0b]/10 text-[#f59e0b] border-0'
-                            : 'bg-[#3b82f6]/10 text-[#3b82f6] border-0'
-                        }
-                      >
-                        {member.role === 'admin' ? (
-                          <>
-                            <Shield className="w-3 h-3 mr-1" />
-                            Admin
-                          </>
-                        ) : member.role === 'adviser' ? (
-                          <>
-                            <FileText className="w-3 h-3 mr-1" />
-                            Adviser
-                          </>
-                        ) : member.role === 'advice_group' ? (
-                          <>
-                            <Users className="w-3 h-3 mr-1" />
-                            Advice Group
-                          </>
-                        ) : (
-                          <>
-                            <FileText className="w-3 h-3 mr-1" />
-                            Paraplanner
-                          </>
-                        )}
-                      </Badge>
-                    </td>
-                    <td className="py-4 px-6">
-                      {member.status === 'pending' ? (
-                        <Badge className="bg-[#f59e0b]/10 text-[#f59e0b] border-0">
-                          Pending Invite
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-[#10b981]/10 text-[#10b981] border-0">
-                          Active
-                        </Badge>
-                      )}
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="text-sm text-[#0f172a]">
-                        {formatDate(member.created_at)}
-                      </div>
-                      <div className="text-xs text-[#64748b]">
-                        {formatRelativeDate(member.created_at)}
-                      </div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleEditMember(member)}
-                          className="bg-[#3b82f6] hover:bg-[#2563eb] text-white"
-                        >
-                          View
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button size="sm" variant="ghost">
-                              <MoreVertical className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onSelect={() => handleSendWelcomeEmail(member)}
-                              disabled={sendingWelcomeEmailId === member.id}
-                            >
-                              {sendingWelcomeEmailId === member.id ? (
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              ) : (
-                                <Mail className="w-4 h-4 mr-2" />
-                              )}
-                              Send Welcome Email
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => handleEditMember(member)}>
-                              <Edit className="w-4 h-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onSelect={() => setMemberToDelete(member)}
-                              className="text-red-600"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Remove
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        )) : (
+          <div style={{ padding: '48px 24px', textAlign: 'center', color: '#94a3b8', fontSize: '14px' }}>
+            No team members found
           </div>
+        )}
 
-          <div className="px-6 py-4 border-t border-[#e2e8f0] text-sm text-[#64748b]">
-            Showing 1-{filteredTeam.length} of {filteredTeam.length} members
-          </div>
-        </Card>
+        {/* Footer */}
+        <div style={{
+          padding: '12px 24px',
+          borderTop: '1px solid #e2e8f0',
+          fontSize: '12px',
+          color: '#94a3b8',
+        }}>
+          Showing {filteredTeam.length > 0 ? 1 : 0}–{filteredTeam.length} of {filteredTeam.length} members
+        </div>
+      </div>
 
-      {/* Invite Modal */}
+      {/* ADD MEMBER MODAL — dark glassmorphism */}
       <Dialog open={showInviteModal} onOpenChange={(open) => {
         if (!open) {
           setShowInviteModal(false);
           setInviting(false);
-          setEmailError('');
-          setNameError('');
+          resetForm();
         }
       }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent
+          className="sm:max-w-md"
+          style={{
+            background: 'rgba(15,23,42,0.92)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '18px',
+            color: '#f1f5f9',
+          }}
+        >
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-[#0f172a]">
+            <DialogTitle style={{ fontSize: '18px', fontWeight: 700, color: '#f1f5f9' }}>
               {editingMember ? 'Edit Team Member' : 'Add Team Member'}
             </DialogTitle>
           </DialogHeader>
 
-              <div className="space-y-5 py-4">
-                <div>
-                  <label className="text-sm font-medium text-[#0f172a] mb-2 block">
-                    Email Address
-                  </label>
-                  <Input
-                    type="email"
-                    placeholder="colleague@company.com"
-                    value={inviteEmail}
-                    className={emailError ? 'border-red-500' : ''}
-                    onChange={(e) => {
-                      setInviteEmail(e.target.value);
-                      if (emailError) setEmailError('');
-                    }}
-                  />
-                  {emailError ? (
-                    <p className="text-xs text-red-500 mt-1.5">{emailError}</p>
-                  ) : (
-                    <p className="text-xs text-[#64748b] mt-1.5">
-                      The team member will be created and you can send a welcome email separately
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-[#0f172a] mb-2 block">
-                    Full Name
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="Enter their full name"
-                    value={inviteName}
-                    className={nameError ? 'border-red-500' : ''}
-                    onChange={(e) => {
-                      setInviteName(e.target.value);
-                      if (nameError) setNameError('');
-                    }}
-                  />
-                  {nameError && (
-                    <p className="text-xs text-red-500 mt-1.5">{nameError}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-[#0f172a] mb-3 block">
-                    Role
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      onClick={() => setSelectedRole('user')}
-                      className={`p-4 rounded-xl border-2 transition-all ${
-                        selectedRole === 'user'
-                          ? 'border-[#3b82f6] bg-[#3b82f6]/5'
-                          : 'border-[#e2e8f0] hover:border-[#cbd5e1]'
-                      }`}
-                    >
-                      <div className="flex flex-col items-center gap-2 text-center">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                          selectedRole === 'user' ? 'bg-[#3b82f6]/10' : 'bg-[#f1f5f9]'
-                        }`}>
-                          <FileText className={`w-6 h-6 ${
-                            selectedRole === 'user' ? 'text-[#3b82f6]' : 'text-[#64748b]'
-                          }`} />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-[#0f172a] text-sm">Paraplanner</div>
-                          <div className="text-xs text-[#64748b] mt-0.5">Can create and manage SOAs</div>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => setSelectedRole('admin')}
-                      className={`p-4 rounded-xl border-2 transition-all ${
-                        selectedRole === 'admin'
-                          ? 'border-[#8b5cf6] bg-[#8b5cf6]/5'
-                          : 'border-[#e2e8f0] hover:border-[#cbd5e1]'
-                      }`}
-                    >
-                      <div className="flex flex-col items-center gap-2 text-center">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                          selectedRole === 'admin' ? 'bg-[#8b5cf6]/10' : 'bg-[#f1f5f9]'
-                        }`}>
-                          <Shield className={`w-6 h-6 ${
-                            selectedRole === 'admin' ? 'text-[#8b5cf6]' : 'text-[#64748b]'
-                          }`} />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-[#0f172a] text-sm">Admin</div>
-                          <div className="text-xs text-[#64748b] mt-0.5">Full access to all settings</div>
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <Button
-                  variant="outline"
-                  disabled={inviting}
-                  onClick={() => {
-                    setShowInviteModal(false);
-                    setEditingMember(null);
-                    setEmailError('');
-                    setNameError('');
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', paddingTop: '8px' }}>
+            {/* First name + Last name row */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="John"
+                  value={inviteFirstName}
+                  onChange={(e) => {
+                    setInviteFirstName(e.target.value);
+                    if (firstNameError) setFirstNameError('');
                   }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSaveMember}
-                  disabled={inviting}
-                  className="bg-[#3b82f6] hover:bg-[#2563eb]"
-                >
-                  {inviting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Creating...
-                    </>
-                  ) : editingMember ? (
-                    'Save Changes'
-                  ) : (
-                    <>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create Member
-                    </>
-                  )}
-                </Button>
+                  style={{
+                    width: '100%',
+                    height: '40px',
+                    padding: '0 12px',
+                    background: 'rgba(255,255,255,0.06)',
+                    border: firstNameError ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '10px',
+                    fontSize: '13px',
+                    color: '#f1f5f9',
+                    outline: 'none',
+                  }}
+                />
+                {firstNameError && (
+                  <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px' }}>{firstNameError}</p>
+                )}
               </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Smith"
+                  value={inviteLastName}
+                  onChange={(e) => {
+                    setInviteLastName(e.target.value);
+                    if (lastNameError) setLastNameError('');
+                  }}
+                  style={{
+                    width: '100%',
+                    height: '40px',
+                    padding: '0 12px',
+                    background: 'rgba(255,255,255,0.06)',
+                    border: lastNameError ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '10px',
+                    fontSize: '13px',
+                    color: '#f1f5f9',
+                    outline: 'none',
+                  }}
+                />
+                {lastNameError && (
+                  <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px' }}>{lastNameError}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Email */}
+            <div>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                Email Address
+              </label>
+              <input
+                type="email"
+                placeholder="colleague@company.com"
+                value={inviteEmail}
+                onChange={(e) => {
+                  setInviteEmail(e.target.value);
+                  if (emailError) setEmailError('');
+                }}
+                style={{
+                  width: '100%',
+                  height: '40px',
+                  padding: '0 12px',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: emailError ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '10px',
+                  fontSize: '13px',
+                  color: '#f1f5f9',
+                  outline: 'none',
+                }}
+              />
+              {emailError && (
+                <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px' }}>{emailError}</p>
+              )}
+            </div>
+
+            {/* Role select */}
+            <div>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                Role
+              </label>
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                style={{
+                  width: '100%',
+                  height: '40px',
+                  padding: '0 12px',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '10px',
+                  fontSize: '13px',
+                  color: '#f1f5f9',
+                  outline: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="admin" style={{ background: '#1e293b' }}>Admin</option>
+                <option value="user" style={{ background: '#1e293b' }}>Paraplanner</option>
+              </select>
+            </div>
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '8px' }}>
+              <button
+                disabled={inviting}
+                onClick={() => {
+                  setShowInviteModal(false);
+                  resetForm();
+                }}
+                style={{
+                  height: '38px',
+                  padding: '0 18px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: '10px',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  color: '#cbd5e1',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveMember}
+                disabled={inviting}
+                style={{
+                  height: '38px',
+                  padding: '0 20px',
+                  background: inviting ? '#475569' : 'linear-gradient(135deg, #0d9488, #0f766e)',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#ffffff',
+                  cursor: inviting ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                {inviting ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    Sending...
+                  </>
+                ) : editingMember ? (
+                  'Save Changes'
+                ) : (
+                  <>
+                    Invite Member
+                    <span style={{ fontSize: '14px' }}>→</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal — also dark glassmorphism */}
       <Dialog open={!!memberToDelete} onOpenChange={(open) => !open && setMemberToDelete(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent
+          className="sm:max-w-md"
+          style={{
+            background: 'rgba(15,23,42,0.92)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '18px',
+            color: '#f1f5f9',
+          }}
+        >
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-[#0f172a]">
+            <DialogTitle style={{ fontSize: '18px', fontWeight: 700, color: '#f1f5f9' }}>
               Remove Team Member
             </DialogTitle>
           </DialogHeader>
 
-          <div className="py-4">
-            <p className="text-[#0f172a] mb-2">
+          <div style={{ paddingTop: '8px' }}>
+            <p style={{ color: '#e2e8f0', marginBottom: '8px', fontSize: '14px' }}>
               Are you sure you want to remove <strong>{memberToDelete?.full_name || memberToDelete?.email}</strong>?
             </p>
-            <p className="text-sm text-[#64748b]">
+            <p style={{ fontSize: '13px', color: '#94a3b8' }}>
               This action cannot be undone. They will lose access to the platform immediately.
             </p>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button 
-              variant="outline" 
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '16px' }}>
+            <button
               onClick={() => setMemberToDelete(null)}
+              style={{
+                height: '38px',
+                padding: '0 18px',
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: '10px',
+                fontSize: '13px',
+                fontWeight: 500,
+                color: '#cbd5e1',
+                cursor: 'pointer',
+              }}
             >
               Cancel
-            </Button>
-            <Button 
+            </button>
+            <button
               onClick={handleRemoveMember}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              style={{
+                height: '38px',
+                padding: '0 20px',
+                background: '#dc2626',
+                border: 'none',
+                borderRadius: '10px',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: '#ffffff',
+                cursor: 'pointer',
+              }}
             >
               Remove Member
-            </Button>
+            </button>
           </div>
         </DialogContent>
       </Dialog>
-      </div>
-      );
-      }
+    </div>
+  );
+}
