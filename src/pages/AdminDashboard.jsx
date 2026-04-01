@@ -10,14 +10,16 @@ import {
 } from 'recharts';
 
 // ============================================
-// DESIGN TOKENS
+// DESIGN TOKENS (from DESIGN_SYSTEM.md)
 // ============================================
 const ds = {
   teal:   '#00C9B1',
+  tealDark: '#00A693',
   blue:   '#1E88E5',
   red:    '#E24B4A',
-  amber:  '#F59E0B',
-  purple: '#8B5CF6',
+  amber:  '#F5A623',
+  purple: '#8C50FF',
+  green:  '#1D9E75',
   navy:   '#0F172A',
   // Donut
   approved: '#5DCAA5',
@@ -28,8 +30,33 @@ const ds = {
   dotTeal:   '#00C9B1',
   dotBlue:   '#1E88E5',
   dotRed:    '#E24B4A',
-  dotPurple: '#8B5CF6',
-  dotAmber:  '#F59E0B',
+  dotPurple: '#8C50FF',
+  dotAmber:  '#F5A623',
+  // Light mode semantic
+  textPrimary: '#0A1628',
+  textSecondary: '#3A4A6B',
+  textMuted: '#8A9BBE',
+  textHint: '#B0BCCF',
+  bgPage: '#F0F3F8',
+  bgCard: '#ffffff',
+  borderCard: '#E0E6F0',
+  bgTopbar: '#ffffff',
+  borderTopbar: '#E0E6F0',
+  bgRowHover: '#FAFBFD',
+  // KPI icon backgrounds (light)
+  kpiTealBg: '#E1F5EE', kpiTealIcon: '#0F6E56',
+  kpiBlueBg: '#E6F1FB', kpiBlueIcon: '#185FA5',
+  kpiPurpleBg: '#EEEDFE', kpiPurpleIcon: '#534AB7',
+  kpiAmberBg: '#FAEEDA', kpiAmberIcon: '#854F0B',
+  kpiRedBg: '#FCEBEB', kpiRedIcon: '#A32D2D',
+  kpiGreenBg: '#E8F7F0', kpiGreenIcon: '#1D9E75',
+  // Badge backgrounds (light)
+  badgeTealBg: '#E8F7F0', badgeTealColor: '#0F6E56',
+  badgeBlueBg: '#E6F1FB', badgeBlueColor: '#0C447C',
+  badgePurpleBg: '#EEEDFE', badgePurpleColor: '#3C3489',
+  badgeAmberBg: '#FAEEDA', badgeAmberColor: '#633806',
+  badgeRedBg: '#FCEBEB', badgeRedColor: '#A32D2D',
+  badgeGreenBg: '#E8F7F0', badgeGreenColor: '#0F6E56',
 };
 
 const avatarGradients = [
@@ -42,13 +69,13 @@ const avatarGradients = [
   'linear-gradient(135deg, #ef4444, #dc2626)',
 ];
 
-const Avatar = ({ initials, gradientIndex, size = 36 }) => (
+const Avatar = ({ initials, gradientIndex, size = 32 }) => (
   <div style={{
     width: size, height: size,
-    borderRadius: size > 36 ? 14 : 10,
+    borderRadius: 8,
     background: avatarGradients[gradientIndex % avatarGradients.length],
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    color: '#fff', fontWeight: 700, fontSize: size > 36 ? 16 : 13,
+    color: '#fff', fontWeight: 700, fontSize: size > 32 ? 13 : 11,
     flexShrink: 0,
   }}>
     {initials}
@@ -285,65 +312,78 @@ export default function AdminDashboard() {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
   });
 
-  // ── Styles ────────────────────────────────────────
+  // ── Styles (Design System compliant) ──────────────
   const card = {
-    background: 'var(--ps-surface)',
-    borderRadius: 16,
-    border: '1px solid var(--ps-border)',
-    padding: '20px 24px',
+    background: ds.bgCard,
+    borderRadius: 12,
+    border: `0.5px solid ${ds.borderCard}`,
+    padding: '16px 20px',
   };
 
   const sectionTitle = {
-    fontSize: 15,
-    fontWeight: 700,
-    color: 'var(--ps-text-primary)',
+    fontSize: 13,
+    fontWeight: 600,
+    color: ds.textPrimary,
     margin: 0,
-    fontFamily: "'Plus Jakarta Sans', 'DM Sans', sans-serif",
+    fontFamily: "'DM Sans', sans-serif",
   };
 
   const subText = {
-    fontSize: 12,
-    color: 'var(--ps-text-muted)',
+    fontSize: 10,
+    color: ds.textHint,
   };
 
-  const badge = (bg, color) => ({
-    display: 'inline-block',
-    fontSize: 11,
+  const badgeStyle = (bg, color) => ({
+    display: 'inline-flex',
+    fontSize: 10,
     fontWeight: 600,
-    padding: '2px 8px',
-    borderRadius: 6,
+    padding: '3px 9px',
+    borderRadius: 20,
     background: bg,
     color,
-    lineHeight: '18px',
+    whiteSpace: 'nowrap',
   });
 
   // ── RENDER ────────────────────────────────────────
   return (
-    <div style={{ padding: '0 32px 32px', fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{
+      padding: '0 24px 32px',
+      fontFamily: "'DM Sans', sans-serif",
+      background: ds.bgPage,
+      minHeight: '100vh',
+    }}>
 
       {/* ── TOPBAR ──────────────────────────────── */}
       <div style={{
+        height: 52,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '20px 0 24px', borderBottom: '1px solid var(--ps-border)', marginBottom: 24,
+        borderBottom: `0.5px solid ${ds.borderTopbar}`,
+        marginBottom: 20,
+        background: ds.bgTopbar,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 18 }}>🏠</span>
-          <span style={{ color: 'var(--ps-text-muted)', fontSize: 14 }}>›</span>
-          <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--ps-text-primary)', fontFamily: "'Plus Jakarta Sans', 'DM Sans', sans-serif" }}>
+        {/* Breadcrumb left */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={ds.textMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          <span style={{ color: ds.textMuted, fontSize: 12 }}>›</span>
+          <span style={{ fontWeight: 500, fontSize: 12, color: ds.textPrimary }}>
             Dashboard
           </span>
-          <span style={badge('var(--ps-surface-indigo)', 'var(--ps-retirement-text)')}>
+          <span style={badgeStyle('rgba(0,201,177,0.1)', ds.teal)}>
             Platform Admin
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span style={{ fontSize: 13, color: 'var(--ps-text-secondary)' }}>{dateString}</span>
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ps-text-primary)' }}>Tim Hall</span>
+        {/* Right side */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 12, fontWeight: 400, color: ds.textMuted }}>{dateString}</span>
+          <span style={{ fontSize: 12, fontWeight: 500, color: ds.textMuted }}>Tim Hall</span>
           <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            width: 30, height: 30, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #1D9E75, #0F6E56)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', fontWeight: 700, fontSize: 13,
+            color: '#fff', fontWeight: 700, fontSize: 11,
           }}>TH</div>
         </div>
       </div>
@@ -353,21 +393,21 @@ export default function AdminDashboard() {
         display: 'grid',
         gridTemplateColumns: 'repeat(5, 1fr)',
         gap: 16,
-        marginBottom: 24,
+        marginBottom: 20,
       }}>
         {/* Active SOAs */}
         <KpiCard
           barColor={ds.teal}
           label="Active SOAs"
           value={loading ? '...' : stats.pendingSOAs}
-          badge={{ text: 'In queue', bg: 'var(--ps-surface-teal)', color: ds.teal }}
+          badge={{ text: 'In queue', bg: ds.badgeTealBg, color: ds.badgeTealColor }}
         />
         {/* Completed today */}
         <KpiCard
           barColor={ds.blue}
           label="Completed today"
           value={loading ? '...' : completedToday}
-          badge={{ text: '+0% WoW', bg: 'var(--ps-surface-blue)', color: ds.blue }}
+          badge={{ text: '+0% WoW', bg: ds.badgeBlueBg, color: ds.badgeBlueColor }}
         />
         {/* SLA breaches */}
         <KpiCard
@@ -375,7 +415,7 @@ export default function AdminDashboard() {
           label="SLA breaches"
           value={loading ? '...' : slaBreaches.length}
           valueColor={slaBreaches.length > 0 ? ds.red : undefined}
-          badge={{ text: 'SLA breach', bg: 'var(--ps-surface-red)', color: ds.red }}
+          badge={{ text: 'SLA breach', bg: ds.badgeRedBg, color: ds.badgeRedColor }}
         />
         {/* Avg turnaround */}
         <KpiCard
@@ -383,8 +423,8 @@ export default function AdminDashboard() {
           label="Avg turnaround"
           value={loading ? '...' : avgTurnaround !== null ? `${avgTurnaround}h` : '—'}
           badge={avgTurnaround !== null && avgTurnaround <= 24
-            ? { text: 'On target', bg: 'var(--ps-surface-green)', color: '#059669' }
-            : { text: 'Behind', bg: 'var(--ps-surface-red)', color: ds.red }
+            ? { text: 'On target', bg: ds.badgeGreenBg, color: ds.badgeGreenColor }
+            : { text: 'Behind', bg: ds.badgeRedBg, color: ds.badgeRedColor }
           }
         />
         {/* Advice Groups */}
@@ -392,12 +432,12 @@ export default function AdminDashboard() {
           barColor={ds.purple}
           label="Advice Groups"
           value={loading ? '...' : stats.totalGroups}
-          badge={{ text: `+0 this week`, bg: 'var(--ps-surface-purple)', color: ds.purple }}
+          badge={{ text: '+0 this week', bg: ds.badgePurpleBg, color: ds.badgePurpleColor }}
         />
       </div>
 
       {/* ── CHART ROW ───────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 20 }}>
 
         {/* SOA Volume Line Chart */}
         <div style={card}>
@@ -412,10 +452,10 @@ export default function AdminDashboard() {
                   key={tab}
                   onClick={() => setChartTab(tab)}
                   style={{
-                    padding: '4px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                    fontSize: 12, fontWeight: 600,
+                    padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                    fontSize: 11, fontWeight: 600,
                     background: chartTab === tab ? ds.teal : 'transparent',
-                    color: chartTab === tab ? '#0F172A' : 'var(--ps-text-muted)',
+                    color: chartTab === tab ? ds.navy : ds.textMuted,
                     transition: 'all .15s',
                   }}
                 >
@@ -427,13 +467,13 @@ export default function AdminDashboard() {
           <div style={{ height: 180, marginTop: 12 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={volumeData} margin={{ top: 5, right: 12, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--ps-border-light)" />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--ps-text-muted)' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--ps-text-muted)' }} tickLine={false} axisLine={false} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={ds.bgPage} />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: ds.textMuted }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                <YAxis tick={{ fontSize: 10, fill: ds.textMuted }} tickLine={false} axisLine={false} allowDecimals={false} />
                 <Tooltip
                   contentStyle={{
-                    background: 'var(--ps-surface)', border: '1px solid var(--ps-border)',
-                    borderRadius: 8, fontSize: 12,
+                    background: ds.bgCard, border: `0.5px solid ${ds.borderCard}`,
+                    borderRadius: 8, fontSize: 11,
                   }}
                 />
                 <Line type="monotone" dataKey="completed" stroke={ds.teal} strokeWidth={2} dot={false} name="Completed" />
@@ -447,13 +487,13 @@ export default function AdminDashboard() {
         <div style={card}>
           <h3 style={{ ...sectionTitle, marginBottom: 16 }}>SOA status breakdown</h3>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ width: 160, height: 160 }}>
+            <div style={{ width: 140, height: 140 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={statusBreakdown}
                     cx="50%" cy="50%"
-                    innerRadius={48} outerRadius={72}
+                    innerRadius={42} outerRadius={64}
                     paddingAngle={2}
                     dataKey="value"
                     stroke="none"
@@ -468,12 +508,12 @@ export default function AdminDashboard() {
             {/* Custom legend */}
             <div style={{ width: '100%', marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
               {statusBreakdown.map((entry, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13 }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: entry.color, flexShrink: 0 }} />
-                    <span style={{ color: 'var(--ps-text-body)' }}>{entry.name}</span>
+                    <span style={{ color: ds.textSecondary }}>{entry.name}</span>
                   </div>
-                  <span style={{ fontWeight: 600, color: 'var(--ps-text-primary)' }}>{entry.value}</span>
+                  <span style={{ fontWeight: 600, color: ds.textPrimary }}>{entry.value}</span>
                 </div>
               ))}
             </div>
@@ -486,28 +526,28 @@ export default function AdminDashboard() {
 
         {/* Col 1: Top Advice Groups */}
         <div style={card}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: ds.teal }} />
               <h3 style={sectionTitle}>Top Advice Groups</h3>
             </div>
-            <Link to={createPageUrl('AdminAdviceGroups')} style={{ fontSize: 12, fontWeight: 600, color: ds.teal, textDecoration: 'none' }}>
+            <Link to={createPageUrl('AdminAdviceGroups')} style={{ fontSize: 11, fontWeight: 600, color: ds.teal, textDecoration: 'none' }}>
               View all →
             </Link>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {topGroups.length > 0 ? topGroups.map((g, idx) => (
-              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Avatar initials={getInitials(g.name)} gradientIndex={idx} size={32} />
+              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Avatar initials={getInitials(g.name)} gradientIndex={idx} size={28} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ps-text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: ds.textPrimary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {g.name}
                   </div>
-                  <div style={{ height: 3, borderRadius: 2, background: 'var(--ps-border-light)', marginTop: 4 }}>
+                  <div style={{ height: 3, borderRadius: 2, background: ds.borderCard, marginTop: 4 }}>
                     <div style={{ height: '100%', borderRadius: 2, background: ds.teal, width: `${g.pct}%`, transition: 'width .3s' }} />
                   </div>
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ps-text-primary)', minWidth: 24, textAlign: 'right' }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: ds.textPrimary, minWidth: 20, textAlign: 'right' }}>
                   {g.count}
                 </span>
               </div>
@@ -519,28 +559,28 @@ export default function AdminDashboard() {
 
         {/* Col 2: SLA Breaches */}
         <div style={card}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: ds.red }} />
               <h3 style={sectionTitle}>SLA Breaches</h3>
             </div>
-            <Link to={createPageUrl('AdminQueue')} style={{ fontSize: 12, fontWeight: 600, color: ds.red, textDecoration: 'none' }}>
+            <Link to={createPageUrl('AdminQueue')} style={{ fontSize: 11, fontWeight: 600, color: ds.red, textDecoration: 'none' }}>
               Manage →
             </Link>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {worstBreaches.length > 0 ? worstBreaches.map((b, idx) => (
-              <div key={b.id || idx} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Avatar initials={getInitials(b.client)} gradientIndex={idx + 3} size={32} />
+              <div key={b.id || idx} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Avatar initials={getInitials(b.client)} gradientIndex={idx + 3} size={28} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ps-text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: ds.textPrimary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {b.client}
                   </div>
-                  <div style={subText}>
+                  <div style={{ fontSize: 10, color: ds.textMuted }}>
                     {b.group}{b.adviser ? ` · ${b.adviser}` : ''}
                   </div>
                 </div>
-                <span style={badge('var(--ps-surface-red)', ds.red)}>
+                <span style={badgeStyle(ds.badgeRedBg, ds.badgeRedColor)}>
                   {b.hours}hrs
                 </span>
               </div>
@@ -552,12 +592,12 @@ export default function AdminDashboard() {
 
         {/* Col 3: Recent Activity Feed */}
         <div style={card}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: ds.purple }} />
               <h3 style={sectionTitle}>Recent Activity</h3>
             </div>
-            <Link to={createPageUrl('AdminQueue')} style={{ fontSize: 12, fontWeight: 600, color: ds.purple, textDecoration: 'none' }}>
+            <Link to={createPageUrl('AdminQueue')} style={{ fontSize: 11, fontWeight: 600, color: ds.purple, textDecoration: 'none' }}>
               View all →
             </Link>
           </div>
@@ -566,18 +606,18 @@ export default function AdminDashboard() {
               <div key={evt.id || idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                 <span style={{
                   width: 8, height: 8, borderRadius: '50%', background: evt.dotColor,
-                  flexShrink: 0, marginTop: 5,
+                  flexShrink: 0, marginTop: 4,
                 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, color: 'var(--ps-text-body)' }}>
-                    <span style={{ fontWeight: 700, color: 'var(--ps-text-primary)' }}>{evt.action}</span>
+                  <div style={{ fontSize: 12, color: ds.textSecondary }}>
+                    <span style={{ fontWeight: 600, color: ds.textPrimary }}>{evt.action}</span>
                     {' '}{evt.client}
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--ps-text-muted)', marginTop: 1 }}>
+                  <div style={{ fontSize: 10, color: ds.textMuted, marginTop: 1 }}>
                     {evt.group}{evt.adviser ? ` · ${evt.adviser}` : ''}
                   </div>
                 </div>
-                <span style={{ fontSize: 11, color: 'var(--ps-text-subtle)', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 10, color: ds.textHint, flexShrink: 0, whiteSpace: 'nowrap' }}>
                   {evt.time}
                 </span>
               </div>
@@ -591,40 +631,47 @@ export default function AdminDashboard() {
   );
 }
 
-// ── KPI Card sub-component ───────────────────────
+// ── KPI Card sub-component (Design System compliant) ───
 function KpiCard({ barColor, label, value, valueColor, badge: badgeProps }) {
   return (
     <div style={{
-      background: 'var(--ps-surface)',
-      borderRadius: 14,
-      border: '1px solid var(--ps-border)',
-      padding: '18px 20px',
+      background: ds.bgCard,
+      borderRadius: 12,
+      border: `0.5px solid ${ds.borderCard}`,
+      padding: '14px 16px',
       position: 'relative',
       overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 8,
     }}>
-      {/* Top color bar */}
+      {/* Top color bar — 2px per design system */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0,
-        height: 3, background: barColor,
+        height: 2, borderRadius: '12px 12px 0 0',
+        background: barColor,
       }} />
-      <div style={{ fontSize: 12, color: 'var(--ps-text-muted)', marginBottom: 6, fontWeight: 500 }}>
+      <div style={{ fontSize: 11, color: ds.textMuted, fontWeight: 500 }}>
         {label}
       </div>
       <div style={{
-        fontSize: 28, fontWeight: 800, lineHeight: 1.1, marginBottom: 8,
-        color: valueColor || 'var(--ps-text-strongest)',
-        fontFamily: "'Plus Jakarta Sans', 'DM Sans', sans-serif",
+        fontSize: 22, fontWeight: 600, letterSpacing: '-0.3px',
+        fontVariantNumeric: 'tabular-nums',
+        lineHeight: 1.1,
+        color: valueColor || ds.textPrimary,
+        fontFamily: "'DM Sans', sans-serif",
       }}>
         {value}
       </div>
       {badgeProps && (
         <span style={{
-          display: 'inline-block',
-          fontSize: 11, fontWeight: 600,
-          padding: '2px 8px', borderRadius: 6,
+          display: 'inline-flex',
+          fontSize: 10, fontWeight: 600,
+          padding: '3px 9px', borderRadius: 20,
           background: badgeProps.bg,
           color: badgeProps.color,
-          lineHeight: '18px',
+          whiteSpace: 'nowrap',
+          alignSelf: 'flex-start',
         }}>
           {badgeProps.text}
         </span>
