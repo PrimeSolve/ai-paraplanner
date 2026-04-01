@@ -103,6 +103,10 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
+  if (currentPageName === 'AdviserAvatarConfig') {
+    pageTitle = 'Avatar';
+  }
+
   const pageContent = children;
 
   // Determine which layout to use
