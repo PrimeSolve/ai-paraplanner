@@ -121,14 +121,6 @@ export default function AdminClients() {
 
   return (
     <div className="py-6 px-8">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 mb-6">
-        <Home className="w-4 h-4 text-slate-400" />
-        <span className="text-slate-300">/</span>
-        <span className="text-sm font-semibold text-slate-800">Clients</span>
-        <span className="ml-1 px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-semibold rounded-full">{clients.length}</span>
-      </div>
-
       {/* KPI Row */}
       <div className="grid grid-cols-4 gap-6 mb-8">
         {/* Total clients — teal bar */}

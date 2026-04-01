@@ -270,24 +270,6 @@ export default function AdminTeam() {
   return (
     <div style={{ padding: '24px 32px', fontFamily: "'DM Sans', sans-serif" }}>
 
-      {/* TOPBAR / Breadcrumb */}
-      <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{ fontSize: '14px' }}>🏠</span>
-        <span style={{ fontSize: '13px', color: '#94a3b8' }}>›</span>
-        <span style={{ fontSize: '14px', fontWeight: 600, color: '#0f172a' }}>Team</span>
-        <span style={{
-          fontSize: '11px',
-          fontWeight: 600,
-          background: '#e2e8f0',
-          color: '#475569',
-          padding: '2px 8px',
-          borderRadius: '999px',
-          marginLeft: '4px',
-        }}>
-          {stats.total} member{stats.total !== 1 ? 's' : ''}
-        </span>
-      </div>
-
       {/* KPI ROW */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '24px' }}>
         {/* Team members */}
