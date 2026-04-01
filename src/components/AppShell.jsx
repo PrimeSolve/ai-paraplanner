@@ -117,7 +117,7 @@ export default function AppShell({ children, pageActions, pageTitle }) {
     '/SOARequestDetails'
   ];
   const isSpecialLayout = SPECIAL_LAYOUT_ROUTES.some(route => location.pathname.startsWith(route));
-  const sidebarWidth = isSpecialLayout ? '320px' : '260px';
+  const sidebarWidth = isSpecialLayout ? '320px' : '220px';
 
   // Helper to extract current page from URL for sidebar highlighting
   const getCurrentPage = () => {
@@ -201,7 +201,7 @@ export default function AppShell({ children, pageActions, pageTitle }) {
     || currentLevel === 'adviser' || currentLevel === 'client';
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc]">
+    <div className="flex min-h-screen" style={{ background: '#F0F3F8' }}>
       {showSidebar && sidebarComponent}
       <div style={{
         marginLeft: contentMargin,

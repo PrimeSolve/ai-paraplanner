@@ -58,7 +58,7 @@ export default function AdminSidebar({ currentPage, onHelpClick }) {
   const navSections = [
     { label: 'OVERVIEW', items: [
       { label: 'Dashboard', path: 'AdminDashboard', icon: LayoutDashboard },
-      { label: 'SOA Queue', path: 'AdminQueue', icon: Layers, badge: soaQueueCount > 0 ? String(soaQueueCount) : null }
+      { label: 'SOA Queue', path: 'AdminQueue', icon: Layers, badge: soaQueueCount > 0 ? String(soaQueueCount) : null, badgeColor: 'warn' }
     ]},
     { label: 'MANAGEMENT', items: [
       { label: 'Advice Groups', path: 'AdminAdviceGroups', icon: Users },
@@ -77,9 +77,22 @@ export default function AdminSidebar({ currentPage, onHelpClick }) {
   ];
 
   const logoContent = (
-    <div className="w-10 h-10 bg-[#1e293b] rounded-xl flex items-center justify-center font-bold text-sm shadow-lg overflow-hidden">
+    <div style={{
+      width: '30px',
+      height: '30px',
+      background: 'linear-gradient(135deg, #00C9B1, #1E88E5)',
+      borderRadius: '8px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '11px',
+      fontWeight: 700,
+      color: '#fff',
+      flexShrink: 0,
+      overflow: 'hidden',
+    }}>
       {businessDetails?.logo_url ? (
-        <img src={businessDetails.logo_url} alt="Logo" className="w-full h-full object-cover" />
+        <img src={businessDetails.logo_url} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       ) : (
         'AI'
       )}
@@ -91,6 +104,7 @@ export default function AdminSidebar({ currentPage, onHelpClick }) {
       homePath="AdminDashboard"
       logoContent={logoContent}
       title={businessDetails?.company_name || 'AI Paraplanner'}
+      accentColor="#00C9B1"
       subtitle={null}
       navSections={navSections}
       onHelpClick={onHelpClick}
