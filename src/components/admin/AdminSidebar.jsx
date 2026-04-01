@@ -11,7 +11,8 @@ import {
   Settings,
   UsersRound,
   MessageSquare,
-  Settings2
+  Settings2,
+  UserCircle
 } from 'lucide-react';
 
 export default function AdminSidebar({ currentPage, onHelpClick }) {
@@ -71,6 +72,7 @@ export default function AdminSidebar({ currentPage, onHelpClick }) {
     { label: 'CONFIGURATION', items: [
       { label: 'Data Manager', path: 'AdminDataManager', icon: Settings2 },
       { label: 'SOA Template', path: 'AdminTemplate', icon: FileText },
+      { label: 'Avatar', path: 'AdminAvatarConfig', icon: UserCircle },
       { label: 'Team', path: 'AdminTeam', icon: UsersRound },
       { label: 'Settings', path: 'AdminSettings', icon: Settings }
     ]}
