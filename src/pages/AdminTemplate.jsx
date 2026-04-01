@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axiosInstance from '@/api/axiosInstance';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,10 @@ import {
   TrendingUp,
   DollarSign,
   Shield,
+  Search,
+  Copy,
+  Share2,
+  Pencil,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
@@ -27,7 +31,6 @@ import { getIconComponent } from '@/components/IconPicker';
 import { FileText as DefaultSectionIcon } from 'lucide-react';
 import SectionConfigEditor from '@/components/soa/SectionConfigEditor';
 import ClairePanel from '@/components/soa/ClairePanel';
-import TemplateLibrary from '@/components/soa/TemplateLibrary';
 import SOATemplateStylingPanel from '@/components/SOATemplateStylingPanel';
 import {
   DEFAULT_SECTION_GROUPS,
@@ -528,72 +531,594 @@ export default function AdminTemplate() {
     return state;
   };
 
+  // ── Library filter state ──
+  const [searchTerm, setSearchTerm] = useState('');
+  const [shareFilter, setShareFilter] = useState('all');
+
+  const filteredTemplates = useMemo(() => {
+    let list = templates;
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      list = list.filter(
+        (t) =>
+          (t.name || '').toLowerCase().includes(q) ||
+          (t.description || '').toLowerCase().includes(q)
+      );
+    }
+    if (shareFilter === 'shared') {
+      list = list.filter((t) => t.isShared || t.is_shared);
+    } else if (shareFilter === 'system') {
+      list = list.filter((t) => (t.ownerType ?? t.owner_type) === 0);
+    }
+    return list;
+  }, [templates, searchTerm, shareFilter]);
+
+  // Helper: parse sections from a template object
+  const parseSections = (tmpl) => {
+    const raw = tmpl.sections || tmpl.templateData || tmpl.template_data;
+    if (!raw) return [];
+    try {
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      const unwrapped = parsed?.sections || parsed;
+      return Array.isArray(unwrapped) ? unwrapped : [];
+    } catch {
+      return [];
+    }
+  };
+
+  // Helper: format date for display
+  const formatTemplateDate = (tmpl) => {
+    const d = tmpl.updatedAt || tmpl.updated_at || tmpl.createdAt || tmpl.created_at;
+    if (!d) return '—';
+    try {
+      return new Date(d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+    } catch { return '—'; }
+  };
+
+  // Determine active template (first one marked isActive, or the PrimeSolve Default)
+  const activeTemplateId = useMemo(() => {
+    const active = templates.find((t) => t.isActive || t.is_active);
+    if (active) return active.id;
+    const ps = templates.find((t) => t.name === 'PrimeSolve Default');
+    return ps?.id || null;
+  }, [templates]);
+
   // ── LIBRARY VIEW ──
   if (view === 'library') {
     return (
-      <div className="py-6 px-8">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-sm text-slate-500 mb-4">
-          <Home className="w-4 h-4" />
-          <ChevronRight className="w-3.5 h-3.5" />
-          <span className="text-slate-800 font-medium">SOA Templates</span>
-        </div>
-
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              SOA Templates
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Manage system-level SOA document templates available to all advice groups
-            </p>
-          </div>
-          <Button
-            onClick={handleNewFromScratch}
-            className="bg-indigo-600 hover:bg-indigo-700"
-          >
-            <Plus className="w-4 h-4 mr-1.5" />
-            New Template
-          </Button>
-        </div>
-
-        <TemplateLibrary
-          templates={templates}
-          activeTemplateId={null}
-          defaultTemplateId={templates.find((t) => t.name === 'PrimeSolve Default')?.id}
-          onEdit={openEditor}
-          onView={openEditor}
-          onDuplicate={handleDuplicate}
-          onDelete={handleDelete}
-          onShare={handleShareToggle}
-          onNewFromClaire={async () => {
-            // Find default and open editor with Claire
-            let defaultTmpl = templates.find((t) => (t.ownerType === 0 || t.owner_type === 0));
-            if (!defaultTmpl) {
-              // No template loaded yet — create one so Claire has something to work with
-              try {
-                const { data } = await axiosInstance.post('/soa-templates', {
-                  name: 'PrimeSolve Default',
-                  description: '',
-                  ownerType: 0,
-                  ownerId: '00000000-0000-0000-0000-000000000000',
-                  sections: JSON.stringify(DEFAULT_SECTION_GROUPS),
-                });
-                defaultTmpl = data;
-                await loadTemplates();
-              } catch {
-                toast.error('Failed to create template — please try again');
-                return;
-              }
-            }
-            openEditor(defaultTmpl);
-            setTimeout(() => setClaireOpen(true), 100);
+      <div style={{ minHeight: '100vh', background: 'var(--color-background, #f8fafc)' }}>
+        {/* TOPBAR breadcrumb */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '10px 28px',
+            fontSize: 13,
+            color: '#64748b',
+            borderBottom: '1px solid #e2e8f0',
+            background: '#fff',
           }}
-          onNewFromScratch={handleNewFromScratch}
-          onStylingSettings={(tmpl) => setSettingsPanelTemplateId(tmpl.id)}
-          level="admin"
-          loading={loadingLibrary}
-        />
+        >
+          <span style={{ fontSize: 15 }}>🏠</span>
+          <ChevronRight style={{ width: 14, height: 14, color: '#94a3b8' }} />
+          <span style={{ color: '#1e293b', fontWeight: 600 }}>SOA Templates</span>
+          <span
+            style={{
+              marginLeft: 6,
+              background: 'linear-gradient(135deg, #00C9B1, #1E88E5)',
+              color: '#fff',
+              fontSize: 11,
+              fontWeight: 700,
+              borderRadius: 10,
+              padding: '1px 8px',
+              minWidth: 20,
+              textAlign: 'center',
+            }}
+          >
+            {templates.length}
+          </span>
+        </div>
+
+        {/* PAGE CONTENT */}
+        <div style={{ padding: '28px 32px' }}>
+          {/* PAGE HEADER */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
+            <div>
+              <h1
+                style={{
+                  fontFamily: "'Syne', sans-serif",
+                  fontSize: 22,
+                  fontWeight: 700,
+                  color: '#1e293b',
+                  margin: 0,
+                  letterSpacing: '-0.3px',
+                }}
+              >
+                SOA Templates
+              </h1>
+              <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>
+                Manage system-level SOA document templates available to all advice groups
+              </p>
+            </div>
+            <button
+              onClick={handleNewFromScratch}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                background: 'linear-gradient(135deg, #00C9B1, #00A693)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 10,
+                padding: '9px 18px',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0,201,177,0.25)',
+                transition: 'transform 0.15s, box-shadow 0.15s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,201,177,0.35)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,201,177,0.25)'; }}
+            >
+              <Plus style={{ width: 15, height: 15 }} />
+              New Template
+            </button>
+          </div>
+
+          {/* FILTERS BAR */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              marginBottom: 20,
+            }}
+          >
+            <div style={{ position: 'relative' }}>
+              <Search
+                style={{
+                  position: 'absolute',
+                  left: 10,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: 15,
+                  height: 15,
+                  color: '#94a3b8',
+                  pointerEvents: 'none',
+                }}
+              />
+              <input
+                type="text"
+                placeholder="Search templates..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  width: 260,
+                  padding: '8px 12px 8px 32px',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 8,
+                  fontSize: 13,
+                  color: '#1e293b',
+                  background: '#fff',
+                  outline: 'none',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = '#00C9B1')}
+                onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
+              />
+            </div>
+            <select
+              value={shareFilter}
+              onChange={(e) => setShareFilter(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #e2e8f0',
+                borderRadius: 8,
+                fontSize: 13,
+                color: '#1e293b',
+                background: '#fff',
+                cursor: 'pointer',
+                outline: 'none',
+              }}
+              onFocus={(e) => (e.target.style.borderColor = '#00C9B1')}
+              onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
+            >
+              <option value="all">All Templates</option>
+              <option value="shared">Shared</option>
+              <option value="system">System Only</option>
+            </select>
+            <span style={{ marginLeft: 'auto', fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>
+              {filteredTemplates.length} template{filteredTemplates.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+
+          {/* LOADING STATE */}
+          {loadingLibrary && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    borderRadius: 14,
+                    border: '1px solid #e2e8f0',
+                    background: '#fff',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div style={{ padding: '16px 18px 12px', background: '#F8FAFB', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ width: 100, height: 14, background: '#e2e8f0', borderRadius: 4 }} className="animate-pulse" />
+                  </div>
+                  <div style={{ padding: '12px 18px' }}>
+                    <div style={{ width: '80%', height: 10, background: '#f1f5f9', borderRadius: 3, marginBottom: 10 }} className="animate-pulse" />
+                    <div style={{ width: '50%', height: 10, background: '#f1f5f9', borderRadius: 3 }} className="animate-pulse" />
+                  </div>
+                  <div style={{ padding: '10px 14px', background: '#f8fafc', borderTop: '1px solid #f1f5f9' }}>
+                    <div style={{ width: 60, height: 24, background: '#e2e8f0', borderRadius: 4 }} className="animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* EMPTY STATE */}
+          {!loadingLibrary && filteredTemplates.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+              <p style={{ fontSize: 15, color: '#64748b', fontWeight: 500 }}>No templates found</p>
+              <p style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>
+                {searchTerm || shareFilter !== 'all'
+                  ? 'Try adjusting your search or filters'
+                  : 'Create your first template to get started'}
+              </p>
+            </div>
+          )}
+
+          {/* TEMPLATE GRID */}
+          {!loadingLibrary && filteredTemplates.length > 0 && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+              {filteredTemplates.map((tmpl) => {
+                const secs = parseSections(tmpl);
+                const { configured: cfgCount, total: totalCount } = countConfigured(secs);
+                const isActive = tmpl.id === activeTemplateId;
+                const isShared = tmpl.isShared || tmpl.is_shared || false;
+
+                return (
+                  <div
+                    key={tmpl.id}
+                    style={{
+                      borderRadius: 14,
+                      border: isActive
+                        ? '1px solid rgba(0,201,177,0.4)'
+                        : '1px solid #e2e8f0',
+                      background: '#fff',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
+                      boxShadow: isActive
+                        ? '0 0 0 3px rgba(0,201,177,0.10), 0 2px 8px rgba(0,201,177,0.12)'
+                        : '0 1px 3px rgba(0,0,0,0.04)',
+                      cursor: 'default',
+                      position: 'relative',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-3px)';
+                      e.currentTarget.style.boxShadow = isActive
+                        ? '0 0 0 3px rgba(0,201,177,0.15), 0 8px 24px rgba(0,201,177,0.18)'
+                        : '0 8px 24px rgba(0,0,0,0.08)';
+                      if (!isActive) e.currentTarget.style.borderColor = 'rgba(0,201,177,0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'none';
+                      e.currentTarget.style.boxShadow = isActive
+                        ? '0 0 0 3px rgba(0,201,177,0.10), 0 2px 8px rgba(0,201,177,0.12)'
+                        : '0 1px 3px rgba(0,0,0,0.04)';
+                      e.currentTarget.style.borderColor = isActive
+                        ? 'rgba(0,201,177,0.4)'
+                        : '#e2e8f0';
+                    }}
+                  >
+                    {/* Top bar gradient for active */}
+                    {isActive && (
+                      <div
+                        style={{
+                          height: 2,
+                          background: 'linear-gradient(90deg, #00C9B1, #1E88E5)',
+                          width: '100%',
+                          flexShrink: 0,
+                        }}
+                      />
+                    )}
+
+                    {/* Card preview area */}
+                    <div
+                      style={{
+                        padding: '16px 18px 12px',
+                        background: '#F8FAFB',
+                        borderBottom: '1px solid #f1f5f9',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 14,
+                      }}
+                    >
+                      {/* CSS document preview */}
+                      <div
+                        style={{
+                          width: 36,
+                          minWidth: 36,
+                          background: '#fff',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: 4,
+                          padding: '6px 5px',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 3,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {[100, 80, 60, 50, 100, 80, 60, 50].map((w, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              height: 2,
+                              borderRadius: 1,
+                              width: `${w}%`,
+                              background:
+                                i === 0 && isActive
+                                  ? '#00C9B1'
+                                  : '#d1d5db',
+                            }}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Card name + badges */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 600,
+                            color: '#1e293b',
+                            lineHeight: 1.3,
+                            marginBottom: 6,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {tmpl.name || 'Untitled Template'}
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                          {isActive && (
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                fontSize: 10,
+                                fontWeight: 600,
+                                padding: '2px 7px',
+                                borderRadius: 10,
+                                background: '#dcfce7',
+                                color: '#15803d',
+                              }}
+                            >
+                              Active
+                            </span>
+                          )}
+                          {isShared && (
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                fontSize: 10,
+                                fontWeight: 600,
+                                padding: '2px 7px',
+                                borderRadius: 10,
+                                background: '#dbeafe',
+                                color: '#1d4ed8',
+                              }}
+                            >
+                              Shared
+                            </span>
+                          )}
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              fontSize: 10,
+                              fontWeight: 600,
+                              padding: '2px 7px',
+                              borderRadius: 10,
+                              background: '#f1f5f9',
+                              color: '#64748b',
+                            }}
+                          >
+                            System
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Card body */}
+                    <div style={{ padding: '12px 18px', flex: 1 }}>
+                      {tmpl.description && (
+                        <p
+                          style={{
+                            fontSize: 11,
+                            color: '#64748b',
+                            lineHeight: 1.5,
+                            margin: '0 0 10px 0',
+                            overflow: 'hidden',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                          }}
+                        >
+                          {tmpl.description}
+                        </p>
+                      )}
+                      {/* Metrics row */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 12,
+                          fontSize: 11,
+                          color: '#94a3b8',
+                        }}
+                      >
+                        <span>{totalCount} section{totalCount !== 1 ? 's' : ''}</span>
+                        <span style={{ color: '#d1d5db' }}>|</span>
+                        <span>{cfgCount} configured</span>
+                        <span style={{ color: '#d1d5db' }}>|</span>
+                        <span>{formatTemplateDate(tmpl)}</span>
+                      </div>
+                    </div>
+
+                    {/* Action bar (card footer) */}
+                    <div
+                      style={{
+                        padding: '10px 14px',
+                        background: '#f8fafc',
+                        borderTop: '1px solid #f1f5f9',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}
+                    >
+                      {/* Edit — primary teal style */}
+                      <button
+                        onClick={() => openEditor(tmpl)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: '#00C9B1',
+                          background: 'rgba(0,201,177,0.08)',
+                          border: '1px solid rgba(0,201,177,0.3)',
+                          borderRadius: 6,
+                          padding: '5px 10px',
+                          cursor: 'pointer',
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(0,201,177,0.15)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(0,201,177,0.08)')}
+                      >
+                        <Pencil style={{ width: 12, height: 12 }} />
+                        Edit
+                      </button>
+                      {/* Duplicate — ghost */}
+                      <button
+                        onClick={() => handleDuplicate(tmpl)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          fontSize: 12,
+                          fontWeight: 500,
+                          color: '#64748b',
+                          background: 'transparent',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: 6,
+                          padding: '5px 10px',
+                          cursor: 'pointer',
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f5f9')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        <Copy style={{ width: 12, height: 12 }} />
+                        Duplicate
+                      </button>
+                      {/* Share — ghost */}
+                      <button
+                        onClick={() => handleShareToggle(tmpl)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          fontSize: 12,
+                          fontWeight: 500,
+                          color: '#64748b',
+                          background: 'transparent',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: 6,
+                          padding: '5px 10px',
+                          cursor: 'pointer',
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f5f9')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        <Share2 style={{ width: 12, height: 12 }} />
+                        Share
+                      </button>
+
+                      <div style={{ flex: 1 }} />
+
+                      {/* Delete — ghost, red on hover, hidden for active template */}
+                      {!isActive && (
+                        <button
+                          onClick={() => handleDelete(tmpl)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            fontSize: 12,
+                            fontWeight: 500,
+                            color: '#64748b',
+                            background: 'transparent',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: 6,
+                            padding: '5px 10px',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = '#ef4444';
+                            e.currentTarget.style.borderColor = '#fca5a5';
+                            e.currentTarget.style.background = '#fef2f2';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = '#64748b';
+                            e.currentTarget.style.borderColor = '#e2e8f0';
+                            e.currentTarget.style.background = 'transparent';
+                          }}
+                        >
+                          <Trash2 style={{ width: 12, height: 12 }} />
+                          Delete
+                        </button>
+                      )}
+
+                      {/* Configure — blue tint style */}
+                      <button
+                        onClick={() => openEditor(tmpl)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: '#1E88E5',
+                          background: 'rgba(30,136,229,0.08)',
+                          border: '1px solid rgba(30,136,229,0.25)',
+                          borderRadius: 6,
+                          padding: '5px 10px',
+                          cursor: 'pointer',
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(30,136,229,0.15)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(30,136,229,0.08)')}
+                      >
+                        <Settings2 style={{ width: 12, height: 12 }} />
+                        Configure
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {settingsPanelTemplateId && (
           <SOATemplateStylingPanel
