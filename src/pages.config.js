@@ -61,6 +61,7 @@ import AdminTeamMemberProfile from './pages/AdminTeamMemberProfile';
 import AdminTemplate from './pages/AdminTemplate';
 import AdminTestSetup from './pages/AdminTestSetup';
 import AdminTickets from './pages/AdminTickets';
+import AllTickets from './pages/AllTickets';
 import AdviceGroupAdvisers from './pages/AdviceGroupAdvisers';
 import AdviceGroupClients from './pages/AdviceGroupClients';
 import AdviceGroupCompleted from './pages/AdviceGroupCompleted';
@@ -168,6 +169,7 @@ export const PAGES = {
     "AdminTemplate": AdminTemplate,
     "AdminTestSetup": AdminTestSetup,
     "AdminTickets": AdminTickets,
+    "AllTickets": AllTickets,
     "AdviceGroupAdvisers": AdviceGroupAdvisers,
     "AdviceGroupClients": AdviceGroupClients,
     "AdviceGroupCompleted": AdviceGroupCompleted,
