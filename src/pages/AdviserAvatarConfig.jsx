@@ -59,6 +59,13 @@ const Card = ({ children, style }) => (
   </div>
 );
 
+const roleTabs = [
+  { id: "client_welcome", label: "Client welcome" },
+  { id: "adviser", label: "Adviser" },
+  { id: "advice_group", label: "Advice group" },
+  { id: "global_admin", label: "Global admin" },
+];
+
 export default function AdviserAvatarConfig() {
   const [enabled, setEnabled] = useState(true);
   const [selAv, setSelAv] = useState("a1");
@@ -66,6 +73,7 @@ export default function AdviserAvatarConfig() {
   const [selVoice, setSelVoice] = useState(null);
   const [elConnected, setElConnected] = useState(false);
   const [script, setScript] = useState(defaultScript);
+  const [activeRoleTab, setActiveRoleTab] = useState("client_welcome");
 
   const selectedAvatar = mockAvatars.find(a => a.id === selAv);
 
@@ -81,10 +89,34 @@ export default function AdviserAvatarConfig() {
     <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
 
       {/* Scrollable content */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "22px 24px" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "24px 32px" }}>
 
         <div style={{ fontSize: 17, fontWeight: 500, color: "#1e293b", marginBottom: 3 }}>Your client welcome avatar</div>
         <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 20 }}>Customise the avatar your clients see when they log in for the first time</div>
+
+        {/* Role tabs */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 24, borderBottom: "1px solid #e2e8f0" }}>
+          {roleTabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveRoleTab(tab.id)}
+              style={{
+                padding: "10px 18px",
+                fontSize: 13,
+                fontWeight: 500,
+                color: activeRoleTab === tab.id ? "#1D9E75" : "#64748b",
+                background: "none",
+                border: "none",
+                borderBottom: `2px solid ${activeRoleTab === tab.id ? "#1D9E75" : "transparent"}`,
+                marginBottom: -1,
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
         {/* Enable toggle */}
         <SectionLabel>ENABLE AVATAR</SectionLabel>
@@ -264,7 +296,7 @@ export default function AdviserAvatarConfig() {
       </div>
 
       {/* Sticky footer */}
-      <div style={{ borderTop: "0.5px solid #e2e8f0", padding: "12px 24px", display: "flex", justifyContent: "flex-end", gap: 10, background: "#fff", flexShrink: 0 }}>
+      <div style={{ borderTop: "0.5px solid #e2e8f0", padding: "12px 32px", display: "flex", justifyContent: "flex-end", gap: 10, background: "#fff", flexShrink: 0 }}>
         <button style={{ padding: "7px 16px", borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: "pointer", background: "#f1f5f9", color: "#475569", border: "0.5px solid #e2e8f0" }}>Discard changes</button>
         <button style={{ padding: "7px 16px", borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: "pointer", background: "#1D9E75", color: "#fff", border: "none" }}>Save configuration</button>
       </div>
