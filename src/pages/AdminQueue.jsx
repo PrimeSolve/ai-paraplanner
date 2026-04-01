@@ -217,20 +217,6 @@ export default function AdminQueue() {
   return (
     <div className="py-6 px-8" style={{ fontFamily: "'DM Sans', sans-serif" }}>
 
-      {/* ── Breadcrumb ──────────────────────────────────────── */}
-      <div className="flex items-center gap-2 mb-6">
-        <Home className="w-4 h-4 text-slate-400" />
-        <ChevronRight className="w-3 h-3 text-slate-300" />
-        <span className="text-sm font-semibold text-slate-800">SOA Queue</span>
-        <span style={{
-          marginLeft: 8, padding: '2px 10px', borderRadius: 12,
-          fontSize: 11, fontWeight: 700,
-          background: colors.blue, color: '#fff',
-        }}>
-          {queueData.length} requests
-        </span>
-      </div>
-
       {/* ── KPI Row ─────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 28 }}>
         {/* Awaiting Assignment */}

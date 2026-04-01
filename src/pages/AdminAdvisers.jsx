@@ -162,14 +162,6 @@ export default function AdminAdvisers() {
 
   return (
     <div className="p-8">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 mb-6 text-sm">
-        <span className="cursor-pointer hover:text-blue-600" onClick={() => navigate(createPageUrl('AdminDashboard'))}>🏠</span>
-        <span className="text-slate-400">›</span>
-        <span className="font-semibold text-slate-800">Advisers</span>
-        <span className="ml-1 px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-semibold rounded-full">{advisers.length}</span>
-      </div>
-
       {/* KPI Row */}
       <div className="grid grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-2xl p-6 border border-slate-200 relative overflow-hidden">

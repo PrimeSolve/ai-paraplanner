@@ -587,39 +587,6 @@ export default function AdminTemplate() {
   if (view === 'library') {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--color-background, #f8fafc)' }}>
-        {/* TOPBAR breadcrumb */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '10px 28px',
-            fontSize: 13,
-            color: '#64748b',
-            borderBottom: '1px solid #e2e8f0',
-            background: '#fff',
-          }}
-        >
-          <span style={{ fontSize: 15 }}>🏠</span>
-          <ChevronRight style={{ width: 14, height: 14, color: '#94a3b8' }} />
-          <span style={{ color: '#1e293b', fontWeight: 600 }}>SOA Templates</span>
-          <span
-            style={{
-              marginLeft: 6,
-              background: 'linear-gradient(135deg, #00C9B1, #1E88E5)',
-              color: '#fff',
-              fontSize: 11,
-              fontWeight: 700,
-              borderRadius: 10,
-              padding: '1px 8px',
-              minWidth: 20,
-              textAlign: 'center',
-            }}
-          >
-            {templates.length}
-          </span>
-        </div>
-
         {/* PAGE CONTENT */}
         <div style={{ padding: '28px 32px' }}>
           {/* PAGE HEADER */}

@@ -939,18 +939,6 @@ export default function AdminSettings() {
 
   return (
     <div style={s.page}>
-      {/* TOPBAR */}
-      <div style={s.topbar}>
-        <div style={s.breadcrumb}>
-          <Link to={createPageUrl('AdminDashboard')} style={{ color: 'inherit', textDecoration: 'none', fontSize: '15px' }}>
-            🏠
-          </Link>
-          <ChevronRight style={{ width: '14px', height: '14px', opacity: 0.4 }} />
-          <span style={s.breadcrumbActive}>Settings</span>
-          <span style={s.badge}>Platform Admin</span>
-        </div>
-      </div>
-
       {/* SETTINGS LAYOUT */}
       <div style={s.settingsLayout}>
         {/* LEFT SUB-NAV */}
