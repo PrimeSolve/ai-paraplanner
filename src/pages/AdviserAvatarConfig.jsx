@@ -1,14 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
-
-const mockAvatars = [
-  { id: "a1", name: "Sarah",  style: "Professional", initials: "SA", bg: "#E1F5EE", color: "#0F6E56", embedId: "sarah_professional_01" },
-  { id: "a2", name: "James",  style: "Business",     initials: "JM", bg: "#E6F1FB", color: "#185FA5", embedId: "james_business_01" },
-  { id: "a3", name: "Priya",  style: "Friendly",     initials: "PR", bg: "#FAEEDA", color: "#854F0B", embedId: "priya_friendly_01" },
-  { id: "a4", name: "David",  style: "Formal",       initials: "DK", bg: "#EEEDFE", color: "#3C3489", embedId: "david_formal_01" },
-  { id: "a5", name: "Amara",  style: "Warm",         initials: "AM", bg: "#FBEAF0", color: "#72243E", embedId: "amara_warm_01" },
-  { id: "a6", name: "Liam",   style: "Approachable", initials: "LT", bg: "#EAF3DE", color: "#27500A", embedId: "liam_approachable_01" },
-];
+import { useLiveAvatars } from "@/hooks/useLiveAvatars";
 
 const elevenLabsVoices = [
   { id: "el-1", name: "Tim Hall", desc: "Cloned · Your voice",   badge: "Cloned",  badgeBg: "#E1F5EE", badgeColor: "#0F6E56" },
@@ -67,15 +59,23 @@ const roleTabs = [
 ];
 
 export default function AdviserAvatarConfig() {
+  const { avatars, loading, error, retry } = useLiveAvatars();
   const [enabled, setEnabled] = useState(true);
-  const [selAv, setSelAv] = useState("a1");
+  const [selAv, setSelAv] = useState(null);
   const [voiceTab, setVoiceTab] = useState("liveavatar");
   const [selVoice, setSelVoice] = useState(null);
   const [elConnected, setElConnected] = useState(false);
   const [script, setScript] = useState(defaultScript);
   const [activeRoleTab, setActiveRoleTab] = useState("client_welcome");
 
-  const selectedAvatar = mockAvatars.find(a => a.id === selAv);
+  // Select first avatar by default once loaded
+  useEffect(() => {
+    if (avatars.length > 0 && !selAv) {
+      setSelAv(avatars[0].id);
+    }
+  }, [avatars, selAv]);
+
+  const selectedAvatar = avatars.find(a => a.id === selAv);
 
   const insertToken = (tok) => {
     const ta = document.getElementById("script-ta");
@@ -149,25 +149,49 @@ export default function AdviserAvatarConfig() {
                     <Dot /> Connected
                   </div>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 7 }}>
-                  {mockAvatars.map(a => (
-                    <div key={a.id} onClick={() => setSelAv(a.id)} style={{
-                      border: selAv === a.id ? "1.5px solid #1D9E75" : "1px solid #e2e8f0",
-                      borderRadius: 8, padding: "9px 6px", textAlign: "center", cursor: "pointer",
-                      background: selAv === a.id ? "rgba(29,158,117,0.05)" : "#fff",
-                      transition: "all 0.15s",
-                    }}>
-                      <div style={{ width: 34, height: 34, borderRadius: "50%", margin: "0 auto 5px", background: a.bg, color: a.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500 }}>{a.initials}</div>
-                      <div style={{ fontSize: 11, fontWeight: 500, color: "#1e293b" }}>{a.name}</div>
-                      <div style={{ fontSize: 10, color: "#94a3b8" }}>{a.style}</div>
-                      {selAv === a.id && (
-                        <div style={{ width: 12, height: 12, background: "#1D9E75", borderRadius: "50%", margin: "4px auto 0", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <CheckIcon />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                {loading && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 7 }}>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div key={i} style={{ borderRadius: 8, padding: "9px 6px", textAlign: "center", border: "1px solid #e2e8f0" }}>
+                        <div style={{ width: 34, height: 34, borderRadius: "50%", margin: "0 auto 5px", background: "#e2e8f0", animation: "pulse 1.5s ease-in-out infinite" }} />
+                        <div style={{ width: 48, height: 10, borderRadius: 4, background: "#e2e8f0", margin: "0 auto 4px", animation: "pulse 1.5s ease-in-out infinite" }} />
+                        <div style={{ width: 36, height: 8, borderRadius: 4, background: "#f1f5f9", margin: "0 auto", animation: "pulse 1.5s ease-in-out infinite" }} />
+                      </div>
+                    ))}
+                    <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }`}</style>
+                  </div>
+                )}
+                {error && (
+                  <div style={{ textAlign: "center", padding: "24px 8px" }}>
+                    <div style={{ fontSize: 12, color: "#ef4444", marginBottom: 8 }}>{error}</div>
+                    <button onClick={retry} style={{ fontSize: 11, padding: "5px 14px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", color: "#1e293b", cursor: "pointer", fontWeight: 500 }}>Retry</button>
+                  </div>
+                )}
+                {!loading && !error && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 7 }}>
+                    {avatars.map(a => (
+                      <div key={a.id} onClick={() => setSelAv(a.id)} style={{
+                        border: selAv === a.id ? "1.5px solid #1D9E75" : "1px solid #e2e8f0",
+                        borderRadius: 8, padding: "9px 6px", textAlign: "center", cursor: "pointer",
+                        background: selAv === a.id ? "rgba(29,158,117,0.05)" : "#fff",
+                        transition: "all 0.15s",
+                      }}>
+                        {a.preview_url ? (
+                          <img src={a.preview_url} alt={a.name} style={{ width: 34, height: 34, borderRadius: "50%", margin: "0 auto 5px", objectFit: "cover" }} />
+                        ) : (
+                          <div style={{ width: 34, height: 34, borderRadius: "50%", margin: "0 auto 5px", background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500, color: "#64748b" }}>{(a.name || "?")[0]}</div>
+                        )}
+                        <div style={{ fontSize: 11, fontWeight: 500, color: "#1e293b" }}>{a.name}</div>
+                        <div style={{ fontSize: 10, color: "#94a3b8" }}>{a.type}</div>
+                        {selAv === a.id && (
+                          <div style={{ width: 12, height: 12, background: "#1D9E75", borderRadius: "50%", margin: "4px auto 0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <CheckIcon />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </Card>
             </div>
 
@@ -177,21 +201,40 @@ export default function AdviserAvatarConfig() {
               <div style={{ background: "#fff", border: "0.5px solid #e2e8f0", borderRadius: 10, overflow: "hidden" }}>
                 <div style={{ padding: "10px 14px", borderBottom: "0.5px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ width: 26, height: 26, borderRadius: "50%", background: selectedAvatar.bg, color: selectedAvatar.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 500 }}>{selectedAvatar.initials}</div>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 500, color: "#1e293b" }}>{selectedAvatar.name}</div>
-                      <div style={{ fontSize: 10, color: "#94a3b8" }}>{selectedAvatar.style}</div>
-                    </div>
+                    {selectedAvatar ? (
+                      <>
+                        {selectedAvatar.preview_url ? (
+                          <img src={selectedAvatar.preview_url} alt={selectedAvatar.name} style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }} />
+                        ) : (
+                          <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 500, color: "#64748b" }}>{(selectedAvatar.name || "?")[0]}</div>
+                        )}
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 500, color: "#1e293b" }}>{selectedAvatar.name}</div>
+                          <div style={{ fontSize: 10, color: "#94a3b8" }}>{selectedAvatar.type}</div>
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ fontSize: 12, color: "#94a3b8" }}>No avatar selected</div>
+                    )}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: "#1D9E75" }}>
                     <Dot /> Live preview
                   </div>
                 </div>
-                <div style={{ background: "#0f1117", aspectRatio: "16/9", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8 }}>
-                  {/* In production: <iframe src={`https://embed.liveavatar.com/v1/${selectedAvatar.embedId}`} allow="microphone" style={{width:"100%",height:"100%",border:"none"}}/> */}
-                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: selectedAvatar.bg, color: selectedAvatar.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 500 }}>{selectedAvatar.initials}</div>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{selectedAvatar.name} · {selectedAvatar.style}</div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>LiveAvatar embed · avatar_id: {selAv}</div>
+                <div style={{ background: "#0f1117", aspectRatio: "16/9", position: "relative" }}>
+                  {selectedAvatar ? (
+                    <iframe
+                      key={selectedAvatar.id}
+                      src={`https://embed.liveavatar.com/v1/${selectedAvatar.id}`}
+                      allow="microphone"
+                      style={{ width: "100%", height: "100%", border: "none", position: "absolute", inset: 0 }}
+                      title={`${selectedAvatar.name} live preview`}
+                    />
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
+                      Select an avatar to preview
+                    </div>
+                  )}
                 </div>
                 <div style={{ padding: "10px 14px", background: "#f8fafc", borderTop: "0.5px solid #e2e8f0" }}>
                   <div style={{ fontSize: 10, color: "#94a3b8" }}>Interact with the avatar to preview how it will appear to your clients. Select a different avatar above to update the preview.</div>

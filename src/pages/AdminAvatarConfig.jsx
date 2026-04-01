@@ -1,17 +1,7 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { ExternalLink, Play, Check } from 'lucide-react';
-
-// ── Mock Data ──────────────────────────────────────────────────────────────────
-
-const AVATARS = [
-  { id: 'avatar_id_a1', name: 'Sarah', style: 'Professional', initials: 'SA', color: '#d1fae5', fg: '#059669' },
-  { id: 'avatar_id_b2', name: 'James', style: 'Business',     initials: 'JM', color: '#ede9fe', fg: '#7c3aed' },
-  { id: 'avatar_id_c3', name: 'Priya', style: 'Friendly',     initials: 'PR', color: '#fce7f3', fg: '#db2777' },
-  { id: 'avatar_id_d4', name: 'David', style: 'Formal',       initials: 'DK', color: '#e0e7ff', fg: '#4f46e5' },
-  { id: 'avatar_id_e5', name: 'Amara', style: 'Warm',         initials: 'AM', color: '#fef3c7', fg: '#d97706' },
-  { id: 'avatar_id_f6', name: 'Liam',  style: 'Approachable', initials: 'LT', color: '#ffe4e6', fg: '#e11d48' },
-];
+import { useLiveAvatars } from '@/hooks/useLiveAvatars';
 
 const ROLE_TABS = [
   { id: 'client_welcome', label: 'Client welcome' },
@@ -46,17 +36,25 @@ const TOKEN_CHIPS = ['Client Name', 'Adviser Name', 'Practice Name'];
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export default function AdminAvatarConfig() {
+  const { avatars, loading, error, retry } = useLiveAvatars();
   const [activeRole, setActiveRole] = useState('client_welcome');
   const [enabledByRole, setEnabledByRole] = useState({ client_welcome: true, adviser: true, advice_group: true, global_admin: true });
-  const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0].id);
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [voiceTab, setVoiceTab] = useState('liveavatar');
   const [elevenLabsConnected, setElevenLabsConnected] = useState(false);
   const [scripts, setScripts] = useState({ ...DEFAULT_SCRIPTS });
   const scriptRef = useRef(null);
 
+  // Select first avatar by default once loaded
+  useEffect(() => {
+    if (avatars.length > 0 && !selectedAvatar) {
+      setSelectedAvatar(avatars[0].id);
+    }
+  }, [avatars, selectedAvatar]);
+
   const avatarEnabled = enabledByRole[activeRole];
   const toggleMeta = ROLE_TOGGLE_META[activeRole];
-  const currentAvatar = AVATARS.find(a => a.id === selectedAvatar) || AVATARS[0];
+  const currentAvatar = avatars.find(a => a.id === selectedAvatar) || avatars[0];
 
   const handleToggle = (checked) => {
     setEnabledByRole(prev => ({ ...prev, [activeRole]: checked }));
@@ -132,36 +130,67 @@ export default function AdminAvatarConfig() {
                     Connected
                   </span>
                 </div>
-                <div className="p-4 grid grid-cols-3 gap-3">
-                  {AVATARS.map(avatar => {
-                    const selected = avatar.id === selectedAvatar;
-                    return (
-                      <button
-                        key={avatar.id}
-                        onClick={() => setSelectedAvatar(avatar.id)}
-                        className="flex flex-col items-center p-3 rounded-lg border transition-all relative"
-                        style={{
-                          borderColor: selected ? '#1D9E75' : '#e2e8f0',
-                          borderWidth: selected ? '2px' : '1px',
-                          background: '#fff',
-                        }}
-                      >
-                        <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold mb-2"
-                          style={{ background: avatar.color, color: avatar.fg }}
-                        >
-                          {avatar.initials}
+                <div className="p-4">
+                  {loading && (
+                    <div className="grid grid-cols-3 gap-3">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <div key={i} className="flex flex-col items-center p-3 rounded-lg border border-slate-200">
+                          <div className="w-10 h-10 rounded-full bg-slate-200 mb-2 animate-pulse" />
+                          <div className="w-12 h-3 rounded bg-slate-200 mb-1 animate-pulse" />
+                          <div className="w-8 h-2 rounded bg-slate-100 animate-pulse" />
                         </div>
-                        <span className="text-xs font-medium text-slate-800">{avatar.name}</span>
-                        <span className="text-[10px] text-slate-400">{avatar.style}</span>
-                        {selected && (
-                          <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-[#1D9E75] flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        )}
+                      ))}
+                    </div>
+                  )}
+                  {error && (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <div className="text-sm text-red-500 mb-3">{error}</div>
+                      <button
+                        onClick={retry}
+                        className="text-xs font-medium px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
+                      >
+                        Retry
                       </button>
-                    );
-                  })}
+                    </div>
+                  )}
+                  {!loading && !error && (
+                    <div className="grid grid-cols-3 gap-3">
+                      {avatars.map(avatar => {
+                        const selected = avatar.id === selectedAvatar;
+                        return (
+                          <button
+                            key={avatar.id}
+                            onClick={() => setSelectedAvatar(avatar.id)}
+                            className="flex flex-col items-center p-3 rounded-lg border transition-all relative"
+                            style={{
+                              borderColor: selected ? '#1D9E75' : '#e2e8f0',
+                              borderWidth: selected ? '2px' : '1px',
+                              background: '#fff',
+                            }}
+                          >
+                            {avatar.preview_url ? (
+                              <img
+                                src={avatar.preview_url}
+                                alt={avatar.name}
+                                className="w-10 h-10 rounded-full object-cover mb-2"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold mb-2 bg-slate-200 text-slate-500">
+                                {(avatar.name || '?')[0]}
+                              </div>
+                            )}
+                            <span className="text-xs font-medium text-slate-800">{avatar.name}</span>
+                            <span className="text-[10px] text-slate-400">{avatar.type}</span>
+                            {selected && (
+                              <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-[#1D9E75] flex items-center justify-center">
+                                <Check className="w-3 h-3 text-white" />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -172,34 +201,43 @@ export default function AdminAvatarConfig() {
               <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
                 <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold"
-                      style={{ background: currentAvatar.color, color: currentAvatar.fg }}
-                    >
-                      {currentAvatar.initials}
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-slate-800">{currentAvatar.name}</div>
-                      <div className="text-[10px] text-slate-400">{currentAvatar.style}</div>
-                    </div>
+                    {currentAvatar ? (
+                      <>
+                        {currentAvatar.preview_url ? (
+                          <img src={currentAvatar.preview_url} alt={currentAvatar.name} className="w-8 h-8 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold bg-slate-200 text-slate-500">
+                            {(currentAvatar.name || '?')[0]}
+                          </div>
+                        )}
+                        <div>
+                          <div className="text-sm font-semibold text-slate-800">{currentAvatar.name}</div>
+                          <div className="text-[10px] text-slate-400">{currentAvatar.type}</div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-sm text-slate-400">No avatar selected</div>
+                    )}
                   </div>
                   <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
                     Live preview
                   </span>
                 </div>
-                <div
-                  className="flex flex-col items-center justify-center text-center"
-                  style={{ background: '#1e293b', aspectRatio: '16/9' }}
-                >
-                  <div
-                    className="w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold mb-3"
-                    style={{ background: currentAvatar.color, color: currentAvatar.fg }}
-                  >
-                    {currentAvatar.initials}
-                  </div>
-                  <div className="text-white text-sm font-semibold">{currentAvatar.name} · {currentAvatar.style}</div>
-                  <div className="text-slate-400 text-xs mt-1">LiveAvatar embed · avatar_id: {currentAvatar.id}</div>
+                <div style={{ background: '#1e293b', aspectRatio: '16/9', position: 'relative' }}>
+                  {currentAvatar ? (
+                    <iframe
+                      key={currentAvatar.id}
+                      src={`https://embed.liveavatar.com/v1/${currentAvatar.id}`}
+                      allow="microphone"
+                      style={{ width: '100%', height: '100%', border: 'none', position: 'absolute', inset: 0 }}
+                      title={`${currentAvatar.name} live preview`}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-slate-500 text-sm">
+                      Select an avatar to preview
+                    </div>
+                  )}
                 </div>
                 <div className="px-5 py-3 border-t border-slate-100">
                   <p className="text-[11px] text-slate-400 leading-relaxed">
