@@ -1,6 +1,8 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { ExternalLink, Play, Check } from 'lucide-react';
+import axiosInstance from '@/api/axiosInstance';
+import { toast } from 'sonner';
 
 // ── Mock Data ──────────────────────────────────────────────────────────────────
 
@@ -43,23 +45,103 @@ const ELEVEN_LABS_VOICES = [
 
 const TOKEN_CHIPS = ['Client Name', 'Adviser Name', 'Practice Name'];
 
+const defaultConfigForRole = (role) => ({
+  is_enabled: true,
+  avatar_id: AVATARS[0].id,
+  voice_id: '',
+  voice_provider: 'liveavatar',
+  welcome_script: DEFAULT_SCRIPTS[role] || '',
+});
+
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export default function AdminAvatarConfig() {
   const [activeRole, setActiveRole] = useState('client_welcome');
-  const [enabledByRole, setEnabledByRole] = useState({ client_welcome: true, adviser: true, advice_group: true, global_admin: true });
-  const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0].id);
   const [voiceTab, setVoiceTab] = useState('liveavatar');
   const [elevenLabsConnected, setElevenLabsConnected] = useState(false);
-  const [scripts, setScripts] = useState({ ...DEFAULT_SCRIPTS });
+  const [configByRole, setConfigByRole] = useState({});
+  const [savedByRole, setSavedByRole] = useState({});
+  const [fetchedRoles, setFetchedRoles] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const scriptRef = useRef(null);
 
-  const avatarEnabled = enabledByRole[activeRole];
+  const currentConfig = configByRole[activeRole] || defaultConfigForRole(activeRole);
+  const avatarEnabled = currentConfig.is_enabled;
   const toggleMeta = ROLE_TOGGLE_META[activeRole];
-  const currentAvatar = AVATARS.find(a => a.id === selectedAvatar) || AVATARS[0];
+  const currentAvatar = AVATARS.find(a => a.id === currentConfig.avatar_id) || AVATARS[0];
 
-  const handleToggle = (checked) => {
-    setEnabledByRole(prev => ({ ...prev, [activeRole]: checked }));
+  const updateConfig = (field, value) => {
+    setConfigByRole(prev => ({
+      ...prev,
+      [activeRole]: { ...(prev[activeRole] || defaultConfigForRole(activeRole)), [field]: value },
+    }));
+  };
+
+  const handleToggle = (checked) => updateConfig('is_enabled', checked);
+
+  const fetchConfig = useCallback(async (role) => {
+    try {
+      const { data } = await axiosInstance.get(`/avatar/config/${role}`);
+      const config = {
+        is_enabled: data.isEnabled ?? true,
+        avatar_id: data.avatarId || AVATARS[0].id,
+        voice_id: data.voiceId || '',
+        voice_provider: data.voiceProvider || 'liveavatar',
+        welcome_script: data.welcomeScript ?? DEFAULT_SCRIPTS[role] ?? '',
+      };
+      setConfigByRole(prev => ({ ...prev, [role]: config }));
+      setSavedByRole(prev => ({ ...prev, [role]: config }));
+      setVoiceTab(config.voice_provider || 'liveavatar');
+    } catch (err) {
+      if (err.response?.status === 404) {
+        const defaults = defaultConfigForRole(role);
+        setConfigByRole(prev => ({ ...prev, [role]: defaults }));
+        setSavedByRole(prev => ({ ...prev, [role]: defaults }));
+      }
+    }
+    setFetchedRoles(prev => ({ ...prev, [role]: true }));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { fetchConfig('client_welcome'); }, []);
+
+  useEffect(() => {
+    if (!fetchedRoles[activeRole]) {
+      fetchConfig(activeRole);
+    } else {
+      const cfg = configByRole[activeRole];
+      if (cfg) setVoiceTab(cfg.voice_provider || 'liveavatar');
+    }
+  }, [activeRole]);
+
+  const handleVoiceTabChange = (tab) => {
+    setVoiceTab(tab);
+    updateConfig('voice_provider', tab);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await axiosInstance.put(`/avatar/config/${activeRole}`, {
+        isEnabled: currentConfig.is_enabled,
+        avatarId: currentConfig.avatar_id,
+        voiceId: currentConfig.voice_id,
+        voiceProvider: currentConfig.voice_provider,
+        welcomeScript: currentConfig.welcome_script,
+      });
+      setSavedByRole(prev => ({ ...prev, [activeRole]: { ...currentConfig } }));
+      toast.success('Configuration saved');
+    } catch (err) {
+      toast.error(`Failed to save configuration: ${err.response?.status || err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDiscard = async () => {
+    setFetchedRoles(prev => ({ ...prev, [activeRole]: false }));
+    await fetchConfig(activeRole);
   };
 
   const insertToken = useCallback((token) => {
@@ -67,15 +149,15 @@ export default function AdminAvatarConfig() {
     if (!ta) return;
     const start = ta.selectionStart;
     const end = ta.selectionEnd;
-    const text = scripts[activeRole];
+    const text = currentConfig.welcome_script;
     const insert = `[${token}]`;
     const updated = text.substring(0, start) + insert + text.substring(end);
-    setScripts(prev => ({ ...prev, [activeRole]: updated }));
+    updateConfig('welcome_script', updated);
     requestAnimationFrame(() => {
       ta.focus();
       ta.selectionStart = ta.selectionEnd = start + insert.length;
     });
-  }, [activeRole, scripts]);
+  }, [activeRole, configByRole]);
 
   return (
     <div className="min-h-screen" style={{ background: '#f8fafc' }}>
@@ -134,11 +216,11 @@ export default function AdminAvatarConfig() {
                 </div>
                 <div className="p-4 grid grid-cols-3 gap-3">
                   {AVATARS.map(avatar => {
-                    const selected = avatar.id === selectedAvatar;
+                    const selected = avatar.id === currentConfig.avatar_id;
                     return (
                       <button
                         key={avatar.id}
-                        onClick={() => setSelectedAvatar(avatar.id)}
+                        onClick={() => updateConfig('avatar_id', avatar.id)}
                         className="flex flex-col items-center p-3 rounded-lg border transition-all relative"
                         style={{
                           borderColor: selected ? '#1D9E75' : '#e2e8f0',
@@ -218,7 +300,7 @@ export default function AdminAvatarConfig() {
               {[{ id: 'liveavatar', label: 'LiveAvatar' }, { id: 'elevenlabs', label: 'ElevenLabs' }].map(t => (
                 <button
                   key={t.id}
-                  onClick={() => setVoiceTab(t.id)}
+                  onClick={() => handleVoiceTabChange(t.id)}
                   className="text-sm font-medium pb-3 px-4 transition-all relative"
                   style={{
                     color: voiceTab === t.id ? '#1e293b' : '#94a3b8',
@@ -315,8 +397,8 @@ export default function AdminAvatarConfig() {
             <div className="px-5 pb-5">
               <textarea
                 ref={scriptRef}
-                value={scripts[activeRole]}
-                onChange={e => setScripts(prev => ({ ...prev, [activeRole]: e.target.value }))}
+                value={currentConfig.welcome_script}
+                onChange={e => updateConfig('welcome_script', e.target.value)}
                 rows={8}
                 className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-700 leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-[#1D9E75]/30 focus:border-[#1D9E75]"
               />
@@ -330,11 +412,11 @@ export default function AdminAvatarConfig() {
 
       {/* Sticky Footer */}
       <div className="fixed bottom-0 left-[220px] right-0 bg-white border-t border-slate-200 px-6 py-3 flex justify-end gap-3 z-40">
-        <button className="text-sm font-medium text-slate-600 px-5 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+        <button onClick={handleDiscard} className="text-sm font-medium text-slate-600 px-5 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
           Discard changes
         </button>
-        <button className="text-sm font-medium text-white px-5 py-2.5 rounded-lg transition-colors" style={{ background: '#1D9E75' }}>
-          Save configuration
+        <button onClick={handleSave} disabled={saving} className="text-sm font-medium text-white px-5 py-2.5 rounded-lg transition-colors disabled:opacity-50" style={{ background: '#1D9E75' }}>
+          {saving ? 'Saving…' : 'Save configuration'}
         </button>
       </div>
     </div>
