@@ -33,6 +33,17 @@ const ELEVEN_LABS_VOICES = [
   { id: 'v4', name: 'Callum',    desc: 'ElevenLabs library',   badge: 'Library', badgeColor: '#3b82f6' },
 ];
 
+const AVATAR_EMBED_MAP = {
+  "0930fd59-c8ad-434d-ad53-b391a1768720": "af822836-4be9-454b-ad73-9d772a13bfea",
+  "65f9e3c9-d48b-4118-b73a-4ae2e3cbb8f0": "7f979607-9d72-4c28-bfbf-d33f60220d69",
+  "64b526e4-741c-43b6-a918-4e40f3261c7a": "3ce9a9d2-8f00-4b30-ae42-53def1f541c3",
+  "073b60a9-89a8-45aa-8902-c358f64d2852": "aa2b264e-c86e-4805-a5c0-0dace17cd766",
+  "e9844e6d-847e-4964-a92b-7ecd066f69df": "69d4f10e-6974-4261-8755-d5a7de8e37d9",
+  "0aae6046-0ab9-44fe-a08d-c5ac3f406d34": "a346f50c-bbd5-4c44-8849-e70625ad9c44",
+  "ab0765ad-69de-41fb-9f8a-bd01c3c52d6f": "045517c0-318c-40a7-ac85-0c43d26f6e9d",
+  "b4fc2d60-3b82-4694-b243-93e9d2bb0242": "32686000-e5c9-45bd-8395-bce02a3affde",
+};
+
 const TOKEN_CHIPS = ['Client Name', 'Adviser Name', 'Practice Name'];
 
 const defaultConfigForRole = (role, avatarList) => ({
@@ -261,18 +272,25 @@ export default function AdminAvatarConfig() {
                     Live preview
                   </span>
                 </div>
-                <div
-                  className="flex flex-col items-center justify-center text-center"
-                  style={{ background: '#1e293b', aspectRatio: '16/9' }}
-                >
-                  <div
-                    className="w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold mb-3"
-                    style={{ background: currentAvatar.color, color: currentAvatar.fg }}
-                  >
-                    {currentAvatar.initials}
-                  </div>
-                  <div className="text-white text-sm font-semibold">{currentAvatar.name} · {currentAvatar.style}</div>
-                  <div className="text-slate-400 text-xs mt-1">LiveAvatar embed · avatar_id: {currentAvatar.id}</div>
+                <div style={{ background: '#1e293b', aspectRatio: '16/9' }}>
+                  {AVATAR_EMBED_MAP[currentAvatar.id] ? (
+                    <iframe
+                      src={`https://embed.liveavatar.com/v1/${AVATAR_EMBED_MAP[currentAvatar.id]}`}
+                      allow="microphone"
+                      title="LiveAvatar Embed"
+                      style={{ width: "100%", height: "100%", border: "none", aspectRatio: "16/9" }}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-center h-full">
+                      <div
+                        className="w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold mb-3"
+                        style={{ background: currentAvatar.color, color: currentAvatar.fg }}
+                      >
+                        {currentAvatar.initials}
+                      </div>
+                      <div className="text-white text-sm font-semibold">{currentAvatar.name} · {currentAvatar.style}</div>
+                    </div>
+                  )}
                 </div>
                 <div className="px-5 py-3 border-t border-slate-100">
                   <p className="text-[11px] text-slate-400 leading-relaxed">
