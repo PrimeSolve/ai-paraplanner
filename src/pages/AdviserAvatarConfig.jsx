@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Switch } from "@/components/ui/switch";
+import axiosInstance from "@/api/axiosInstance";
+import { toast } from "sonner";
 
 const mockAvatars = [
   { id: "a1", name: "Sarah",  style: "Professional", initials: "SA", bg: "#E1F5EE", color: "#0F6E56", embedId: "sarah_professional_01" },
@@ -66,22 +68,89 @@ const roleTabs = [
   { id: "global_admin", label: "Global admin" },
 ];
 
+const ROLE = "client_welcome";
+
+const defaultConfig = () => ({
+  is_enabled: true,
+  avatar_id: mockAvatars[0].id,
+  voice_id: "",
+  voice_provider: "liveavatar",
+  welcome_script: defaultScript,
+});
+
 export default function AdviserAvatarConfig() {
-  const [enabled, setEnabled] = useState(true);
-  const [selAv, setSelAv] = useState("a1");
+  const [config, setConfig] = useState(defaultConfig());
+  const [savedConfig, setSavedConfig] = useState(defaultConfig());
   const [voiceTab, setVoiceTab] = useState("liveavatar");
   const [selVoice, setSelVoice] = useState(null);
   const [elConnected, setElConnected] = useState(false);
-  const [script, setScript] = useState(defaultScript);
   const [activeRoleTab, setActiveRoleTab] = useState("client_welcome");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const selectedAvatar = mockAvatars.find(a => a.id === selAv);
+  const selectedAvatar = mockAvatars.find(a => a.id === config.avatar_id) || mockAvatars[0];
+
+  const updateField = (field, value) => setConfig(prev => ({ ...prev, [field]: value }));
+
+  const fetchConfig = useCallback(async () => {
+    try {
+      const { data } = await axiosInstance.get(`/avatar/config/${ROLE}`);
+      const loaded = {
+        is_enabled: data.isEnabled ?? true,
+        avatar_id: data.avatarId || mockAvatars[0].id,
+        voice_id: data.voiceId || "",
+        voice_provider: data.voiceProvider || "liveavatar",
+        welcome_script: data.welcomeScript ?? defaultScript,
+      };
+      setConfig(loaded);
+      setSavedConfig(loaded);
+      setVoiceTab(loaded.voice_provider || "liveavatar");
+    } catch (err) {
+      if (err.response?.status === 404) {
+        const defaults = defaultConfig();
+        setConfig(defaults);
+        setSavedConfig(defaults);
+      }
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { fetchConfig(); }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await axiosInstance.put(`/avatar/config/${ROLE}`, {
+        isEnabled: config.is_enabled,
+        avatarId: config.avatar_id,
+        voiceId: config.voice_id,
+        voiceProvider: config.voice_provider,
+        welcomeScript: config.welcome_script,
+      });
+      setSavedConfig({ ...config });
+      toast.success("Configuration saved");
+    } catch (err) {
+      toast.error(`Failed to save configuration: ${err.response?.status || err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDiscard = async () => {
+    await fetchConfig();
+  };
+
+  const handleVoiceTabChange = (tab) => {
+    setVoiceTab(tab);
+    updateField("voice_provider", tab);
+  };
 
   const insertToken = (tok) => {
     const ta = document.getElementById("script-ta");
     if (!ta) return;
     const s = ta.selectionStart;
-    setScript(script.slice(0, s) + tok + script.slice(ta.selectionEnd));
+    const text = config.welcome_script;
+    updateField("welcome_script", text.slice(0, s) + tok + text.slice(ta.selectionEnd));
     setTimeout(() => { ta.selectionStart = ta.selectionEnd = s + tok.length; ta.focus(); }, 0);
   };
 
@@ -127,14 +196,14 @@ export default function AdviserAvatarConfig() {
               <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>Show an interactive avatar when a client logs in for the first time</div>
             </div>
             <Switch
-              checked={enabled}
-              onCheckedChange={setEnabled}
+              checked={config.is_enabled}
+              onCheckedChange={(v) => updateField("is_enabled", v)}
               className="data-[state=checked]:bg-[#1D9E75]"
             />
           </div>
         </Card>
 
-        <div style={{ opacity: enabled ? 1 : 0.35, pointerEvents: enabled ? "all" : "none", transition: "opacity 0.2s" }}>
+        <div style={{ opacity: config.is_enabled ? 1 : 0.35, pointerEvents: config.is_enabled ? "all" : "none", transition: "opacity 0.2s" }}>
 
           {/* Two col: avatar picker + live preview */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
@@ -151,16 +220,16 @@ export default function AdviserAvatarConfig() {
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 7 }}>
                   {mockAvatars.map(a => (
-                    <div key={a.id} onClick={() => setSelAv(a.id)} style={{
-                      border: selAv === a.id ? "1.5px solid #1D9E75" : "1px solid #e2e8f0",
+                    <div key={a.id} onClick={() => updateField("avatar_id", a.id)} style={{
+                      border: config.avatar_id === a.id ? "1.5px solid #1D9E75" : "1px solid #e2e8f0",
                       borderRadius: 8, padding: "9px 6px", textAlign: "center", cursor: "pointer",
-                      background: selAv === a.id ? "rgba(29,158,117,0.05)" : "#fff",
+                      background: config.avatar_id === a.id ? "rgba(29,158,117,0.05)" : "#fff",
                       transition: "all 0.15s",
                     }}>
                       <div style={{ width: 34, height: 34, borderRadius: "50%", margin: "0 auto 5px", background: a.bg, color: a.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500 }}>{a.initials}</div>
                       <div style={{ fontSize: 11, fontWeight: 500, color: "#1e293b" }}>{a.name}</div>
                       <div style={{ fontSize: 10, color: "#94a3b8" }}>{a.style}</div>
-                      {selAv === a.id && (
+                      {config.avatar_id === a.id && (
                         <div style={{ width: 12, height: 12, background: "#1D9E75", borderRadius: "50%", margin: "4px auto 0", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <CheckIcon />
                         </div>
@@ -191,7 +260,7 @@ export default function AdviserAvatarConfig() {
                   {/* In production: <iframe src={`https://embed.liveavatar.com/v1/${selectedAvatar.embedId}`} allow="microphone" style={{width:"100%",height:"100%",border:"none"}}/> */}
                   <div style={{ width: 44, height: 44, borderRadius: "50%", background: selectedAvatar.bg, color: selectedAvatar.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 500 }}>{selectedAvatar.initials}</div>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{selectedAvatar.name} · {selectedAvatar.style}</div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>LiveAvatar embed · avatar_id: {selAv}</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>LiveAvatar embed · avatar_id: {config.avatar_id}</div>
                 </div>
                 <div style={{ padding: "10px 14px", background: "#f8fafc", borderTop: "0.5px solid #e2e8f0" }}>
                   <div style={{ fontSize: 10, color: "#94a3b8" }}>Interact with the avatar to preview how it will appear to your clients. Select a different avatar above to update the preview.</div>
@@ -205,7 +274,7 @@ export default function AdviserAvatarConfig() {
           <Card>
             <div style={{ display: "flex", borderBottom: "0.5px solid #e2e8f0", marginBottom: 12, marginTop: -2 }}>
               {[["liveavatar", "LiveAvatar"], ["elevenlabs", "ElevenLabs"]].map(([key, label]) => (
-                <div key={key} onClick={() => setVoiceTab(key)} style={{
+                <div key={key} onClick={() => handleVoiceTabChange(key)} style={{
                   padding: "6px 12px", fontSize: 11, cursor: "pointer", marginBottom: -1,
                   color: voiceTab === key ? "#1D9E75" : "#64748b",
                   fontWeight: voiceTab === key ? 500 : 400,
@@ -279,8 +348,8 @@ export default function AdviserAvatarConfig() {
             </div>
             <textarea
               id="script-ta"
-              value={script}
-              onChange={e => setScript(e.target.value)}
+              value={config.welcome_script}
+              onChange={e => updateField("welcome_script", e.target.value)}
               style={{
                 width: "100%", minHeight: 110, background: "#f8fafc",
                 border: "1px solid #e2e8f0", borderRadius: 8, padding: "9px 11px",
@@ -297,8 +366,8 @@ export default function AdviserAvatarConfig() {
 
       {/* Sticky footer */}
       <div style={{ borderTop: "0.5px solid #e2e8f0", padding: "12px 32px", display: "flex", justifyContent: "flex-end", gap: 10, background: "#fff", flexShrink: 0 }}>
-        <button style={{ padding: "7px 16px", borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: "pointer", background: "#f1f5f9", color: "#475569", border: "0.5px solid #e2e8f0" }}>Discard changes</button>
-        <button style={{ padding: "7px 16px", borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: "pointer", background: "#1D9E75", color: "#fff", border: "none" }}>Save configuration</button>
+        <button onClick={handleDiscard} style={{ padding: "7px 16px", borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: "pointer", background: "#f1f5f9", color: "#475569", border: "0.5px solid #e2e8f0" }}>Discard changes</button>
+        <button onClick={handleSave} disabled={saving} style={{ padding: "7px 16px", borderRadius: 7, fontSize: 12, fontWeight: 500, cursor: "pointer", background: "#1D9E75", color: "#fff", border: "none", opacity: saving ? 0.5 : 1 }}>{saving ? "Saving…" : "Save configuration"}</button>
       </div>
     </div>
   );
