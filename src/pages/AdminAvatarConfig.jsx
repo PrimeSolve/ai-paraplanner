@@ -2,18 +2,8 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { ExternalLink, Play, Check } from 'lucide-react';
 import axiosInstance from '@/api/axiosInstance';
+import useLiveAvatars from '@/hooks/useLiveAvatars';
 import { toast } from 'sonner';
-
-// ── Mock Data ──────────────────────────────────────────────────────────────────
-
-const AVATARS = [
-  { id: 'avatar_id_a1', name: 'Sarah', style: 'Professional', initials: 'SA', color: '#d1fae5', fg: '#059669' },
-  { id: 'avatar_id_b2', name: 'James', style: 'Business',     initials: 'JM', color: '#ede9fe', fg: '#7c3aed' },
-  { id: 'avatar_id_c3', name: 'Priya', style: 'Friendly',     initials: 'PR', color: '#fce7f3', fg: '#db2777' },
-  { id: 'avatar_id_d4', name: 'David', style: 'Formal',       initials: 'DK', color: '#e0e7ff', fg: '#4f46e5' },
-  { id: 'avatar_id_e5', name: 'Amara', style: 'Warm',         initials: 'AM', color: '#fef3c7', fg: '#d97706' },
-  { id: 'avatar_id_f6', name: 'Liam',  style: 'Approachable', initials: 'LT', color: '#ffe4e6', fg: '#e11d48' },
-];
 
 const ROLE_TABS = [
   { id: 'client_welcome', label: 'Client welcome' },
@@ -45,9 +35,9 @@ const ELEVEN_LABS_VOICES = [
 
 const TOKEN_CHIPS = ['Client Name', 'Adviser Name', 'Practice Name'];
 
-const defaultConfigForRole = (role) => ({
+const defaultConfigForRole = (role, avatarList) => ({
   is_enabled: true,
-  avatar_id: AVATARS[0].id,
+  avatar_id: avatarList?.[0]?.id || '',
   voice_id: '',
   voice_provider: 'liveavatar',
   welcome_script: DEFAULT_SCRIPTS[role] || '',
@@ -56,6 +46,7 @@ const defaultConfigForRole = (role) => ({
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export default function AdminAvatarConfig() {
+  const { avatars } = useLiveAvatars();
   const [activeRole, setActiveRole] = useState('client_welcome');
   const [voiceTab, setVoiceTab] = useState('liveavatar');
   const [elevenLabsConnected, setElevenLabsConnected] = useState(false);
@@ -66,15 +57,15 @@ export default function AdminAvatarConfig() {
   const [saving, setSaving] = useState(false);
   const scriptRef = useRef(null);
 
-  const currentConfig = configByRole[activeRole] || defaultConfigForRole(activeRole);
+  const currentConfig = configByRole[activeRole] || defaultConfigForRole(activeRole, avatars);
   const avatarEnabled = currentConfig.is_enabled;
   const toggleMeta = ROLE_TOGGLE_META[activeRole];
-  const currentAvatar = AVATARS.find(a => a.id === currentConfig.avatar_id) || AVATARS[0];
+  const currentAvatar = avatars.find(a => a.id === currentConfig.avatar_id) || avatars[0] || {};
 
   const updateConfig = (field, value) => {
     setConfigByRole(prev => ({
       ...prev,
-      [activeRole]: { ...(prev[activeRole] || defaultConfigForRole(activeRole)), [field]: value },
+      [activeRole]: { ...(prev[activeRole] || defaultConfigForRole(activeRole, avatars)), [field]: value },
     }));
   };
 
@@ -85,7 +76,7 @@ export default function AdminAvatarConfig() {
       const { data } = await axiosInstance.get(`/avatar/config/${role}`);
       const config = {
         is_enabled: data.isEnabled ?? true,
-        avatar_id: data.avatarId || AVATARS[0].id,
+        avatar_id: data.avatarId || avatars[0]?.id || '',
         voice_id: data.voiceId || '',
         voice_provider: data.voiceProvider || 'liveavatar',
         welcome_script: data.welcomeScript ?? DEFAULT_SCRIPTS[role] ?? '',
@@ -95,16 +86,16 @@ export default function AdminAvatarConfig() {
       setVoiceTab(config.voice_provider || 'liveavatar');
     } catch (err) {
       if (err.response?.status === 404) {
-        const defaults = defaultConfigForRole(role);
+        const defaults = defaultConfigForRole(role, avatars);
         setConfigByRole(prev => ({ ...prev, [role]: defaults }));
         setSavedByRole(prev => ({ ...prev, [role]: defaults }));
       }
     }
     setFetchedRoles(prev => ({ ...prev, [role]: true }));
     setLoading(false);
-  }, []);
+  }, [avatars]);
 
-  useEffect(() => { fetchConfig('client_welcome'); }, []);
+  useEffect(() => { fetchConfig('client_welcome'); }, [fetchConfig]);
 
   useEffect(() => {
     if (!fetchedRoles[activeRole]) {
@@ -215,7 +206,7 @@ export default function AdminAvatarConfig() {
                   </span>
                 </div>
                 <div className="p-4 grid grid-cols-3 gap-3">
-                  {AVATARS.map(avatar => {
+                  {avatars.map(avatar => {
                     const selected = avatar.id === currentConfig.avatar_id;
                     return (
                       <button

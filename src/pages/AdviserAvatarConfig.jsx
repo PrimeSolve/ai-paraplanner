@@ -1,16 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { Switch } from "@/components/ui/switch";
 import axiosInstance from "@/api/axiosInstance";
+import useLiveAvatars from "@/hooks/useLiveAvatars";
 import { toast } from "sonner";
-
-const mockAvatars = [
-  { id: "a1", name: "Sarah",  style: "Professional", initials: "SA", bg: "#E1F5EE", color: "#0F6E56", embedId: "sarah_professional_01" },
-  { id: "a2", name: "James",  style: "Business",     initials: "JM", bg: "#E6F1FB", color: "#185FA5", embedId: "james_business_01" },
-  { id: "a3", name: "Priya",  style: "Friendly",     initials: "PR", bg: "#FAEEDA", color: "#854F0B", embedId: "priya_friendly_01" },
-  { id: "a4", name: "David",  style: "Formal",       initials: "DK", bg: "#EEEDFE", color: "#3C3489", embedId: "david_formal_01" },
-  { id: "a5", name: "Amara",  style: "Warm",         initials: "AM", bg: "#FBEAF0", color: "#72243E", embedId: "amara_warm_01" },
-  { id: "a6", name: "Liam",   style: "Approachable", initials: "LT", bg: "#EAF3DE", color: "#27500A", embedId: "liam_approachable_01" },
-];
 
 const elevenLabsVoices = [
   { id: "el-1", name: "Tim Hall", desc: "Cloned · Your voice",   badge: "Cloned",  badgeBg: "#E1F5EE", badgeColor: "#0F6E56" },
@@ -70,17 +62,18 @@ const roleTabs = [
 
 const ROLE = "client_welcome";
 
-const defaultConfig = () => ({
+const defaultConfig = (avatarList) => ({
   is_enabled: true,
-  avatar_id: mockAvatars[0].id,
+  avatar_id: avatarList?.[0]?.id || "",
   voice_id: "",
   voice_provider: "liveavatar",
   welcome_script: defaultScript,
 });
 
 export default function AdviserAvatarConfig() {
-  const [config, setConfig] = useState(defaultConfig());
-  const [savedConfig, setSavedConfig] = useState(defaultConfig());
+  const { avatars } = useLiveAvatars();
+  const [config, setConfig] = useState(defaultConfig(avatars));
+  const [savedConfig, setSavedConfig] = useState(defaultConfig(avatars));
   const [voiceTab, setVoiceTab] = useState("liveavatar");
   const [selVoice, setSelVoice] = useState(null);
   const [elConnected, setElConnected] = useState(false);
@@ -88,7 +81,7 @@ export default function AdviserAvatarConfig() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const selectedAvatar = mockAvatars.find(a => a.id === config.avatar_id) || mockAvatars[0];
+  const selectedAvatar = avatars.find(a => a.id === config.avatar_id) || avatars[0] || {};
 
   const updateField = (field, value) => setConfig(prev => ({ ...prev, [field]: value }));
 
@@ -97,7 +90,7 @@ export default function AdviserAvatarConfig() {
       const { data } = await axiosInstance.get(`/avatar/config/${ROLE}`);
       const loaded = {
         is_enabled: data.isEnabled ?? true,
-        avatar_id: data.avatarId || mockAvatars[0].id,
+        avatar_id: data.avatarId || avatars[0]?.id || "",
         voice_id: data.voiceId || "",
         voice_provider: data.voiceProvider || "liveavatar",
         welcome_script: data.welcomeScript ?? defaultScript,
@@ -107,15 +100,15 @@ export default function AdviserAvatarConfig() {
       setVoiceTab(loaded.voice_provider || "liveavatar");
     } catch (err) {
       if (err.response?.status === 404) {
-        const defaults = defaultConfig();
+        const defaults = defaultConfig(avatars);
         setConfig(defaults);
         setSavedConfig(defaults);
       }
     }
     setLoading(false);
-  }, []);
+  }, [avatars]);
 
-  useEffect(() => { fetchConfig(); }, []);
+  useEffect(() => { fetchConfig(); }, [fetchConfig]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -219,7 +212,7 @@ export default function AdviserAvatarConfig() {
                   </div>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 7 }}>
-                  {mockAvatars.map(a => (
+                  {avatars.map(a => (
                     <div key={a.id} onClick={() => updateField("avatar_id", a.id)} style={{
                       border: config.avatar_id === a.id ? "1.5px solid #1D9E75" : "1px solid #e2e8f0",
                       borderRadius: 8, padding: "9px 6px", textAlign: "center", cursor: "pointer",
