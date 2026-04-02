@@ -60,6 +60,17 @@ const roleTabs = [
   { id: "global_admin", label: "Global admin" },
 ];
 
+const AVATAR_EMBED_MAP = {
+  "0930fd59-c8ad-434d-ad53-b391a1768720": "af822836-4be9-454b-ad73-9d772a13bfea",
+  "65f9e3c9-d48b-4118-b73a-4ae2e3cbb8f0": "7f979607-9d72-4c28-bfbf-d33f60220d69",
+  "64b526e4-741c-43b6-a918-4e40f3261c7a": "3ce9a9d2-8f00-4b30-ae42-53def1f541c3",
+  "073b60a9-89a8-45aa-8902-c358f64d2852": "aa2b264e-c86e-4805-a5c0-0dace17cd766",
+  "e9844e6d-847e-4964-a92b-7ecd066f69df": "69d4f10e-6974-4261-8755-d5a7de8e37d9",
+  "0aae6046-0ab9-44fe-a08d-c5ac3f406d34": "a346f50c-bbd5-4c44-8849-e70625ad9c44",
+  "ab0765ad-69de-41fb-9f8a-bd01c3c52d6f": "045517c0-318c-40a7-ac85-0c43d26f6e9d",
+  "b4fc2d60-3b82-4694-b243-93e9d2bb0242": "32686000-e5c9-45bd-8395-bce02a3affde",
+};
+
 const ROLE = "client_welcome";
 
 const defaultConfig = (avatarList) => ({
@@ -249,11 +260,20 @@ export default function AdviserAvatarConfig() {
                     <Dot /> Live preview
                   </div>
                 </div>
-                <div style={{ background: "#0f1117", aspectRatio: "16/9", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8 }}>
-                  {/* In production: <iframe src={`https://embed.liveavatar.com/v1/${selectedAvatar.embedId}`} allow="microphone" style={{width:"100%",height:"100%",border:"none"}}/> */}
-                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: selectedAvatar.bg, color: selectedAvatar.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 500 }}>{selectedAvatar.initials}</div>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{selectedAvatar.name} · {selectedAvatar.style}</div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>LiveAvatar embed · avatar_id: {config.avatar_id}</div>
+                <div style={{ background: "#0f1117", aspectRatio: "16/9" }}>
+                  {AVATAR_EMBED_MAP[selectedAvatar.id] ? (
+                    <iframe
+                      src={`https://embed.liveavatar.com/v1/${AVATAR_EMBED_MAP[selectedAvatar.id]}`}
+                      allow="microphone"
+                      title="LiveAvatar Embed"
+                      style={{ width: "100%", height: "100%", border: "none", aspectRatio: "16/9" }}
+                    />
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8, height: "100%" }}>
+                      <div style={{ width: 44, height: 44, borderRadius: "50%", background: selectedAvatar.bg, color: selectedAvatar.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 500 }}>{selectedAvatar.initials}</div>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{selectedAvatar.name} · {selectedAvatar.style}</div>
+                    </div>
+                  )}
                 </div>
                 <div style={{ padding: "10px 14px", background: "#f8fafc", borderTop: "0.5px solid #e2e8f0" }}>
                   <div style={{ fontSize: 10, color: "#94a3b8" }}>Interact with the avatar to preview how it will appear to your clients. Select a different avatar above to update the preview.</div>
