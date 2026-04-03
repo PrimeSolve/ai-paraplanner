@@ -74,7 +74,6 @@ export default function AdviserAvatarConfig() {
   const [config, setConfig] = useState(defaultConfig());
   const [savedConfig, setSavedConfig] = useState(defaultConfig());
   const [voiceTab, setVoiceTab] = useState("liveavatar");
-  const [selVoice, setSelVoice] = useState(null);
   const [elConnected, setElConnected] = useState(false);
   const [activeRoleTab, setActiveRoleTab] = useState("client_welcome");
   const [loading, setLoading] = useState(true);
@@ -83,6 +82,23 @@ export default function AdviserAvatarConfig() {
   const selectedAvatar = AVATARS.find(a => a.id === config.avatar_id) || AVATARS[0] || {};
 
   const updateField = (field, value) => setConfig(prev => ({ ...prev, [field]: value }));
+
+  const handleAvatarSelect = (avatarId) => {
+    const avatar = AVATARS.find(a => a.id === avatarId);
+    if (!avatar) return;
+    updateField("avatar_id", avatarId);
+    if (savedConfig.voice_id) {
+      // User already saved a custom voice for this role — keep it
+      updateField("voice_id", savedConfig.voice_id);
+      updateField("voice_provider", savedConfig.voice_provider || "elevenlabs");
+      setVoiceTab(savedConfig.voice_provider || "elevenlabs");
+    } else {
+      // No saved custom voice — apply the avatar's default ElevenLabs voice
+      updateField("voice_id", avatar.defaultVoiceId);
+      updateField("voice_provider", "elevenlabs");
+      setVoiceTab("elevenlabs");
+    }
+  };
 
   const fetchConfig = useCallback(async () => {
     try {
@@ -212,7 +228,7 @@ export default function AdviserAvatarConfig() {
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 7 }}>
                   {AVATARS.map(a => (
-                    <div key={a.id} onClick={() => updateField("avatar_id", a.id)} style={{
+                    <div key={a.id} onClick={() => handleAvatarSelect(a.id)} style={{
                       border: config.avatar_id === a.id ? "1.5px solid #1D9E75" : "1px solid #e2e8f0",
                       borderRadius: 8, padding: "9px 6px", textAlign: "center", cursor: "pointer",
                       background: config.avatar_id === a.id ? "rgba(29,158,117,0.05)" : "#fff",
@@ -299,14 +315,16 @@ export default function AdviserAvatarConfig() {
               <div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: "#1D9E75" }}><Dot /> ElevenLabs connected</div>
-                  <button onClick={() => { setElConnected(false); setSelVoice(null); }} style={{ fontSize: 10, color: "#94a3b8", background: "none", border: "none", cursor: "pointer" }}>Disconnect</button>
+                  <button onClick={() => setElConnected(false)} style={{ fontSize: 10, color: "#94a3b8", background: "none", border: "none", cursor: "pointer" }}>Disconnect</button>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
-                  {elevenLabsVoices.map(v => (
-                    <div key={v.id} onClick={() => setSelVoice(v.id)} style={{
+                  {elevenLabsVoices.map(v => {
+                    const isSelected = config.voice_id === v.id;
+                    return (
+                    <div key={v.id} onClick={() => { updateField("voice_id", v.id); updateField("voice_provider", "elevenlabs"); }} style={{
                       display: "flex", alignItems: "center", gap: 8,
-                      background: selVoice === v.id ? "rgba(29,158,117,0.05)" : "#f8fafc",
-                      border: selVoice === v.id ? "1.5px solid #1D9E75" : "1px solid #e2e8f0",
+                      background: isSelected ? "rgba(29,158,117,0.05)" : "#f8fafc",
+                      border: isSelected ? "1.5px solid #1D9E75" : "1px solid #e2e8f0",
                       borderRadius: 7, padding: "8px 10px", cursor: "pointer", transition: "all 0.15s",
                     }}>
                       <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 11 }}>🔊</div>
@@ -319,7 +337,8 @@ export default function AdviserAvatarConfig() {
                         <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8" }}><PlayIcon /></div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 8 }}>Your ElevenLabs API key is stored securely via LiveAvatar's encrypted secrets store.</div>
               </div>

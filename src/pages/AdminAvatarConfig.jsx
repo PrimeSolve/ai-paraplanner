@@ -70,6 +70,24 @@ export default function AdminAvatarConfig() {
 
   const handleToggle = (checked) => updateConfig('is_enabled', checked);
 
+  const handleAvatarSelect = (avatarId) => {
+    const avatar = AVATARS.find(a => a.id === avatarId);
+    if (!avatar) return;
+    updateConfig('avatar_id', avatarId);
+    const saved = savedByRole[activeRole];
+    if (saved && saved.voice_id) {
+      // User already saved a custom voice for this role — keep it
+      updateConfig('voice_id', saved.voice_id);
+      updateConfig('voice_provider', saved.voice_provider || 'elevenlabs');
+      setVoiceTab(saved.voice_provider || 'elevenlabs');
+    } else {
+      // No saved custom voice — apply the avatar's default ElevenLabs voice
+      updateConfig('voice_id', avatar.defaultVoiceId);
+      updateConfig('voice_provider', 'elevenlabs');
+      setVoiceTab('elevenlabs');
+    }
+  };
+
   const fetchConfig = useCallback(async (role) => {
     try {
       const { data } = await axiosInstance.get(`/avatar/config/${role}`);
@@ -210,7 +228,7 @@ export default function AdminAvatarConfig() {
                     return (
                       <button
                         key={avatar.id}
-                        onClick={() => updateConfig('avatar_id', avatar.id)}
+                        onClick={() => handleAvatarSelect(avatar.id)}
                         className="flex flex-col items-center p-3 rounded-lg border transition-all relative"
                         style={{
                           borderColor: selected ? '#1D9E75' : '#e2e8f0',
@@ -327,8 +345,19 @@ export default function AdminAvatarConfig() {
                     </button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {ELEVEN_LABS_VOICES.map(voice => (
-                      <div key={voice.id} className="flex items-center gap-3 p-3 rounded-lg border border-slate-200">
+                    {ELEVEN_LABS_VOICES.map(voice => {
+                      const isSelected = currentConfig.voice_id === voice.id;
+                      return (
+                      <div
+                        key={voice.id}
+                        onClick={() => { updateConfig('voice_id', voice.id); updateConfig('voice_provider', 'elevenlabs'); }}
+                        className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all"
+                        style={{
+                          borderColor: isSelected ? '#1D9E75' : '#e2e8f0',
+                          borderWidth: isSelected ? '2px' : '1px',
+                          background: isSelected ? 'rgba(29,158,117,0.05)' : '#fff',
+                        }}
+                      >
                         <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center text-white flex-shrink-0">
                           <span className="text-sm">🔊</span>
                         </div>
@@ -348,7 +377,8 @@ export default function AdminAvatarConfig() {
                           <Play className="w-3.5 h-3.5 ml-0.5" />
                         </button>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
