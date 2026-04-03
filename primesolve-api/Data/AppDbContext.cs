@@ -16,6 +16,7 @@ namespace PrimeSolve.Api.Data
         public DbSet<CompanyShareholder> CompanyShareholders { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<SoaTemplate> SoaTemplates { get; set; }
+        public DbSet<AvatarConfig> AvatarConfigs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -89,6 +90,12 @@ namespace PrimeSolve.Api.Data
                 entity.HasIndex(e => new { e.TenantId, e.OwnerType });
                 entity.HasIndex(e => e.OwnerType);
                 entity.Property(e => e.Sections).HasColumnType("nvarchar(max)");
+            });
+
+            modelBuilder.Entity<AvatarConfig>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.TenantId, e.Role }).IsUnique();
             });
         }
     }

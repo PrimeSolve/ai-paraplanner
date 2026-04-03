@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import axiosInstance from '@/api/axiosInstance';
+import { AVATARS } from '@/constants/avatars';
 import { createPageUrl } from '../utils';
 import { formatDate } from '../utils/dateUtils';
 import {
@@ -24,6 +26,10 @@ export default function ClientDashboard() {
   const [adviser, setAdviser] = useState(null);
   const [factFinds, setFactFinds] = useState([]);
   const [soaRequests, setSoaRequests] = useState([]);
+  const [showAvatarOverlay, setShowAvatarOverlay] = useState(false);
+  const [avatarSession, setAvatarSession] = useState(null);
+  const navigate = useNavigate();
+  const avatarDismissedRef = useRef(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -67,6 +73,20 @@ export default function ClientDashboard() {
           client_email: userData.email
         }, '-created_date');
         setSoaRequests(soaData);
+        // Check avatar session for clients (not admin view)
+        if (!clientId) {
+          try {
+            const { data: sessionData } = await axiosInstance.post('/avatar/session', {
+              role: 'client_welcome',
+            });
+            if (sessionData.is_enabled && sessionData.session_token) {
+              setAvatarSession(sessionData);
+              setShowAvatarOverlay(true);
+            }
+          } catch (avatarErr) {
+            console.error('Avatar session check failed:', avatarErr);
+          }
+        }
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -76,6 +96,53 @@ export default function ClientDashboard() {
     loadData();
   }, []);
 
+  const dismissAvatarOverlay = useCallback(async (navigateToFactFind = false) => {
+    if (avatarDismissedRef.current) return;
+    avatarDismissedRef.current = true;
+    setShowAvatarOverlay(false);
+
+    // Mark welcome as seen
+    try {
+      await axiosInstance.put('/clients/me/seen-welcome');
+    } catch (err) {
+      console.error('Failed to mark welcome as seen:', err);
+    }
+
+    if (navigateToFactFind) {
+      navigate(createPageUrl('FactFindWelcome'));
+    }
+  }, [navigate]);
+
+  // Listen for avatar transcription events from the iframe
+  useEffect(() => {
+    if (!showAvatarOverlay) return;
+
+    const handleMessage = (event) => {
+      if (!event.data) return;
+      const data = typeof event.data === 'string' ? (() => { try { return JSON.parse(event.data); } catch { return null; } })() : event.data;
+      if (!data) return;
+
+      // Detect avatar completion via transcription event
+      if (data.type === 'avatar.transcription' && typeof data.text === 'string') {
+        if (data.text.includes("Perfect, let's do this")) {
+          dismissAvatarOverlay(true);
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    // Fallback timeout — auto-dismiss after 5 minutes
+    const timeout = setTimeout(() => {
+      dismissAvatarOverlay(false);
+    }, 5 * 60 * 1000);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      clearTimeout(timeout);
+    };
+  }, [showAvatarOverlay, dismissAvatarOverlay]);
+
   if (loading) {
     return (
       <div style={{ padding: '24px 32px' }} className="flex items-center justify-center h-full">
@@ -83,6 +150,15 @@ export default function ClientDashboard() {
       </div>
     );
   }
+
+  // Build avatar iframe URL from session data
+  const getAvatarIframeSrc = () => {
+    if (!avatarSession) return null;
+    const avatar = AVATARS.find(a => a.id === avatarSession.avatar_id);
+    const embedId = avatar?.embedId;
+    if (!embedId) return null;
+    return `https://embed.liveavatar.com/v1/${embedId}?token=${avatarSession.session_token}`;
+  };
 
   const currentFactFind = factFinds.find(ff => ff.status !== 'submitted') || factFinds[0];
   const completedSOAs = soaRequests.filter(s => s.status === 'completed').length;
@@ -106,6 +182,64 @@ export default function ClientDashboard() {
 
   return (
     <div style={{ padding: '24px 32px' }}>
+      {/* Avatar Welcome Overlay */}
+      {showAvatarOverlay && avatarSession && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          background: 'rgba(0, 0, 0, 0.85)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            position: 'relative',
+            width: '90vw',
+            maxWidth: '900px',
+            height: '80vh',
+            maxHeight: '600px',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            background: '#000',
+            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)',
+          }}>
+            {getAvatarIframeSrc() && (
+              <iframe
+                src={getAvatarIframeSrc()}
+                allow="microphone"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                }}
+                title="Welcome Avatar"
+              />
+            )}
+          </div>
+          <button
+            onClick={() => dismissAvatarOverlay(false)}
+            style={{
+              position: 'fixed',
+              bottom: '32px',
+              right: '40px',
+              background: 'transparent',
+              border: 'none',
+              color: 'rgba(255, 255, 255, 0.5)',
+              fontSize: '14px',
+              cursor: 'pointer',
+              padding: '8px 16px',
+              fontWeight: '500',
+              transition: 'color 0.2s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.85)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)'}
+          >
+            Skip
+          </button>
+        </div>
+      )}
+
       {/* Welcome Card - Different for first time vs returning */}
         {dashboardState === 'first_time' ? (
           <div style={{ 
