@@ -49,5 +49,7 @@ namespace PrimeSolve.Api.Models
         public string? ProfilePhotoUrl { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+
+        public bool HasSeenWelcome { get; set; } = false;
     }
 }
