@@ -20,9 +20,9 @@ export const AVATARS = [
     embedId: "aa2b264e-c86e-4805-a5c0-0dace17cd766",
   },
   {
-    id: "e9844e6d-847e-4964-a92b-7ecd066f69df",
+    id: "03f8332d-9046-42a1-bff3-3b2309f77b58",
     name: "Henry",
-    embedId: "69d4f10e-6974-4261-8755-d5a7de8e37d9",
+    embedId: "4650244e-f8e7-4da9-a572-b24468544ea4",
   },
   {
     id: "0aae6046-0ab9-44fe-a08d-c5ac3f406d34",
@@ -38,5 +38,10 @@ export const AVATARS = [
     id: "246e8d9d-5826-4f49-b8a0-07cb73ff7556",
     name: "John",
     embedId: "439e9b22-acf0-4681-9ec0-f93c46512521",
+  },
+  {
+    id: "b4fc2d60-3b82-4694-b243-93e9d2bb0242",
+    name: "Mary",
+    embedId: "598b7571-1830-4c64-b045-3c7a62c42306",
   },
 ];
