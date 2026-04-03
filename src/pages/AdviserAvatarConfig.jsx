@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Switch } from "@/components/ui/switch";
 import axiosInstance from "@/api/axiosInstance";
-import useLiveAvatars from "@/hooks/useLiveAvatars";
+import { AVATARS } from "@/constants/avatars";
 import { toast } from "sonner";
 
 const elevenLabsVoices = [
@@ -60,31 +60,19 @@ const roleTabs = [
   { id: "global_admin", label: "Global admin" },
 ];
 
-const AVATAR_EMBED_MAP = {
-  "0930fd59-c8ad-434d-ad53-b391a1768720": "af822836-4be9-454b-ad73-9d772a13bfea",
-  "65f9e3c9-d48b-4118-b73a-4ae2e3cbb8f0": "7f979607-9d72-4c28-bfbf-d33f60220d69",
-  "64b526e4-741c-43b6-a918-4e40f3261c7a": "3ce9a9d2-8f00-4b30-ae42-53def1f541c3",
-  "073b60a9-89a8-45aa-8902-c358f64d2852": "aa2b264e-c86e-4805-a5c0-0dace17cd766",
-  "e9844e6d-847e-4964-a92b-7ecd066f69df": "69d4f10e-6974-4261-8755-d5a7de8e37d9",
-  "0aae6046-0ab9-44fe-a08d-c5ac3f406d34": "a346f50c-bbd5-4c44-8849-e70625ad9c44",
-  "ab0765ad-69de-41fb-9f8a-bd01c3c52d6f": "045517c0-318c-40a7-ac85-0c43d26f6e9d",
-  "b4fc2d60-3b82-4694-b243-93e9d2bb0242": "32686000-e5c9-45bd-8395-bce02a3affde",
-};
-
 const ROLE = "client_welcome";
 
-const defaultConfig = (avatarList) => ({
+const defaultConfig = () => ({
   is_enabled: true,
-  avatar_id: avatarList?.[0]?.id || "",
+  avatar_id: AVATARS[0]?.id || "",
   voice_id: "",
   voice_provider: "liveavatar",
   welcome_script: defaultScript,
 });
 
 export default function AdviserAvatarConfig() {
-  const { avatars } = useLiveAvatars();
-  const [config, setConfig] = useState(defaultConfig(avatars));
-  const [savedConfig, setSavedConfig] = useState(defaultConfig(avatars));
+  const [config, setConfig] = useState(defaultConfig());
+  const [savedConfig, setSavedConfig] = useState(defaultConfig());
   const [voiceTab, setVoiceTab] = useState("liveavatar");
   const [selVoice, setSelVoice] = useState(null);
   const [elConnected, setElConnected] = useState(false);
@@ -92,7 +80,7 @@ export default function AdviserAvatarConfig() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const selectedAvatar = avatars.find(a => a.id === config.avatar_id) || avatars[0] || {};
+  const selectedAvatar = AVATARS.find(a => a.id === config.avatar_id) || AVATARS[0] || {};
 
   const updateField = (field, value) => setConfig(prev => ({ ...prev, [field]: value }));
 
@@ -101,7 +89,7 @@ export default function AdviserAvatarConfig() {
       const { data } = await axiosInstance.get(`/avatar/config/${ROLE}`);
       const loaded = {
         is_enabled: data.isEnabled ?? true,
-        avatar_id: data.avatarId || avatars[0]?.id || "",
+        avatar_id: data.avatarId || AVATARS[0]?.id || "",
         voice_id: data.voiceId || "",
         voice_provider: data.voiceProvider || "liveavatar",
         welcome_script: data.welcomeScript ?? defaultScript,
@@ -111,13 +99,13 @@ export default function AdviserAvatarConfig() {
       setVoiceTab(loaded.voice_provider || "liveavatar");
     } catch (err) {
       if (err.response?.status === 404) {
-        const defaults = defaultConfig(avatars);
+        const defaults = defaultConfig();
         setConfig(defaults);
         setSavedConfig(defaults);
       }
     }
     setLoading(false);
-  }, [avatars]);
+  }, []);
 
   useEffect(() => { fetchConfig(); }, [fetchConfig]);
 
@@ -223,16 +211,14 @@ export default function AdviserAvatarConfig() {
                   </div>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 7 }}>
-                  {avatars.map(a => (
+                  {AVATARS.map(a => (
                     <div key={a.id} onClick={() => updateField("avatar_id", a.id)} style={{
                       border: config.avatar_id === a.id ? "1.5px solid #1D9E75" : "1px solid #e2e8f0",
                       borderRadius: 8, padding: "9px 6px", textAlign: "center", cursor: "pointer",
                       background: config.avatar_id === a.id ? "rgba(29,158,117,0.05)" : "#fff",
                       transition: "all 0.15s",
                     }}>
-                      <div style={{ width: 34, height: 34, borderRadius: "50%", margin: "0 auto 5px", background: a.bg, color: a.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500 }}>{a.initials}</div>
                       <div style={{ fontSize: 11, fontWeight: 500, color: "#1e293b" }}>{a.name}</div>
-                      <div style={{ fontSize: 10, color: "#94a3b8" }}>{a.style}</div>
                       {config.avatar_id === a.id && (
                         <div style={{ width: 12, height: 12, background: "#1D9E75", borderRadius: "50%", margin: "4px auto 0", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <CheckIcon />
@@ -249,29 +235,22 @@ export default function AdviserAvatarConfig() {
               <SectionLabel>LIVE PREVIEW</SectionLabel>
               <div style={{ background: "#fff", border: "0.5px solid #e2e8f0", borderRadius: 10, overflow: "hidden" }}>
                 <div style={{ padding: "10px 14px", borderBottom: "0.5px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ width: 26, height: 26, borderRadius: "50%", background: selectedAvatar.bg, color: selectedAvatar.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 500 }}>{selectedAvatar.initials}</div>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 500, color: "#1e293b" }}>{selectedAvatar.name}</div>
-                      <div style={{ fontSize: 10, color: "#94a3b8" }}>{selectedAvatar.style}</div>
-                    </div>
-                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: "#1e293b" }}>{selectedAvatar.name}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: "#1D9E75" }}>
                     <Dot /> Live preview
                   </div>
                 </div>
                 <div style={{ background: "#0f1117", aspectRatio: "16/9" }}>
-                  {AVATAR_EMBED_MAP[selectedAvatar.id] ? (
+                  {selectedAvatar.embedId ? (
                     <iframe
-                      src={`https://embed.liveavatar.com/v1/${AVATAR_EMBED_MAP[selectedAvatar.id]}`}
+                      src={`https://embed.liveavatar.com/v1/${selectedAvatar.embedId}`}
                       allow="microphone"
                       title="LiveAvatar Embed"
                       style={{ width: "100%", height: "100%", border: "none", aspectRatio: "16/9" }}
                     />
                   ) : (
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8, height: "100%" }}>
-                      <div style={{ width: 44, height: 44, borderRadius: "50%", background: selectedAvatar.bg, color: selectedAvatar.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 500 }}>{selectedAvatar.initials}</div>
-                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{selectedAvatar.name} · {selectedAvatar.style}</div>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{selectedAvatar.name}</div>
                     </div>
                   )}
                 </div>
